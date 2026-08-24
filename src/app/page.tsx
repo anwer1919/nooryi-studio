@@ -1,69 +1,103 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import Link from "next/link"
+import { Music, Star, Sparkles } from "lucide-react"
+import FluidBackground from "@/components/LazyFluidBackground"
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#1a0a04]">
+      {/* خلفية السائل */}
+      <FluidBackground scrimStrength="strong" />
+
+      {/* المحتوى */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Hero Content */}
+        <main className="flex-1 flex items-center justify-center px-6 pt-24 pb-12">
+          <div className="max-w-4xl text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/8 border border-white/16 backdrop-blur-xl rounded-full px-4 py-2 mb-8 animate-fade-in">
+              <Sparkles size={16} className="text-yellow-400" />
+              <span className="text-white/80 text-sm">أكثر من 10K حجز ناجح</span>
+            </div>
+
+            {/* Heading */}
+            <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight mb-6 animate-fade-up">
+              احجز أفضل الفنانين
+              <br />
+              <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
+                لحفلتك الخاصة
+              </span>
+            </h1>
+
+            {/* Sub-line */}
+            <p className="text-xl text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-up-delay">
+              منصة فاخرة لإدارة وحجز حفلات متعددة الفنانين. اختر التاريخ، الفنان، وابدأ تجربتك الاستثنائية.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up-delay-2">
+              <Link
+                href="/artists"
+                className="w-full sm:w-auto bg-white text-black font-bold py-4 px-8 rounded-full hover:bg-white/90 transition shadow-2xl shadow-amber-500/20"
+              >
+                استكشف الفنانين ←
+              </Link>
+              <Link
+                href="/my-bookings"
+                className="w-full sm:w-auto bg-white/10 backdrop-blur-xl border border-white/20 text-white font-bold py-4 px-8 rounded-full hover:bg-white/20 transition"
+              >
+                عرض حجوزاتي
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto animate-fade-up-delay-3">
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-1">50+</div>
+                <div className="text-white/60 text-sm">فنان محترف</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-1">10K+</div>
+                <div className="text-white/60 text-sm">حجز ناجح</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-1 flex items-center justify-center gap-2">
+                  4.9
+                  <Star size={24} className="fill-yellow-400 text-yellow-400" />
+                </div>
+                <div className="text-white/60 text-sm">تقييم</div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fade-up {
+          from { opacity: 0; transform: translateY(26px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.7s cubic-bezier(0.2, 0, 0, 1) 0.3s both;
+        }
+        .animate-fade-up {
+          animation: fade-up 0.8s cubic-bezier(0.2, 0, 0, 1) 0.5s both;
+        }
+        .animate-fade-up-delay {
+          animation: fade-up 0.8s cubic-bezier(0.2, 0, 0, 1) 0.8s both;
+        }
+        .animate-fade-up-delay-2 {
+          animation: fade-up 0.8s cubic-bezier(0.2, 0, 0, 1) 1.1s both;
+        }
+        .animate-fade-up-delay-3 {
+          animation: fade-up 0.8s cubic-bezier(0.2, 0, 0, 1) 1.4s both;
+        }
+      `}</style>
     </div>
-  );
+  )
 }

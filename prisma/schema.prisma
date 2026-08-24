@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// Enums
+// ==========================================
+enum Role {
+  SUPER_ADMIN
+  ARTIST_ADMIN
+  CLIENT
+}
+
+enum TimeSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum BookingStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+}
+
+// ==========================================
+// Models
+// ==========================================
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  password      String
+  role          Role           @default(CLIENT)
+  artistId      String?        @unique
+  
+  // ✅ العلاقة الأولى: المستخدم كفنان (مع اسم صريح)
+  artist        Artist?        @relation("UserAsArtist", fields: [artistId], references: [id], onDelete: Cascade)
+  
+  // ✅ العلاقة الثانية: المستخدم كأدمن لفنان (مع اسم صريح)
+  managedArtist Artist?        @relation("UserAsAdmin")
+  
+  customer      Customer?
+  notifications Notification[]
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String
+  
+  bookings  Booking[]
+}
+
+model Artist {
+  id                     String         @id @default(cuid())
+  name                   String
+  slug                   String         @unique
+  category               String?
+  bio                    String?
+  profileImage           String?
+  coverImage             String?
+  accentColor            String         @default("#D4AF37")
+  status                 String         @default("ACTIVE")
+  
+  baseCommissionRate     Float          @default(10)
+  commissionDiscountType String         @default("PERCENTAGE")
+  commissionDiscountVal  Float          @default(0)
+  
+  adminUserId            String?        @unique
+  
+  // ✅ العلاقة الأولى: الأدمن الذي يدير هذا الفنان (مع اسم صريح)
+  adminUser              User?          @relation("UserAsAdmin", fields: [adminUserId], references: [id], onDelete: SetNull)
+  
+  // ✅ العلاقة الثانية: المستخدم الذي يمثل هذا الفنان (مع اسم صريح)
+  user                   User?          @relation("UserAsArtist")
+  
+  bookings               Booking[]
+  availability           Availability[]
+  reviews                Review[]
+  pricing                Pricing[]
+  
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+}
+
+model Venue {
+  id          String    @id @default(cuid())
+  name        String
+  governorate String?
+  area        String?
+  address     String?
+  
+  bookings    Booking[]
+}
+
+model Booking {
+  id              String          @id @default(cuid())
+  artistId        String
+  artist          Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  customerId      String?
+  customer        Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  clientName      String
+  clientPhone     String
+  clientEmail     String?
+  
+  venueId         String
+  venue           Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  
+  date            DateTime
+  timeSlot        TimeSlot
+  status          BookingStatus   @default(PENDING_APPROVAL)
+  
+  grossAmount     Float?
+  depositAmount   Float?
+  remainingAmount Float?
+  
+  review          Review?
+  availability    Availability?
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Availability {
+  id        String             @id @default(cuid())
+  artistId  String
+  artist    Artist             @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  date      DateTime
+  timeSlot  TimeSlot
+  status    AvailabilityStatus @default(AVAILABLE)
+  
+  bookingId String?            @unique
+  booking   Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@unique([artistId, date, timeSlot])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  artistId   String
+  artist     Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  bookingId  String   @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(false)
+  
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  message   String
+  type      String   @default("INFO")
+  isRead    Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+}
+
+// ✅ نموذج الأسعار الجديد حسب المنطقة
+model Pricing {
+  id                String   @id @default(cuid())
+  artistId          String
+  artist            Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  governorate       String
+  basePrice         Float
+  transportationFee Float
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([artistId, governorate])
+}
