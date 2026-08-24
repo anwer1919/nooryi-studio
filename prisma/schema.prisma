@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,9 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// Enums
-// ==========================================
 enum Role {
   SUPER_ADMIN
   ARTIST_ADMIN
@@ -39,10 +33,6 @@ enum AvailabilityStatus {
   BLOCKED
 }
 
-// ==========================================
-// Models
-// ==========================================
-
 model User {
   id            String         @id @default(cuid())
   name          String?
@@ -51,10 +41,7 @@ model User {
   role          Role           @default(CLIENT)
   artistId      String?        @unique
   
-  // ✅ العلاقة الأولى: المستخدم كفنان (مع اسم صريح)
   artist        Artist?        @relation("UserAsArtist", fields: [artistId], references: [id], onDelete: Cascade)
-  
-  // ✅ العلاقة الثانية: المستخدم كأدمن لفنان (مع اسم صريح)
   managedArtist Artist?        @relation("UserAsAdmin")
   
   customer      Customer?
@@ -72,6 +59,7 @@ model Customer {
   phone     String
   
   bookings  Booking[]
+  reviews   Review[]
 }
 
 model Artist {
@@ -91,10 +79,7 @@ model Artist {
   
   adminUserId            String?        @unique
   
-  // ✅ العلاقة الأولى: الأدمن الذي يدير هذا الفنان (مع اسم صريح)
   adminUser              User?          @relation("UserAsAdmin", fields: [adminUserId], references: [id], onDelete: SetNull)
-  
-  // ✅ العلاقة الثانية: المستخدم الذي يمثل هذا الفنان (مع اسم صريح)
   user                   User?          @relation("UserAsArtist")
   
   bookings               Booking[]
@@ -138,9 +123,11 @@ model Booking {
   grossAmount     Float?
   depositAmount   Float?
   remainingAmount Float?
+  adminNotes      String?         // ✅ تمت الإضافة
   
   review          Review?
   availability    Availability?
+  payments        Payment[]       // ✅ تمت الإضافة
   
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -166,9 +153,13 @@ model Review {
   artistId   String
   artist     Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
   bookingId  String   @unique
   booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   
+  clientName String?  // ✅ تمت الإجابة على خطأ clientName
   rating     Int
   comment    String?
   isApproved Boolean  @default(false)
@@ -189,7 +180,6 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-// ✅ نموذج الأسعار الجديد حسب المنطقة
 model Pricing {
   id                String   @id @default(cuid())
   artistId          String
@@ -203,4 +193,18 @@ model Pricing {
   updatedAt         DateTime @updatedAt
 
   @@unique([artistId, governorate])
+}
+
+// ✅ نموذج الدفع الجديد لحل خطأ Property 'payment' does not exist
+model Payment {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  amount      Float
+  method      String   // visa, vodafone_cash, instapay, bank_transfer
+  status      String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  transactionId String?
+  
+  createdAt   DateTime @default(now())
 }

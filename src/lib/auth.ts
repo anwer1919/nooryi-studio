@@ -1,7 +1,22 @@
-import { NextAuthOptions } from "next-auth"
+import NextAuth, { DefaultSession, DefaultUser } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+
+// ✅ توسيع أنواع NextAuth لتشمل الحقول المخصصة
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      role: string
+      artistId?: string | null
+    } & DefaultSession["user"]
+  }
+  interface User extends DefaultUser {
+    role: string
+    artistId?: string | null
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user.id, // ✅ مهم جداً: إرجاع الـ ID
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -45,7 +60,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id // ✅ تمرير الـ ID إلى التوكن
+        token.id = user.id
         token.role = user.role
         token.artistId = (user as any).artistId
       }
@@ -53,7 +68,6 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        // ✅ تمرير الـ ID والبيانات الأخرى من التوكن إلى كائن الجلسة (Session)
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role
         ;(session.user as any).artistId = token.artistId
