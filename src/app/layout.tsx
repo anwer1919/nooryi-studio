@@ -1,11 +1,7 @@
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
-      <body style={{ backgroundColor: '#1a0a04', color: 'white', margin: 0, fontFamily: 'system-ui, sans-serif' }}>
+      <body style={{ margin: 0, backgroundColor: '#1a0a04', color: 'white', fontFamily: 'system-ui, sans-serif' }}>
         {children}
       </body>
     </html>
