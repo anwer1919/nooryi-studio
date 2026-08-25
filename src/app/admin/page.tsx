@@ -28,7 +28,7 @@ interface Stats {
     venue: { name: string }
   }>
 }
-
+export const dynamic = "force-dynamic"
 export default function AdminDashboard() {
   const { data: session, status: sessionStatus } = useSession()
   const [stats, setStats] = useState<Stats | null>(null)
