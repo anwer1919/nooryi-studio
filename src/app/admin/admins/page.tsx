@@ -1,295 +1,109 @@
-"use client"
+﻿"use client"
 
-import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
-import { UserPlus, Trash2, Shield, User, Loader2, Music } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Loader2, UserPlus, Users } from "lucide-react"
 import Link from "next/link"
 
-interface Admin {
-  id: string
-  email: string
-  name: string | null
-  role: string
-  artistId: string | null
-  artist?: {
-    name: string
-    slug: string
-  }
-  createdAt: string
-}
+export const dynamic = "force-dynamic"
 
-interface Artist {
-  id: string
-  name: string
-  slug: string
-}
+interface Admin { id: string; name: string; email: string; role: string }
+interface Artist { id: string; name: string; slug: string }
 
 export default function AdminsPage() {
-  const { data: session } = useSession()
+  // ✅ الطريقة الآمنة 100% لمنع خطأ Destructuring
+  const sessionObj = useSession()
+  const session = sessionObj?.data || null
+  const status = sessionObj?.status || "loading"
+  
+  const router = useRouter()
   const [admins, setAdmins] = useState<Admin[]>([])
   const [artists, setArtists] = useState<Artist[]>([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    artistId: "",
-  })
 
   useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      const [adminsRes, artistsRes] = await Promise.all([
-        fetch("/api/admin/admins"),
-        fetch("/api/artists"),
-      ])
-      
-      if (adminsRes.ok) {
-        const adminsData = await adminsRes.json()
-        setAdmins(adminsData)
-      }
-      
-      if (artistsRes.ok) {
-        const artistsData = await artistsRes.json()
-        setArtists(artistsData)
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
+    if (status === "unauthenticated") {
+      router.push("/login")
     }
-  }
+  }, [status, router])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setSuccess("")
-    setSubmitting(true)
-
-    try {
-      const res = await fetch("/api/admin/admins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setSuccess("تم إنشاء حساب الأدمن بنجاح!")
-        setShowForm(false)
-        setFormData({ email: "", password: "", name: "", artistId: "" })
-        fetchData()
-      } else {
-        setError(data.error || "فشل إنشاء الحساب")
+  useEffect(() => {
+    if (status === "authenticated") {
+      const fetchData = async () => {
+        try {
+          const [adminsRes, artistsRes] = await Promise.all([
+            fetch("/api/admin/admins"),
+            fetch("/api/admin/artists")
+          ])
+          if (adminsRes.ok) setAdmins(await adminsRes.json())
+          if (artistsRes.ok) setArtists(await artistsRes.json())
+        } catch (err) {
+          console.error("Failed to fetch data", err)
+        } finally {
+          setLoading(false)
+        }
       }
-    } catch (err) {
-      setError("حدث خطأ أثناء الإنشاء")
-    } finally {
-      setSubmitting(false)
+      fetchData()
     }
-  }
+  }, [status])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الأدمن؟")) return
-
-    try {
-      const res = await fetch(`/api/admin/admins/${id}`, { method: "DELETE" })
-      if (res.ok) {
-        setAdmins(admins.filter(a => a.id !== id))
-        setSuccess("تم حذف الأدمن بنجاح")
-      }
-    } catch (err) {
-      setError("فشل الحذف")
-    }
-  }
-
-  if ((session?.user as any)?.role !== "SUPER_ADMIN") {
+  if (status === "loading" || loading) {
     return (
-      <div className="text-center py-20">
-        <Shield className="mx-auto text-red-400 mb-4" size={48} />
-        <p className="text-neutral-400">غير مصرح لك بالوصول لهذه الصفحة</p>
+      <div className="min-h-screen bg-[#1a0a04] flex items-center justify-center">
+        <Loader2 className="animate-spin text-yellow-500" size={48} />
       </div>
     )
   }
 
+  if (status === "unauthenticated") return null
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">إدارة الأدمنز</h1>
-          <p className="text-neutral-400 mt-1">إضافة وإدارة حسابات الأدمن للفنانين</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-2 px-5 rounded-lg transition"
-        >
-          <UserPlus size={18} />
-          إضافة أدمن جديد
-        </button>
+    <div className="min-h-screen bg-[#1a0a04] text-white p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">إدارة المشرفين والفنانين</h1>
+        <Link href="/admin" className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
+          العودة للوحة التحكم
+        </Link>
       </div>
-
-      {/* نموذج الإضافة */}
-      {showForm && (
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">إنشاء حساب أدمن جديد</h2>
-          
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-neutral-300 mb-2">الاسم *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-                  placeholder="اسم الأدمن"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-neutral-300 mb-2">البريد الإلكتروني *</label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-                  placeholder="admin@example.com"
-                  dir="ltr"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-neutral-300 mb-2">كلمة المرور *</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-                  placeholder="6 أحرف على الأقل"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-neutral-300 mb-2">الفنان المسؤول عنه *</label>
-                <select
-                  required
-                  value={formData.artistId}
-                  onChange={(e) => setFormData({...formData, artistId: e.target.value})}
-                  className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-                >
-                  <option value="">اختر الفنان</option>
-                  {artists.map(artist => (
-                    <option key={artist.id} value={artist.id}>{artist.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 px-6 rounded-lg transition disabled:opacity-50"
-              >
-                {submitting ? <Loader2 size={18} className="animate-spin" /> : <UserPlus size={18} />}
-                {submitting ? "جاري الإنشاء..." : "إنشاء الحساب"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-3 px-6 rounded-lg transition"
-              >
-                إلغاء
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* قائمة الأدمنز */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-neutral-800">
-          <h2 className="text-lg font-bold text-white">قائمة الأدمنز ({admins.length})</h2>
-        </div>
-
-        {loading ? (
-          <div className="p-12 text-center">
-            <Loader2 className="mx-auto animate-spin text-yellow-500 mb-3" size={40} />
-            <p className="text-neutral-500">جاري التحميل...</p>
-          </div>
-        ) : admins.length === 0 ? (
-          <div className="p-12 text-center text-neutral-500">
-            <User className="mx-auto mb-3 opacity-50" size={48} />
-            <p>لا يوجد أدمنز بعد</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-neutral-800">
+      
+      <p className="mb-6 text-white/70">مرحباً، {session?.user?.name || "مدير النظام"}</p>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="bg-white/10 p-6 rounded-xl border border-white/10">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-500">
+            <Users size={24} /> المشرفون ({admins.length})
+          </h2>
+          <ul className="space-y-2">
             {admins.map(admin => (
-              <div key={admin.id} className="p-4 flex items-center justify-between hover:bg-neutral-800/30 transition">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    admin.role === "SUPER_ADMIN" 
-                      ? "bg-gradient-to-br from-purple-500 to-purple-700" 
-                      : "bg-gradient-to-br from-yellow-500 to-yellow-700"
-                  }`}>
-                    {admin.role === "SUPER_ADMIN" ? (
-                      <Shield size={20} className="text-white" />
-                    ) : (
-                      <Music size={20} className="text-black" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-bold text-white">{admin.name || "بدون اسم"}</p>
-                    <p className="text-sm text-neutral-400" dir="ltr">{admin.email}</p>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      {admin.role === "SUPER_ADMIN" ? (
-                        <span className="text-purple-400 font-bold">سوبر أدمن - صلاحيات كاملة</span>
-                      ) : (
-                        <span className="text-yellow-400">
-                          أدمن فنان: <strong>{admin.artist?.name || "غير محدد"}</strong>
-                        </span>
-                      )}
-                    </p>
-                  </div>
+              <li key={admin.id} className="flex justify-between items-center bg-black/20 p-3 rounded-lg">
+                <div>
+                  <p className="font-bold">{admin.name}</p>
+                  <p className="text-sm text-white/60">{admin.email}</p>
                 </div>
-                {admin.role !== "SUPER_ADMIN" && (
-                  <button
-                    onClick={() => handleDelete(admin.id)}
-                    className="text-red-400 hover:text-red-300 transition p-2"
-                    title="حذف الأدمن"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                )}
-              </div>
+                <span className="text-xs bg-yellow-600 text-black px-3 py-1 rounded-full font-bold">
+                  {admin.role === 'SUPER_ADMIN' ? 'مدير عام' : 'مدير فنان'}
+                </span>
+          </li>
             ))}
-          </div>
-        )}
+            {admins.length === 0 && <p className="text-white/50 text-center py-4">لا يوجد مشرفون</p>}
+          </ul>
+        </div>
+
+        <div className="bg-white/10 p-6 rounded-xl border border-white/10">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-500">
+            <UserPlus size={24} /> الفنانون ({artists.length})
+          </h2>
+          <ul className="space-y-2 max-h-96 overflow-y-auto">
+            {artists.map(artist => (
+              <li key={artist.id} className="flex justify-between items-center bg-black/20 p-3 rounded-lg">
+                <span className="font-bold">{artist.name}</span>
+                <span className="text-xs text-white/60 bg-black/30 px-2 py-1 rounded">/{artist.slug}</span>
+              </li>
+            ))}
+            {artists.length === 0 && <p className="text-white/50 text-center py-4">لا يوجد فنانون</p>}
+          </ul>
+        </div>
       </div>
     </div>
   )
