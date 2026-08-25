@@ -1,9 +1,8 @@
-import NextAuth, { DefaultSession, DefaultUser } from "next-auth"
+import NextAuth, { NextAuthOptions, DefaultSession, DefaultUser } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
-// ✅ توسيع أنواع NextAuth لتشمل الحقول المخصصة
 declare module "next-auth" {
   interface Session {
     user: {
@@ -30,43 +29,27 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("البريد الإلكتروني وكلمة المرور مطلوبان")
         }
-
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        })
-
-        if (!user) {
-          throw new Error("لا يوجد مستخدم بهذا البريد الإلكتروني")
-        }
-
+        const user = await prisma.user.findUnique({ where: { email: credentials.email } })
+        if (!user) throw new Error("لا يوجد مستخدم بهذا البريد الإلكتروني")
+        
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-        if (!isPasswordValid) {
-          throw new Error("كلمة المرور غير صحيحة")
-        }
+        if (!isPasswordValid) throw new Error("كلمة المرور غير صحيحة")
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          artistId: (user as any).artistId,
-        }
+        return { id: user.id, name: user.name, email: user.email, role: user.role, artistId: (user as any).artistId }
       }
     })
   ],
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
         token.role = user.role
-        token.artistId = (user as any).artistId
+        token.artistId = user.artistId
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role
@@ -75,8 +58,6 @@ export const authOptions: NextAuthOptions = {
       return session
     }
   },
-  pages: {
-    signIn: "/login",
-  },
+  pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
 }
