@@ -1,10 +1,3 @@
-import "./globals.css"
-
-export const metadata = {
-  title: "Nooryi Studio",
-  description: "منصة حجز الفنانين",
-}
-
 export default function RootLayout({
   children,
 }: {
@@ -12,7 +5,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className="bg-[#1a0a04] text-white">
+      <body style={{ backgroundColor: '#1a0a04', color: 'white', margin: 0, fontFamily: 'system-ui, sans-serif' }}>
         {children}
       </body>
     </html>
