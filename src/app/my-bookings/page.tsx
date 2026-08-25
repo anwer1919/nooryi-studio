@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { useEffect, useState } from "react"
+`nexport const dynamic = "force-dynamic"`nimport { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { Calendar, MapPin, Phone, Search, Clock, CheckCircle, XCircle, AlertCircle, Music, CreditCard, Loader2, Star, FileText } from "lucide-react"
 import Link from "next/link"
@@ -35,7 +35,7 @@ interface Booking {
 }
 
 export default function MyBookingsPage() {
-  const { data: session, status } = useSession()
+  const sessionObj = useSession()`n  const session = sessionObj?.data || null`n  const status = sessionObj?.status || "loading"
   const [phone, setPhone] = useState("")
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(false)
