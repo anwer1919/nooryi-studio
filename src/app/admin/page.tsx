@@ -1,172 +1,82 @@
-"use client"
+﻿"use client"
 
 import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, AlertCircle, Users, Calendar, DollarSign, Music } from "lucide-react"
+import { Loader2, AlertCircle, Calendar, DollarSign, Music, Users } from "lucide-react"
 import Link from "next/link"
-import FluidBackground from "@/components/FluidBackground"
 
-// ✅ منع Next.js من محاولة توليد هذه الصفحة بشكل ثابت أثناء البناء
 export const dynamic = "force-dynamic"
 
-interface Stats {
-  totalBookings: number
-  totalRevenue: number
-  activeArtists: number
-  pendingApprovals: number
-}
-
 export default function AdminDashboard() {
-  const { data: session, status: sessionStatus } = useSession()
-  const router = useRouter()
+  // ✅ الطريقة الآمنة 100% التي تمنع خطأ Destructuring أثناء البناء
+  const sessionObj = useSession()
+  const session = sessionObj?.data || null
+  const status = sessionObj?.status || "loading"
   
-  const [stats, setStats] = useState<Stats | null>(null)
+  const router = useRouter()
+  const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
-  // إعادة التوجيه إذا لم يكن المستخدم مسجلاً للدخول
   useEffect(() => {
-    if (sessionStatus === "unauthenticated") {
+    if (status === "unauthenticated") {
       router.push("/login")
     }
-  }, [sessionStatus, router])
+  }, [status, router])
 
-  // جلب الإحصائيات عند تأكيد تسجيل الدخول
   useEffect(() => {
-    if (sessionStatus === "authenticated") {
+    if (status === "authenticated") {
       const fetchStats = async () => {
         try {
           const res = await fetch("/api/admin/stats")
-          if (!res.ok) throw new Error("فشل في جلب الإحصائيات")
-          const data = await res.json()
-          setStats(data)
-        } catch (err: any) {
-          setError(err.message)
+          if (res.ok) setStats(await res.json())
+        } catch (err) {
+          console.error(err)
         } finally {
           setLoading(false)
         }
       }
       fetchStats()
     }
-  }, [sessionStatus])
+  }, [status])
 
-  // حالة التحميل
-  if (sessionStatus === "loading" || loading) {
+  if (status === "loading" || loading) {
     return (
-      <div className="relative min-h-screen bg-[#1a0a04] flex items-center justify-center">
-        <FluidBackground scrimStrength="strong" />
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-yellow-500" size={48} />
-          <p className="text-white/70">جاري تحميل لوحة التحكم...</p>
-        </div>
+      <div className="min-h-screen bg-[#1a0a04] flex items-center justify-center">
+        <Loader2 className="animate-spin text-yellow-500" size={48} />
       </div>
     )
   }
 
-  // إذا لم يكن مسجلاً للدخول (سيتم إعادة التوجيه تلقائياً)
-  if (sessionStatus === "unauthenticated") {
-    return null
-  }
+  if (status === "unauthenticated") return null
 
-  // حالة الخطأ
-  if (error) {
-    return (
-      <div className="relative min-h-screen bg-[#1a0a04] flex items-center justify-center p-4">
-        <FluidBackground scrimStrength="strong" />
-        <div className="relative z-10 bg-red-500/10 border border-red-500/30 rounded-xl p-6 max-w-md w-full text-center">
-          <AlertCircle className="text-red-400 mx-auto mb-4" size={48} />
-          <h2 className="text-xl font-bold text-red-400 mb-2">حدث خطأ</h2>
-          <p className="text-white/70">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
-          >
-            إعادة المحاولة
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  // العرض الرئيسي
   return (
-    <div className="relative min-h-screen bg-[#1a0a04]">
-      <FluidBackground scrimStrength="medium" />
+    <div className="min-h-screen bg-[#1a0a04] text-white p-6">
+      <h1 className="text-3xl font-bold mb-6">لوحة تحكم الإدارة</h1>
+      <p className="mb-6">مرحباً، {session?.user?.name || "مدير النظام"}</p>
       
-      <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-1">لوحة تحكم الإدارة</h1>
-            <p className="text-white/60">مرحباً، {session?.user?.name || "مدير النظام"}</p>
-          </div>
-          <Link 
-            href="/" 
-            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
-          >
-            العودة للموقع الرئيسي
-          </Link>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white/10 p-4 rounded-xl">
+          <Calendar className="mb-2 text-blue-400" />
+          <p>الحجوزات: {stats?.totalBookings || 0}</p>
         </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="إجمالي الحجوزات" 
-            value={stats?.totalBookings || 0} 
-            icon={<Calendar className="text-blue-400" size={24} />} 
-            color="bg-blue-500/10 border-blue-500/20"
-          />
-          <StatCard 
-            title="إجمالي الإيرادات" 
-            value={`${stats?.totalRevenue || 0} ج.م`} 
-            icon={<DollarSign className="text-green-400" size={24} />} 
-            color="bg-green-500/10 border-green-500/20"
-          />
-          <StatCard 
-            title="الفنانين النشطين" 
-            value={stats?.activeArtists || 0} 
-            icon={<Music className="text-yellow-400" size={24} />} 
-            color="bg-yellow-500/10 border-yellow-500/20"
-          />
-          <StatCard 
-            title="بانتظار الموافقة" 
-            value={stats?.pendingApprovals || 0} 
-            icon={<Users className="text-purple-400" size={24} />} 
-            color="bg-purple-500/10 border-purple-500/20"
-          />
+        <div className="bg-white/10 p-4 rounded-xl">
+          <DollarSign className="mb-2 text-green-400" />
+          <p>الإيرادات: {stats?.totalRevenue || 0} ج.م</p>
         </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">إجراءات سريعة</h2>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/admin/artists" className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold px-6 py-3 rounded-xl transition">
-              إدارة الفنانين
-            </Link>
-            <Link href="/admin/bookings" className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-xl transition border border-white/10">
-              إدارة الحجوزات
-            </Link>
-            <Link href="/admin/admins" className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-xl transition border border-white/10">
-              إدارة المشرفين
-            </Link>
-          </div>
+        <div className="bg-white/10 p-4 rounded-xl">
+          <Music className="mb-2 text-yellow-400" />
+          <p>الفنانين: {stats?.activeArtists || 0}</p>
+        </div>
+        <div className="bg-white/10 p-4 rounded-xl">
+          <Users className="mb-2 text-purple-400" />
+          <p>قيد الانتظار: {stats?.pendingApprovals || 0}</p>
         </div>
       </div>
-    </div>
-  )
-}
 
-// مكون مساعد لبطاقات الإحصائيات
-function StatCard({ title, value, icon, color }: { title: string, value: string | number, icon: React.ReactNode, color: string }) {
-  return (
-    <div className={`backdrop-blur-xl border rounded-2xl p-6 flex items-center gap-4 ${color}`}>
-      <div className="p-3 bg-black/20 rounded-xl">
-        {icon}
-      </div>
-      <div>
-        <p className="text-white/60 text-sm mb-1">{title}</p>
-        <p className="text-2xl font-bold text-white">{value}</p>
+      <div className="flex gap-4">
+        <Link href="/admin/artists" className="bg-yellow-600 text-black px-4 py-2 rounded-lg font-bold">إدارة الفنانين</Link>
+        <Link href="/admin/bookings" className="bg-white/10 px-4 py-2 rounded-lg font-bold">إدارة الحجوزات</Link>
       </div>
     </div>
   )
