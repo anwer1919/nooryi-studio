@@ -1,15 +1,16 @@
 import { Tajawal } from "next/font/google"
+import type { Metadata } from "next"
+import "./globals.css"
 
-// استيراد الخط العربي بأوزان مختلفة
-const tajawal = Tajawal({ 
+const tajawal = Tajawal({
   subsets: ["arabic"],
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
 })
 
-export const metadata = {
-  title: "Nooryi Studio | منصة حجز الفنانين المحترفين",
-  description: "اكتشف واحجز أفضل المواهب الفنية والموسيقية لمناسبتك بكل سهولة وشفافية.",
+export const metadata: Metadata = {
+  title: "Nooryi Studio | منصة حجز الفنانين",
+  description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين",
 }
 
 export default function RootLayout({
@@ -19,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="bg-[#050505] text-white font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200">
+      <body className="bg-[#0a0a0a] text-white font-sans antialiased">
         {children}
       </body>
     </html>
