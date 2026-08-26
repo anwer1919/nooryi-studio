@@ -29,7 +29,19 @@ export default function LoginPage() {
       if (result?.error) {
         setError("البريد الإلكتروني أو كلمة السر غير صحيحة")
       } else {
-        router.push("/")
+        // جلب بيانات الجلسة لمعرفة دور المستخدم
+        const sessionResponse = await fetch("/api/auth/session")
+        const session = await sessionResponse.json()
+        
+        // توجيه حسب الدور
+        if (session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN") {
+          router.push("/admin")
+        } else if (session?.user?.role === "ARTIST") {
+          router.push("/admin/artists")
+        } else {
+          // المستخدم العادي يذهب إلى حجوزاته
+          router.push("/my-bookings")
+        }
         router.refresh()
       }
     } catch (err) {

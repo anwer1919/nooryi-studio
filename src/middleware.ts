@@ -1,30 +1,35 @@
-﻿import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
+﻿import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({ 
-    req, 
-    secret: process.env.NEXTAUTH_SECRET 
-  })
-  
-  const isProtectedRoute = 
-    req.nextUrl.pathname.startsWith("/my-bookings") ||
-    req.nextUrl.pathname.startsWith("/booking") ||
-    req.nextUrl.pathname.startsWith("/admin")
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const path = req.nextUrl.pathname
 
-  if (isProtectedRoute && !token) {
-    const signInUrl = new URL("/login", req.url)
-    signInUrl.searchParams.set("callbackUrl", req.url)
-    return NextResponse.redirect(signInUrl)
+    // حماية مسارات لوحة التحكم
+    if (path.startsWith("/admin")) {
+      // السماح فقط للأدمن والفنانين
+      if (token?.role !== "SUPER_ADMIN" && token?.role !== "ADMIN" && token?.role !== "ARTIST") {
+        return NextResponse.redirect(new URL("/login", req.url))
+      }
+    }
+
+    // حماية مسارات الحجوزات
+    if (path.startsWith("/booking") || path.startsWith("/my-bookings")) {
+      if (!token) {
+        return NextResponse.redirect(new URL("/login", req.url))
+      }
+    }
+
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
   }
-
-  return NextResponse.next()
-}
+)
 
 export const config = {
-  matcher: [
-    "/my-bookings/:path*",
-    "/booking/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/admin/:path*", "/booking/:path*", "/my-bookings/:path*"],
 }
