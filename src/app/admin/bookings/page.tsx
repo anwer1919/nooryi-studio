@@ -11,7 +11,10 @@ import {
   Search,
   MapPin,
   Phone,
-  Mail
+  Mail,
+  DollarSign,
+  Wallet,
+  CreditCard
 } from "lucide-react"
 
 export default async function AdminBookingsPage() {
@@ -50,6 +53,11 @@ export default async function AdminBookingsPage() {
     }
   }
 
+  // حساب الإحصائيات المالية
+  const totalRevenue = bookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
+  const totalDeposits = bookings.reduce((sum, b) => sum + (b.depositAmount || 0), 0)
+  const totalRemaining = bookings.reduce((sum, b) => sum + (b.remainingAmount || 0), 0)
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
@@ -64,6 +72,42 @@ export default async function AdminBookingsPage() {
           </Link>
           <h1 className="text-4xl font-black mb-2">إدارة الحجوزات</h1>
           <p className="text-white/60">إجمالي {bookings.length} حجز</p>
+        </div>
+
+        {/* Financial Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                <DollarSign className="text-green-400" size={20} />
+              </div>
+              <span className="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-full">إجمالي</span>
+            </div>
+            <p className="text-2xl font-black">{totalRevenue.toLocaleString()} ج.م</p>
+            <p className="text-sm text-white/60">إجمالي الإيرادات</p>
+          </div>
+
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+                <Wallet className="text-yellow-400" size={20} />
+              </div>
+              <span className="text-xs text-yellow-400 bg-yellow-500/10 px-2 py-1 rounded-full">محصّل</span>
+            </div>
+            <p className="text-2xl font-black">{totalDeposits.toLocaleString()} ج.م</p>
+            <p className="text-sm text-white/60">إجمالي العربون</p>
+          </div>
+
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <CreditCard className="text-red-400" size={20} />
+              </div>
+              <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded-full">متبقي</span>
+            </div>
+            <p className="text-2xl font-black">{totalRemaining.toLocaleString()} ج.م</p>
+            <p className="text-sm text-white/60">المبالغ المتبقية</p>
+          </div>
         </div>
 
         {/* Filters */}
@@ -96,9 +140,9 @@ export default async function AdminBookingsPage() {
                 key={booking.id}
                 className="glass rounded-2xl p-6 hover:bg-white/[0.08] transition-all duration-300"
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                   {/* Left: Artist + Customer Info */}
-                  <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-start gap-4 flex-1">
                     {booking.artist?.profileImage ? (
                       <img 
                         src={booking.artist.profileImage} 
@@ -112,36 +156,56 @@ export default async function AdminBookingsPage() {
                     )}
                     
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold mb-1">{booking.artist?.name || "فنان غير معروف"}</h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/60">
-                        <span className="flex items-center gap-1">
-                          <span>العميل: {booking.clientName || booking.customer?.fullName || "غير محدد"}</span>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="text-lg font-bold mb-1">{booking.artist?.name || "فنان غير معروف"}</h3>
+                          <p className="text-xs text-white/50">{booking.artist?.category}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(booking.status)}`}>
+                          {getStatusText(booking.status)}
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/60">
+                        <span>العميل: {booking.clientName || booking.customer?.fullName || "غير محدد"}</span>
                         <span className="flex items-center gap-1">
                           <Phone size={12} />
                           {booking.clientPhone || booking.customer?.phone || "-"}
                         </span>
-                        <span>•</span>
-                        <span>{booking.artist?.category}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Date + Status */}
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(booking.status)}`}>
-                      {getStatusText(booking.status)}
-                    </span>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">
-                        {new Date(booking.date).toLocaleDateString("ar-EG", { 
-                          weekday: "long", 
-                          year: "numeric", 
-                          month: "long", 
-                          day: "numeric" 
-                        })}
-                      </p>
-                      <p className="text-xs text-white/60">{booking.timeSlot}</p>
+                  {/* Right: Financial Details */}
+                  <div className="lg:min-w-[280px]">
+                    <div className="glass rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                        <span className="text-xs text-white/60">المبلغ الإجمالي</span>
+                        <span className="text-lg font-black text-green-400">
+                          {(booking.grossAmount || 0).toLocaleString()} ج.م
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                            <Wallet size={12} className="text-yellow-400" />
+                          </div>
+                          <span className="text-xs text-white/60">العربون</span>
+                        </div>
+                        <span className="text-sm font-bold text-yellow-400">
+                          {(booking.depositAmount || 0).toLocaleString()} ج.م
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center">
+                            <CreditCard size={12} className="text-red-400" />
+                          </div>
+                          <span className="text-xs text-white/60">المتبقي</span>
+                        </div>
+                        <span className="text-sm font-bold text-red-400">
+                          {(booking.remainingAmount || 0).toLocaleString()} ج.م
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -149,16 +213,22 @@ export default async function AdminBookingsPage() {
                 {/* Details Footer */}
                 <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
+                    <p className="text-white/40 text-xs mb-1">تاريخ الفعالية</p>
+                    <p className="font-semibold">
+                      {new Date(booking.date).toLocaleDateString("ar-EG", { 
+                        day: "numeric", 
+                        month: "short" 
+                      })}
+                    </p>
+                    <p className="text-xs text-white/50">{booking.timeSlot}</p>
+                  </div>
+                  <div>
                     <p className="text-white/40 text-xs mb-1">المكان</p>
                     <p className="font-semibold">{booking.venue?.name || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-white/40 text-xs mb-1">العنوان</p>
-                    <p className="font-semibold">{booking.venue?.address || "-"}</p>
-                  </div>
-                  <div>
                     <p className="text-white/40 text-xs mb-1">تاريخ الحجز</p>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-xs">
                       {new Date(booking.createdAt).toLocaleDateString("ar-EG")}
                     </p>
                   </div>
