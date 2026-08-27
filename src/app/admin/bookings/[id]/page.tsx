@@ -3,22 +3,20 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import BookingActions from "./BookingActions"
 import { 
   ArrowRight, 
   Calendar, 
   Clock, 
   MapPin, 
   Music,
-  CheckCircle2,
-  XCircle,
+  User,
   Phone,
   Mail,
-  Printer,
-  Shield,
-  User,
   DollarSign
 } from "lucide-react"
-import BookingActions from "./BookingActions"
+
+export const dynamic = "force-dynamic"
 
 export default async function AdminBookingDetailsPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
@@ -27,14 +25,32 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
     redirect("/login")
   }
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: params.id },
-    include: {
-      artist: true,
-      venue: true,
-      customer: true,
-    },
-  })
+  let booking
+  try {
+    booking = await prisma.booking.findUnique({
+      where: { id: params.id },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            profileImage: true,
+          },
+        },
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching booking:", error)
+    redirect("/admin/bookings")
+  }
 
   if (!booking) {
     redirect("/admin/bookings")
@@ -46,20 +62,19 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "PENDING_APPROVAL":
-        return { color: "orange", icon: Clock, title: "في انتظار الموافقة", bg: "bg-orange-500/10", border: "border-orange-500/20" }
+        return { color: "orange", title: "في انتظار الموافقة" }
       case "APPROVED":
-        return { color: "green", icon: CheckCircle2, title: "تمت الموافقة", bg: "bg-green-500/10", border: "border-green-500/20" }
+        return { color: "green", title: "تمت الموافقة" }
       case "COMPLETED":
-        return { color: "blue", icon: CheckCircle2, title: "مكتمل", bg: "bg-blue-500/10", border: "border-blue-500/20" }
+        return { color: "blue", title: "مكتمل" }
       case "CANCELLED":
-        return { color: "red", icon: XCircle, title: "ملغي", bg: "bg-red-500/10", border: "border-red-500/20" }
+        return { color: "red", title: "ملغي" }
       default:
-        return { color: "gray", icon: Clock, title: status, bg: "bg-white/5", border: "border-white/10" }
+        return { color: "gray", title: status }
     }
   }
 
   const sc = getStatusConfig(booking.status)
-  const StatusIcon = sc.icon
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -73,13 +88,15 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
             <ArrowRight size={16} className="rotate-180" />
             العودة لإدارة الحجوزات
           </Link>
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-black">تفاصيل الحجز</h1>
-            <span className={`px-4 py-2 rounded-full text-sm font-bold border ${sc.bg} ${sc.border} text-${sc.color}-400`}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl font-black mb-2">تفاصيل الحجز</h1>
+              <p className="text-white/60">رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}</p>
+            </div>
+            <span className={`px-4 py-2 rounded-full text-sm font-bold border bg-${sc.color}-500/10 border-${sc.color}-500/20 text-${sc.color}-400`}>
               {sc.title}
             </span>
           </div>
-          <p className="text-white/60 mt-2">رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -117,11 +134,7 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                   <p className="text-xs text-white/40 mb-1">التاريخ</p>
                   <p className="font-semibold flex items-center gap-2">
                     <Calendar size={14} className="text-yellow-400" />
-                    {new Date(booking.date).toLocaleDateString("ar-EG", { 
-                      weekday: "long",
-                      day: "numeric", 
-                      month: "long" 
-                    })}
+                    {new Date(booking.date).toLocaleDateString("ar-EG")}
                   </p>
                 </div>
                 <div>
@@ -135,7 +148,7 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                   <p className="text-xs text-white/40 mb-1">المكان</p>
                   <p className="font-semibold flex items-center gap-2">
                     <MapPin size={14} className="text-yellow-400" />
-                    {booking.venue?.name}
+                    {booking.venue?.name || "غير محدد"}
                   </p>
                   {booking.venue?.address && (
                     <p className="text-sm text-white/60 mr-6 mt-1">{booking.venue.address}</p>
@@ -167,17 +180,6 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                 )}
               </div>
             </div>
-
-            {/* Admin Notes */}
-            {booking.adminNotes && (
-              <div className="glass rounded-3xl p-6 bg-yellow-500/5 border-yellow-500/20">
-                <h3 className="text-sm text-white/40 uppercase mb-2 flex items-center gap-2">
-                  <Shield size={16} />
-                  ملاحظات الإدارة
-                </h3>
-                <p className="text-sm text-white/80">{booking.adminNotes}</p>
-              </div>
-            )}
           </div>
 
           {/* Sidebar - Actions */}
@@ -218,15 +220,6 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
               timeSlot={booking.timeSlot}
               venue={booking.venue?.name || ""}
             />
-
-            {/* Invoice Link */}
-            <Link 
-              href={`/booking/${booking.id}/invoice`}
-              className="glass hover:bg-white/[0.08] rounded-2xl p-4 flex items-center justify-center gap-2 transition-all"
-            >
-              <Printer size={18} className="text-yellow-400" />
-              <span className="font-semibold text-sm">عرض وطباعة الفاتورة</span>
-            </Link>
           </div>
         </div>
       </div>

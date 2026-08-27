@@ -40,53 +40,59 @@ export default function BookingActions({
 }: BookingActionsProps) {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
+  const [error, setError] = useState("")
 
-  // تأكيد الحجز
   const handleApprove = async () => {
     setLoading("approve")
+    setError("")
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}/approve`, {
         method: "POST",
       })
       
-      if (response.ok) {
-        router.refresh()
-        alert("✅ تم تأكيد الحجز بنجاح وإرسال الإشعارات")
-      } else {
-        alert("❌ حدث خطأ")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "فشل تأكيد الحجز")
       }
-    } catch (error) {
-      console.error("Error:", error)
-      alert("❌ حدث خطأ")
+      
+      router.refresh()
+      alert("✅ تم تأكيد الحجز بنجاح")
+    } catch (err: any) {
+      console.error("Error:", err)
+      setError(err.message)
+      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
   }
 
-  // رفض الحجز
   const handleReject = async () => {
     if (!confirm("هل أنت متأكد من رفض هذا الحجز؟")) return
     
     setLoading("reject")
+    setError("")
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}/reject`, {
         method: "POST",
       })
       
-      if (response.ok) {
-        router.refresh()
-        alert("تم رفض الحجز")
+      if (!response.ok) {
+        throw new Error("فشل رفض الحجز")
       }
-    } catch (error) {
-      console.error("Error:", error)
+      
+      router.refresh()
+      alert("تم رفض الحجز")
+    } catch (err: any) {
+      console.error("Error:", err)
+      setError(err.message)
     } finally {
       setLoading(null)
     }
   }
 
-  // تأكيد الدفع (العربون)
   const handleConfirmDeposit = async () => {
     setLoading("confirm-deposit")
+    setError("")
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}/confirm-payment`, {
         method: "POST",
@@ -97,21 +103,25 @@ export default function BookingActions({
         }),
       })
       
-      if (response.ok) {
-        router.refresh()
-        alert("✅ تم تأكيد دفع العربون بنجاح")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "فشل تأكيد الدفع")
       }
-    } catch (error) {
-      console.error("Error:", error)
-      alert("❌ حدث خطأ")
+      
+      router.refresh()
+      alert("✅ تم تأكيد دفع العربون بنجاح")
+    } catch (err: any) {
+      console.error("Error:", err)
+      setError(err.message)
+      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
   }
 
-  // تأكيد الدفع الكامل
   const handleConfirmFullPayment = async () => {
     setLoading("confirm-full")
+    setError("")
     try {
       const response = await fetch(`/api/admin/bookings/${bookingId}/confirm-payment`, {
         method: "POST",
@@ -122,19 +132,22 @@ export default function BookingActions({
         }),
       })
       
-      if (response.ok) {
-        router.refresh()
-        alert("✅ تم تأكيد الدفع الكامل بنجاح")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "فشل تأكيد الدفع")
       }
-    } catch (error) {
-      console.error("Error:", error)
-      alert("❌ حدث خطأ")
+      
+      router.refresh()
+      alert("✅ تم تأكيد الدفع الكامل بنجاح")
+    } catch (err: any) {
+      console.error("Error:", err)
+      setError(err.message)
+      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
   }
 
-  // فتح واتساب
   const openWhatsApp = () => {
     const message = `مرحباً ${clientName}،%0A%0A🎉 تم تأكيد حجزك بنجاح!%0A%0A📋 تفاصيل الحجز:%0A🎵 الفنان: ${artistName}%0A📅 التاريخ: ${date}%0A⏰ الوقت: ${timeSlot}%0A📍 المكان: ${venue}%0A%0A💰 المبلغ الإجمالي: ${totalAmount.toLocaleString()} ج.م%0A💳 العربون المطلوب: ${depositAmount.toLocaleString()} ج.م%0A%0Aشكراً لاختيارك Nooryi Studio! 🎵`
     
@@ -147,8 +160,13 @@ export default function BookingActions({
     <div className="glass rounded-3xl p-6">
       <h3 className="text-sm text-white/40 uppercase mb-4">إجراءات</h3>
       
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+      
       <div className="space-y-3">
-        {/* Approve Button */}
         {status === "PENDING_APPROVAL" && (
           <>
             <button
@@ -179,7 +197,6 @@ export default function BookingActions({
           </>
         )}
 
-        {/* Confirm Payment Buttons */}
         {status === "APPROVED" && (
           <>
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl mb-2">
@@ -218,7 +235,6 @@ export default function BookingActions({
           </>
         )}
 
-        {/* WhatsApp Button */}
         <button
           onClick={openWhatsApp}
           className="w-full bg-green-500/10 border border-green-500/20 text-green-400 font-bold py-3.5 rounded-xl hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
@@ -226,27 +242,6 @@ export default function BookingActions({
           <MessageCircle size={18} />
           إرسال إشعار واتساب
         </button>
-      </div>
-
-      {/* Client Contact */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <p className="text-xs text-white/40 mb-2">التواصل مع العميل</p>
-        <div className="flex gap-2">
-          <a 
-            href={`tel:${clientPhone}`}
-            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
-          >
-            اتصال
-          </a>
-          {clientEmail && (
-            <a 
-              href={`mailto:${clientEmail}`}
-              className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
-            >
-              إيميل
-            </a>
-          )}
-        </div>
       </div>
     </div>
   )
