@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -38,8 +38,7 @@ export async function GET(
     const reviews = await prisma.review.findMany({
       where: { 
         artistId: artist.id,
-        isApproved: true,
-      },
+        },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

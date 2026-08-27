@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -36,7 +36,7 @@ export async function GET(
           orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
         },
         reviews: {
-          where: { isApproved: true },
+          where: {},
           select: { rating: true }
         },
         pricing: {

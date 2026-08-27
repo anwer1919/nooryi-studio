@@ -1,204 +1,163 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { Search, Music, Star, Loader2 } from "lucide-react"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import Image from "next/image"
-import FluidBackground from "@/components/FluidBackground"
+import { Music, Search, Star, Calendar } from "lucide-react"
 
-interface Artist {
-  id: string
-  name: string
-  slug: string
-  category: string | null
-  bio: string | null
-  profileImage: string | null
-  accentColor: string
-  rating?: number
-  reviewCount?: number
-}
+export const dynamic = "force-dynamic"
 
-export default function ArtistsPage() {
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [filteredArtists, setFilteredArtists] = useState<Artist[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("ALL")
+export default async function ArtistsPage() {
+  let artists: any[] = []
 
-  useEffect(() => {
-    fetchArtists()
-  }, [])
-
-  useEffect(() => {
-    filterArtists()
-  }, [artists, searchQuery, categoryFilter])
-
-  const fetchArtists = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch("/api/artists")
-      if (res.ok) {
-        const data = await res.json()
-        setArtists(Array.isArray(data) ? data : [])
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
+  try {
+    artists = await prisma.artist.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        category: true,
+        bio: true,
+        profileImage: true,
+        coverImage: true,
+        accentColor: true,
+        reviews: {
+          select: { rating: true },
+        },
+        _count: {
+          select: {
+            bookings: true,
+            reviews: true,
+          },
+        },
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching artists:", error)
   }
 
-  const filterArtists = () => {
-    let result = artists
-    if (searchQuery.trim()) {
-      result = result.filter(artist =>
-        artist.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-    if (categoryFilter !== "ALL") {
-      result = result.filter(artist => artist.category === categoryFilter)
-    }
-    setFilteredArtists(result)
-  }
-
-  const categories = ["ALL", "Singer", "DJ", "Band", "Comedian", "Magician", "Other"]
+  // حساب متوسط التقييم
+  const artistsWithRatings = artists.map((artist) => {
+    const ratings = artist.reviews.map((r: any) => r.rating)
+    const avgRating = ratings.length > 0
+      ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
+      : 0
+    return { ...artist, avgRating: Math.round(avgRating * 10) / 10 }
+  })
 
   return (
-    <div className="relative min-h-screen bg-[#1a0a04]">
-      <FluidBackground scrimStrength="strong" />
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-black mb-4">استكشف فنانينا</h1>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto">
+            اختر من بين نخبة من الفنانين المحترفين لإحياء حفلتك الخاصة
+          </p>
+        </div>
 
-      <div className="relative z-10 min-h-screen">
-        <header className="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-40">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-amber-700 rounded-lg flex items-center justify-center">
-                <Music size={18} className="text-black" />
-              </div>
-              <span className="text-xl font-bold text-yellow-500">Nooryi Studio</span>
-            </Link>
-            <Link href="/my-bookings" className="text-white/70 hover:text-yellow-500 transition text-sm font-medium">
-              حجوزاتي
-            </Link>
+        {/* Search */}
+        <div className="glass rounded-2xl p-4 mb-8">
+          <div className="relative max-w-md mx-auto">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+            <input
+              type="text"
+              placeholder="ابحث عن فنان..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pr-10 pl-4 text-white placeholder:text-white/40 focus:outline-none focus:border-yellow-500/50"
+            />
           </div>
-        </header>
+        </div>
 
-        <main className="max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-12 animate-fade-up">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">استكشف فنانينا</h1>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto">اختر من بين نخبة من الفنانين المحترفين لإحياء حفلتك الخاصة</p>
+        {/* Artists Grid */}
+        {artistsWithRatings.length === 0 ? (
+          <div className="glass rounded-3xl p-16 text-center">
+            <Music className="mx-auto mb-4 text-white/40" size={64} />
+            <h3 className="text-2xl font-bold mb-2">لا يوجد فنانون حالياً</h3>
+            <p className="text-white/60">عذراً، لا تتوفر حالياً أي فنانين للعرض</p>
           </div>
+        ) : (
+          <>
+            <p className="text-white/60 mb-6">
+              عدد الفنانين المتاحين:{" "}
+              <span className="font-bold text-yellow-400">{artistsWithRatings.length}</span>
+            </p>
 
-          <div className="bg-white/8 backdrop-blur-xl border border-white/16 rounded-2xl p-4 mb-8 animate-fade-up-delay">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={20} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث عن فنان..."
-                  className="w-full pr-10 pl-4 py-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder-white/40 focus:border-yellow-500 focus:outline-none transition"
-                />
-              </div>
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="md:w-48 py-3 px-4 bg-black/40 border border-white/10 rounded-lg text-white focus:border-yellow-500 focus:outline-none transition"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat === "ALL" ? "جميع الفئات" : cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-20">
-              <Loader2 className="mx-auto animate-spin text-yellow-500 mb-4" size={40} />
-              <p className="text-white/60">جاري تحميل الفنانين...</p>
-            </div>
-          ) : filteredArtists.length === 0 ? (
-            <div className="text-center py-20">
-              <Music className="mx-auto text-white/30 mb-4" size={64} />
-              <p className="text-white/60 text-lg mb-2">
-                {searchQuery || categoryFilter !== "ALL" ? "لا توجد نتائج مطابقة للبحث" : "لا يوجد فنانون حالياً"}
-              </p>
-            </div>
-          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredArtists.map((artist, index) => (
+              {artistsWithRatings.map((artist) => (
                 <Link
                   key={artist.id}
-                  href={`/artists/${encodeURIComponent(artist.slug)}`}
-                  className="group bg-white/8 backdrop-blur-xl border border-white/16 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:-translate-y-1 animate-fade-up"
-                  style={{ animationDelay: `${index * 80}ms` }}
+                  href={`/artists/${artist.slug}`}
+                  className="group glass rounded-3xl overflow-hidden hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-1"
                 >
-                  <div className="relative aspect-square overflow-hidden bg-black/40">
-                    {artist.profileImage ? (
-                      <Image
-                        src={artist.profileImage}
+                  {/* Cover */}
+                  <div className="relative h-48 overflow-hidden">
+                    {artist.coverImage ? (
+                      <img
+                        src={artist.coverImage}
                         alt={artist.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center text-6xl font-bold"
-                        style={{ color: artist.accentColor, backgroundColor: `${artist.accentColor}20` }}
-                      >
-                        {artist.name.charAt(0)}
+                      <div className="w-full h-full bg-gradient-to-br from-yellow-500/20 to-amber-600/20" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+
+                    {/* Category Badge */}
+                    {artist.category && (
+                      <div className="absolute bottom-3 right-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-black/60 backdrop-blur-sm border border-white/10">
+                          {artist.category}
+                        </span>
                       </div>
                     )}
-                    <div
-                      className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md"
-                      style={{
-                        backgroundColor: `${artist.accentColor}30`,
-                        color: artist.accentColor,
-                        border: `1px solid ${artist.accentColor}50`
-                      }}
-                    >
-                      {artist.category || "فنان"}
-                    </div>
                   </div>
 
-                  <div className="p-5">
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-500 transition">
-                      {artist.name}
-                    </h3>
-                    {artist.bio && (
-                      <p className="text-white/60 text-sm line-clamp-2 mb-3">{artist.bio}</p>
-                    )}
-                    {artist.rating !== undefined && artist.rating > 0 && (
-                      <div className="flex items-center gap-1 text-yellow-400">
-                        <Star size={16} className="fill-yellow-400" />
-                        <span className="font-bold">{artist.rating.toFixed(1)}</span>
-                        <span className="text-white/40 text-sm">({artist.reviewCount || 0})</span>
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      {artist.profileImage ? (
+                        <img
+                          src={artist.profileImage}
+                          alt={artist.name}
+                          className="w-12 h-12 rounded-xl object-cover border border-white/10"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                          <Music className="text-yellow-400" size={20} />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-xl font-bold">{artist.name}</h3>
+                        <p className="text-xs text-white/60">{artist.category || "فنان"}</p>
                       </div>
-                    )}
+                    </div>
+
+                    <p className="text-sm text-white/60 line-clamp-2 mb-4">
+                      {artist.bio || "لا توجد سيرة ذاتية"}
+                    </p>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                      <div className="flex items-center gap-1">
+                        <Star className="text-yellow-400 fill-yellow-400" size={14} />
+                        <span className="text-sm font-semibold">
+                          {artist.avgRating > 0 ? artist.avgRating : "جديد"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="text-yellow-400" size={14} />
+                        <span className="text-sm font-semibold">
+                          {artist._count?.bookings || 0}
+                        </span>
+                        <span className="text-xs text-white/40">حجز</span>
+                      </div>
+                    </div>
                   </div>
                 </Link>
               ))}
             </div>
-          )}
-        </main>
+          </>
+        )}
       </div>
-
-      <style jsx>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        :global(.animate-fade-up) {
-          animation: fade-up 0.7s cubic-bezier(0.2, 0, 0, 1) both;
-        }
-        :global(.animate-fade-up-delay) {
-          animation: fade-up 0.7s cubic-bezier(0.2, 0, 0, 1) 0.2s both;
-        }
-      `}</style>
     </div>
   )
 }
