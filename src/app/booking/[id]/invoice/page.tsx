@@ -1,62 +1,72 @@
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+"use client"
+
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 
-export const dynamic = "force-dynamic"
+export default function InvoicePage() {
+  const params = useParams()
+  const router = useRouter()
+  const id = params.id as string
 
-// دالة آمنة للتواريخ
-function formatDate(date: Date | string, includeTime = false): string {
-  try {
-    const d = new Date(date)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    if (includeTime) {
-      const hours = String(d.getHours()).padStart(2, '0')
-      const minutes = String(d.getMinutes()).padStart(2, '0')
-      return `${year}-${month}-${day} ${hours}:${minutes}`
+  const [booking, setBooking] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchInvoice = async () => {
+      try {
+        // نستخدم API route لجلب البيانات لتجنب أي تعارض في SSR
+        const res = await fetch(`/api/bookings/${id}`)
+        if (!res.ok) {
+          if (res.status === 401) {
+            router.push(`/login?callbackUrl=/booking/${id}/invoice`)
+            return
+          }
+          throw new Error("فشل جلب بيانات الفاتورة")
+        }
+        const data = await res.json()
+        setBooking(data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
     }
-    return `${year}-${month}-${day}`
-  } catch {
-    return "تاريخ غير صالح"
-  }
-}
 
-export default async function InvoicePage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
-}) {
-  const { id } = await params
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.email) {
-    redirect(`/login?callbackUrl=/booking/${id}/invoice`)
+    fetchInvoice()
+  }, [id, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">جاري تحميل الفاتورة...</p>
+      </div>
+    )
   }
 
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      artist: { select: { name: true, category: true } },
-      venue: { select: { name: true, address: true, city: true } },
-      payments: { orderBy: { createdAt: "desc" } },
-    },
-  })
-
-  if (!booking) redirect("/my-bookings")
-
-  const isOwner = booking.clientEmail === session.user.email
-  const isAdmin = session.user.role === "SUPER_ADMIN" || session.user.role === "ADMIN"
-  if (!isOwner && !isAdmin) redirect("/my-bookings")
+  if (error || !booking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+        <p className="text-red-500 mb-4">{error || "الفاتورة غير موجودة"}</p>
+        <Link href="/my-bookings" className="text-blue-600 hover:underline">
+          العودة للحجوزات
+        </Link>
+      </div>
+    )
+  }
 
   const grossAmount = booking.grossAmount || 0
   const paidAmount = booking.depositAmount || 0
   const remainingAmount = booking.remainingAmount || (grossAmount - paidAmount)
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 print:bg-white" suppressHydrationWarning>
+    <div className="min-h-screen bg-gray-50 print:bg-white">
       {/* Header - يخفي عند الطباعة */}
       <div className="bg-black text-white py-4 px-6 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -73,7 +83,7 @@ export default async function InvoicePage({
       </div>
 
       {/* Invoice Content */}
-      <div className="max-w-4xl mx-auto p-6 md:p-12 bg-white print:p-0 print:max-w-none print:w-full" suppressHydrationWarning>
+      <div className="max-w-4xl mx-auto p-6 md:p-12 bg-white print:p-0 print:max-w-none print:w-full">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-8 border-b-2 border-gray-100 print:border-black">
           <div>
@@ -86,14 +96,13 @@ export default async function InvoicePage({
               #{booking.id.slice(0, 8).toUpperCase()}
             </p>
             <p className="text-sm text-gray-500 print:text-black mt-1">
-              تاريخ الإصدار: {formatDate(new Date())}
+              تاريخ الإصدار: {formatDate(new Date().toISOString())}
             </p>
           </div>
         </div>
 
         {/* Info Grid */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Client */}
           <div className="bg-gray-50 p-6 rounded-2xl print:bg-transparent print:p-0 print:border print:border-gray-300 print:rounded-lg">
             <h3 className="text-sm font-bold text-gray-400 uppercase mb-4 print:text-black">معلومات العميل</h3>
             <div className="space-y-2">
@@ -105,7 +114,6 @@ export default async function InvoicePage({
             </div>
           </div>
 
-          {/* Event */}
           <div className="bg-gray-50 p-6 rounded-2xl print:bg-transparent print:p-0 print:border print:border-gray-300 print:rounded-lg">
             <h3 className="text-sm font-bold text-gray-400 uppercase mb-4 print:text-black">تفاصيل الفعالية</h3>
             <div className="space-y-2">
@@ -156,9 +164,6 @@ export default async function InvoicePage({
         <div className="mt-12 pt-8 border-t-2 border-gray-100 print:border-black text-center">
           <p className="text-gray-500 print:text-black text-sm mb-2">
             شكراً لاختيارك Nooryi Studio. نتمنى لك فعالية استثنائية!
-          </p>
-          <p className="text-gray-400 print:text-black text-xs">
-            للاستفسارات: support@nooryi.com
           </p>
           <p className="text-gray-300 print:text-black text-xs mt-4">
             هذه الفاتورة تم إنشاؤها إلكترونياً ولا تتطلب توقيعاً يدوياً.
