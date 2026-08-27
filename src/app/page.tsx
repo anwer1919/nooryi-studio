@@ -1,286 +1,248 @@
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { 
   Music, 
   Calendar, 
-  TrendingUp, 
-  ArrowUpRight,
-  Clock,
-  CheckCircle2,
-  DollarSign,
-  Wallet,
+  Star, 
+  ArrowRight, 
+  Shield, 
   CreditCard,
-  Users
+  TrendingUp,
+  Users,
+  Clock,
+  CheckCircle2
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
-    redirect("/login")
-  }
+export default async function HomePage() {
+  // جلب البيانات مع معالجة الأخطاء
+  let artists: any[] = []
+  let stats = { artists: 0, bookings: 0, revenue: 0 }
 
-  // جلب الإحصائيات
-  const [
-    totalArtists, 
-    totalBookings, 
-    pendingBookings, 
-    approvedBookings, 
-    totalUsers,
-  ] = await Promise.all([
-    prisma.artist.count(),
-    prisma.booking.count(),
-    prisma.booking.count({ where: { status: "PENDING_APPROVAL" } }),
-    prisma.booking.count({ where: { status: "APPROVED" } }),
-    prisma.user.count({ where: { role: "USER" } }),
-  ])
+  try {
+    artists = await prisma.artist.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        category: true,
+        profileImage: true,
+        coverImage: true,
+        bio: true,
+        _count: {
+          select: { bookings: true, reviews: true },
+        },
+      },
+    })
 
-  // حساب الإحصائيات المالية
-  const allBookings = await prisma.booking.findMany()
-  const totalRevenue = allBookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
-  const totalDeposits = allBookings.reduce((sum, b) => sum + (b.depositAmount || 0), 0)
-  const totalRemaining = allBookings.reduce((sum, b) => sum + (b.remainingAmount || 0), 0)
+    const [totalArtists, totalBookings, allBookings] = await Promise.all([
+      prisma.artist.count(),
+      prisma.booking.count(),
+      prisma.booking.findMany({ select: { grossAmount: true } }),
+    ])
 
-  // أحدث الحجوزات
-  const recentBookings = await prisma.booking.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    include: {
-      artist: { select: { name: true, slug: true, profileImage: true } },
-      customer: true,
-    },
-  })
-
-  const stats = [
-    { 
-      label: "إجمالي الإيرادات", 
-      value: `${totalRevenue.toLocaleString()} ج.م`, 
-      icon: DollarSign, 
-      color: "green",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "إجمالي الحجوزات", 
-      value: totalBookings, 
-      icon: Calendar, 
-      color: "blue",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "قيد المراجعة", 
-      value: pendingBookings, 
-      icon: Clock, 
-      color: "orange",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "إجمالي الفنانين", 
-      value: totalArtists, 
-      icon: Music, 
-      color: "yellow",
-      link: "/admin/artists"
-    },
-  ]
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING_APPROVAL": return "bg-orange-500/10 text-orange-400 border-orange-500/20"
-      case "APPROVED": return "bg-green-500/10 text-green-400 border-green-500/20"
-      case "COMPLETED": return "bg-blue-500/10 text-blue-400 border-blue-500/20"
-      case "CANCELLED": return "bg-red-500/10 text-red-400 border-red-500/20"
-      default: return "bg-white/5 text-white/60 border-white/10"
+    stats = {
+      artists: totalArtists,
+      bookings: totalBookings,
+      revenue: allBookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0),
     }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING_APPROVAL": return "قيد المراجعة"
-      case "APPROVED": return "موافق عليه"
-      case "COMPLETED": return "مكتمل"
-      case "CANCELLED": return "ملغي"
-      default: return status
-    }
+  } catch (error) {
+    console.error("Error fetching home data:", error)
   }
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-black mb-2">لوحة التحكم</h1>
-          <p className="text-white/60">مرحباً بك في لوحة إدارة Nooryi Studio</p>
-        </div>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#0a0a0a] to-black" />
+        <div className="absolute top-20 right-20 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl" />
 
-        {/* Quick Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Link href="/admin/bookings" className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Calendar className="text-blue-400" size={24} />
-              </div>
-              <div>
-                <p className="font-bold">إدارة الحجوزات</p>
-                <p className="text-xs text-white/60">{totalBookings} حجز</p>
-              </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-2 mb-6">
+              <Shield className="text-yellow-400" size={14} />
+              <span className="text-sm text-white/80">منصة معتمدة لحجز المواهب الفنية</span>
             </div>
-          </Link>
 
-          <Link href="/admin/artists" className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                <Music className="text-yellow-400" size={24} />
-              </div>
-              <div>
-                <p className="font-bold">إدارة الفنانين</p>
-                <p className="text-xs text-white/60">{totalArtists} فنان</p>
-              </div>
-            </div>
-          </Link>
+            {/* Heading */}
+            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
+              اصنع مناسبات{" "}
+              <span className="bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent">
+                استثنائية
+              </span>
+            </h1>
 
-          <Link href="/admin/admins" className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                <Users className="text-purple-400" size={24} />
-              </div>
-              <div>
-                <p className="font-bold">إدارة المستخدمين</p>
-                <p className="text-xs text-white/60">المستخدمون والأدمنز</p>
-              </div>
-            </div>
-          </Link>
+            <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8">
+              منصة Nooryi تجمع لك نخبة من أفضل الفنانين والموسيقيين المحترفين.
+              احجز بكل سهولة وشفافية مع ضمان حماية كامل لحقوقك.
+            </p>
 
-          <Link href="/admin/stats" className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                <TrendingUp className="text-green-400" size={24} />
-              </div>
-              <div>
-                <p className="font-bold">التقارير</p>
-                <p className="text-xs text-white/60">الإحصائيات التفصيلية</p>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat, i) => (
-            <div key={i} className="glass rounded-3xl p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-500/10 border border-${stat.color}-500/20 flex items-center justify-center`}>
-                  <stat.icon className={`text-${stat.color}-400`} size={24} />
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link 
+                href="/artists"
+                className="group relative"
+              >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
+                <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold px-8 py-4 rounded-xl flex items-center gap-2">
+                  <Music size={20} />
+                  تصفح الفنانين
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p className="text-3xl font-black mb-1">{stat.value}</p>
-              <p className="text-sm text-white/60">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+              </Link>
 
-        {/* Financial Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                <DollarSign className="text-green-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">إجمالي الإيرادات</p>
-                <p className="text-2xl font-black text-green-400">{totalRevenue.toLocaleString()} ج.م</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                <Wallet className="text-yellow-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">إجمالي العربون</p>
-                <p className="text-2xl font-black text-yellow-400">{totalDeposits.toLocaleString()} ج.م</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                <CreditCard className="text-red-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">المبالغ المتبقية</p>
-                <p className="text-2xl font-black text-red-400">{totalRemaining.toLocaleString()} ج.م</p>
-              </div>
+              <Link 
+                href="/about"
+                className="glass hover:bg-white/[0.08] px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all"
+              >
+                شاهد كيف نعمل
+              </Link>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Recent Bookings */}
-        <div className="glass rounded-3xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">أحدث الحجوزات</h2>
+      {/* Features */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="glass rounded-3xl p-8">
+            <div className="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4">
+              <CheckCircle2 className="text-green-400" size={28} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">حجز فوري</h3>
+            <p className="text-white/60">احجز فنانك المفضل في دقائق معدودة</p>
+          </div>
+
+          <div className="glass rounded-3xl p-8">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+              <CreditCard className="text-blue-400" size={28} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">دفع آمن 100%</h3>
+            <p className="text-white/60">معاملات مشفرة ومحمية بالكامل</p>
+          </div>
+
+          <div className="glass rounded-3xl p-8">
+            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+              <Shield className="text-purple-400" size={28} />
+            </div>
+            <h3 className="text-xl font-bold mb-2">إلغاء مجاني</h3>
+            <p className="text-white/60">استرداد كامل قبل 48 ساعة من الفعالية</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        <div className="glass rounded-3xl p-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <p className="text-4xl font-black text-yellow-400 mb-2">+{stats.artists || 0}</p>
+              <p className="text-white/60">فنان محترف</p>
+            </div>
+            <div>
+              <p className="text-4xl font-black text-yellow-400 mb-2">+{stats.bookings || 0}</p>
+              <p className="text-white/60">حجز ناجح</p>
+            </div>
+            <div>
+              <p className="text-4xl font-black text-yellow-400 mb-2">4.9</p>
+              <p className="text-white/60">متوسط التقييم</p>
+            </div>
+            <div>
+              <p className="text-4xl font-black text-yellow-400 mb-2">24/7</p>
+              <p className="text-white/60">دعم فني</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Artists */}
+      {artists.length > 0 && (
+        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-4xl font-black mb-2">فنانين مميزين</h2>
+              <p className="text-white/60">اختر من بين نخبة من المحترفين</p>
+            </div>
             <Link 
-              href="/admin/bookings" 
-              className="flex items-center gap-1 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+              href="/artists" 
+              className="flex items-center gap-1 text-yellow-400 hover:text-yellow-300 transition-colors"
             >
               عرض الكل
-              <ArrowUpRight size={14} />
+              <ArrowRight size={16} />
             </Link>
           </div>
 
-          {recentBookings.length === 0 ? (
-            <div className="text-center py-12 text-white/40">
-              <Calendar className="mx-auto mb-4" size={48} />
-              <p>لا توجد حجوزات حتى الآن</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentBookings.map((booking) => (
-                <div 
-                  key={booking.id}
-                  className="flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.05] rounded-2xl transition-colors border border-white/5"
-                >
-                  <div className="flex items-center gap-4">
-                    {booking.artist?.profileImage ? (
-                      <img 
-                        src={booking.artist.profileImage} 
-                        alt={booking.artist.name}
-                        className="w-12 h-12 rounded-xl object-cover"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {artists.map((artist) => (
+              <Link
+                key={artist.id}
+                href={`/artists/${artist.slug}`}
+                className="group glass rounded-3xl overflow-hidden hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-1"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  {artist.coverImage ? (
+                    <img
+                      src={artist.coverImage}
+                      alt={artist.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-yellow-500/20 to-amber-600/20" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    {artist.profileImage && (
+                      <img
+                        src={artist.profileImage}
+                        alt={artist.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-white/10"
                       />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                        <Music className="text-yellow-400" size={20} />
-                      </div>
                     )}
                     <div>
-                      <p className="font-semibold">{booking.artist?.name || "فنان"}</p>
-                      <p className="text-sm text-white/60">
-                        {booking.clientName || "عميل"} • {booking.timeSlot}
-                      </p>
+                      <h3 className="font-bold">{artist.name}</h3>
+                      <p className="text-xs text-white/60">{artist.category}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-left hidden md:block">
-                      <p className="text-sm font-bold text-green-400">
-                        {(booking.grossAmount || 0).toLocaleString()} ج.م
-                      </p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(booking.status)}`}>
-                      {getStatusText(booking.status)}
-                    </span>
-                  </div>
+                  <p className="text-sm text-white/60 line-clamp-2">{artist.bio}</p>
                 </div>
-              ))}
-            </div>
-          )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+        <div className="glass rounded-3xl p-12 text-center bg-gradient-to-br from-yellow-500/5 to-amber-600/5 border-yellow-500/20">
+          <h2 className="text-4xl font-black mb-4">جاهز لصناعة ذكرى لا تُنسى؟</h2>
+          <p className="text-xl text-white/60 max-w-2xl mx-auto mb-8">
+            انضم إلى آلاف العملاء الذين وثقوا بنا لجعل مناسباتهم استثنائية
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link 
+              href="/artists"
+              className="bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold px-8 py-4 rounded-xl hover:opacity-90 transition-all"
+            >
+              ابدأ الآن مجاناً
+            </Link>
+            <Link 
+              href="/contact"
+              className="glass hover:bg-white/[0.08] px-8 py-4 rounded-xl font-bold transition-all"
+            >
+              تواصل معنا
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
