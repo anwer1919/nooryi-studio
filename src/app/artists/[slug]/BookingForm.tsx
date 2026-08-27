@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { 
   Calendar, 
-  Clock, 
   MapPin, 
   User, 
   Phone, 
@@ -20,6 +19,7 @@ interface BookingFormProps {
   venues: { id: string; name: string; address: string }[]
   userEmail: string
   userName: string
+  userPhone?: string
 }
 
 export default function BookingForm({ 
@@ -27,7 +27,8 @@ export default function BookingForm({
   artistName, 
   venues, 
   userEmail,
-  userName 
+  userName,
+  userPhone
 }: BookingFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -36,12 +37,11 @@ export default function BookingForm({
 
   const [formData, setFormData] = useState({
     clientName: userName || "",
-    clientPhone: "",
+    clientPhone: userPhone || "",
     clientEmail: userEmail || "",
     venueId: venues[0]?.id || "",
     date: "",
     timeSlot: "EVENING",
-    notes: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,45 +49,56 @@ export default function BookingForm({
     setLoading(true)
     setError("")
 
+    // التحقق من تسجيل الدخول
+    if (!userEmail) {
+      setError("يجب تسجيل الدخول أولاً")
+      setLoading(false)
+      router.push(`/login?callbackUrl=/artists/${artistId}`)
+      return
+    }
+
     // التحقق من الحقول
-    if (!formData.clientName || !formData.clientPhone || !formData.date) {
+    if (!formData.clientName || !formData.clientPhone || !formData.date || !formData.venueId) {
       setError("يرجى ملء جميع الحقول المطلوبة")
       setLoading(false)
       return
     }
 
     try {
+      const requestData = {
+        artistId,
+        venueId: formData.venueId,
+        clientName: formData.clientName,
+        clientPhone: formData.clientPhone,
+        clientEmail: formData.clientEmail,
+        date: formData.date,
+        timeSlot: formData.timeSlot,
+        grossAmount: 5000,
+      }
+
       const response = await fetch("/api/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          artistId,
-          venueId: formData.venueId,
-          clientName: formData.clientName,
-          clientPhone: formData.clientPhone,
-          clientEmail: formData.clientEmail,
-          date: formData.date,
-          timeSlot: formData.timeSlot,
-          grossAmount: 5000, // يمكن جعله ديناميكياً لاحقاً
-          notes: formData.notes,
-        }),
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "حدث خطأ في الحجز")
+        throw new Error(data.error || `خطأ ${response.status}`)
       }
 
       setSuccess(true)
       
-      // إعادة التوجيه لصفحة الحجز بعد 3 ثوانٍ
+      // إعادة التوجيه بعد 3 ثوانٍ
       setTimeout(() => {
         router.push(`/booking/${data.booking.id}`)
       }, 3000)
     } catch (err: any) {
-      console.error("Error:", err)
-      setError(err.message || "حدث خطأ. يرجى المحاولة مرة أخرى.")
+      console.error("❌ خطأ في الحجز:", err)
+      setError(err.message || "حدث خطأ في الحجز")
     } finally {
       setLoading(false)
     }
@@ -113,9 +124,24 @@ export default function BookingForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
-          <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={16} />
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={16} />
+            <p className="text-sm text-red-400 font-semibold">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {!userEmail && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-center">
+          <p className="text-sm text-yellow-400 mb-2">يجب تسجيل الدخول أولاً</p>
+          <button
+            type="button"
+            onClick={() => router.push("/login")}
+            className="text-xs text-yellow-400 underline"
+          >
+            تسجيل الدخول
+          </button>
         </div>
       )}
 
@@ -229,18 +255,6 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* Notes */}
-      <div>
-        <label className="block text-sm text-white/60 mb-1.5">ملاحظات إضافية</label>
-        <textarea
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          placeholder="أي تفاصيل إضافية..."
-          rows={3}
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50 resize-none"
-        />
-      </div>
-
       {/* Price Info */}
       <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
         <p className="text-xs text-white/60 mb-1">السعر التقديري</p>
@@ -251,7 +265,7 @@ export default function BookingForm({
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !userEmail}
         className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {loading ? (
@@ -266,10 +280,6 @@ export default function BookingForm({
           </>
         )}
       </button>
-
-      <p className="text-xs text-white/40 text-center">
-        بالضغط على "تأكيد الحجز"، سيتم إرسال طلبك للإدارة للمراجعة
-      </p>
     </form>
   )
 }

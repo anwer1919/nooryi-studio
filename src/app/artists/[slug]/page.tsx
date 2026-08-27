@@ -146,11 +146,13 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
               </h3>
 
               <BookingForm 
-                artistId={artist.id}
-                artistName={artist.name}
-                venues={venues}
-                userEmail={session?.user?.email || ""}
-                userName={session?.user?.name || ""}
+               artistId={artist.id}
+               artistName={artist.name}
+               venues={venues}
+               userEmail={session?.user?.email || ""}
+               userName={session?.user?.name || ""}
+               userPhone={session?.user?.phone || ""}
+              />
               />
             </div>
           </div>
