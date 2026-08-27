@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
   
@@ -13,9 +13,11 @@ export async function PATCH(
     return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
   }
 
+  const { id } = await params
+
   try {
     await prisma.notification.update({
-      where: { id: params.id },
+      where: { id },
       data: { isRead: true },
     })
 

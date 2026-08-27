@@ -3,6 +3,34 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+// إضافة types للـ Session
+declare module "next-auth" {
+  interface User {
+    id: string
+    role: string
+    phone?: string | null
+  }
+  
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      role: string
+      phone?: string | null
+    }
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string
+    role: string
+    phone?: string | null
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -24,10 +52,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+        const isHashed = user.password.startsWith('$2a$') || 
+                         user.password.startsWith('$2b$') ||
+                         user.password.startsWith('$2y$')
+        
+        let isPasswordValid = false
+        
+        if (isHashed) {
+          isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        } else {
+          isPasswordValid = credentials.password === user.password
+        }
 
         if (!isPasswordValid) {
           throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
@@ -38,6 +73,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          phone: user.phone,
         }
       },
     }),
@@ -47,6 +83,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        token.phone = user.phone
       }
       return token
     },
@@ -54,6 +91,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.phone = token.phone as string | null
       }
       return session
     },
