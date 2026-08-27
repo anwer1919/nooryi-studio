@@ -31,7 +31,6 @@ export default function BookingActions({
   artistName,
   clientName,
   clientPhone,
-  clientEmail,
   depositAmount,
   totalAmount,
   date,
@@ -42,6 +41,27 @@ export default function BookingActions({
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState("")
 
+  // ✅ دالة مساعدة لمعالجة الاستجابة
+  const handleResponse = async (response: Response) => {
+    const contentType = response.headers.get("content-type")
+    
+    if (!contentType || !contentType.includes("application/json")) {
+      // الـ API يرجع HTML (404 أو خطأ)
+      const text = await response.text()
+      console.error("API returned HTML:", text.substring(0, 200))
+      throw new Error(
+        `الـ API غير موجود أو لا يعمل. الحالة: ${response.status}. ` +
+        `يرجى التأكد من تحديث المشروع على Vercel.`
+      )
+    }
+    
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || `خطأ ${response.status}`)
+    }
+    return data
+  }
+
   const handleApprove = async () => {
     setLoading("approve")
     setError("")
@@ -50,17 +70,12 @@ export default function BookingActions({
         method: "POST",
       })
       
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "فشل تأكيد الحجز")
-      }
-      
+      await handleResponse(response)
       router.refresh()
       alert("✅ تم تأكيد الحجز بنجاح")
     } catch (err: any) {
-      console.error("Error:", err)
+      console.error("Approve error:", err)
       setError(err.message)
-      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
@@ -76,14 +91,11 @@ export default function BookingActions({
         method: "POST",
       })
       
-      if (!response.ok) {
-        throw new Error("فشل رفض الحجز")
-      }
-      
+      await handleResponse(response)
       router.refresh()
       alert("تم رفض الحجز")
     } catch (err: any) {
-      console.error("Error:", err)
+      console.error("Reject error:", err)
       setError(err.message)
     } finally {
       setLoading(null)
@@ -103,17 +115,12 @@ export default function BookingActions({
         }),
       })
       
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "فشل تأكيد الدفع")
-      }
-      
+      await handleResponse(response)
       router.refresh()
       alert("✅ تم تأكيد دفع العربون بنجاح")
     } catch (err: any) {
-      console.error("Error:", err)
+      console.error("Confirm deposit error:", err)
       setError(err.message)
-      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
@@ -132,17 +139,12 @@ export default function BookingActions({
         }),
       })
       
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || "فشل تأكيد الدفع")
-      }
-      
+      await handleResponse(response)
       router.refresh()
       alert("✅ تم تأكيد الدفع الكامل بنجاح")
     } catch (err: any) {
-      console.error("Error:", err)
+      console.error("Confirm full error:", err)
       setError(err.message)
-      alert("❌ " + err.message)
     } finally {
       setLoading(null)
     }
@@ -163,6 +165,9 @@ export default function BookingActions({
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
           <p className="text-sm text-red-400">{error}</p>
+          <p className="text-xs text-white/50 mt-2">
+            💡 إذا كان الخطأ "API غير موجود"، تأكد من أن المشروع تم تحديثه على Vercel بعد آخر push
+          </p>
         </div>
       )}
       

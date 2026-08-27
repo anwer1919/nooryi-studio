@@ -3,31 +3,31 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = "force-dynamic"
+
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
-  }
-
   try {
-    // تحديث حالة الحجز
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+    }
+
+    const { id } = await params
+    console.log("✅ Approving booking:", id)
+
     const booking = await prisma.booking.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: "APPROVED" },
-      include: {
-        artist: true,
-        venue: true,
-      },
+      include: { artist: true },
     })
 
-    // إنشاء إشعار للعميل (عبر البريد الإلكتروني)
-    if (booking.clientEmail) {
-      try {
-        // البحث عن المستخدم المرتبط بالبريد
+    // إنشاء إشعار للعميل
+    try {
+      if (booking.clientEmail) {
         const user = await prisma.user.findUnique({
           where: { email: booking.clientEmail },
         })
@@ -37,23 +37,26 @@ export async function POST(
             data: {
               userId: user.id,
               title: "تم تأكيد حجزك! 🎉",
-              message: `تم تأكيد حجزك للفنان ${booking.artist?.name} بتاريخ ${new Date(booking.date).toLocaleDateString("ar-EG")}. يمكنك الآن إكمال الدفع.`,
+              message: `تم تأكيد حجزك للفنان ${booking.artist?.name}`,
               type: "booking_approved",
               link: `/booking/${booking.id}`,
             },
           })
         }
-      } catch (error) {
-        console.error("Error creating notification:", error)
       }
+    } catch (error) {
+      console.error("Notification error:", error)
     }
 
     return NextResponse.json({ 
       success: true, 
       message: "تم تأكيد الحجز بنجاح" 
     })
-  } catch (error) {
-    console.error("Error approving booking:", error)
-    return NextResponse.json({ error: "حدث خطأ" }, { status: 500 })
+  } catch (error: any) {
+    console.error("❌ Approve error:", error)
+    return NextResponse.json(
+      { error: "حدث خطأ: " + error.message },
+      { status: 500 }
+    )
   }
 }
