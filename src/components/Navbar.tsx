@@ -2,19 +2,24 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import UserMenu from "./UserMenu"
 import NotificationBell from "./NotificationBell"
-import { Music, Menu, X } from "lucide-react"
+import { Music, Menu, X, LayoutDashboard } from "lucide-react"
 import { useState } from "react"
 
 export default function Navbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { data: session } = useSession()
 
   // إخفاء الـ Navbar في صفحات تسجيل الدخول والتسجيل
   if (pathname === "/login" || pathname === "/register") {
     return null
   }
+
+  // التحقق من صلاحيات الأدمن
+  const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
 
   const navLinks = [
     { href: "/", label: "الرئيسية" },
@@ -53,17 +58,28 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* رابط لوحة التحكم - يظهر فقط للأدمن */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                  pathname.startsWith("/admin")
+                    ? "text-yellow-400 bg-yellow-500/10"
+                    : "text-yellow-400/80 hover:text-yellow-400 hover:bg-yellow-500/10"
+                }`}
+              >
+                <LayoutDashboard size={16} />
+                لوحة التحكم
+              </Link>
+            )}
           </div>
 
-          {/* User Actions (على اليسار بصرياً في RTL) */}
+          {/* User Actions */}
           <div className="flex items-center gap-3">
-            {/* جرس الإشعارات */}
             <NotificationBell />
-            
-            {/* قائمة المستخدم */}
             <UserMenu />
             
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 rounded-xl hover:bg-white/5 transition-colors"
@@ -90,6 +106,22 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* رابط لوحة التحكم للموبايل */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                  pathname.startsWith("/admin")
+                    ? "text-yellow-400 bg-yellow-500/10"
+                    : "text-yellow-400/80 hover:text-yellow-400 hover:bg-yellow-500/10"
+                }`}
+              >
+                <LayoutDashboard size={16} />
+                لوحة التحكم
+              </Link>
+            )}
           </div>
         )}
       </div>
