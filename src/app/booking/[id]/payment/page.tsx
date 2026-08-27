@@ -10,37 +10,53 @@ import {
   Building2,
   Smartphone,
   Shield,
-  CheckCircle2,
   Lock,
-  Clock
+  Clock,
+  Music,
+  Calendar,
+  MapPin,
+  CheckCircle2
 } from "lucide-react"
 
 export default async function PaymentPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user) {
+  // 1. التحقق من تسجيل الدخول
+  if (!session?.user?.email) {
     redirect(`/login?callbackUrl=/booking/${params.id}/payment`)
   }
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: params.id },
-    include: {
-      artist: true,
-      venue: true,
-    },
-  })
+  // 2. جلب بيانات الحجز
+  let booking
+  try {
+    booking = await prisma.booking.findUnique({
+      where: { id: params.id },
+      include: {
+        artist: true,
+        venue: true,
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching booking:", error)
+    redirect("/my-bookings")
+  }
 
+  // 3. التحقق من وجود الحجز
   if (!booking) {
     redirect("/my-bookings")
   }
 
-  // التحقق من أن المستخدم هو صاحب الحجز
-  if (booking.userId !== session.user.id) {
+  // 4. التحقق من ملكية الحجز عبر البريد الإلكتروني
+  if (booking.clientEmail !== session.user.email) {
     redirect("/my-bookings")
   }
 
+  // 5. حساب المبالغ
   const depositAmount = booking.depositAmount || (booking.grossAmount || 0) * 0.2
   const remainingAmount = (booking.grossAmount || 0) - depositAmount
+  const depositPercentage = booking.grossAmount 
+    ? Math.round((depositAmount / booking.grossAmount) * 100) 
+    : 20
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -71,7 +87,7 @@ export default async function PaymentPage({ params }: { params: { id: string } }
               <div className="space-y-3">
                 {/* Credit Card */}
                 <label className="group cursor-pointer">
-                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-hover:border-yellow-500/30">
+                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-has-[:checked]:border-yellow-500/50 group-has-[:checked]:bg-yellow-500/5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 flex items-center justify-center">
@@ -82,14 +98,19 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                           <p className="text-sm text-white/60">Visa, Mastercard, Meeza</p>
                         </div>
                       </div>
-                      <input type="radio" name="payment" defaultChecked className="w-5 h-5 accent-yellow-500" />
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        defaultChecked 
+                        className="w-5 h-5 accent-yellow-500" 
+                      />
                     </div>
                   </div>
                 </label>
 
                 {/* Mobile Wallet */}
                 <label className="group cursor-pointer">
-                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-hover:border-yellow-500/30">
+                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-has-[:checked]:border-yellow-500/50 group-has-[:checked]:bg-yellow-500/5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 flex items-center justify-center">
@@ -100,14 +121,18 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                           <p className="text-sm text-white/60">Vodafone Cash, Orange Cash, Etisalat Cash</p>
                         </div>
                       </div>
-                      <input type="radio" name="payment" className="w-5 h-5 accent-yellow-500" />
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        className="w-5 h-5 accent-yellow-500" 
+                      />
                     </div>
                   </div>
                 </label>
 
                 {/* Bank Transfer */}
                 <label className="group cursor-pointer">
-                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-hover:border-yellow-500/30">
+                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-has-[:checked]:border-yellow-500/50 group-has-[:checked]:bg-yellow-500/5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 flex items-center justify-center">
@@ -115,17 +140,21 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                         </div>
                         <div>
                           <p className="font-bold text-lg">تحويل بنكي</p>
-                          <p className="text-sm text-white/60">InstaPay, بنك مصر، CIB</p>
+                          <p className="text-sm text-white/60">InstaPay, بنك مصر, CIB</p>
                         </div>
                       </div>
-                      <input type="radio" name="payment" className="w-5 h-5 accent-yellow-500" />
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        className="w-5 h-5 accent-yellow-500" 
+                      />
                     </div>
                   </div>
                 </label>
 
                 {/* Cash on Event */}
                 <label className="group cursor-pointer">
-                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-hover:border-yellow-500/30">
+                  <div className="glass rounded-2xl p-5 hover:bg-white/[0.08] transition-all border-2 border-transparent group-has-[:checked]:border-yellow-500/50 group-has-[:checked]:bg-yellow-500/5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-600/20 border border-yellow-500/30 flex items-center justify-center">
@@ -136,7 +165,11 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                           <p className="text-sm text-white/60">ادفع المبلغ كاملاً يوم الحفل</p>
                         </div>
                       </div>
-                      <input type="radio" name="payment" className="w-5 h-5 accent-yellow-500" />
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        className="w-5 h-5 accent-yellow-500" 
+                      />
                     </div>
                   </div>
                 </label>
@@ -153,8 +186,22 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                   <Lock size={14} />
                   دفع آمن 100%
                 </h3>
-                <p className="text-sm text-white/60">
-                  جميع المعاملات مشفرة ومحمية. أموالك في أمان حتى يتم تأكيد الحجز من قبل الفنان.
+                <p className="text-sm text-white/60 leading-relaxed">
+                  جميع المعاملات مشفرة ومحمية بتقنية SSL. أموالك في أمان حتى يتم تأكيد الحجز من قبل الفنان.
+                  في حالة الإلغاء، يتم استرداد المبلغ كاملاً خلال 3-5 أيام عمل.
+                </p>
+              </div>
+            </div>
+
+            {/* Booking Owner Info */}
+            <div className="glass rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+                <CheckCircle2 className="text-yellow-400" size={20} />
+              </div>
+              <div>
+                <p className="text-xs text-white/60 mb-0.5">الحجز باسم</p>
+                <p className="font-semibold text-sm">
+                  {booking.clientName} • {booking.clientEmail || session.user.email}
                 </p>
               </div>
             </div>
@@ -175,12 +222,34 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                   />
                 ) : (
                   <div className="w-16 h-16 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
-                    <CreditCard className="text-yellow-400" size={24} />
+                    <Music className="text-yellow-400" size={24} />
                   </div>
                 )}
-                <div>
-                  <p className="font-bold">{booking.artist?.name}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold truncate">{booking.artist?.name}</p>
                   <p className="text-xs text-white/60">{booking.artist?.category}</p>
+                </div>
+              </div>
+
+              {/* Event Details */}
+              <div className="space-y-3 mb-6 pb-6 border-b border-white/10 text-sm">
+                <div className="flex items-center gap-2 text-white/70">
+                  <Calendar size={14} className="text-yellow-400" />
+                  <span>
+                    {new Date(booking.date).toLocaleDateString("ar-EG", { 
+                      weekday: "short",
+                      day: "numeric", 
+                      month: "short" 
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-white/70">
+                  <Clock size={14} className="text-yellow-400" />
+                  <span>{booking.timeSlot}</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/70">
+                  <MapPin size={14} className="text-yellow-400" />
+                  <span className="truncate">{booking.venue?.name}</span>
                 </div>
               </div>
 
@@ -192,26 +261,14 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                     {(booking.grossAmount || 0).toLocaleString()} ج.م
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60 flex items-center gap-1">
-                    <Clock size={14} />
-                    موعد الفعالية
-                  </span>
-                  <span className="font-semibold">
-                    {new Date(booking.date).toLocaleDateString("ar-EG", { 
-                      day: "numeric", 
-                      month: "short" 
-                    })}
-                  </span>
-                </div>
               </div>
 
               {/* Deposit Amount - Highlighted */}
               <div className="bg-gradient-to-br from-yellow-500/10 to-amber-600/10 border border-yellow-500/20 rounded-2xl p-5 mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-white/70">المطلوب الآن (العربون)</span>
-                  <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">
-                    20%
+                  <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full font-bold">
+                    {depositPercentage}%
                   </span>
                 </div>
                 <p className="text-3xl font-black text-yellow-400 mb-2">
@@ -237,8 +294,11 @@ export default async function PaymentPage({ params }: { params: { id: string } }
                 </div>
               </Link>
 
-              <p className="text-xs text-white/40 text-center mt-4">
-                بالضغط على "ادفع الآن"، أنت توافق على شروط الاستخدام وسياسة الإلغاء
+              <p className="text-xs text-white/40 text-center mt-4 leading-relaxed">
+                بالضغط على "ادفع الآن"، أنت توافق على{" "}
+                <Link href="/terms" className="text-yellow-400 hover:underline">شروط الاستخدام</Link>
+                {" "}و{" "}
+                <Link href="/cancellation" className="text-yellow-400 hover:underline">سياسة الإلغاء</Link>
               </p>
             </div>
           </div>

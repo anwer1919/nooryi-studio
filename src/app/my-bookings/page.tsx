@@ -5,24 +5,21 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { 
   Calendar, 
-  Clock, 
-  MapPin, 
   Music,
-  CheckCircle2,
-  XCircle,
-  ArrowRight,
-  CreditCard
 } from "lucide-react"
 
 export default async function MyBookingsPage() {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user) {
+  if (!session?.user?.email) {
     redirect("/login?callbackUrl=/my-bookings")
   }
 
+  // البحث عن الحجوزات بالبريد الإلكتروني للعميل (clientEmail)
   const bookings = await prisma.booking.findMany({
-    where: { userId: session.user.id },
+    where: { 
+      clientEmail: session.user.email
+    },
     orderBy: { createdAt: "desc" },
     include: {
       artist: { select: { name: true, slug: true, profileImage: true, category: true } },
@@ -33,40 +30,15 @@ export default async function MyBookingsPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "PENDING_APPROVAL":
-        return {
-          color: "orange",
-          text: "في انتظار الموافقة",
-          bg: "bg-orange-500/10",
-          border: "border-orange-500/20"
-        }
+        return { text: "في انتظار الموافقة", bg: "bg-orange-500/10", border: "border-orange-500/20", text_color: "text-orange-400" }
       case "APPROVED":
-        return {
-          color: "green",
-          text: "تمت الموافقة",
-          bg: "bg-green-500/10",
-          border: "border-green-500/20"
-        }
+        return { text: "تمت الموافقة", bg: "bg-green-500/10", border: "border-green-500/20", text_color: "text-green-400" }
       case "COMPLETED":
-        return {
-          color: "blue",
-          text: "مكتمل",
-          bg: "bg-blue-500/10",
-          border: "border-blue-500/20"
-        }
+        return { text: "مكتمل", bg: "bg-blue-500/10", border: "border-blue-500/20", text_color: "text-blue-400" }
       case "CANCELLED":
-        return {
-          color: "red",
-          text: "ملغي",
-          bg: "bg-red-500/10",
-          border: "border-red-500/20"
-        }
+        return { text: "ملغي", bg: "bg-red-500/10", border: "border-red-500/20", text_color: "text-red-400" }
       default:
-        return {
-          color: "gray",
-          text: status,
-          bg: "bg-white/5",
-          border: "border-white/10"
-        }
+        return { text: status, bg: "bg-white/5", border: "border-white/10", text_color: "text-white/60" }
     }
   }
 
@@ -89,10 +61,7 @@ export default async function MyBookingsPage() {
             <Calendar className="mx-auto mb-4 text-white/40" size={64} />
             <h3 className="text-2xl font-bold mb-2">لا توجد حجوزات</h3>
             <p className="text-white/60 mb-6">ابدأ بتصفح الفنانين وحجز مناسبتك الأولى</p>
-            <Link 
-              href="/artists"
-              className="group relative inline-flex"
-            >
+            <Link href="/artists" className="group relative inline-flex">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
               <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2">
                 <Music size={18} />
@@ -103,9 +72,9 @@ export default async function MyBookingsPage() {
         ) : (
           <div className="space-y-4">
             {bookings.map((booking) => {
-              const statusConfig = getStatusConfig(booking.status)
-              const depositAmount = booking.depositAmount || (booking.grossAmount || 0) * 0.2
-              const remainingAmount = (booking.grossAmount || 0) - depositAmount
+              const sc = getStatusConfig(booking.status)
+              const deposit = booking.depositAmount || (booking.grossAmount || 0) * 0.2
+              const remaining = (booking.grossAmount || 0) - deposit
 
               return (
                 <Link
@@ -114,7 +83,6 @@ export default async function MyBookingsPage() {
                   className="block glass rounded-2xl p-6 hover:bg-white/[0.08] transition-all duration-300"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    {/* Artist Info */}
                     <div className="flex items-center gap-4 flex-1">
                       {booking.artist?.profileImage ? (
                         <img 
@@ -128,12 +96,11 @@ export default async function MyBookingsPage() {
                         </div>
                       )}
                       <div>
-                        <h3 className="text-lg font-bold mb-1">{booking.artist?.name}</h3>
-                        <p className="text-sm text-white/60">{booking.artist?.category}</p>
+                        <h3 className="text-lg font-bold mb-1">{booking.artist?.name || "فنان"}</h3>
+                        <p className="text-sm text-white/60">{booking.artist?.category || ""}</p>
                       </div>
                     </div>
 
-                    {/* Status & Date */}
                     <div className="flex items-center gap-4">
                       <div className="text-left">
                         <p className="text-sm font-semibold mb-1">
@@ -144,13 +111,12 @@ export default async function MyBookingsPage() {
                         </p>
                         <p className="text-xs text-white/60">{booking.timeSlot}</p>
                       </div>
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${statusConfig.bg} ${statusConfig.border} text-${statusConfig.color}-400`}>
-                        {statusConfig.text}
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${sc.bg} ${sc.border} ${sc.text_color}`}>
+                        {sc.text}
                       </span>
                     </div>
                   </div>
 
-                  {/* Financial Info */}
                   <div className="mt-4 pt-4 border-t border-white/5 grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-white/40 text-xs mb-1">الإجمالي</p>
@@ -158,11 +124,11 @@ export default async function MyBookingsPage() {
                     </div>
                     <div>
                       <p className="text-white/40 text-xs mb-1">العربون</p>
-                      <p className="font-bold text-green-400">{depositAmount.toLocaleString()} ج.م</p>
+                      <p className="font-bold text-green-400">{deposit.toLocaleString()} ج.م</p>
                     </div>
                     <div>
                       <p className="text-white/40 text-xs mb-1">المتبقي</p>
-                      <p className="font-bold text-yellow-400">{remainingAmount.toLocaleString()} ج.م</p>
+                      <p className="font-bold text-yellow-400">{remaining.toLocaleString()} ج.م</p>
                     </div>
                   </div>
                 </Link>
