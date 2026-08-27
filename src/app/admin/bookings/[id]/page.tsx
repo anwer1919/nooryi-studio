@@ -13,22 +13,32 @@ import {
   User,
   Phone,
   Mail,
-  DollarSign
+  DollarSign,
+  CreditCard,
+  CheckCircle2
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-export default async function AdminBookingDetailsPage({ params }: { params: { id: string } }) {
+export default async function AdminBookingDetailsPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  // ✅ حل مشكلة Next.js 15
+  const { id } = await params
+  
   const session = await getServerSession(authOptions)
   
   if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
     redirect("/login")
   }
 
+  // جلب الحجز مع try/catch
   let booking
   try {
     booking = await prisma.booking.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         artist: {
           select: {
@@ -36,6 +46,7 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
             name: true,
             category: true,
             profileImage: true,
+            slug: true,
           },
         },
         venue: {
@@ -43,12 +54,25 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
             id: true,
             name: true,
             address: true,
+            city: true,
           },
+        },
+        customer: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+          },
+        },
+        payments: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
         },
       },
     })
   } catch (error) {
-    console.error("Error fetching booking:", error)
+    console.error("❌ Error fetching booking:", error)
     redirect("/admin/bookings")
   }
 
@@ -62,19 +86,26 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "PENDING_APPROVAL":
-        return { color: "orange", title: "في انتظار الموافقة" }
+        return { color: "orange", title: "في انتظار الموافقة", bg: "bg-orange-500/10", border: "border-orange-500/20" }
       case "APPROVED":
-        return { color: "green", title: "تمت الموافقة" }
+        return { color: "green", title: "تمت الموافقة", bg: "bg-green-500/10", border: "border-green-500/20" }
       case "COMPLETED":
-        return { color: "blue", title: "مكتمل" }
+        return { color: "blue", title: "مكتمل", bg: "bg-blue-500/10", border: "border-blue-500/20" }
       case "CANCELLED":
-        return { color: "red", title: "ملغي" }
+        return { color: "red", title: "ملغي", bg: "bg-red-500/10", border: "border-red-500/20" }
       default:
-        return { color: "gray", title: status }
+        return { color: "gray", title: status, bg: "bg-white/5", border: "border-white/10" }
     }
   }
 
   const sc = getStatusConfig(booking.status)
+
+  const timeSlotMap: Record<string, string> = {
+    "MORNING": "صباحاً",
+    "AFTERNOON": "ظهيرة",
+    "EVENING": "مساءً",
+    "NIGHT": "ليلاً",
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -93,7 +124,7 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
               <h1 className="text-4xl font-black mb-2">تفاصيل الحجز</h1>
               <p className="text-white/60">رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}</p>
             </div>
-            <span className={`px-4 py-2 rounded-full text-sm font-bold border bg-${sc.color}-500/10 border-${sc.color}-500/20 text-${sc.color}-400`}>
+            <span className={`px-4 py-2 rounded-full text-sm font-bold border ${sc.bg} ${sc.border} text-${sc.color}-400`}>
               {sc.title}
             </span>
           </div>
@@ -109,16 +140,26 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                 الفنان
               </h3>
               <div className="flex items-center gap-4">
-                {booking.artist?.profileImage && (
+                {booking.artist?.profileImage ? (
                   <img 
                     src={booking.artist.profileImage} 
                     alt={booking.artist.name}
                     className="w-20 h-20 rounded-2xl object-cover"
                   />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                    <Music className="text-yellow-400" size={32} />
+                  </div>
                 )}
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold mb-1">{booking.artist?.name}</h2>
-                  <p className="text-white/60 text-sm">{booking.artist?.category}</p>
+                  <h2 className="text-2xl font-bold mb-1">{booking.artist?.name || "فنان"}</h2>
+                  <p className="text-white/60 text-sm">{booking.artist?.category || "غير محدد"}</p>
+                  <Link 
+                    href={`/artists/${booking.artist?.slug}`}
+                    className="text-xs text-yellow-400 hover:underline mt-1 inline-block"
+                  >
+                    عرض صفحة الفنان ←
+                  </Link>
                 </div>
               </div>
             </div>
@@ -134,14 +175,19 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                   <p className="text-xs text-white/40 mb-1">التاريخ</p>
                   <p className="font-semibold flex items-center gap-2">
                     <Calendar size={14} className="text-yellow-400" />
-                    {new Date(booking.date).toLocaleDateString("ar-EG")}
+                    {new Date(booking.date).toLocaleDateString("ar-EG", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric"
+                    })}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-white/40 mb-1">الوقت</p>
                   <p className="font-semibold flex items-center gap-2">
                     <Clock size={14} className="text-yellow-400" />
-                    {booking.timeSlot}
+                    {timeSlotMap[booking.timeSlot] || booking.timeSlot}
                   </p>
                 </div>
                 <div className="col-span-2">
@@ -170,19 +216,80 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                 </p>
                 <p className="flex items-center gap-2 text-sm text-white/70">
                   <Phone size={14} className="text-yellow-400" />
-                  {booking.clientPhone}
+                  <a href={`tel:${booking.clientPhone}`} className="hover:text-yellow-400">
+                    {booking.clientPhone}
+                  </a>
                 </p>
                 {booking.clientEmail && (
                   <p className="flex items-center gap-2 text-sm text-white/70">
                     <Mail size={14} className="text-yellow-400" />
-                    {booking.clientEmail}
+                    <a href={`mailto:${booking.clientEmail}`} className="hover:text-yellow-400">
+                      {booking.clientEmail}
+                    </a>
                   </p>
                 )}
               </div>
             </div>
+
+            {/* Payment History */}
+            {booking.payments && booking.payments.length > 0 && (
+              <div className="glass rounded-3xl p-6">
+                <h3 className="text-sm text-white/40 uppercase mb-4 flex items-center gap-2">
+                  <CreditCard size={16} />
+                  سجل الدفعات ({booking.payments.length})
+                </h3>
+                <div className="space-y-2">
+                  {booking.payments.map((payment) => (
+                    <div 
+                      key={payment.id}
+                      className="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl border border-white/5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          payment.status === "COMPLETED" 
+                            ? "bg-green-500/10" 
+                            : payment.status === "PENDING"
+                            ? "bg-yellow-500/10"
+                            : "bg-red-500/10"
+                        }`}>
+                          <CheckCircle2 
+                            size={14} 
+                            className={
+                              payment.status === "COMPLETED" ? "text-green-400" :
+                              payment.status === "PENDING" ? "text-yellow-400" :
+                              "text-red-400"
+                            }
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{payment.notes || "دفعة"}</p>
+                          <p className="text-xs text-white/40">
+                            {new Date(payment.createdAt).toLocaleString("ar-EG")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-green-400">
+                          {payment.amount.toLocaleString()} ج.م
+                        </p>
+                        <p className="text-xs text-white/40">{payment.method}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Admin Notes */}
+            {booking.adminNotes && (
+              <div className="glass rounded-3xl p-6 bg-yellow-500/5 border-yellow-500/20">
+                <h3 className="text-sm text-white/40 uppercase mb-2">ملاحظات الإدارة</h3>
+                <p className="text-sm text-white/80">{booking.adminNotes}</p>
+              </div>
+            )}
           </div>
 
-          {/* Sidebar - Actions */}
+          {/* Sidebar */}
           <div className="space-y-6">
             {/* Financial Summary */}
             <div className="glass rounded-3xl p-6">
@@ -196,7 +303,7 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
                   <span className="font-bold text-lg">{(booking.grossAmount || 0).toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-sm text-green-400">
-                  <span>العربون المطلوب</span>
+                  <span>العربون</span>
                   <span className="font-bold">{depositAmount.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-sm pt-3 border-t border-white/10">
@@ -217,9 +324,19 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
               depositAmount={depositAmount}
               totalAmount={booking.grossAmount || 0}
               date={new Date(booking.date).toLocaleDateString("ar-EG")}
-              timeSlot={booking.timeSlot}
+              timeSlot={timeSlotMap[booking.timeSlot] || booking.timeSlot}
               venue={booking.venue?.name || ""}
             />
+
+            {/* Invoice Link */}
+            <Link 
+              href={`/booking/${booking.id}/invoice`}
+              target="_blank"
+              className="glass hover:bg-white/[0.08] rounded-2xl p-4 flex items-center justify-center gap-2 transition-all"
+            >
+              <CreditCard size={18} className="text-yellow-400" />
+              <span className="font-semibold text-sm">عرض وطباعة الفاتورة</span>
+            </Link>
           </div>
         </div>
       </div>
