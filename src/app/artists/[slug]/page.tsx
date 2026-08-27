@@ -8,11 +8,7 @@ import {
   ArrowRight, 
   Star, 
   Calendar, 
-  MapPin, 
   Music,
-  Shield,
-  Clock,
-  CheckCircle2
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -37,12 +33,10 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
     redirect("/artists")
   }
 
-  // جلب الأماكن للحجز
   const venues = await prisma.venue.findMany({
     select: { id: true, name: true, address: true },
   })
 
-  // حساب متوسط التقييم
   const ratings = artist.reviews.map((r) => r.rating)
   const avgRating = ratings.length > 0
     ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
@@ -63,7 +57,6 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-        {/* Back Button */}
         <Link
           href="/artists"
           className="absolute top-6 right-6 glass rounded-xl px-4 py-2 flex items-center gap-2 hover:bg-white/10 transition-colors"
@@ -146,12 +139,12 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
               </h3>
 
               <BookingForm 
-               artistId={artist.id}
-               artistName={artist.name}
-               venues={venues}
-               userEmail={session?.user?.email || ""}
-               userName={session?.user?.name || ""}
-               userPhone={session?.user?.phone || ""}
+                artistId={artist.id}
+                artistName={artist.name}
+                venues={venues}
+                userEmail={session?.user?.email || ""}
+                userName={session?.user?.name || ""}
+                userPhone={session?.user?.phone || ""}
               />
             </div>
           </div>
