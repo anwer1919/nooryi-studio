@@ -6,7 +6,6 @@ import {
   CheckCircle2, 
   XCircle, 
   MessageCircle,
-  CreditCard,
   Loader2,
   DollarSign,
   Wallet
@@ -42,7 +41,7 @@ export default function BookingActions({
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
 
-  // تأكيد الحجز (الموافقة)
+  // تأكيد الحجز
   const handleApprove = async () => {
     setLoading("approve")
     try {
@@ -53,6 +52,8 @@ export default function BookingActions({
       if (response.ok) {
         router.refresh()
         alert("✅ تم تأكيد الحجز بنجاح وإرسال الإشعارات")
+      } else {
+        alert("❌ حدث خطأ")
       }
     } catch (error) {
       console.error("Error:", error)
@@ -108,7 +109,7 @@ export default function BookingActions({
     }
   }
 
-  // تأكيد الدفع (الكامل)
+  // تأكيد الدفع الكامل
   const handleConfirmFullPayment = async () => {
     setLoading("confirm-full")
     try {
@@ -133,7 +134,7 @@ export default function BookingActions({
     }
   }
 
-  // فتح واتساب لإرسال إشعار
+  // فتح واتساب
   const openWhatsApp = () => {
     const message = `مرحباً ${clientName}،%0A%0A🎉 تم تأكيد حجزك بنجاح!%0A%0A📋 تفاصيل الحجز:%0A🎵 الفنان: ${artistName}%0A📅 التاريخ: ${date}%0A⏰ الوقت: ${timeSlot}%0A📍 المكان: ${venue}%0A%0A💰 المبلغ الإجمالي: ${totalAmount.toLocaleString()} ج.م%0A💳 العربون المطلوب: ${depositAmount.toLocaleString()} ج.م%0A%0Aشكراً لاختيارك Nooryi Studio! 🎵`
     
@@ -235,7 +236,6 @@ export default function BookingActions({
             href={`tel:${clientPhone}`}
             className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
           >
-            <Phone size={12} />
             اتصال
           </a>
           {clientEmail && (
@@ -243,7 +243,6 @@ export default function BookingActions({
               href={`mailto:${clientEmail}`}
               className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
             >
-              <Mail size={12} />
               إيميل
             </a>
           )}

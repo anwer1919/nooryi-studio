@@ -13,10 +13,7 @@ import {
   XCircle,
   Phone,
   Mail,
-  CreditCard,
-  Wallet,
   Printer,
-  MessageCircle,
   Shield,
   User,
   DollarSign
@@ -212,7 +209,6 @@ export default async function AdminBookingDetailsPage({ params }: { params: { id
               bookingId={booking.id}
               status={booking.status}
               artistName={booking.artist?.name || ""}
-              artistPhone={booking.artist?.profileImage ? "" : ""}
               clientName={booking.clientName}
               clientPhone={booking.clientPhone}
               clientEmail={booking.clientEmail || ""}
