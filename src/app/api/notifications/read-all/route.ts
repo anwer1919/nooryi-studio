@@ -3,10 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
@@ -14,8 +11,8 @@ export async function PATCH(
   }
 
   try {
-    await prisma.notification.update({
-      where: { id: params.id },
+    await prisma.notification.updateMany({
+      where: { userId: session.user.id, isRead: false },
       data: { isRead: true },
     })
 

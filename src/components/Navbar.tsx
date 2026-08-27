@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import UserMenu from "./UserMenu"
+import NotificationBell from "./NotificationBell"
 import { Music, Menu, X } from "lucide-react"
 import { useState } from "react"
 
@@ -54,8 +55,12 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* User Menu (على اليسار = في RTL يظهر على اليمين) */}
+          {/* User Actions (على اليسار بصرياً في RTL) */}
           <div className="flex items-center gap-3">
+            {/* جرس الإشعارات */}
+            <NotificationBell />
+            
+            {/* قائمة المستخدم */}
             <UserMenu />
             
             {/* Mobile Menu Button */}
