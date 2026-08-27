@@ -1,112 +1,164 @@
-﻿"use client"
-
-import { useSession } from "next-auth/react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Loader2, UserPlus, Users } from "lucide-react"
+﻿import { redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { 
+  Users, 
+  ArrowRight, 
+  Plus, 
+  Shield, 
+  ShieldCheck,
+  Mail,
+  Calendar,
+  MoreVertical
+} from "lucide-react"
 
-export const dynamic = "force-dynamic"
-
-interface Admin { id: string; name: string; email: string; role: string }
-interface Artist { id: string; name: string; slug: string }
-
-export default function AdminsPage() {
-  // ✅ الطريقة الآمنة 100% لمنع خطأ Destructuring
-  const sessionObj = useSession()
-  const session = sessionObj?.data || null
-  const status = sessionObj?.status || "loading"
+export default async function AdminAdminsPage() {
+  const session = await getServerSession(authOptions)
   
-  const router = useRouter()
-  const [admins, setAdmins] = useState<Admin[]>([])
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login")
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      const fetchData = async () => {
-        try {
-          const [adminsRes, artistsRes] = await Promise.all([
-            fetch("/api/admin/admins"),
-            fetch("/api/admin/artists")
-          ])
-          if (adminsRes.ok) setAdmins(await adminsRes.json())
-          if (artistsRes.ok) setArtists(await artistsRes.json())
-        } catch (err) {
-          console.error("Failed to fetch data", err)
-        } finally {
-          setLoading(false)
-        }
-      }
-      fetchData()
-    }
-  }, [status])
-
-  if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen bg-[#1a0a04] flex items-center justify-center">
-        <Loader2 className="animate-spin text-yellow-500" size={48} />
-      </div>
-    )
+  if (!session?.user || session.user.role !== "SUPER_ADMIN") {
+    redirect("/admin")
   }
 
-  if (status === "unauthenticated") return null
+  // جلب جميع المستخدمين بأدوار الأدمن
+  const admins = await prisma.user.findMany({
+    where: {
+      role: {
+        in: ["SUPER_ADMIN", "ADMIN"],
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
+
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+      case "ADMIN":
+        return "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      default:
+        return "bg-white/5 text-white/60 border-white/10"
+    }
+  }
+
+  const getRoleText = (role: string) => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return "أدمن رئيسي"
+      case "ADMIN":
+        return "أدمن"
+      default:
+        return role
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#1a0a04] text-white p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">إدارة المشرفين والفنانين</h1>
-        <Link href="/admin" className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
-          العودة للوحة التحكم
-        </Link>
-      </div>
-      
-      <p className="mb-6 text-white/70">مرحباً، {session?.user?.name || "مدير النظام"}</p>
-      
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white/10 p-6 rounded-xl border border-white/10">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-500">
-            <Users size={24} /> المشرفون ({admins.length})
-          </h2>
-          <ul className="space-y-2">
-            {admins.map(admin => (
-              <li key={admin.id} className="flex justify-between items-center bg-black/20 p-3 rounded-lg">
-                <div>
-                  <p className="font-bold">{admin.name}</p>
-                  <p className="text-sm text-white/60">{admin.email}</p>
-                </div>
-                <span className="text-xs bg-yellow-600 text-black px-3 py-1 rounded-full font-bold">
-                  {admin.role === 'SUPER_ADMIN' ? 'مدير عام' : 'مدير فنان'}
-                </span>
-          </li>
-            ))}
-            {admins.length === 0 && <p className="text-white/50 text-center py-4">لا يوجد مشرفون</p>}
-          </ul>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Link 
+              href="/admin" 
+              className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white mb-4 transition-colors"
+            >
+              <ArrowRight size={16} className="rotate-180" />
+              العودة للوحة التحكم
+            </Link>
+            <h1 className="text-4xl font-black mb-2">إدارة المشرفين</h1>
+            <p className="text-white/60">إجمالي {admins.length} مشرف</p>
+          </div>
+          <Link 
+            href="/admin/admins/new"
+            className="group relative"
+          >
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
+            <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2">
+              <Plus size={18} />
+              إضافة مشرف
+            </div>
+          </Link>
         </div>
 
-        <div className="bg-white/10 p-6 rounded-xl border border-white/10">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-500">
-            <UserPlus size={24} /> الفنانون ({artists.length})
-          </h2>
-          <ul className="space-y-2 max-h-96 overflow-y-auto">
-            {artists.map(artist => (
-              <li key={artist.id} className="flex justify-between items-center bg-black/20 p-3 rounded-lg">
-                <span className="font-bold">{artist.name}</span>
-                <span className="text-xs text-white/60 bg-black/30 px-2 py-1 rounded">/{artist.slug}</span>
-              </li>
+        {/* Admins List */}
+        {admins.length === 0 ? (
+          <div className="glass rounded-3xl p-16 text-center">
+            <Users className="mx-auto mb-4 text-white/40" size={64} />
+            <h3 className="text-xl font-bold mb-2">لا يوجد مشرفون</h3>
+            <p className="text-white/60">أنت المشرف الوحيد حالياً</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {admins.map((admin) => (
+              <div 
+                key={admin.id}
+                className="glass rounded-2xl p-6 hover:bg-white/[0.08] transition-all duration-300"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {/* Avatar */}
+                    <div className="relative">
+                      {admin.image ? (
+                        <img 
+                          src={admin.image} 
+                          alt={admin.name || "مشرف"}
+                          className="w-14 h-14 rounded-2xl object-cover border border-white/10"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center">
+                          <span className="text-xl font-black text-black">
+                            {(admin.name || admin.email).charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      {admin.role === "SUPER_ADMIN" && (
+                        <div className="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1">
+                          <ShieldCheck className="text-black" size={12} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-lg font-bold">{admin.name || "بدون اسم"}</h3>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getRoleBadge(admin.role)}`}>
+                          {getRoleText(admin.role)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-white/60">
+                        <span className="flex items-center gap-1">
+                          <Mail size={14} />
+                          {admin.email}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          {new Date(admin.createdAt).toLocaleDateString("ar-EG")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      href={`/admin/admins/${admin.id}`}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-semibold transition-colors border border-white/10"
+                    >
+                      عرض
+                    </Link>
+                    <button className="text-white/40 hover:text-white p-2 transition-colors">
+                      <MoreVertical size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
-            {artists.length === 0 && <p className="text-white/50 text-center py-4">لا يوجد فنانون</p>}
-          </ul>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )
 }
-
-// Force new deployment commit
