@@ -32,52 +32,48 @@ export default function InvoicePage() {
         setLoading(false)
       }
     }
-
     fetchInvoice()
   }, [id, router])
 
-  const handlePrint = () => {
-    window.print()
-  }
+  const handlePrint = () => window.print()
 
   const shareWhatsApp = () => {
     if (!booking) return
-    
     const grossAmount = booking.grossAmount || 0
     const paidAmount = booking.depositAmount || 0
     const invoiceNumber = booking.id.slice(0, 8).toUpperCase()
     const date = formatDate(booking.date)
     
-    const message = `🎵 *فاتورة حجز - Nooryi Studio* 🎵
+    const message = `📄 *فاتورة رسمية - Nooryi Studio*
 
 ━━━━━━━━━━━━━━━━━━
-📋 *رقم الفاتورة:* #${invoiceNumber}
-📅 *التاريخ:* ${date}
+رقم الفاتورة: ${invoiceNumber}
+التاريخ: ${date}
 ━━━━━━━━━━━━━━━━━━
 
-👤 *العميل:* ${booking.clientName}
-📱 *الهاتف:* ${booking.clientPhone}
+العميل: ${booking.clientName}
+الهاتف: ${booking.clientPhone}
 
-🎭 *الفنان:* ${booking.artist?.name || "غير محدد"}
-📍 *المكان:* ${booking.venue?.name || "غير محدد"}
+الفنان: ${booking.artist?.name || "-"}
+المكان: ${booking.venue?.name || "-"}
+تاريخ الفعالية: ${date}
 
-💰 *المبلغ الإجمالي:* ${grossAmount.toLocaleString()} ج.م
-✅ *المدفوع:* ${paidAmount.toLocaleString()} ج.م
-⏳ *المتبقي:* ${(grossAmount - paidAmount).toLocaleString()} ج.م
+المبلغ الإجمالي: ${grossAmount.toLocaleString()} ج.م
+المدفوع: ${paidAmount.toLocaleString()} ج.م
+المتبقي: ${(grossAmount - paidAmount).toLocaleString()} ج.م
 
 ━━━━━━━━━━━━━━━━━━
-✨ شكراً لاختيارك Nooryi Studio!`
+Nooryi Studio - منصة حجز الفنانين`
 
-    const encodedMessage = encodeURIComponent(message)
-    window.open(`https://wa.me/?text=${encodedMessage}`, "_blank")
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank")
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f5f0] flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600 font-semibold">جاري تحميل الفاتورة...</p>
+          <div className="inline-block w-12 h-12 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-[#1a1a1a] font-serif">جاري تحميل المستند...</p>
         </div>
       </div>
     )
@@ -85,16 +81,11 @@ export default function InvoicePage() {
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">عذراً</h2>
-          <p className="text-gray-600 mb-6">{error || "الفاتورة غير موجودة"}</p>
-          <Link 
-            href="/my-bookings" 
-            className="inline-block bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl hover:bg-yellow-400 transition-all"
-          >
-            العودة للحجوزات
+      <div className="min-h-screen bg-[#f5f5f0] flex items-center justify-center p-6">
+        <div className="bg-white border border-[#1a1a1a]/10 p-8 max-w-md text-center">
+          <p className="text-[#1a1a1a] mb-6">{error || "المستند غير موجود"}</p>
+          <Link href="/my-bookings" className="text-[#b8860b] font-semibold hover:underline">
+            ← العودة للحجوزات
           </Link>
         </div>
       </div>
@@ -105,8 +96,9 @@ export default function InvoicePage() {
   const paidAmount = booking.depositAmount || 0
   const remainingAmount = grossAmount - paidAmount
   const invoiceNumber = booking.id.slice(0, 8).toUpperCase()
+  const referenceCode = `NRY-${Date.now().toString().slice(-8)}-${invoiceNumber}`
 
-  const formatDate = (dateStr: string) => {
+  function formatDate(dateStr: string) {
     const d = new Date(dateStr)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
@@ -120,331 +112,421 @@ export default function InvoicePage() {
 
   return (
     <>
-      {/* Custom Print Styles */}
       <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap');
+        
         @media print {
+          @page {
+            size: A4;
+            margin: 0;
+          }
           body {
             background: white !important;
           }
           .no-print {
             display: none !important;
           }
-          .print-only {
-            display: block !important;
-          }
-          .invoice-container {
+          .invoice-paper {
             box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
             max-width: 100% !important;
-            padding: 20px !important;
           }
-          @page {
-            margin: 1cm;
-            size: A4;
-          }
+        }
+        
+        .font-serif-ar {
+          font-family: 'Amiri', serif;
+        }
+        .font-sans-ar {
+          font-family: 'Cairo', sans-serif;
         }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-8 px-4 print:bg-white print:p-0">
-        {/* Action Buttons - Hidden on Print */}
-        <div className="max-w-4xl mx-auto mb-6 no-print">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <Link 
-              href={`/booking/${id}`} 
-              className="flex items-center gap-2 text-gray-700 hover:text-black transition-colors font-semibold"
+      {/* Action Bar - Hidden on Print */}
+      <div className="no-print sticky top-0 z-50 bg-white border-b border-[#1a1a1a]/10 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link 
+            href={`/booking/${id}`} 
+            className="text-sm text-[#1a1a1a]/70 hover:text-[#1a1a1a] font-sans-ar"
+          >
+            ← العودة للحجز
+          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={shareWhatsApp}
+              className="flex items-center gap-2 bg-[#25D366] text-white px-5 py-2.5 rounded font-sans-ar font-semibold hover:bg-[#1da851] transition-colors text-sm"
             >
-              <span>→</span>
-              <span>العودة لتفاصيل الحجز</span>
-            </Link>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={shareWhatsApp}
-                className="flex items-center gap-2 bg-green-500 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-600 transition-all shadow-lg hover:shadow-xl"
-              >
-                <span className="text-xl">📱</span>
-                <span>مشاركة واتساب</span>
-              </button>
-              
-              <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black px-5 py-2.5 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
-              >
-                <span className="text-xl">🖨️</span>
-                <span>تحميل / طباعة PDF</span>
-              </button>
-            </div>
+              <span>📱</span>
+              <span>مشاركة واتساب</span>
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 bg-[#1a1a1a] text-white px-5 py-2.5 rounded font-sans-ar font-semibold hover:bg-[#000] transition-colors text-sm"
+            >
+              <span>📥</span>
+              <span>تحميل PDF / طباعة</span>
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Invoice Container */}
-        <div className="invoice-container max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden print:shadow-none print:rounded-none">
+      {/* Invoice Paper */}
+      <div className="min-h-screen bg-[#e8e8e3] py-8 px-4 print:bg-white print:p-0 font-sans-ar">
+        <div className="invoice-paper max-w-5xl mx-auto bg-white shadow-2xl print:shadow-none">
           
-          {/* Header with Gradient */}
-          <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-8 md:p-12 relative overflow-hidden">
-            {/* Decorative Elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/10 rounded-full blur-3xl"></div>
-            
-            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-              {/* Logo & Brand */}
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-amber-600 blur-xl opacity-75"></div>
-                  <div className="relative bg-gradient-to-br from-yellow-400 to-amber-600 p-4 rounded-2xl">
-                    <span className="text-3xl">🎵</span>
+          {/* Top Border - Official Document Style */}
+          <div className="h-2 bg-gradient-to-r from-[#b8860b] via-[#daa520] to-[#b8860b]"></div>
+
+          {/* Header */}
+          <div className="px-12 pt-10 pb-8 border-b-2 border-[#1a1a1a]">
+            <div className="flex justify-between items-start">
+              {/* Company Info */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-14 h-14 bg-[#1a1a1a] flex items-center justify-center">
+                    <span className="text-[#daa520] text-2xl font-bold font-serif-ar">ن</span>
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-black text-[#1a1a1a] font-serif-ar">نوري ستوديو</h1>
+                    <p className="text-xs text-[#1a1a1a]/60 tracking-widest uppercase">NOORYI STUDIO</p>
                   </div>
                 </div>
-                <div>
-                  <h1 className="text-3xl font-black tracking-tight">Nooryi Studio</h1>
-                  <p className="text-yellow-400 text-sm font-semibold mt-1">منصة حجز الفنانين المحترفين</p>
+                <div className="text-xs text-[#1a1a1a]/70 space-y-1 mt-4 border-r-2 border-[#b8860b] pr-3">
+                  <p>منصة حجز الفنانين المحترفين</p>
+                  <p>السجل التجاري: 123456 | الرقم الضريبي: 789012</p>
+                  <p>القاهرة، جمهورية مصر العربية</p>
                 </div>
               </div>
 
-              {/* Invoice Meta */}
-              <div className="text-left md:text-right">
-                <p className="text-white/60 text-sm uppercase tracking-wider mb-1">فاتورة حجز</p>
-                <p className="text-3xl font-black text-yellow-400 font-mono">#{invoiceNumber}</p>
-                <p className="text-white/60 text-sm mt-2">
-                  📅 {formatDate(new Date().toISOString())}
-                </p>
+              {/* Invoice Title */}
+              <div className="text-left">
+                <p className="text-xs tracking-[0.3em] text-[#1a1a1a]/60 uppercase mb-2">فاتورة رسمية</p>
+                <h2 className="text-4xl font-black text-[#1a1a1a] font-serif-ar">INVOICE</h2>
+                <div className="mt-4 space-y-1 text-sm">
+                  <p className="text-[#1a1a1a]/60">رقم الفاتورة</p>
+                  <p className="text-xl font-bold text-[#b8860b] font-mono">#{invoiceNumber}</p>
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Meta Info Bar */}
+          <div className="grid grid-cols-4 bg-[#fafaf7] border-b border-[#1a1a1a]/10">
+            <div className="p-5 border-l border-[#1a1a1a]/10">
+              <p className="text-[10px] tracking-widest text-[#1a1a1a]/50 uppercase mb-1">تاريخ الإصدار</p>
+              <p className="text-sm font-bold text-[#1a1a1a]">{formatDate(new Date().toISOString())}</p>
+            </div>
+            <div className="p-5 border-l border-[#1a1a1a]/10">
+              <p className="text-[10px] tracking-widest text-[#1a1a1a]/50 uppercase mb-1">تاريخ الفعالية</p>
+              <p className="text-sm font-bold text-[#1a1a1a]">{formatDate(booking.date)}</p>
+            </div>
+            <div className="p-5 border-l border-[#1a1a1a]/10">
+              <p className="text-[10px] tracking-widest text-[#1a1a1a]/50 uppercase mb-1">الوقت</p>
+              <p className="text-sm font-bold text-[#1a1a1a]">{timeSlotMap[booking.timeSlot] || booking.timeSlot}</p>
+            </div>
+            <div className="p-5 border-l border-[#1a1a1a]/10">
+              <p className="text-[10px] tracking-widest text-[#1a1a1a]/50 uppercase mb-1">المرجع</p>
+              <p className="text-xs font-mono text-[#1a1a1a]">{referenceCode}</p>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-8 md:p-12">
+          <div className="px-12 py-10">
             
-            {/* Status Badge */}
-            <div className="mb-8 no-print">
-              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold ${
-                booking.status === "COMPLETED" ? "bg-green-100 text-green-700" :
-                booking.status === "APPROVED" ? "bg-blue-100 text-blue-700" :
-                booking.status === "CANCELLED" ? "bg-red-100 text-red-700" :
-                "bg-orange-100 text-orange-700"
-              }`}>
-                <span>{
-                  booking.status === "COMPLETED" ? "✅" :
-                  booking.status === "APPROVED" ? "✓" :
-                  booking.status === "CANCELLED" ? "✗" :
-                  "⏳"
-                }</span>
-                <span>{
-                  booking.status === "COMPLETED" ? "مكتمل" :
-                  booking.status === "APPROVED" ? "تمت الموافقة" :
-                  booking.status === "CANCELLED" ? "ملغي" :
-                  "قيد المراجعة"
-                }</span>
-              </span>
-            </div>
-
-            {/* Info Cards */}
-            <div className="grid md:grid-cols-2 gap-6 mb-10">
-              {/* Client Card */}
-              <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-100 rounded-2xl p-6 hover:border-yellow-500/30 transition-all">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                    <span className="text-xl">👤</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">معلومات العميل</h3>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-bold text-gray-900 text-lg">{booking.clientName}</p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <span>📱</span>
+            {/* Parties Section */}
+            <div className="grid grid-cols-2 gap-8 mb-12">
+              {/* Bill To */}
+              <div>
+                <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-4 pb-2 border-b border-[#1a1a1a]/20">
+                  الفاتورة إلى
+                </p>
+                <p className="text-xl font-bold text-[#1a1a1a] mb-3 font-serif-ar">{booking.clientName}</p>
+                <div className="space-y-1.5 text-sm text-[#1a1a1a]/70">
+                  <p className="flex items-center gap-2">
+                    <span className="text-[#b8860b]">◆</span>
                     <span dir="ltr">{booking.clientPhone}</span>
                   </p>
                   {booking.clientEmail && (
-                    <p className="text-gray-600 flex items-center gap-2">
-                      <span>✉️</span>
+                    <p className="flex items-center gap-2">
+                      <span className="text-[#b8860b]">◆</span>
                       <span>{booking.clientEmail}</span>
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Event Card */}
-              <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-100 rounded-2xl p-6 hover:border-yellow-500/30 transition-all">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                    <span className="text-xl">🎭</span>
-                  </div>
-                  <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">تفاصيل الفعالية</h3>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-bold text-gray-900 text-lg">{booking.artist?.name || "غير محدد"}</p>
-                  {booking.artist?.category && (
-                    <p className="text-gray-600 text-sm">{booking.artist.category}</p>
+              {/* Service Provider */}
+              <div>
+                <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-4 pb-2 border-b border-[#1a1a1a]/20">
+                  مقدم الخدمة
+                </p>
+                <p className="text-xl font-bold text-[#1a1a1a] mb-1 font-serif-ar">{booking.artist?.name || "—"}</p>
+                {booking.artist?.category && (
+                  <p className="text-sm text-[#b8860b] mb-3">{booking.artist.category}</p>
+                )}
+                <div className="space-y-1.5 text-sm text-[#1a1a1a]/70">
+                  <p className="flex items-center gap-2">
+                    <span className="text-[#b8860b]">◆</span>
+                    <span>{booking.venue?.name || "—"}</span>
+                  </p>
+                  {booking.venue?.address && (
+                    <p className="flex items-center gap-2">
+                      <span className="text-[#b8860b]">◆</span>
+                      <span>{booking.venue.address}</span>
+                    </p>
                   )}
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <span>📅</span>
-                    <span>{formatDate(booking.date)} • {timeSlotMap[booking.timeSlot] || booking.timeSlot}</span>
-                  </p>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <span>📍</span>
-                    <span>{booking.venue?.name || "غير محدد"}</span>
-                  </p>
                 </div>
               </div>
             </div>
 
             {/* Financial Table */}
-            <div className="mb-10">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                  <span className="text-xl">💰</span>
-                </div>
-                <h3 className="text-xl font-black text-gray-900">الملخص المالي</h3>
-              </div>
+            <div className="mb-12">
+              <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-4 pb-2 border-b border-[#1a1a1a]/20">
+                تفاصيل المبالغ
+              </p>
 
-              <div className="overflow-hidden rounded-2xl border-2 border-gray-100">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-gray-900 to-black text-white">
-                      <th className="px-6 py-4 text-right text-sm font-bold">البيان</th>
-                      <th className="px-6 py-4 text-left text-sm font-bold">المبلغ (ج.م)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-5 text-gray-900 font-medium">المبلغ الإجمالي للفعالية</td>
-                      <td className="px-6 py-5 text-left font-bold text-gray-900 text-lg">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-[#1a1a1a] text-white">
+                    <th className="px-6 py-4 text-right text-xs tracking-widest uppercase font-semibold">البند</th>
+                    <th className="px-6 py-4 text-right text-xs tracking-widest uppercase font-semibold">الوصف</th>
+                    <th className="px-6 py-4 text-left text-xs tracking-widest uppercase font-semibold">المبلغ (ج.م)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-[#1a1a1a]/10">
+                    <td className="px-6 py-5 text-sm font-semibold text-[#1a1a1a]">خدمة فنية</td>
+                    <td className="px-6 py-5 text-sm text-[#1a1a1a]/70">
+                      إحياء فعالية - {booking.artist?.name}
+                    </td>
+                    <td className="px-6 py-5 text-left text-base font-bold text-[#1a1a1a]">
+                      {grossAmount.toLocaleString()}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-[#1a1a1a]/10 bg-green-50/40">
+                    <td className="px-6 py-5 text-sm font-semibold text-green-800">المبلغ المدفوع</td>
+                    <td className="px-6 py-5 text-sm text-green-700/80">عربون / دفعة أولى</td>
+                    <td className="px-6 py-5 text-left text-base font-bold text-green-800">
+                      {paidAmount.toLocaleString()}
+                    </td>
+                  </tr>
+                  <tr className="bg-orange-50/40">
+                    <td className="px-6 py-5 text-sm font-semibold text-orange-800">المبلغ المتبقي</td>
+                    <td className="px-6 py-5 text-sm text-orange-700/80">يُستحق قبل الفعالية</td>
+                    <td className="px-6 py-5 text-left text-base font-bold text-orange-800">
+                      {remainingAmount.toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr className="bg-[#fafaf7] border-t-2 border-[#1a1a1a]">
+                    <td colSpan={2} className="px-6 py-5 text-sm font-bold text-[#1a1a1a] tracking-wide">
+                      الإجمالي المستحق
+                    </td>
+                    <td className="px-6 py-5 text-left">
+                      <span className="text-2xl font-black text-[#b8860b] font-serif-ar">
                         {grossAmount.toLocaleString()}
-                      </td>
-                    </tr>
-                    <tr className="bg-green-50/50 hover:bg-green-50 transition-colors">
-                      <td className="px-6 py-5 text-green-700 font-medium flex items-center gap-2">
-                        <span className="text-green-500">✅</span>
-                        المبلغ المدفوع
-                      </td>
-                      <td className="px-6 py-5 text-left font-bold text-green-700 text-lg">
-                        {paidAmount.toLocaleString()}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-5 text-gray-900 font-medium flex items-center gap-2">
-                        <span className="text-orange-500">⏳</span>
-                        المبلغ المتبقي
-                      </td>
-                      <td className="px-6 py-5 text-left font-bold text-orange-600 text-lg">
-                        {remainingAmount.toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-gradient-to-r from-yellow-50 to-amber-50 border-t-2 border-yellow-200">
-                      <td className="px-6 py-5 text-lg font-black text-gray-900">الإجمالي</td>
-                      <td className="px-6 py-5 text-left text-2xl font-black text-yellow-600">
-                        {grossAmount.toLocaleString()} ج.م
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+                      </span>
+                      <span className="text-sm text-[#1a1a1a]/60 mr-2">ج.م</span>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
 
-            {/* Payment Info */}
+            {/* Payment History */}
             {booking.payments && booking.payments.length > 0 && (
-              <div className="mb-10 no-print">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                    <span className="text-xl">💳</span>
-                  </div>
-                  <h3 className="text-xl font-black text-gray-900">سجل المدفوعات</h3>
-                </div>
+              <div className="mb-12 no-print">
+                <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-4 pb-2 border-b border-[#1a1a1a]/20">
+                  سجل المدفوعات
+                </p>
                 <div className="space-y-2">
                   {booking.payments.map((payment: any, index: number) => (
                     <div 
-                      key={payment.id} 
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100"
+                      key={payment.id}
+                      className="flex items-center justify-between p-4 bg-[#fafaf7] border-r-4 border-[#b8860b]"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{payment.notes || `دفعة ${index + 1}`}</p>
-                          <p className="text-xs text-gray-500">{formatDate(payment.createdAt)}</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-bold text-[#1a1a1a]">{payment.notes || `دفعة ${index + 1}`}</p>
+                        <p className="text-xs text-[#1a1a1a]/50 mt-0.5">{formatDate(payment.createdAt)}</p>
                       </div>
-                      <span className="font-bold text-green-700 text-lg">
-                        {payment.amount.toLocaleString()} ج.م
-                      </span>
+                      <span className="font-bold text-[#1a1a1a]">{payment.amount.toLocaleString()} ج.م</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Terms & Conditions */}
-            <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-gray-100 rounded-2xl p-6 mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-xl">📋</span>
-                <h3 className="text-lg font-black text-gray-900">الشروط والأحكام</h3>
+            {/* Terms */}
+            <div className="mb-12 p-6 bg-[#fafaf7] border border-[#1a1a1a]/10">
+              <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-3">
+                الشروط والأحكام
+              </p>
+              <ol className="space-y-1.5 text-xs text-[#1a1a1a]/70 list-decimal list-inside">
+                <li>يمكن إلغاء الحجز واسترداد المبلغ كاملاً قبل 48 ساعة من موعد الفعالية.</li>
+                <li>العربون غير قابل للاسترداد في حالة الإلغاء بعد الموافقة الرسمية.</li>
+                <li>يجب سداد المبلغ المتبقي قبل 24 ساعة من موعد الفعالية.</li>
+                <li>هذه الفاتورة معتمدة إلكترونياً وتُعد مستنداً قانونياً.</li>
+              </ol>
+            </div>
+
+            {/* Signature & Stamp Section */}
+            <div className="grid grid-cols-2 gap-12 mb-12 pt-8 border-t border-[#1a1a1a]/10">
+              {/* Signature */}
+              <div>
+                <p className="text-[10px] tracking-[0.3em] text-[#1a1a1a]/50 uppercase mb-8">
+                  توقيع المعتمد
+                </p>
+                <div className="border-b-2 border-[#1a1a1a] pb-2 mb-2">
+                  <p className="text-sm font-serif-ar italic text-[#1a1a1a]/80">
+                    Nooryi Studio Management
+                  </p>
+                </div>
+                <p className="text-xs text-[#1a1a1a]/60">المدير التنفيذي</p>
               </div>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-500 mt-1">•</span>
-                  <span>يمكن إلغاء الحجز واسترداد المبلغ كاملاً قبل 48 ساعة من موعد الفعالية.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-500 mt-1">•</span>
-                  <span>العربون غير قابل للاسترداد في حالة الإلغاء بعد الموافقة.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-500 mt-1">•</span>
-                  <span>يجب دفع المبلغ المتبقي قبل 24 ساعة من الفعالية.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-500 mt-1">•</span>
-                  <span>هذه الفاتورة معتمدة إلكترونياً ولا تحتاج لتوقيع يدوي.</span>
-                </li>
-              </ul>
+
+              {/* Official Stamp */}
+              <div className="flex justify-center items-center">
+                <div className="relative">
+                  <svg width="180" height="180" viewBox="0 0 180 180" className="opacity-90">
+                    {/* Outer Circle */}
+                    <circle cx="90" cy="90" r="85" fill="none" stroke="#b8860b" strokeWidth="3"/>
+                    <circle cx="90" cy="90" r="78" fill="none" stroke="#b8860b" strokeWidth="1"/>
+                    
+                    {/* Inner Circle */}
+                    <circle cx="90" cy="90" r="60" fill="none" stroke="#b8860b" strokeWidth="2"/>
+                    
+                    {/* Top Text - Curved */}
+                    <defs>
+                      <path id="topArc" d="M 20,90 A 70,70 0 0,1 160,90" fill="none"/>
+                      <path id="bottomArc" d="M 25,90 A 65,65 0 0,0 155,90" fill="none"/>
+                    </defs>
+                    <text fontSize="11" fill="#b8860b" fontWeight="bold" fontFamily="serif">
+                      <textPath href="#topArc" startOffset="50%" textAnchor="middle">
+                        ★ NOORYI STUDIO ★
+                      </textPath>
+                    </text>
+                    <text fontSize="10" fill="#b8860b" fontWeight="bold" fontFamily="serif">
+                      <textPath href="#bottomArc" startOffset="50%" textAnchor="middle">
+                        منصة حجز الفنانين
+                      </textPath>
+                    </text>
+                    
+                    {/* Center Logo */}
+                    <text x="90" y="95" fontSize="36" fill="#b8860b" textAnchor="middle" fontWeight="bold" fontFamily="serif">
+                      ن
+                    </text>
+                    
+                    {/* Small Stars */}
+                    <text x="35" y="95" fontSize="12" fill="#b8860b">★</text>
+                    <text x="140" y="95" fontSize="12" fill="#b8860b">★</text>
+                  </svg>
+                  
+                  {/* "OFFICIAL" stamp overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="rotate-[-15deg] opacity-40">
+                      <div className="border-4 border-[#b8860b] px-4 py-1 text-[#b8860b] font-bold text-xs tracking-widest">
+                        OFFICIAL
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Section */}
+            <div className="grid grid-cols-3 gap-6 p-6 bg-[#1a1a1a] text-white mb-8">
+              {/* QR Code Placeholder */}
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-24 h-24 bg-white p-2 mb-2">
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    {/* Simple QR-like pattern */}
+                    <rect x="0" y="0" width="30" height="30" fill="#1a1a1a"/>
+                    <rect x="5" y="5" width="20" height="20" fill="white"/>
+                    <rect x="10" y="10" width="10" height="10" fill="#1a1a1a"/>
+                    
+                    <rect x="70" y="0" width="30" height="30" fill="#1a1a1a"/>
+                    <rect x="75" y="5" width="20" height="20" fill="white"/>
+                    <rect x="80" y="10" width="10" height="10" fill="#1a1a1a"/>
+                    
+                    <rect x="0" y="70" width="30" height="30" fill="#1a1a1a"/>
+                    <rect x="5" y="75" width="20" height="20" fill="white"/>
+                    <rect x="10" y="80" width="10" height="10" fill="#1a1a1a"/>
+                    
+                    {/* Random pattern */}
+                    <rect x="40" y="10" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="50" y="15" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="45" y="25" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="55" y="35" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="40" y="45" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="60" y="50" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="50" y="60" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="70" y="45" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="80" y="55" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="45" y="70" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="60" y="80" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="75" y="75" width="5" height="5" fill="#1a1a1a"/>
+                    <rect x="85" y="85" width="5" height="5" fill="#1a1a1a"/>
+                  </svg>
+                </div>
+                <p className="text-[10px] text-white/60 text-center tracking-wider">
+                  امسح للتحقق
+                </p>
+              </div>
+
+              {/* Verification Info */}
+              <div className="col-span-2 flex flex-col justify-center">
+                <p className="text-[10px] tracking-[0.3em] text-[#daa520] uppercase mb-3">
+                  رمز التحقق الرسمي
+                </p>
+                <p className="font-mono text-sm text-white/90 mb-2 break-all">
+                  {referenceCode}
+                </p>
+                <p className="text-xs text-white/50 leading-relaxed">
+                  يمكن التحقق من صحة هذه الفاتورة عبر موقع Nooryi Studio 
+                  باستخدام رمز المرجع أعلاه.
+                </p>
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="border-t-2 border-gray-100 pt-8 text-center">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center">
-                  <span className="text-2xl">🎵</span>
-                </div>
-                <h3 className="text-2xl font-black text-gray-900">Nooryi Studio</h3>
-              </div>
-              <p className="text-gray-600 mb-2">
-                ✨ شكراً لاختيارك Nooryi Studio. نتمنى لك فعالية استثنائية!
+            <div className="text-center pt-6 border-t border-[#1a1a1a]/10">
+              <p className="text-xs text-[#1a1a1a]/50 mb-2">
+                هذه الفاتورة صادرة إلكترونياً وفقاً لأحكام قانون التوقيع الإلكتروني المصري
               </p>
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mt-4">
-                <span>📧 support@nooryi.com</span>
+              <p className="text-xs text-[#1a1a1a]/40">
+                © {new Date().getFullYear()} Nooryi Studio - جميع الحقوق محفوظة
+              </p>
+              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-[#1a1a1a]/50">
+                <span>support@nooryi.com</span>
                 <span>•</span>
-                <span>📱 01000000000</span>
+                <span dir="ltr">+20 100 000 0000</span>
+                <span>•</span>
+                <span>nooryi-studio.vercel.app</span>
               </div>
-              <p className="text-xs text-gray-400 mt-6">
-                تم إنشاء هذه الفاتورة إلكترونياً في {formatDate(new Date().toISOString())}
-              </p>
             </div>
           </div>
+
+          {/* Bottom Border */}
+          <div className="h-2 bg-gradient-to-r from-[#b8860b] via-[#daa520] to-[#b8860b]"></div>
         </div>
 
         {/* Bottom Actions - Hidden on Print */}
-        <div className="max-w-4xl mx-auto mt-6 no-print">
-          <div className="flex flex-wrap justify-center gap-3">
-            <button
-              onClick={shareWhatsApp}
-              className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-600 transition-all shadow-lg"
-            >
-              <span className="text-xl">📱</span>
-              <span>مشاركة عبر واتساب</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg"
-            >
-              <span className="text-xl">📥</span>
-              <span>تحميل كـ PDF</span>
-            </button>
-          </div>
-          <p className="text-center text-sm text-gray-500 mt-4">
-            💡 نصيحة: عند الطباعة، اختر "حفظ كـ PDF" من قائمة الطابعات لتحميل الفاتورة
-          </p>
+        <div className="no-print max-w-5xl mx-auto mt-6 flex flex-wrap justify-center gap-3">
+          <button
+            onClick={shareWhatsApp}
+            className="flex items-center gap-2 bg-[#25D366] text-white px-6 py-3 rounded font-semibold hover:bg-[#1da851] transition-colors"
+          >
+            <span>📱</span>
+            <span>مشاركة واتساب</span>
+          </button>
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 bg-[#1a1a1a] text-white px-6 py-3 rounded font-semibold hover:bg-black transition-colors"
+          >
+            <span>📥</span>
+            <span>تحميل PDF</span>
+          </button>
         </div>
       </div>
     </>
