@@ -1,21 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  reactStrictMode: false, // مهم جداً لحل خطأ #441
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
+        protocol: 'https',
+        hostname: '**',
       },
     ],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

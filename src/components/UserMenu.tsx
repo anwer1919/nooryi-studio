@@ -2,23 +2,38 @@
 
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   LogOut, 
-  User, 
   LayoutDashboard, 
   Calendar,
   ChevronDown,
-  Music
+  Music,
+  Loader2
 } from "lucide-react"
 
 export default function UserMenu() {
   const { data: session, status } = useSession()
   const [isOpen, setIsOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // منع Hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // أثناء التحميل الأول، عرض skeleton بسيط
+  if (!isMounted) {
+    return (
+      <div className="w-10 h-10 rounded-full bg-white/5" />
+    )
+  }
 
   if (status === "loading") {
     return (
-      <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+        <Loader2 className="animate-spin text-white/40" size={16} />
+      </div>
     )
   }
 
@@ -56,7 +71,7 @@ export default function UserMenu() {
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center">
           <span className="text-sm font-black text-black">{userInitial}</span>
         </div>
-        <span className="text-sm font-semibold">{session.user.name || "مستخدم"}</span>
+        <span className="text-sm font-semibold hidden sm:block">{session.user.name || "مستخدم"}</span>
         <ChevronDown size={14} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 

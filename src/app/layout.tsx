@@ -21,8 +21,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
-      <body className="bg-[#0a0a0a] text-white font-sans antialiased">
+    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
+      <body 
+        className="bg-[#0a0a0a] text-white font-sans antialiased"
+        suppressHydrationWarning
+      >
         <Providers>
           <Navbar />
           {children}

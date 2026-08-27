@@ -15,16 +15,19 @@ interface Notification {
 }
 
 export default function NotificationBell() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // منع Hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
-    // لا تفعل شيئاً إذا لم يكن المستخدم مسجلاً
-    if (status !== "authenticated") {
-      return
-    }
+    if (!isMounted || status !== "authenticated") return
 
     const fetchNotifications = async () => {
       try {
@@ -39,7 +42,7 @@ export default function NotificationBell() {
           )
         }
       } catch (error) {
-        console.error("Error fetching notifications:", error)
+        // تجاهل الأخطاء بصمت
       }
     }
 
@@ -47,7 +50,7 @@ export default function NotificationBell() {
     const interval = setInterval(fetchNotifications, 30000)
     
     return () => clearInterval(interval)
-  }, [status])
+  }, [status, isMounted])
 
   const markAsRead = async (id: string) => {
     try {
@@ -57,7 +60,7 @@ export default function NotificationBell() {
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
-      console.error("Error marking as read:", error)
+      // تجاهل الأخطاء
     }
   }
 
@@ -67,11 +70,15 @@ export default function NotificationBell() {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
       setUnreadCount(0)
     } catch (error) {
-      console.error("Error marking all as read:", error)
+      // تجاهل الأخطاء
     }
   }
 
-  // لا تعرض شيئاً إذا لم يكن المستخدم مسجلاً
+  // أثناء التحميل الأول، عرض placeholder
+  if (!isMounted) {
+    return <div className="w-10 h-10 rounded-xl" />
+  }
+
   if (status !== "authenticated") {
     return null
   }
@@ -98,7 +105,6 @@ export default function NotificationBell() {
             onClick={() => setIsOpen(false)} 
           />
           <div className="absolute left-0 mt-2 w-80 glass rounded-2xl z-50 shadow-2xl border border-white/10 max-h-96 overflow-hidden flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <h3 className="font-bold text-sm">الإشعارات</h3>
               <div className="flex items-center gap-2">
@@ -121,7 +127,6 @@ export default function NotificationBell() {
               </div>
             </div>
 
-            {/* Notifications List */}
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
                 <div className="text-center py-8 text-white/40 text-sm">
