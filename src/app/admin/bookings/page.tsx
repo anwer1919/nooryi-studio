@@ -8,7 +8,10 @@ import {
   ArrowRight, 
   Music,
   Filter,
-  Search
+  Search,
+  MapPin,
+  Phone,
+  Mail
 } from "lucide-react"
 
 export default async function AdminBookingsPage() {
@@ -22,8 +25,8 @@ export default async function AdminBookingsPage() {
     orderBy: { createdAt: "desc" },
     include: {
       artist: { select: { name: true, slug: true, profileImage: true, category: true } },
-      customer: { select: { fullName: true, phone: true, email: true } },
-      venue: { select: { name: true, address: true } },
+      customer: true,
+      venue: true,
     },
   })
 
@@ -111,9 +114,13 @@ export default async function AdminBookingsPage() {
                     <div className="flex-1">
                       <h3 className="text-lg font-bold mb-1">{booking.artist?.name || "فنان غير معروف"}</h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/60">
-                        <span>العميل: {booking.customer?.fullName || "غير محدد"}</span>
-                        <span>•</span>
-                        <span>الهاتف: {booking.customer?.phone || "-"}</span>
+                        <span className="flex items-center gap-1">
+                          <span>العميل: {booking.clientName || booking.customer?.fullName || "غير محدد"}</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone size={12} />
+                          {booking.clientPhone || booking.customer?.phone || "-"}
+                        </span>
                         <span>•</span>
                         <span>{booking.artist?.category}</span>
                       </div>
