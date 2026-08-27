@@ -13,52 +13,115 @@ import {
   XCircle,
   AlertCircle,
   CreditCard,
-  Wallet,
   Phone,
-  Mail
+  Mail,
+  DollarSign
 } from "lucide-react"
 
-export default async function BookingDetailsPage({ params }: { params: { id: string } }) {
+export const dynamic = "force-dynamic"
+
+export default async function BookingDetailsPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.email) {
-    redirect(`/login?callbackUrl=/booking/${params.id}`)
+    redirect(`/login?callbackUrl=/booking/${id}`)
   }
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: params.id },
-    include: {
-      artist: true,
-      venue: true,
-    },
-  })
+  let booking
+  try {
+    booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        artist: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            profileImage: true,
+            slug: true,
+          },
+        },
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    })
+  } catch (error) {
+    console.error("Error fetching booking:", error)
+    redirect("/my-bookings")
+  }
 
   if (!booking) {
     redirect("/my-bookings")
   }
 
-  // التحقق من أن المستخدم هو صاحب الحجز (عبر البريد الإلكتروني)
-  if (booking.clientEmail !== session.user.email) {
+  // التحقق من الملكية
+  const isOwner = booking.clientEmail === session.user.email
+  const isAdmin = session.user.role === "SUPER_ADMIN" || session.user.role === "ADMIN"
+  
+  if (!isOwner && !isAdmin) {
     redirect("/my-bookings")
   }
 
   const deposit = booking.depositAmount || (booking.grossAmount || 0) * 0.2
   const remaining = (booking.grossAmount || 0) - deposit
-  const isApproved = booking.status === "APPROVED"
-  const needsPayment = isApproved && remaining > 0
 
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "PENDING_APPROVAL":
-        return { color: "orange", icon: Clock, title: "في انتظار الموافقة", description: "تم استلام طلبك وجاري مراجعته من قبل الفنان" }
+        return { 
+          color: "orange", 
+          icon: Clock, 
+          title: "في انتظار الموافقة", 
+          description: "تم استلام طلبك وجاري مراجعته من قبل الإدارة",
+          bg: "bg-orange-500/10",
+          border: "border-orange-500/20"
+        }
       case "APPROVED":
-        return { color: "green", icon: CheckCircle2, title: "تمت الموافقة", description: "تم تأكيد حجزك بنجاح" }
+        return { 
+          color: "green", 
+          icon: CheckCircle2, 
+          title: "تمت الموافقة ✅", 
+          description: "تم تأكيد حجزك بنجاح، يمكنك إكمال الدفع",
+          bg: "bg-green-500/10",
+          border: "border-green-500/20"
+        }
       case "COMPLETED":
-        return { color: "blue", icon: CheckCircle2, title: "مكتمل", description: "تمت الفعالية بنجاح" }
+        return { 
+          color: "blue", 
+          icon: CheckCircle2, 
+          title: "مكتمل", 
+          description: "تمت الفعالية بنجاح",
+          bg: "bg-blue-500/10",
+          border: "border-blue-500/20"
+        }
       case "CANCELLED":
-        return { color: "red", icon: XCircle, title: "ملغي", description: "تم إلغاء هذا الحجز" }
+        return { 
+          color: "red", 
+          icon: XCircle, 
+          title: "ملغي", 
+          description: "تم إلغاء هذا الحجز",
+          bg: "bg-red-500/10",
+          border: "border-red-500/20"
+        }
       default:
-        return { color: "gray", icon: AlertCircle, title: status, description: "" }
+        return { 
+          color: "gray", 
+          icon: AlertCircle, 
+          title: status, 
+          description: "",
+          bg: "bg-white/5",
+          border: "border-white/10"
+        }
     }
   }
 
@@ -82,50 +145,42 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
         </div>
 
         {/* Status Banner */}
-        <div className="glass rounded-3xl p-8 mb-8">
+        <div className={`glass rounded-3xl p-8 mb-8 border ${sc.border}`}>
           <div className="flex items-start gap-4">
-            <div className={`w-16 h-16 rounded-2xl bg-${sc.color}-500/10 border border-${sc.color}-500/20 flex items-center justify-center flex-shrink-0`}>
+            <div className={`w-16 h-16 rounded-2xl ${sc.bg} border ${sc.border} flex items-center justify-center flex-shrink-0`}>
               <StatusIcon className={`text-${sc.color}-400`} size={32} />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-black mb-2">{sc.title}</h2>
-              <p className="text-white/70 mb-4">{sc.description}</p>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-white/60">
-                  <CheckCircle2 size={14} className="text-green-400" />
-                  <span>تم استلام العربون</span>
-                </div>
-                <div className={`flex items-center gap-2 ${isApproved ? "text-white/60" : "text-white/30"}`}>
-                  {isApproved ? <CheckCircle2 size={14} className="text-green-400" /> : <Clock size={14} />}
-                  <span>في انتظار موافقة الفنان</span>
-                </div>
-                <div className={`flex items-center gap-2 ${needsPayment ? "text-yellow-400" : "text-white/30"}`}>
-                  <CreditCard size={14} />
-                  <span>إكمال الدفع المتبقي</span>
-                </div>
-              </div>
+              <h2 className={`text-2xl font-black mb-2 text-${sc.color}-400`}>{sc.title}</h2>
+              <p className="text-white/70">{sc.description}</p>
             </div>
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
+          {/* Main Content */}
           <div className="md:col-span-2 space-y-6">
-            {/* Artist */}
+            {/* Artist Info */}
             <div className="glass rounded-3xl p-6">
-              <h3 className="text-sm text-white/40 uppercase mb-4">الفنان</h3>
+              <h3 className="text-sm text-white/40 uppercase mb-4 flex items-center gap-2">
+                <Music size={16} />
+                الفنان
+              </h3>
               <div className="flex items-center gap-4">
-                {booking.artist?.profileImage && (
+                {booking.artist?.profileImage ? (
                   <img 
                     src={booking.artist.profileImage} 
                     alt={booking.artist.name}
                     className="w-20 h-20 rounded-2xl object-cover"
                   />
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                    <Music className="text-yellow-400" size={32} />
+                  </div>
                 )}
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-1">{booking.artist?.name}</h2>
-                  <p className="text-white/60 text-sm mb-3">{booking.artist?.category}</p>
-                  <p className="text-sm text-white/70 line-clamp-2">{booking.artist?.bio || "لا توجد سيرة ذاتية"}</p>
+                  <p className="text-white/60 text-sm">{booking.artist?.category}</p>
                 </div>
               </div>
             </div>
@@ -136,27 +191,31 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-white/40 mb-1">التاريخ</p>
-                  <p className="flex items-center gap-2 font-semibold">
+                  <p className="font-semibold flex items-center gap-2">
                     <Calendar size={14} className="text-yellow-400" />
-                    {new Date(booking.date).toLocaleDateString("ar-EG", { 
-                      weekday: "short",
-                      day: "numeric", 
-                      month: "long" 
+                    {new Date(booking.date).toLocaleDateString("ar-EG", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric"
                     })}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-white/40 mb-1">الوقت</p>
-                  <p className="flex items-center gap-2 font-semibold">
+                  <p className="font-semibold flex items-center gap-2">
                     <Clock size={14} className="text-yellow-400" />
-                    {booking.timeSlot}
+                    {booking.timeSlot === "MORNING" && "صباحاً"}
+                    {booking.timeSlot === "AFTERNOON" && "ظهيرة"}
+                    {booking.timeSlot === "EVENING" && "مساءً"}
+                    {booking.timeSlot === "NIGHT" && "ليلاً"}
                   </p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-xs text-white/40 mb-1">المكان</p>
-                  <p className="flex items-center gap-2 font-semibold">
+                  <p className="font-semibold flex items-center gap-2">
                     <MapPin size={14} className="text-yellow-400" />
-                    {booking.venue?.name}
+                    {booking.venue?.name || "غير محدد"}
                   </p>
                   {booking.venue?.address && (
                     <p className="text-sm text-white/60 mr-6 mt-1">{booking.venue.address}</p>
@@ -165,18 +224,21 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
               </div>
             </div>
 
-            {/* Payment */}
+            {/* Payment Status */}
             <div className="glass rounded-3xl p-6">
-              <h3 className="text-sm text-white/40 uppercase mb-4">حالة الدفع</h3>
+              <h3 className="text-sm text-white/40 uppercase mb-4 flex items-center gap-2">
+                <DollarSign size={16} />
+                حالة الدفع
+              </h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">المبلغ الإجمالي</span>
-                  <span className="font-semibold">{(booking.grossAmount || 0).toLocaleString()} ج.م</span>
+                  <span className="font-bold text-lg">{(booking.grossAmount || 0).toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-sm text-green-400">
                   <span className="flex items-center gap-2">
                     <CheckCircle2 size={14} />
-                    العربون (مدفوع)
+                    العربون (20%)
                   </span>
                   <span className="font-bold">{deposit.toLocaleString()} ج.م</span>
                 </div>
@@ -186,25 +248,23 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
                 </div>
               </div>
 
-              {needsPayment && (
-                <Link 
-                  href={`/booking/${booking.id}/payment`}
-                  className="group relative block mt-6"
-                >
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
-                  <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3 rounded-xl text-center">
-                    <span className="flex items-center justify-center gap-2">
-                      <Wallet size={16} />
-                      إكمال الدفع المتبقي
-                    </span>
-                  </div>
-                </Link>
+              {/* Payment Actions */}
+              {booking.status === "APPROVED" && remaining > 0 && (
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <Link 
+                    href={`/booking/${booking.id}/payment`}
+                    className="block w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3 rounded-xl text-center hover:opacity-90 transition-all"
+                  >
+                    إكمال الدفع ({remaining.toLocaleString()} ج.م)
+                  </Link>
+                </div>
               )}
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Quick Actions */}
             <div className="glass rounded-3xl p-6">
               <h3 className="text-sm text-white/40 uppercase mb-4">إجراءات سريعة</h3>
               <div className="space-y-2">
@@ -222,13 +282,23 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
                   <Mail size={18} className="text-yellow-400" />
                   <span className="text-sm">تواصل مع الدعم</span>
                 </a>
-                <a 
-                  href="tel:+201234567890"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <Phone size={18} className="text-yellow-400" />
-                  <span className="text-sm">اتصل بنا</span>
-                </a>
+              </div>
+            </div>
+
+            {/* Client Info */}
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-sm text-white/40 uppercase mb-4">معلومات التواصل</h3>
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-sm">
+                  <Phone size={14} className="text-yellow-400" />
+                  {booking.clientPhone}
+                </p>
+                {booking.clientEmail && (
+                  <p className="flex items-center gap-2 text-sm">
+                    <Mail size={14} className="text-yellow-400" />
+                    {booking.clientEmail}
+                  </p>
+                )}
               </div>
             </div>
           </div>
