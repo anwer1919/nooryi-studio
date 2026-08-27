@@ -153,7 +153,6 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
                userName={session?.user?.name || ""}
                userPhone={session?.user?.phone || ""}
               />
-              />
             </div>
           </div>
         </div>
