@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import { Bell, Check, CheckCheck, X } from "lucide-react"
+import { Bell, CheckCheck, X } from "lucide-react"
 
 interface Notification {
   id: string
@@ -15,30 +15,39 @@ interface Notification {
 }
 
 export default function NotificationBell() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (!session?.user) return
+    // لا تفعل شيئاً إذا لم يكن المستخدم مسجلاً
+    if (status !== "authenticated") {
+      return
+    }
 
-    const fetchNotifications = () => {
-      fetch("/api/notifications")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.notifications) {
-            setNotifications(data.notifications)
-            setUnreadCount(data.notifications.filter((n: Notification) => !n.isRead).length)
-          }
-        })
-        .catch(() => {})
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch("/api/notifications")
+        if (!response.ok) return
+        
+        const data = await response.json()
+        if (data.notifications) {
+          setNotifications(data.notifications)
+          setUnreadCount(
+            data.notifications.filter((n: Notification) => !n.isRead).length
+          )
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error)
+      }
     }
 
     fetchNotifications()
     const interval = setInterval(fetchNotifications, 30000)
+    
     return () => clearInterval(interval)
-  }, [session?.user])
+  }, [status])
 
   const markAsRead = async (id: string) => {
     try {
@@ -48,7 +57,7 @@ export default function NotificationBell() {
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error marking as read:", error)
     }
   }
 
@@ -58,17 +67,21 @@ export default function NotificationBell() {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
       setUnreadCount(0)
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error marking all as read:", error)
     }
   }
 
-  if (!session?.user) return null
+  // لا تعرض شيئاً إذا لم يكن المستخدم مسجلاً
+  if (status !== "authenticated") {
+    return null
+  }
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-xl hover:bg-white/5 transition-colors"
+        aria-label="الإشعارات"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -80,8 +93,12 @@ export default function NotificationBell() {
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)} 
+          />
           <div className="absolute left-0 mt-2 w-80 glass rounded-2xl z-50 shadow-2xl border border-white/10 max-h-96 overflow-hidden flex flex-col">
+            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <h3 className="font-bold text-sm">الإشعارات</h3>
               <div className="flex items-center gap-2">
@@ -97,12 +114,14 @@ export default function NotificationBell() {
                 <button
                   onClick={() => setIsOpen(false)}
                   className="text-white/40 hover:text-white"
+                  aria-label="إغلاق"
                 >
                   <X size={14} />
                 </button>
               </div>
             </div>
 
+            {/* Notifications List */}
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
                 <div className="text-center py-8 text-white/40 text-sm">
@@ -122,7 +141,9 @@ export default function NotificationBell() {
                         <span className="w-2 h-2 bg-yellow-400 rounded-full mt-1.5 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">{notification.title}</p>
+                        <p className="text-sm font-semibold truncate">
+                          {notification.title}
+                        </p>
                         <p className="text-xs text-white/60 line-clamp-2 mt-0.5">
                           {notification.message}
                         </p>
