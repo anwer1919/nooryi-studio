@@ -1,247 +1,274 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Calendar, MapPin, Phone, Clock, CheckCircle, XCircle, AlertCircle, Music, FileText, Download, ArrowLeft, Loader2 } from "lucide-react"
+import { redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { PDFDownloadLink } from "@react-pdf/renderer"
-import BookingInvoice from "@/components/BookingInvoice"
-import FluidBackground from "@/components/FluidBackground"
+import { 
+  ArrowRight, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Music,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  CreditCard,
+  Wallet,
+  Phone,
+  Mail
+} from "lucide-react"
 
-interface BookingData {
-  id: string
-  date: string
-  timeSlot: string
-  status: string
-  grossAmount: number | null
-  depositAmount: number | null
-  remainingAmount: number | null
-  clientName: string | null
-  clientPhone: string | null
-  clientEmail: string | null
-  createdAt: string
-  artist: { name: string; profileImage: string | null }
-  venue: { name: string; address: string }
-}
+export default async function BookingDetailsPage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user) {
+    redirect("/login")
+  }
 
-export default function BookingDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const bookingId = params.id as string
+  const booking = await prisma.booking.findUnique({
+    where: { id: params.id },
+    include: {
+      artist: true,
+      venue: true,
+      customer: true,
+    },
+  })
 
-  const [booking, setBooking] = useState<BookingData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  if (!booking || booking.userId !== session.user.id) {
+    redirect("/my-bookings")
+  }
 
-  useEffect(() => {
-    fetch(`/api/bookings/${bookingId}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Booking not found")
-        return res.json()
-      })
-      .then(data => {
-        setBooking(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setError("الحجز غير موجود")
-        setLoading(false)
-      })
-  }, [bookingId])
+  const depositAmount = booking.depositAmount || (booking.grossAmount || 0) * 0.2
+  const remainingAmount = (booking.grossAmount || 0) - depositAmount
+  const isPaid = booking.status === "APPROVED" || booking.status === "COMPLETED"
+  const needsPayment = booking.status === "APPROVED" && remainingAmount > 0
 
-  const getStatusInfo = (status: string) => {
-    const info: Record<string, { label: string; color: string; icon: any; bg: string }> = {
-      PENDING_APPROVAL: { label: "بانتظار الموافقة", color: "text-yellow-400", icon: Clock, bg: "bg-yellow-500/10 border-yellow-500/30" },
-      APPROVED: { label: "مؤكد", color: "text-green-400", icon: CheckCircle, bg: "bg-green-500/10 border-green-500/30" },
-      REJECTED: { label: "مرفوض", color: "text-red-400", icon: XCircle, bg: "bg-red-500/10 border-red-500/30" },
-      CANCELLED: { label: "ملغي", color: "text-white/60", icon: XCircle, bg: "bg-white/10 border-white/20" },
-      COMPLETED: { label: "مكتمل", color: "text-blue-400", icon: CheckCircle, bg: "bg-blue-500/10 border-blue-500/30" },
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case "PENDING_APPROVAL":
+        return {
+          color: "orange",
+          icon: Clock,
+          title: "في انتظار الموافقة",
+          description: "تم استلام طلبك وجاري مراجعته من قبل الفنان"
+        }
+      case "APPROVED":
+        return {
+          color: "green",
+          icon: CheckCircle2,
+          title: "تمت الموافقة",
+          description: "تم تأكيد حجزك بنجاح"
+        }
+      case "COMPLETED":
+        return {
+          color: "blue",
+          icon: CheckCircle2,
+          title: "مكتمل",
+          description: "تمت الفعالية بنجاح"
+        }
+      case "CANCELLED":
+        return {
+          color: "red",
+          icon: XCircle,
+          title: "ملغي",
+          description: "تم إلغاء هذا الحجز"
+        }
+      default:
+        return {
+          color: "gray",
+          icon: AlertCircle,
+          title: status,
+          description: ""
+        }
     }
-    return info[status] || { label: status, color: "text-white/60", icon: AlertCircle, bg: "bg-white/10 border-white/20" }
   }
 
-  const getTimeSlotLabel = (slot: string) => {
-    const labels: Record<string, string> = {
-      MORNING: "صباحاً (9ص - 12ظ)",
-      AFTERNOON: "ظهراً (12ظ - 5م)",
-      EVENING: "مساءً (5م - 11م)",
-    }
-    return labels[slot] || slot
-  }
-
-  if (loading) {
-    return (
-      <div className="relative min-h-screen bg-[#1a0a04]">
-        <FluidBackground scrimStrength="strong" />
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <Loader2 className="animate-spin text-yellow-500" size={40} />
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !booking) {
-    return (
-      <div className="relative min-h-screen bg-[#1a0a04]">
-        <FluidBackground scrimStrength="strong" />
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center">
-          <AlertCircle className="text-red-400 mb-4" size={48} />
-          <p className="text-xl text-red-400 mb-4">{error}</p>
-          <Link href="/my-bookings" className="text-yellow-500 hover:text-yellow-400 flex items-center gap-2">
-            <ArrowLeft size={20} /> العودة للحجوزات
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  const statusInfo = getStatusInfo(booking.status)
-  const StatusIcon = statusInfo.icon
-
-  const invoiceData = {
-    bookingId: booking.id,
-    date: new Date(booking.date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
-    artistName: booking.artist.name,
-    clientName: booking.clientName || "غير محدد",
-    clientPhone: booking.clientPhone || "غير محدد",
-    clientEmail: booking.clientEmail || undefined,
-    venueName: booking.venue.name,
-    venueAddress: booking.venue.address || undefined,
-    timeSlot: booking.timeSlot,
-    grossAmount: booking.grossAmount || 0,
-    depositAmount: booking.depositAmount || 0,
-    remainingAmount: booking.remainingAmount || 0,
-    status: booking.status,
-    createdAt: new Date(booking.createdAt).toLocaleDateString("ar-EG"),
-  }
+  const statusConfig = getStatusConfig(booking.status)
+  const StatusIcon = statusConfig.icon
 
   return (
-    <div className="relative min-h-screen bg-[#1a0a04]">
-      <FluidBackground scrimStrength="strong" />
-
-      <div className="relative z-10">
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
         {/* Header */}
-        <header className="border-b border-white/10 py-4 px-4 sticky top-0 bg-black/40 backdrop-blur-xl z-40">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <Link href="/my-bookings" className="flex items-center gap-2 text-white/60 hover:text-white transition">
-              <ArrowLeft size={20} /> العودة للحجوزات
-            </Link>
-            <span className="text-xl font-bold text-yellow-500">تفاصيل الحجز</span>
-          </div>
-        </header>
+        <div className="mb-8">
+          <Link 
+            href="/my-bookings" 
+            className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white mb-4 transition-colors"
+          >
+            <ArrowRight size={16} className="rotate-180" />
+            العودة لحجوزاتي
+          </Link>
+          <h1 className="text-4xl font-black mb-2">تفاصيل الحجز</h1>
+          <p className="text-white/60">رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}</p>
+        </div>
 
-        <div className="max-w-3xl mx-auto px-4 py-12">
-          {/* Status Banner */}
-          <div className={`p-4 rounded-xl border mb-8 flex items-center gap-3 ${statusInfo.bg}`}>
-            <StatusIcon size={24} className={statusInfo.color} />
-            <div>
-              <p className={`font-bold ${statusInfo.color}`}>حالة الحجز: {statusInfo.label}</p>
-              <p className="text-white/60 text-sm">رقم الحجز: {booking.id.slice(0, 8).toUpperCase()}</p>
+        {/* Status Banner */}
+        <div className={`glass rounded-3xl p-8 mb-8 bg-${statusConfig.color}-500/5 border-${statusConfig.color}-500/20`}>
+          <div className="flex items-start gap-4">
+            <div className={`w-16 h-16 rounded-2xl bg-${statusConfig.color}-500/10 border border-${statusConfig.color}-500/20 flex items-center justify-center flex-shrink-0`}>
+              <StatusIcon className={`text-${statusConfig.color}-400`} size={32} />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-black mb-2">{statusConfig.title}</h2>
+              <p className="text-white/70 mb-4">{statusConfig.description}</p>
+              
+              {/* Timeline */}
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-white/60">
+                  <CheckCircle2 size={14} className="text-green-400" />
+                  <span>تم استلام العربون</span>
+                </div>
+                <div className={`flex items-center gap-2 ${isPaid ? "text-white/60" : "text-white/30"}`}>
+                  {isPaid ? <CheckCircle2 size={14} className="text-green-400" /> : <Clock size={14} />}
+                  <span>في انتظار موافقة الفنان</span>
+                </div>
+                <div className={`flex items-center gap-2 ${needsPayment ? "text-yellow-400" : "text-white/30"}`}>
+                  <CreditCard size={14} />
+                  <span>إكمال الدفع المتبقي</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Main Info Card */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="w-16 h-16 bg-white/10 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
-                {booking.artist.profileImage ? (
-                  <img src={booking.artist.profileImage} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Music size={28} className="text-white/50" />
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Main Info */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Artist Card */}
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-sm text-white/40 uppercase mb-4">الفنان</h3>
+              <div className="flex items-center gap-4">
+                {booking.artist?.profileImage && (
+                  <img 
+                    src={booking.artist.profileImage} 
+                    alt={booking.artist.name}
+                    className="w-20 h-20 rounded-2xl object-cover"
+                  />
                 )}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-1">{booking.artist.name}</h2>
-                <p className="text-white/60">حجز حفلة خاصة</p>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-1">{booking.artist?.name}</h2>
+                  <p className="text-white/60 text-sm mb-3">{booking.artist?.category}</p>
+                  <p className="text-sm text-white/70 line-clamp-2">{booking.artist?.bio}</p>
+                </div>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-3 text-white/70">
-                <Calendar size={18} className="text-yellow-500 flex-shrink-0" />
+            {/* Event Details */}
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-sm text-white/40 uppercase mb-4">تفاصيل الفعالية</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-white/50 text-xs">التاريخ</p>
-                  <p className="font-medium">
-                    {new Date(booking.date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                  <p className="text-xs text-white/40 mb-1">التاريخ</p>
+                  <p className="flex items-center gap-2 font-semibold">
+                    <Calendar size={14} className="text-yellow-400" />
+                    {new Date(booking.date).toLocaleDateString("ar-EG", { 
+                      weekday: "short",
+                      day: "numeric", 
+                      month: "long" 
+                    })}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 text-white/70">
-                <Clock size={18} className="text-yellow-500 flex-shrink-0" />
                 <div>
-                  <p className="text-white/50 text-xs">الفترة</p>
-                  <p className="font-medium">{getTimeSlotLabel(booking.timeSlot)}</p>
+                  <p className="text-xs text-white/40 mb-1">الوقت</p>
+                  <p className="flex items-center gap-2 font-semibold">
+                    <Clock size={14} className="text-yellow-400" />
+                    {booking.timeSlot}
+                  </p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-xs text-white/40 mb-1">المكان</p>
+                  <p className="flex items-center gap-2 font-semibold">
+                    <MapPin size={14} className="text-yellow-400" />
+                    {booking.venue?.name || "غير محدد"}
+                  </p>
+                  {booking.venue?.address && (
+                    <p className="text-sm text-white/60 mr-6 mt-1">{booking.venue.address}</p>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-white/70">
-                <MapPin size={18} className="text-yellow-500 flex-shrink-0" />
-                <div>
-                  <p className="text-white/50 text-xs">المكان</p>
-                  <p className="font-medium">{booking.venue.name}</p>
+            </div>
+
+            {/* Payment Status */}
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-sm text-white/40 uppercase mb-4">حالة الدفع</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/60">المبلغ الإجمالي</span>
+                  <span className="font-semibold">{(booking.grossAmount || 0).toLocaleString()} ج.م</span>
+                </div>
+                <div className="flex justify-between text-sm text-green-400">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 size={14} />
+                    العربون (مدفوع)
+                  </span>
+                  <span className="font-bold">{depositAmount.toLocaleString()} ج.م</span>
+                </div>
+                <div className="flex justify-between text-sm pt-3 border-t border-white/10">
+                  <span className="text-white/60">المتبقي</span>
+                  <span className="font-bold text-yellow-400">{remainingAmount.toLocaleString()} ج.م</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-white/70">
-                <Phone size={18} className="text-yellow-500 flex-shrink-0" />
-                <div>
-                  <p className="text-white/50 text-xs">رقم الهاتف</p>
-                  <p className="font-medium" dir="ltr">{booking.clientPhone}</p>
-                </div>
-              </div>
+
+              {needsPayment && (
+                <Link 
+                  href={`/booking/${booking.id}/payment`}
+                  className="group relative block mt-6"
+                >
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
+                  <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3 rounded-xl text-center">
+                    <span className="flex items-center justify-center gap-2">
+                      <Wallet size={16} />
+                      إكمال الدفع المتبقي
+                    </span>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
 
-          {/* Financial Summary */}
-          {booking.grossAmount && (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6">
-              <h3 className="text-lg font-bold text-white mb-4">ملخص الدفع</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">إجمالي قيمة الحجز</span>
-                  <span className="text-white font-bold text-lg">{booking.grossAmount.toLocaleString()} ج.م</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">العربون المدفوع</span>
-                  <span className="text-green-400 font-bold">{booking.depositAmount?.toLocaleString() || 0} ج.م</span>
-                </div>
-                <div className="flex justify-between items-center pt-3 border-t border-white/10">
-                  <span className="text-white/60">المبلغ المتبقي</span>
-                  <span className="text-yellow-400 font-bold text-xl">{booking.remainingAmount?.toLocaleString() || 0} ج.م</span>
-                </div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div className="glass rounded-3xl p-6">
+              <h3 className="text-sm text-white/40 uppercase mb-4">إجراءات سريعة</h3>
+              <div className="space-y-2">
+                <Link 
+                  href={`/booking/${booking.id}/invoice`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <CreditCard size={18} className="text-yellow-400" />
+                  <span className="text-sm">عرض الإيصال</span>
+                </Link>
+                <a 
+                  href={`mailto:support@nooryi.com?subject=استفسار عن حجز ${booking.id.slice(0, 8)}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <Mail size={18} className="text-yellow-400" />
+                  <span className="text-sm">تواصل مع الدعم</span>
+                </a>
+                <a 
+                  href="tel:+201234567890"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <Phone size={18} className="text-yellow-400" />
+                  <span className="text-sm">اتصل بنا</span>
+                </a>
               </div>
             </div>
-          )}
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <PDFDownloadLink
-              document={<BookingInvoice data={invoiceData} />}
-              fileName={`فاتورة-حجز-${booking.id.slice(0, 8)}.pdf`}
-              className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-4 rounded-xl transition border border-white/20"
-            >
-              {({ loading }) =>
-                loading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" />
-                    جاري تحضير الفاتورة...
-                  </>
-                ) : (
-                  <>
-                    <Download size={20} />
-                    تحميل الفاتورة PDF
-                  </>
-                )
-              }
-            </PDFDownloadLink>
-
-            {booking.remainingAmount && booking.remainingAmount > 0 && booking.status === "APPROVED" && (
-              <Link
-                href={`/booking/${booking.id}/payment`}
-                className="flex-1 flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-4 rounded-xl transition"
+            {/* Help Box */}
+            <div className="glass rounded-3xl p-6 bg-gradient-to-br from-yellow-500/5 to-amber-600/5 border-yellow-500/20">
+              <h3 className="font-bold mb-2">تحتاج مساعدة؟</h3>
+              <p className="text-sm text-white/60 mb-4">
+                فريق الدعم متاح 24/7 للإجابة على استفساراتك
+              </p>
+              <Link 
+                href="/contact"
+                className="text-sm text-yellow-400 hover:text-yellow-300 font-semibold"
               >
-                إكمال الدفع
+                تواصل معنا ←
               </Link>
-            )}
+            </div>
           </div>
         </div>
       </div>

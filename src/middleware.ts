@@ -8,16 +8,18 @@ export default withAuth(
 
     // حماية مسارات لوحة التحكم
     if (path.startsWith("/admin")) {
-      // السماح فقط للأدمن والفنانين
       if (token?.role !== "SUPER_ADMIN" && token?.role !== "ADMIN" && token?.role !== "ARTIST") {
         return NextResponse.redirect(new URL("/login", req.url))
       }
     }
 
-    // حماية مسارات الحجوزات
+    // حماية مسارات الحجز - إلزامية تسجيل الدخول
     if (path.startsWith("/booking") || path.startsWith("/my-bookings")) {
       if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url))
+        // احفظ الصفحة المطلوبة للعودة إليها بعد تسجيل الدخول
+        const loginUrl = new URL("/login", req.url)
+        loginUrl.searchParams.set("callbackUrl", path)
+        return NextResponse.redirect(loginUrl)
       }
     }
 
@@ -31,5 +33,9 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: ["/admin/:path*", "/booking/:path*", "/my-bookings/:path*"],
+  matcher: [
+    "/admin/:path*", 
+    "/booking/:path*", 
+    "/my-bookings/:path*"
+  ],
 }
