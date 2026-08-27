@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { 
   Calendar, 
@@ -29,18 +29,32 @@ export default function BookingForm({
   userName,
 }: BookingFormProps) {
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
 
   const [formData, setFormData] = useState({
-    clientName: userName || "",
+    clientName: "",
     clientPhone: "",
-    clientEmail: userEmail || "",
-    venueId: venues[0]?.id || "",
+    clientEmail: "",
+    venueId: "",
     date: "",
     timeSlot: "EVENING",
   })
+
+  // ✅ تهيئة البيانات بعد التحميل (يمنع Hydration mismatch)
+  useEffect(() => {
+    setIsMounted(true)
+    setFormData({
+      clientName: userName || "",
+      clientPhone: "",
+      clientEmail: userEmail || "",
+      venueId: venues[0]?.id || "",
+      date: "",
+      timeSlot: "EVENING",
+    })
+  }, [userName, userEmail, venues])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,6 +92,12 @@ export default function BookingForm({
         }),
       })
 
+      const contentType = response.headers.get("content-type")
+      
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("الـ API لا يعمل بشكل صحيح")
+      }
+
       const data = await response.json()
 
       if (!response.ok) {
@@ -95,6 +115,20 @@ export default function BookingForm({
     } finally {
       setLoading(false)
     }
+  }
+
+  // ✅ أثناء التحميل الأول، عرض skeleton بسيط
+  if (!isMounted) {
+    return (
+      <div className="space-y-4">
+        <div className="h-10 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-10 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-10 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-10 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-10 bg-white/5 rounded-xl animate-pulse" />
+        <div className="h-12 bg-white/5 rounded-xl animate-pulse" />
+      </div>
+    )
   }
 
   if (success) {
@@ -141,17 +175,20 @@ export default function BookingForm({
         <label htmlFor="clientName" className="block text-sm text-white/60 mb-1.5">
           الاسم الكامل *
         </label>
-        <input
-          id="clientName"
-          name="clientName"
-          type="text"
-          autoComplete="name"
-          value={formData.clientName}
-          onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-          placeholder="أدخل اسمك"
-          required
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
-        />
+        <div className="relative">
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+          <input
+            id="clientName"
+            name="clientName"
+            type="text"
+            autoComplete="name"
+            value={formData.clientName}
+            onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+            placeholder="أدخل اسمك"
+            required
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
+          />
+        </div>
       </div>
 
       {/* Phone */}
@@ -159,17 +196,20 @@ export default function BookingForm({
         <label htmlFor="clientPhone" className="block text-sm text-white/60 mb-1.5">
           رقم الهاتف *
         </label>
-        <input
-          id="clientPhone"
-          name="clientPhone"
-          type="tel"
-          autoComplete="tel"
-          value={formData.clientPhone}
-          onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-          placeholder="01xxxxxxxxx"
-          required
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
-        />
+        <div className="relative">
+          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+          <input
+            id="clientPhone"
+            name="clientPhone"
+            type="tel"
+            autoComplete="tel"
+            value={formData.clientPhone}
+            onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+            placeholder="01xxxxxxxxx"
+            required
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
+          />
+        </div>
       </div>
 
       {/* Email */}
@@ -177,16 +217,19 @@ export default function BookingForm({
         <label htmlFor="clientEmail" className="block text-sm text-white/60 mb-1.5">
           البريد الإلكتروني
         </label>
-        <input
-          id="clientEmail"
-          name="clientEmail"
-          type="email"
-          autoComplete="email"
-          value={formData.clientEmail}
-          onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-          placeholder="example@email.com"
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
-        />
+        <div className="relative">
+          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+          <input
+            id="clientEmail"
+            name="clientEmail"
+            type="email"
+            autoComplete="email"
+            value={formData.clientEmail}
+            onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+            placeholder="example@email.com"
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
+          />
+        </div>
       </div>
 
       {/* Venue */}
@@ -194,21 +237,24 @@ export default function BookingForm({
         <label htmlFor="venueId" className="block text-sm text-white/60 mb-1.5">
           المكان *
         </label>
-        <select
-          id="venueId"
-          name="venueId"
-          value={formData.venueId}
-          onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
-          required
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50 appearance-none"
-        >
-          <option value="">اختر المكان</option>
-          {venues.map((venue) => (
-            <option key={venue.id} value={venue.id} className="bg-black">
-              {venue.name}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+          <select
+            id="venueId"
+            name="venueId"
+            value={formData.venueId}
+            onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
+            required
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50 appearance-none"
+          >
+            <option value="">اختر المكان</option>
+            {venues.map((venue) => (
+              <option key={venue.id} value={venue.id} className="bg-black">
+                {venue.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Date */}
@@ -216,16 +262,19 @@ export default function BookingForm({
         <label htmlFor="bookingDate" className="block text-sm text-white/60 mb-1.5">
           تاريخ الفعالية *
         </label>
-        <input
-          id="bookingDate"
-          name="date"
-          type="date"
-          value={formData.date}
-          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          required
-          min={new Date().toISOString().split("T")[0]}
-          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
-        />
+        <div className="relative">
+          <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+          <input
+            id="bookingDate"
+            name="date"
+            type="date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            required
+            min={new Date().toISOString().split("T")[0]}
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
+          />
+        </div>
       </div>
 
       {/* Time Slot */}

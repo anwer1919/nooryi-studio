@@ -22,14 +22,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
-      <head />
+      <head>
+        <meta name="color-scheme" content="dark" />
+      </head>
       <body 
         className="bg-[#0a0a0a] text-white font-sans antialiased"
         suppressHydrationWarning
       >
         <Providers>
           <Navbar />
-          {children}
+          <main suppressHydrationWarning>
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
