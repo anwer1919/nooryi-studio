@@ -18,6 +18,25 @@ import {
 
 export const dynamic = "force-dynamic"
 
+// ✅ دالة آمنة لتجنب Hydration mismatch
+function formatSafeDate(date: Date | string, includeTime = false): string {
+  try {
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    
+    if (includeTime) {
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}`
+    }
+    return `${year}-${month}-${day}`
+  } catch {
+    return "تاريخ غير صالح"
+  }
+}
+
 export default async function InvoicePage({ 
   params 
 }: { 
@@ -78,7 +97,7 @@ export default async function InvoicePage({
   const status = statusMap[booking.status] || { text: booking.status, color: "text-gray-600" }
 
   return (
-    <div className="min-h-screen bg-gray-50 print:bg-white">
+    <div className="min-h-screen bg-gray-50 print:bg-white" suppressHydrationWarning>
       {/* Header - يخفي عند الطباعة */}
       <div className="bg-black text-white py-4 px-6 print:hidden">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -113,7 +132,7 @@ export default async function InvoicePage({
               #{booking.id.slice(0, 8).toUpperCase()}
             </p>
             <p className="text-sm text-gray-500 print:text-black mt-1">
-              تاريخ الإصدار: {new Date().toLocaleDateString("ar-EG")}
+              تاريخ الإصدار: {formatSafeDate(new Date())}
             </p>
           </div>
         </div>
@@ -163,7 +182,7 @@ export default async function InvoicePage({
               <div className="flex items-center gap-3">
                 <Clock size={16} className="text-gray-400 print:text-black" />
                 <span className="text-gray-700 print:text-black">
-                  {new Date(booking.date).toLocaleDateString("ar-EG")} - {timeSlotMap[booking.timeSlot] || booking.timeSlot}
+                  {formatSafeDate(booking.date)} - {timeSlotMap[booking.timeSlot] || booking.timeSlot}
                 </span>
               </div>
               <div className="flex items-start gap-3">
@@ -231,7 +250,7 @@ export default async function InvoicePage({
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{payment.notes || `دفعة ${index + 1}`}</p>
-                      <p className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleString("ar-EG")}</p>
+                      <p className="text-xs text-gray-500">{formatSafeDate(payment.createdAt, true)}</p>
                     </div>
                   </div>
                   <span className="font-bold text-green-600">{payment.amount.toLocaleString()} ج.م</span>
