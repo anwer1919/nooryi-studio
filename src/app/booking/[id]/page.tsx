@@ -15,10 +15,25 @@ import {
   CreditCard,
   Phone,
   Mail,
-  DollarSign
+  DollarSign,
+  FileText,
+  Printer
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
+
+// دالة مساعدة آمنة لتجنب Hydration mismatch
+function formatSimpleDate(date: Date | string): string {
+  try {
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  } catch {
+    return "تاريخ غير صالح"
+  }
+}
 
 export default async function BookingDetailsPage({ 
   params 
@@ -53,6 +68,9 @@ export default async function BookingDetailsPage({
             address: true,
           },
         },
+        payments: {
+          orderBy: { createdAt: "desc" },
+        },
       },
     })
   } catch (error) {
@@ -72,8 +90,9 @@ export default async function BookingDetailsPage({
     redirect("/my-bookings")
   }
 
-  const deposit = booking.depositAmount || (booking.grossAmount || 0) * 0.2
-  const remaining = (booking.grossAmount || 0) - deposit
+  const grossAmount = booking.grossAmount || 0
+  const paidAmount = booking.depositAmount || 0
+  const remainingAmount = booking.remainingAmount || (grossAmount - paidAmount)
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -84,7 +103,8 @@ export default async function BookingDetailsPage({
           title: "في انتظار الموافقة", 
           description: "تم استلام طلبك وجاري مراجعته من قبل الإدارة",
           bg: "bg-orange-500/10",
-          border: "border-orange-500/20"
+          border: "border-orange-500/20",
+          text: "text-orange-400"
         }
       case "APPROVED":
         return { 
@@ -93,7 +113,8 @@ export default async function BookingDetailsPage({
           title: "تمت الموافقة ✅", 
           description: "تم تأكيد حجزك بنجاح، يمكنك إكمال الدفع",
           bg: "bg-green-500/10",
-          border: "border-green-500/20"
+          border: "border-green-500/20",
+          text: "text-green-400"
         }
       case "COMPLETED":
         return { 
@@ -102,7 +123,8 @@ export default async function BookingDetailsPage({
           title: "مكتمل", 
           description: "تمت الفعالية بنجاح",
           bg: "bg-blue-500/10",
-          border: "border-blue-500/20"
+          border: "border-blue-500/20",
+          text: "text-blue-400"
         }
       case "CANCELLED":
         return { 
@@ -111,7 +133,8 @@ export default async function BookingDetailsPage({
           title: "ملغي", 
           description: "تم إلغاء هذا الحجز",
           bg: "bg-red-500/10",
-          border: "border-red-500/20"
+          border: "border-red-500/20",
+          text: "text-red-400"
         }
       default:
         return { 
@@ -120,16 +143,26 @@ export default async function BookingDetailsPage({
           title: status, 
           description: "",
           bg: "bg-white/5",
-          border: "border-white/10"
+          border: "border-white/10",
+          text: "text-white"
         }
     }
   }
 
+  const timeSlotMap: Record<string, string> = {
+    "MORNING": "صباحاً",
+    "AFTERNOON": "ظهيرة",
+    "EVENING": "مساءً",
+    "NIGHT": "ليلاً",
+  }
+
   const sc = getStatusConfig(booking.status)
   const StatusIcon = sc.icon
+  const dateStr = formatSimpleDate(booking.date)
+  const timeSlotText = timeSlotMap[booking.timeSlot] || booking.timeSlot
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white" suppressHydrationWarning>
       <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
@@ -140,18 +173,24 @@ export default async function BookingDetailsPage({
             <ArrowRight size={16} className="rotate-180" />
             العودة لحجوزاتي
           </Link>
-          <h1 className="text-4xl font-black mb-2">تفاصيل الحجز</h1>
-          <p className="text-white/60">رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}</p>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-4xl font-black mb-2">تفاصيل الحجز</h1>
+              <p className="text-white/60 font-mono text-sm">
+                رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Status Banner */}
-        <div className={`glass rounded-3xl p-8 mb-8 border ${sc.border}`}>
+        <div className={`glass rounded-3xl p-8 mb-8 border ${sc.border}`} suppressHydrationWarning>
           <div className="flex items-start gap-4">
             <div className={`w-16 h-16 rounded-2xl ${sc.bg} border ${sc.border} flex items-center justify-center flex-shrink-0`}>
-              <StatusIcon className={`text-${sc.color}-400`} size={32} />
+              <StatusIcon className={sc.text} size={32} />
             </div>
             <div className="flex-1">
-              <h2 className={`text-2xl font-black mb-2 text-${sc.color}-400`}>{sc.title}</h2>
+              <h2 className={`text-2xl font-black mb-2 ${sc.text}`}>{sc.title}</h2>
               <p className="text-white/70">{sc.description}</p>
             </div>
           </div>
@@ -172,6 +211,7 @@ export default async function BookingDetailsPage({
                     src={booking.artist.profileImage} 
                     alt={booking.artist.name}
                     className="w-20 h-20 rounded-2xl object-cover"
+                    suppressHydrationWarning
                   />
                 ) : (
                   <div className="w-20 h-20 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
@@ -188,27 +228,19 @@ export default async function BookingDetailsPage({
             {/* Event Details */}
             <div className="glass rounded-3xl p-6">
               <h3 className="text-sm text-white/40 uppercase mb-4">تفاصيل الفعالية</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4" suppressHydrationWarning>
                 <div>
                   <p className="text-xs text-white/40 mb-1">التاريخ</p>
                   <p className="font-semibold flex items-center gap-2">
                     <Calendar size={14} className="text-yellow-400" />
-                    {new Date(booking.date).toLocaleDateString("ar-EG", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric"
-                    })}
+                    <span suppressHydrationWarning>{dateStr}</span>
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-white/40 mb-1">الوقت</p>
                   <p className="font-semibold flex items-center gap-2">
                     <Clock size={14} className="text-yellow-400" />
-                    {booking.timeSlot === "MORNING" && "صباحاً"}
-                    {booking.timeSlot === "AFTERNOON" && "ظهيرة"}
-                    {booking.timeSlot === "EVENING" && "مساءً"}
-                    {booking.timeSlot === "NIGHT" && "ليلاً"}
+                    {timeSlotText}
                   </p>
                 </div>
                 <div className="col-span-2">
@@ -230,36 +262,67 @@ export default async function BookingDetailsPage({
                 <DollarSign size={16} />
                 حالة الدفع
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-3" suppressHydrationWarning>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">المبلغ الإجمالي</span>
-                  <span className="font-bold text-lg">{(booking.grossAmount || 0).toLocaleString()} ج.م</span>
+                  <span className="font-bold text-lg">{grossAmount.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-sm text-green-400">
                   <span className="flex items-center gap-2">
                     <CheckCircle2 size={14} />
-                    العربون (20%)
+                    المبلغ المدفوع
                   </span>
-                  <span className="font-bold">{deposit.toLocaleString()} ج.م</span>
+                  <span className="font-bold">{paidAmount.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-sm pt-3 border-t border-white/10">
                   <span className="text-white/60">المتبقي</span>
-                  <span className="font-bold text-yellow-400">{remaining.toLocaleString()} ج.م</span>
+                  <span className="font-bold text-yellow-400">{remainingAmount.toLocaleString()} ج.م</span>
                 </div>
               </div>
 
               {/* Payment Actions */}
-              {booking.status === "APPROVED" && remaining > 0 && (
+              {booking.status === "APPROVED" && remainingAmount > 0 && (
                 <div className="mt-6 pt-4 border-t border-white/10">
                   <Link 
                     href={`/booking/${booking.id}/payment`}
                     className="block w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3 rounded-xl text-center hover:opacity-90 transition-all"
                   >
-                    إكمال الدفع ({remaining.toLocaleString()} ج.م)
+                    إكمال الدفع ({remainingAmount.toLocaleString()} ج.م)
                   </Link>
                 </div>
               )}
             </div>
+
+            {/* Payment History */}
+            {booking.payments && booking.payments.length > 0 && (
+              <div className="glass rounded-3xl p-6">
+                <h3 className="text-sm text-white/40 uppercase mb-4 flex items-center gap-2">
+                  <CreditCard size={16} />
+                  سجل المدفوعات
+                </h3>
+                <div className="space-y-2">
+                  {booking.payments.map((payment, index) => (
+                    <div 
+                      key={payment.id}
+                      className="flex items-center justify-between p-3 bg-white/[0.02] rounded-xl border border-white/5"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle2 size={14} className="text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{payment.notes || `دفعة ${index + 1}`}</p>
+                          <p className="text-xs text-white/40">{payment.method}</p>
+                        </div>
+                      </div>
+                      <p className="font-bold text-green-400" suppressHydrationWarning>
+                        {payment.amount.toLocaleString()} ج.م
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -270,10 +333,10 @@ export default async function BookingDetailsPage({
               <div className="space-y-2">
                 <Link 
                   href={`/booking/${booking.id}/invoice`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-colors"
                 >
-                  <CreditCard size={18} className="text-yellow-400" />
-                  <span className="text-sm">عرض الإيصال</span>
+                  <FileText size={18} className="text-yellow-400" />
+                  <span className="text-sm font-semibold">عرض وطباعة الفاتورة</span>
                 </Link>
                 <a 
                   href={`mailto:support@nooryi.com?subject=استفسار عن حجز ${booking.id.slice(0, 8)}`}
