@@ -29,14 +29,52 @@ export async function createNotification(data: NotificationData) {
   }
 }
 
+// Alias للتوافق مع الملفات القديمة
+export const sendNotification = createNotification
+
+/**
+ * إشعار جميع الأدمنز
+ */
+export async function notifyAdmins(data: {
+  title: string
+  message: string
+  type: string
+  link?: string
+}) {
+  try {
+    const admins = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["SUPER_ADMIN", "ADMIN"],
+        },
+      },
+      select: { id: true },
+    })
+
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          title: data.title,
+          message: data.message,
+          type: data.type,
+          link: data.link || null,
+        },
+      })
+    }
+
+    return { success: true, notified: admins.length }
+  } catch (error) {
+    console.error("Error notifying admins:", error)
+    return { success: false, error: "Failed to notify admins" }
+  }
+}
+
 /**
  * إرسال إشعار واتساب عبر رابط مباشر (مجاني)
- * يفتح واتساب برسالة جاهزة للإرسال
  */
 export function getWhatsAppLink(phone: string, message: string): string {
-  // تنظيف رقم الهاتف
   const cleanPhone = phone.replace(/[^0-9]/g, "")
-  // إضافة مفتاح الدولة إذا لم يكن موجوداً
   const fullPhone = cleanPhone.startsWith("20") ? cleanPhone : `20${cleanPhone}`
   const encodedMessage = encodeURIComponent(message)
   return `https://wa.me/${fullPhone}?text=${encodedMessage}`
