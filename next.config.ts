@@ -1,19 +1,24 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  // تعطيل TypeScript checking
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  // ✅ تعطيل Strict Mode نهائياً لحل React #441
+  
+  // تعطيل Strict Mode لحل React #441
   reactStrictMode: false,
+  
+  // إعدادات الصور
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
       },
     ],
   },
