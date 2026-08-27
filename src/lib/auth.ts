@@ -1,21 +1,7 @@
-import NextAuth, { NextAuthOptions, DefaultSession, DefaultUser } from "next-auth"
+import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      role: string
-      artistId?: string | null
-    } & DefaultSession["user"]
-  }
-  interface User extends DefaultUser {
-    role: string
-    artistId?: string | null
-  }
-}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,41 +9,60 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("البريد الإلكتروني وكلمة المرور مطلوبان")
+          throw new Error("البريد الإلكتروني وكلمة السر مطلوبان")
         }
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } })
-        if (!user) throw new Error("لا يوجد مستخدم بهذا البريد الإلكتروني")
-        
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-        if (!isPasswordValid) throw new Error("كلمة المرور غير صحيحة")
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role, artistId: (user as any).artistId }
-      }
-    })
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        })
+
+        if (!user) {
+          throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        )
+
+        if (!isPasswordValid) {
+          throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        }
+      },
+    }),
   ],
-  session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.role = user.role
-        token.artistId = user.artistId
       }
       return token
     },
-    async session({ session, token }: any) {
+    async session({ session, token }) {
       if (session.user) {
-        ;(session.user as any).id = token.id
-        ;(session.user as any).role = token.role
-        ;(session.user as any).artistId = token.artistId
+        session.user.id = token.id as string
+        session.user.role = token.role as string
       }
       return session
-    }
+    },
   },
-  pages: { signIn: "/login" },
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
   secret: process.env.NEXTAUTH_SECRET,
 }
