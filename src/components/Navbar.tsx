@@ -2,43 +2,32 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Music, Menu, X, LayoutDashboard, LogIn, UserPlus, User } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { 
+  Music, 
+  Menu, 
+  X, 
+  LayoutDashboard, 
+  LogIn, 
+  UserPlus, 
+  User,
+  LogOut,
+  Calendar
+} from "lucide-react"
+import { useState } from "react"
 
 export default function Navbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-
-  // منع Hydration mismatch
-  useEffect(() => {
-    setIsMounted(true)
-    
-    // فحص تسجيل الدخول من cookie أو localStorage
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/session")
-        if (response.ok) {
-          const data = await response.json()
-          if (data?.user) {
-            setIsLoggedIn(true)
-            setIsAdmin(data.user.role === "SUPER_ADMIN" || data.user.role === "ADMIN")
-          }
-        }
-      } catch (error) {
-        // تجاهل الأخطاء
-      }
-    }
-    
-    checkAuth()
-  }, [])
+  const { data: session, status } = useSession()
 
   // إخفاء الـ Navbar في صفحات تسجيل الدخول والتسجيل
   if (pathname === "/login" || pathname === "/register") {
     return null
   }
+
+  const isLoggedIn = status === "authenticated"
+  const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
 
   const navLinks = [
     { href: "/", label: "الرئيسية" },
@@ -46,15 +35,6 @@ export default function Navbar() {
     { href: "/about", label: "عن المنصة" },
     { href: "/contact", label: "تواصل معنا" },
   ]
-
-  // أثناء التحميل الأول، عرض skeleton بسيط
-  if (!isMounted) {
-    return (
-      <nav className="sticky top-0 w-full z-50 border-b border-white/5 bg-black/80 backdrop-blur-2xl">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20" />
-      </nav>
-    )
-  }
 
   return (
     <nav className="sticky top-0 w-full z-50 border-b border-white/5 bg-black/80 backdrop-blur-2xl">
@@ -87,7 +67,6 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* رابط لوحة التحكم للأدمن */}
             {isAdmin && (
               <Link
                 href="/admin"
@@ -103,7 +82,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             {isLoggedIn ? (
               <>
@@ -111,9 +90,17 @@ export default function Navbar() {
                   href="/my-bookings"
                   className="flex items-center gap-2 px-4 py-2 rounded-xl glass hover:bg-white/[0.08] transition-all"
                 >
-                  <User size={16} className="text-yellow-400" />
+                  <Calendar size={16} className="text-yellow-400" />
                   <span className="text-sm font-semibold">حجوزاتي</span>
                 </Link>
+                
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
+                >
+                  <LogOut size={16} />
+                  <span className="text-sm font-semibold">خروج</span>
+                </button>
               </>
             ) : (
               <>
@@ -178,14 +165,27 @@ export default function Navbar() {
 
             <div className="pt-3 mt-3 border-t border-white/5 space-y-2">
               {isLoggedIn ? (
-                <Link
-                  href="/my-bookings"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold glass hover:bg-white/[0.08] transition-all"
-                >
-                  <User size={16} className="text-yellow-400" />
-                  حجوزاتي
-                </Link>
+                <>
+                  <Link
+                    href="/my-bookings"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold glass hover:bg-white/[0.08] transition-all"
+                  >
+                    <Calendar size={16} className="text-yellow-400" />
+                    حجوزاتي
+                  </Link>
+                  
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false)
+                      signOut({ callbackUrl: "/" })
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all"
+                  >
+                    <LogOut size={16} />
+                    تسجيل الخروج
+                  </button>
+                </>
               ) : (
                 <>
                   <Link
