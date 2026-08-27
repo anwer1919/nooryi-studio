@@ -1,82 +1,197 @@
-﻿"use client"
-
-import { useSession } from "next-auth/react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Loader2, AlertCircle, Calendar, DollarSign, Music, Users } from "lucide-react"
+﻿import { redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { 
+  Users, 
+  Music, 
+  Calendar, 
+  TrendingUp, 
+  ArrowUpRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  DollarSign
+} from "lucide-react"
 
-export const dynamic = "force-dynamic"
-
-export default function AdminDashboard() {
-  // ✅ الطريقة الآمنة 100% التي تمنع خطأ Destructuring أثناء البناء
-  const sessionObj = useSession()
-  const session = sessionObj?.data || null
-  const status = sessionObj?.status || "loading"
+export default async function AdminDashboard() {
+  const session = await getServerSession(authOptions)
   
-  const router = useRouter()
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login")
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      const fetchStats = async () => {
-        try {
-          const res = await fetch("/api/admin/stats")
-          if (res.ok) setStats(await res.json())
-        } catch (err) {
-          console.error(err)
-        } finally {
-          setLoading(false)
-        }
-      }
-      fetchStats()
-    }
-  }, [status])
-
-  if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen bg-[#1a0a04] flex items-center justify-center">
-        <Loader2 className="animate-spin text-yellow-500" size={48} />
-      </div>
-    )
+  if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
+    redirect("/login")
   }
 
-  if (status === "unauthenticated") return null
+  // جلب الإحصائيات
+  const [totalArtists, totalBookings, pendingBookings, approvedBookings] = await Promise.all([
+    prisma.artist.count(),
+    prisma.booking.count(),
+    prisma.booking.count({ where: { status: "PENDING_APPROVAL" } }),
+    prisma.booking.count({ where: { status: "APPROVED" } }),
+  ])
+
+  const stats = [
+    { 
+      label: "إجمالي الفنانين", 
+      value: totalArtists, 
+      icon: Music, 
+      color: "yellow",
+      change: "+12%",
+      link: "/admin/artists"
+    },
+    { 
+      label: "إجمالي الحجوزات", 
+      value: totalBookings, 
+      icon: Calendar, 
+      color: "blue",
+      change: "+8%",
+      link: "/admin/bookings"
+    },
+    { 
+      label: "حجوزات قيد المراجعة", 
+      value: pendingBookings, 
+      icon: Clock, 
+      color: "orange",
+      change: "جديد",
+      link: "/admin/bookings"
+    },
+    { 
+      label: "حجوزات موافق عليها", 
+      value: approvedBookings, 
+      icon: CheckCircle2, 
+      color: "green",
+      change: "+15%",
+      link: "/admin/bookings"
+    },
+  ]
+
+  // أحدث الحجوزات
+  const recentBookings = await prisma.booking.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      artist: { select: { name: true, slug: true, profileImage: true } },
+      customer: { select: { fullName: true, phone: true } },
+    },
+  })
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "PENDING_APPROVAL": return "bg-orange-500/10 text-orange-400 border-orange-500/20"
+      case "APPROVED": return "bg-green-500/10 text-green-400 border-green-500/20"
+      case "COMPLETED": return "bg-blue-500/10 text-blue-400 border-blue-500/20"
+      case "CANCELLED": return "bg-red-500/10 text-red-400 border-red-500/20"
+      default: return "bg-white/5 text-white/60 border-white/10"
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PENDING_APPROVAL": return "قيد المراجعة"
+      case "APPROVED": return "موافق عليه"
+      case "COMPLETED": return "مكتمل"
+      case "CANCELLED": return "ملغي"
+      default: return status
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#1a0a04] text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">لوحة تحكم الإدارة</h1>
-      <p className="mb-6">مرحباً، {session?.user?.name || "مدير النظام"}</p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white/10 p-4 rounded-xl">
-          <Calendar className="mb-2 text-blue-400" />
-          <p>الحجوزات: {stats?.totalBookings || 0}</p>
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-4xl font-black">لوحة التحكم</h1>
+            <Link 
+              href="/" 
+              className="text-sm text-white/60 hover:text-white transition-colors"
+            >
+              العودة للرئيسية ←
+            </Link>
+          </div>
+          <p className="text-white/60">مرحباً بك في لوحة إدارة Nooryi Studio</p>
         </div>
-        <div className="bg-white/10 p-4 rounded-xl">
-          <DollarSign className="mb-2 text-green-400" />
-          <p>الإيرادات: {stats?.totalRevenue || 0} ج.م</p>
-        </div>
-        <div className="bg-white/10 p-4 rounded-xl">
-          <Music className="mb-2 text-yellow-400" />
-          <p>الفنانين: {stats?.activeArtists || 0}</p>
-        </div>
-        <div className="bg-white/10 p-4 rounded-xl">
-          <Users className="mb-2 text-purple-400" />
-          <p>قيد الانتظار: {stats?.pendingApprovals || 0}</p>
-        </div>
-      </div>
 
-      <div className="flex gap-4">
-        <Link href="/admin/artists" className="bg-yellow-600 text-black px-4 py-2 rounded-lg font-bold">إدارة الفنانين</Link>
-        <Link href="/admin/bookings" className="bg-white/10 px-4 py-2 rounded-lg font-bold">إدارة الحجوزات</Link>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {stats.map((stat, i) => (
+            <Link 
+              key={i} 
+              href={stat.link}
+              className="group glass rounded-3xl p-6 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-1"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-500/10 border border-${stat.color}-500/20 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                  <stat.icon className={`text-${stat.color}-400`} size={24} />
+                </div>
+                <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-full">
+                  <TrendingUp size={12} />
+                  <span>{stat.change}</span>
+                </div>
+              </div>
+              <p className="text-3xl font-black mb-1">{stat.value}</p>
+              <p className="text-sm text-white/60">{stat.label}</p>
+            </Link>
+          ))}
+        </div>
+
+        {/* Recent Bookings */}
+        <div className="glass rounded-3xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">أحدث الحجوزات</h2>
+            <Link 
+              href="/admin/bookings" 
+              className="flex items-center gap-1 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
+            >
+              عرض الكل
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
+
+          {recentBookings.length === 0 ? (
+            <div className="text-center py-12 text-white/40">
+              <Calendar className="mx-auto mb-4" size={48} />
+              <p>لا توجد حجوزات حتى الآن</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentBookings.map((booking) => (
+                <div 
+                  key={booking.id}
+                  className="flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.05] rounded-2xl transition-colors border border-white/5"
+                >
+                  <div className="flex items-center gap-4">
+                    {booking.artist?.profileImage ? (
+                      <img 
+                        src={booking.artist.profileImage} 
+                        alt={booking.artist.name}
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+                        <Music className="text-yellow-400" size={20} />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold">{booking.artist?.name || "فنان غير معروف"}</p>
+                      <p className="text-sm text-white/60">
+                        {booking.customer?.fullName} • {booking.timeSlot}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(booking.status)}`}>
+                      {getStatusText(booking.status)}
+                    </span>
+                    <span className="text-xs text-white/40">
+                      {new Date(booking.createdAt).toLocaleDateString("ar-EG")}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
