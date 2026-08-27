@@ -19,7 +19,6 @@ interface BookingFormProps {
   venues: { id: string; name: string; address: string }[]
   userEmail: string
   userName: string
-  userPhone?: string
 }
 
 export default function BookingForm({ 
@@ -28,7 +27,6 @@ export default function BookingForm({
   venues, 
   userEmail,
   userName,
-  userPhone
 }: BookingFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -37,7 +35,7 @@ export default function BookingForm({
 
   const [formData, setFormData] = useState({
     clientName: userName || "",
-    clientPhone: userPhone || "",
+    clientPhone: "",
     clientEmail: userEmail || "",
     venueId: venues[0]?.id || "",
     date: "",
@@ -46,6 +44,8 @@ export default function BookingForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
     setLoading(true)
     setError("")
 
@@ -63,27 +63,25 @@ export default function BookingForm({
     }
 
     try {
-      const requestData = {
-        artistId,
-        venueId: formData.venueId,
-        clientName: formData.clientName,
-        clientPhone: formData.clientPhone,
-        clientEmail: formData.clientEmail,
-        date: formData.date,
-        timeSlot: formData.timeSlot,
-        grossAmount: 5000,
-      }
-
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({
+          artistId,
+          venueId: formData.venueId,
+          clientName: formData.clientName,
+          clientPhone: formData.clientPhone,
+          clientEmail: formData.clientEmail,
+          date: formData.date,
+          timeSlot: formData.timeSlot,
+          grossAmount: 5000,
+        }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || `خطأ ${response.status}`)
+        throw new Error(data.error || "حدث خطأ في الحجز")
       }
 
       setSuccess(true)
@@ -92,7 +90,7 @@ export default function BookingForm({
         router.push(`/booking/${data.booking.id}`)
       }, 3000)
     } catch (err: any) {
-      console.error("❌ خطأ في الحجز:", err)
+      console.error("Booking error:", err)
       setError(err.message || "حدث خطأ في الحجز")
     } finally {
       setLoading(false)
@@ -107,7 +105,7 @@ export default function BookingForm({
         </div>
         <h3 className="text-xl font-bold mb-2 text-green-400">تم إرسال الحجز بنجاح!</h3>
         <p className="text-sm text-white/60 mb-4">
-          سيتم مراجعة طلبك من قبل الإدارة وإعلامك بالموافقة
+          سيتم مراجعة طلبك من قبل الإدارة
         </p>
         <p className="text-xs text-white/40">
           جاري تحويلك لصفحة تفاصيل الحجز...
@@ -117,13 +115,11 @@ export default function BookingForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" id="booking-form">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={16} />
-            <p className="text-sm text-red-400 font-semibold">{error}</p>
-          </div>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-2">
+          <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={16} />
+          <p className="text-sm text-red-400 font-semibold">{error}</p>
         </div>
       )}
 
@@ -142,124 +138,94 @@ export default function BookingForm({
 
       {/* Client Name */}
       <div>
-        <label 
-          htmlFor="clientName" 
-          className="block text-sm text-white/60 mb-1.5"
-        >
+        <label htmlFor="clientName" className="block text-sm text-white/60 mb-1.5">
           الاسم الكامل *
         </label>
-        <div className="relative">
-          <User className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-          <input
-            id="clientName"
-            name="clientName"
-            type="text"
-            autoComplete="name"
-            value={formData.clientName}
-            onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-            placeholder="أدخل اسمك"
-            required
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
-          />
-        </div>
+        <input
+          id="clientName"
+          name="clientName"
+          type="text"
+          autoComplete="name"
+          value={formData.clientName}
+          onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+          placeholder="أدخل اسمك"
+          required
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
+        />
       </div>
 
       {/* Phone */}
       <div>
-        <label 
-          htmlFor="clientPhone" 
-          className="block text-sm text-white/60 mb-1.5"
-        >
+        <label htmlFor="clientPhone" className="block text-sm text-white/60 mb-1.5">
           رقم الهاتف *
         </label>
-        <div className="relative">
-          <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-          <input
-            id="clientPhone"
-            name="clientPhone"
-            type="tel"
-            autoComplete="tel"
-            value={formData.clientPhone}
-            onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-            placeholder="01xxxxxxxxx"
-            required
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
-          />
-        </div>
+        <input
+          id="clientPhone"
+          name="clientPhone"
+          type="tel"
+          autoComplete="tel"
+          value={formData.clientPhone}
+          onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+          placeholder="01xxxxxxxxx"
+          required
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
+        />
       </div>
 
       {/* Email */}
       <div>
-        <label 
-          htmlFor="clientEmail" 
-          className="block text-sm text-white/60 mb-1.5"
-        >
+        <label htmlFor="clientEmail" className="block text-sm text-white/60 mb-1.5">
           البريد الإلكتروني
         </label>
-        <div className="relative">
-          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-          <input
-            id="clientEmail"
-            name="clientEmail"
-            type="email"
-            autoComplete="email"
-            value={formData.clientEmail}
-            onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-            placeholder="example@email.com"
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
-          />
-        </div>
+        <input
+          id="clientEmail"
+          name="clientEmail"
+          type="email"
+          autoComplete="email"
+          value={formData.clientEmail}
+          onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+          placeholder="example@email.com"
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
+        />
       </div>
 
       {/* Venue */}
       <div>
-        <label 
-          htmlFor="venueId" 
-          className="block text-sm text-white/60 mb-1.5"
-        >
+        <label htmlFor="venueId" className="block text-sm text-white/60 mb-1.5">
           المكان *
         </label>
-        <div className="relative">
-          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-          <select
-            id="venueId"
-            name="venueId"
-            value={formData.venueId}
-            onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
-            required
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50 appearance-none"
-          >
-            <option value="">اختر المكان</option>
-            {venues.map((venue) => (
-              <option key={venue.id} value={venue.id} className="bg-black">
-                {venue.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <select
+          id="venueId"
+          name="venueId"
+          value={formData.venueId}
+          onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
+          required
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50 appearance-none"
+        >
+          <option value="">اختر المكان</option>
+          {venues.map((venue) => (
+            <option key={venue.id} value={venue.id} className="bg-black">
+              {venue.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Date */}
       <div>
-        <label 
-          htmlFor="bookingDate" 
-          className="block text-sm text-white/60 mb-1.5"
-        >
+        <label htmlFor="bookingDate" className="block text-sm text-white/60 mb-1.5">
           تاريخ الفعالية *
         </label>
-        <div className="relative">
-          <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
-          <input
-            id="bookingDate"
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            required
-            min={new Date().toISOString().split("T")[0]}
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-yellow-500/50"
-          />
-        </div>
+        <input
+          id="bookingDate"
+          name="date"
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          required
+          min={new Date().toISOString().split("T")[0]}
+          className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-yellow-500/50"
+        />
       </div>
 
       {/* Time Slot */}
@@ -286,7 +252,6 @@ export default function BookingForm({
             </button>
           ))}
         </div>
-        {/* Hidden input for timeSlot */}
         <input type="hidden" name="timeSlot" value={formData.timeSlot} />
       </div>
 

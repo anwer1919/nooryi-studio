@@ -22,6 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
+      <head />
       <body 
         className="bg-[#0a0a0a] text-white font-sans antialiased"
         suppressHydrationWarning

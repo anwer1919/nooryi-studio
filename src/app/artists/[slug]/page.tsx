@@ -13,33 +13,60 @@ import {
 
 export const dynamic = "force-dynamic"
 
-export default async function ArtistDetailsPage({ params }: { params: { slug: string } }) {
+export default async function ArtistDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const session = await getServerSession(authOptions)
 
-  const artist = await prisma.artist.findUnique({
-    where: { slug: params.slug },
-    include: {
-      reviews: {
-        select: { rating: true, comment: true },
+  let artist = null
+  try {
+    artist = await prisma.artist.findUnique({
+      where: { slug },
+      include: {
+        reviews: {
+          take: 5,
+          orderBy: { createdAt: "desc" },
+        },
+        _count: {
+          select: { bookings: true, reviews: true },
+        },
       },
-      pricing: true,
-      _count: {
-        select: { bookings: true, reviews: true },
-      },
-    },
-  })
+    })
+  } catch (error) {
+    console.error("Error fetching artist:", error)
+  }
 
   if (!artist) {
     redirect("/artists")
   }
 
-  const venues = await prisma.venue.findMany({
-    select: { id: true, name: true, address: true },
-  })
+  let venues: any[] = []
+  try {
+    venues = await prisma.venue.findMany({
+      take: 10,
+      select: { id: true, name: true, address: true },
+    })
+  } catch (error) {
+    console.error("Error fetching venues:", error)
+  }
 
-  const ratings = artist.reviews.map((r) => r.rating)
+  // إذا لم توجد أماكن، أنشئ مكان افتراضي
+  if (venues.length === 0) {
+    try {
+      const defaultVenue = await prisma.venue.create({
+        data: {
+          name: "مكان عام",
+          address: "سيتم تحديده لاحقاً",
+        },
+      })
+      venues = [defaultVenue]
+    } catch (error) {
+      console.error("Error creating default venue:", error)
+    }
+  }
+
+  const ratings = artist.reviews?.map((r: any) => r.rating) || []
   const avgRating = ratings.length > 0
-    ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+    ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
     : 0
 
   return (
@@ -82,16 +109,16 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
                 )}
                 <div className="flex-1">
                   <h1 className="text-4xl font-black mb-2">{artist.name}</h1>
-                  <p className="text-lg text-white/60 mb-3">{artist.category}</p>
+                  <p className="text-lg text-white/60 mb-3">{artist.category || "فنان"}</p>
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <Star className="text-yellow-400 fill-yellow-400" size={16} />
                       <span className="font-bold">{avgRating > 0 ? avgRating.toFixed(1) : "جديد"}</span>
-                      <span className="text-white/40">({artist._count.reviews} تقييم)</span>
+                      <span className="text-white/40">({artist._count?.reviews || 0} تقييم)</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="text-yellow-400" size={16} />
-                      <span>{artist._count.bookings} حجز ناجح</span>
+                      <span>{artist._count?.bookings || 0} حجز ناجح</span>
                     </div>
                   </div>
                 </div>
@@ -104,14 +131,14 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
             </div>
 
             {/* Reviews */}
-            {artist.reviews.length > 0 && (
+            {artist.reviews && artist.reviews.length > 0 && (
               <div className="glass rounded-3xl p-8">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <Star className="text-yellow-400" size={20} />
                   التقييمات ({artist.reviews.length})
                 </h3>
                 <div className="space-y-4">
-                  {artist.reviews.slice(0, 3).map((review, i) => (
+                  {artist.reviews.slice(0, 3).map((review: any, i: number) => (
                     <div key={i} className="bg-white/[0.02] rounded-2xl p-4 border border-white/5">
                       <div className="flex items-center gap-1 mb-2">
                         {[...Array(5)].map((_, idx) => (
@@ -144,7 +171,6 @@ export default async function ArtistDetailsPage({ params }: { params: { slug: st
                 venues={venues}
                 userEmail={session?.user?.email || ""}
                 userName={session?.user?.name || ""}
-                userPhone={session?.user?.phone || ""}
               />
             </div>
           </div>
