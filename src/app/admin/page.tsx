@@ -4,252 +4,275 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { 
-  Users, 
-  Music, 
   Calendar, 
-  TrendingUp, 
-  ArrowUpRight,
-  Clock,
+  Music, 
+  Users, 
+  TrendingUp,
   CheckCircle2,
+  Clock,
   XCircle,
   DollarSign,
-  Wallet,
-  CreditCard
+  ArrowUpRight,
+  UserCog
 } from "lucide-react"
 
-export default async function AdminDashboard() {
+export const dynamic = "force-dynamic"
+
+export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
+  if (!session?.user) {
     redirect("/login")
   }
 
-  // جلب جميع البيانات
+  const userRole = session.user.role || "USER"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  const isArtistManager = userRole === "ARTIST_MANAGER"
+
+  if (!isAdmin && !isArtistManager) {
+    redirect("/")
+  }
+
+  // جلب البيانات حسب الدور
+  let managerArtistId: string | null = null
+  if (isArtistManager) {
+    const managerUser = await prisma.user.findUnique({
+      where: { email: session.user.email! },
+      select: { artistId: true },
+    })
+    managerArtistId = managerUser?.artistId || null
+  }
+
+  const where = isArtistManager && managerArtistId ? { artistId: managerArtistId } : {}
+
   const [
-    totalArtists, 
-    totalBookings, 
-    pendingBookings, 
-    approvedBookings, 
-    totalUsers,
-    allBookings,
+    totalBookings,
+    pendingBookings,
+    approvedBookings,
+    completedBookings,
+    totalRevenue,
+    recentBookings,
+    totalArtists,
+    totalManagers,
   ] = await Promise.all([
-    prisma.artist.count(),
-    prisma.booking.count(),
-    prisma.booking.count({ where: { status: "PENDING_APPROVAL" } }),
-    prisma.booking.count({ where: { status: "APPROVED" } }),
-    prisma.user.count(),
+    prisma.booking.count({ where }),
+    prisma.booking.count({ where: { ...where, status: "PENDING_APPROVAL" } }),
+    prisma.booking.count({ where: { ...where, status: "APPROVED" } }),
+    prisma.booking.count({ where: { ...where, status: "COMPLETED" } }),
+    prisma.booking.aggregate({
+      where,
+      _sum: { grossAmount: true },
+    }),
     prisma.booking.findMany({
-      take: 5,
+      where,
       orderBy: { createdAt: "desc" },
+      take: 5,
       include: {
-        artist: { select: { name: true, slug: true, profileImage: true } },
-        customer: true,
+        artist: { select: { name: true, profileImage: true } },
       },
     }),
+    isAdmin ? prisma.artist.count() : Promise.resolve(0),
+    isAdmin ? prisma.user.count({ where: { role: "ARTIST_MANAGER" } }) : Promise.resolve(0),
   ])
 
-  // حساب الإحصائيات المالية
-  const allBookingsForStats = await prisma.booking.findMany()
-  const totalRevenue = allBookingsForStats.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
-  const totalDeposits = allBookingsForStats.reduce((sum, b) => sum + (b.depositAmount || 0), 0)
-  const totalRemaining = allBookingsForStats.reduce((sum, b) => sum + (b.remainingAmount || 0), 0)
-
-  const stats = [
-    { 
-      label: "إجمالي الإيرادات", 
-      value: `${totalRevenue.toLocaleString()} ج.م`, 
-      icon: DollarSign, 
-      color: "green",
-      change: "+12%",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "إجمالي الحجوزات", 
-      value: totalBookings, 
-      icon: Calendar, 
-      color: "blue",
-      change: "+8%",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "حجوزات قيد المراجعة", 
-      value: pendingBookings, 
-      icon: Clock, 
-      color: "orange",
-      change: "جديد",
-      link: "/admin/bookings"
-    },
-    { 
-      label: "إجمالي الفنانين", 
-      value: totalArtists, 
-      icon: Music, 
-      color: "yellow",
-      change: "+15%",
-      link: "/admin/artists"
-    },
-  ]
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING_APPROVAL": return "bg-orange-500/10 text-orange-400 border-orange-500/20"
-      case "APPROVED": return "bg-green-500/10 text-green-400 border-green-500/20"
-      case "COMPLETED": return "bg-blue-500/10 text-blue-400 border-blue-500/20"
-      case "CANCELLED": return "bg-red-500/10 text-red-400 border-red-500/20"
-      default: return "bg-white/5 text-white/60 border-white/10"
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING_APPROVAL": return "قيد المراجعة"
-      case "APPROVED": return "موافق عليه"
-      case "COMPLETED": return "مكتمل"
-      case "CANCELLED": return "ملغي"
-      default: return status
-    }
-  }
+  const revenue = totalRevenue._sum.grossAmount || 0
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-4xl font-black">لوحة التحكم</h1>
-            <Link 
-              href="/" 
-              className="text-sm text-white/60 hover:text-white transition-colors"
-            >
-              العودة للرئيسية ←
-            </Link>
-          </div>
-          <p className="text-white/60">مرحباً بك في لوحة إدارة Nooryi Studio</p>
-        </div>
+    <div suppressHydrationWarning>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-black text-primary dark:text-white mb-2">
+          {isAdmin ? "مرحباً بك في لوحة التحكم" : "لوحة مدير الأعمال"}
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400">
+          {isAdmin 
+            ? "نظرة عامة على أداء المنصة"
+            : "إدارة حجوزات الفنان المُسند إليك"
+          }
+        </p>
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {stats.map((stat, i) => (
-            <Link 
-              key={i} 
-              href={stat.link}
-              className="group glass rounded-3xl p-6 hover:bg-white/[0.08] transition-all duration-500 hover:-translate-y-1"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-2xl bg-${stat.color}-500/10 border border-${stat.color}-500/20 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <stat.icon className={`text-${stat.color}-400`} size={24} />
-                </div>
-                <div className="flex items-center gap-1 text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded-full">
-                  <TrendingUp size={12} />
-                  <span>{stat.change}</span>
-                </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Bookings */}
+        <div className="card-premium relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -translate-x-10 -translate-y-10 group-hover:bg-accent/20 transition-all duration-500" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center">
+                <Calendar className="text-primary dark:text-accent" size={24} />
               </div>
-              <p className="text-3xl font-black mb-1">{stat.value}</p>
-              <p className="text-sm text-white/60">{stat.label}</p>
-            </Link>
-          ))}
-        </div>
-
-        {/* Financial Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                <DollarSign className="text-green-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">إجمالي الإيرادات</p>
-                <p className="text-2xl font-black text-green-400">{totalRevenue.toLocaleString()} ج.م</p>
-              </div>
+              <ArrowUpRight className="text-gray-400" size={20} />
             </div>
-          </div>
-
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-                <Wallet className="text-yellow-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">إجمالي العربون</p>
-                <p className="text-2xl font-black text-yellow-400">{totalDeposits.toLocaleString()} ج.م</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                <CreditCard className="text-red-400" size={20} />
-              </div>
-              <div>
-                <p className="text-xs text-white/60">المبالغ المتبقية</p>
-                <p className="text-2xl font-black text-red-400">{totalRemaining.toLocaleString()} ج.م</p>
-              </div>
-            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">إجمالي الحجوزات</p>
+            <p className="text-3xl font-black text-primary dark:text-white">{totalBookings}</p>
           </div>
         </div>
 
-        {/* Recent Bookings */}
-        <div className="glass rounded-3xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">أحدث الحجوزات</h2>
-            <Link 
-              href="/admin/bookings" 
-              className="flex items-center gap-1 text-sm text-yellow-400 hover:text-yellow-300 transition-colors"
-            >
-              عرض الكل
-              <ArrowUpRight size={14} />
-            </Link>
-          </div>
-
-          {allBookings.length === 0 ? (
-            <div className="text-center py-12 text-white/40">
-              <Calendar className="mx-auto mb-4" size={48} />
-              <p>لا توجد حجوزات حتى الآن</p>
+        {/* Pending */}
+        <div className="card-premium relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl -translate-x-10 -translate-y-10 group-hover:bg-orange-500/20 transition-all duration-500" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                <Clock className="text-orange-500" size={24} />
+              </div>
+              <span className="text-xs font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-lg">
+                {pendingBookings}
+              </span>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {allBookings.map((booking) => (
-                <div 
-                  key={booking.id}
-                  className="flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.05] rounded-2xl transition-colors border border-white/5"
-                >
-                  <div className="flex items-center gap-4">
-                    {booking.artist?.profileImage ? (
-                      <img 
-                        src={booking.artist.profileImage} 
-                        alt={booking.artist.name}
-                        className="w-12 h-12 rounded-xl object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center">
-                        <Music className="text-yellow-400" size={20} />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold">{booking.artist?.name || "فنان غير معروف"}</p>
-                      <p className="text-sm text-white/60">
-                        {booking.clientName || booking.customer?.fullName} • {booking.timeSlot}
-                      </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">قيد المراجعة</p>
+            <p className="text-3xl font-black text-primary dark:text-white">{pendingBookings}</p>
+          </div>
+        </div>
+
+        {/* Revenue */}
+        <div className="card-premium relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl -translate-x-10 -translate-y-10 group-hover:bg-accent/20 transition-all duration-500" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
+                <DollarSign className="text-primary dark:text-accent" size={24} />
+              </div>
+              <ArrowUpRight className="text-accent" size={20} />
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">إجمالي الإيرادات</p>
+            <p className="text-2xl font-black text-primary dark:text-white">{revenue.toLocaleString()}</p>
+            <p className="text-xs text-gray-400 mt-1">ج.م</p>
+          </div>
+        </div>
+
+        {/* Completed */}
+        <div className="card-premium relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -translate-x-10 -translate-y-10 group-hover:bg-green-500/20 transition-all duration-500" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <CheckCircle2 className="text-green-500" size={24} />
+              </div>
+              <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-lg">
+                نشط
+              </span>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">مكتملة</p>
+            <p className="text-3xl font-black text-primary dark:text-white">{completedBookings}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Only Stats */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Link href="/admin/artists" className="card-premium group cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">الفنانين</p>
+                <p className="text-2xl font-black text-primary dark:text-white">{totalArtists}</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Music className="text-primary dark:text-accent" size={28} />
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/artists-managers" className="card-premium group cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">مديرو الأعمال</p>
+                <p className="text-2xl font-black text-primary dark:text-white">{totalManagers}</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <UserCog className="text-primary dark:text-accent" size={28} />
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/stats" className="card-premium group cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">التقارير المالية</p>
+                <p className="text-lg font-bold text-primary dark:text-white">عرض التفاصيل</p>
+              </div>
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <TrendingUp className="text-primary dark:text-accent" size={28} />
+              </div>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* Recent Bookings */}
+      <div className="card-premium p-0 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
+          <h2 className="text-xl font-bold text-primary dark:text-white flex items-center gap-2">
+            <Calendar size={20} className="text-accent" />
+            أحدث الحجوزات
+          </h2>
+          <Link 
+            href="/admin/bookings" 
+            className="text-sm text-accent hover:text-primary dark:hover:text-accent-light font-semibold transition-colors"
+          >
+            عرض الكل ←
+          </Link>
+        </div>
+
+        {recentBookings.length === 0 ? (
+          <div className="p-12 text-center">
+            <Calendar className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={48} />
+            <p className="text-gray-500 dark:text-gray-400">لا توجد حجوزات بعد</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100 dark:divide-dark-border">
+            {recentBookings.map((booking) => (
+              <Link 
+                key={booking.id}
+                href={`/admin/bookings/${booking.id}`}
+                className="flex items-center justify-between p-6 hover:bg-accent/5 dark:hover:bg-white/5 transition-all duration-300 group"
+              >
+                <div className="flex items-center gap-4">
+                  {booking.artist?.profileImage ? (
+                    <img 
+                      src={booking.artist.profileImage}
+                      alt={booking.artist.name}
+                      className="w-12 h-12 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center">
+                      <Music className="text-primary dark:text-accent" size={20} />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-left hidden md:block">
-                      <p className="text-sm font-bold text-green-400">
-                        {(booking.grossAmount || 0).toLocaleString()} ج.م
-                      </p>
-                      <p className="text-xs text-white/50">
-                        عربون: {(booking.depositAmount || 0).toLocaleString()} ج.م
-                      </p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(booking.status)}`}>
-                      {getStatusText(booking.status)}
-                    </span>
+                  )}
+                  <div>
+                    <p className="font-bold text-primary dark:text-white">{booking.artist?.name}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{booking.clientName}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+                <div className="flex items-center gap-6">
+                  <div className="text-left">
+                    <p className="font-bold text-primary dark:text-accent text-lg">
+                      {(booking.grossAmount || 0).toLocaleString()} ج.م
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(booking.date).toISOString().split('T')[0]}
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                    booking.status === "COMPLETED" ? "bg-green-500/10 text-green-600 dark:text-green-400" :
+                    booking.status === "APPROVED" ? "bg-accent/20 text-primary-dark dark:bg-accent-dark/20 dark:text-accent" :
+                    booking.status === "CANCELLED" ? "bg-red-500/10 text-red-600 dark:text-red-400" :
+                    "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                  }`}>
+                    {booking.status === "COMPLETED" ? "مكتمل" :
+                     booking.status === "APPROVED" ? "موافق عليه" :
+                     booking.status === "CANCELLED" ? "ملغي" :
+                     "قيد المراجعة"}
+                  </span>
+                  <ArrowUpRight className="text-gray-300 group-hover:text-accent transition-colors" size={20} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
