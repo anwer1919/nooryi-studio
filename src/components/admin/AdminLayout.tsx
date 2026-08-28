@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import Link from "next/link"
-import AdminSidebar from "./AdminSidebar"
+import Sidebar from "./Sidebar"
 
 export default async function AdminLayout({
   children,
@@ -19,24 +18,19 @@ export default async function AdminLayout({
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const isArtistManager = userRole === "ARTIST_MANAGER"
 
-  // منع الوصول للمستخدمين العاديين
   if (!isAdmin && !isArtistManager) {
     redirect("/")
   }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white" dir="rtl">
-      <AdminSidebar 
-        userRole={userRole} 
-        userName={session.user.name || "المستخدم"} 
-        userEmail={session.user.email || ""}
-      />
+      <Sidebar userRole={userRole} />
       
       {/* Main Content */}
-      <main className="lg:mr-72 min-h-screen">
-        <div className="p-4 lg:p-10">
+      <main className="lg:mr-72">
+        <div className="p-6 lg:p-10">
           {/* Mobile Header Spacer */}
-          <div className="lg:hidden h-16" />
+          <div className="lg:hidden h-14" />
           {children}
         </div>
       </main>

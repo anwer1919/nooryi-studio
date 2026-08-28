@@ -7,266 +7,186 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ═══════════════════════════════════════════
-// Enums
-// ═══════════════════════════════════════════
-
-enum TimeSlot {
-  MORNING
-  AFTERNOON
-  EVENING
-  NIGHT
-}
-
-enum BookingStatus {
-  PENDING_APPROVAL
-  APPROVED
-  COMPLETED
-  CANCELLED
-}
-
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  USER
-  ARTIST
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  CREDIT_CARD
-  MOBILE_WALLET
-  BANK_TRANSFER
-  CASH
-}
-
-// ═══════════════════════════════════════════
-// Users & Authentication
-// ═══════════════════════════════════════════
-
 model User {
-  id              String         @id @default(cuid())
-  name            String?
-  email           String         @unique
-  password        String
-  phone           String?
-  image           String?
-  role            String         @default("USER")
-  emailVerified   DateTime?
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  phone         String?
+  role          String    @default("USER") // USER, ADMIN, SUPER_ADMIN, ARTIST_MANAGER
+  artistId      String?   // لربط مدير الأعمال بالفنان
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // العلاقات
+  managedArtist Artist?   @relation("ArtistManagerRelation", fields: [artistId], references: [id])
+  notifications Notification[]
+  payments      Payment[] @relation("PaymentConfirmer")
+  
+  @@map("users")
+}
 
-  // Relations
-  managedArtist   Artist?        @relation("UserAsAdmin")
-  artistProfile   Artist?        @relation("UserAsArtist")
-  notifications   Notification[]
-  bookings        Booking[]      @relation("UserBookings")
-  reviews         Review[]
-
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+model Artist {
+  id                    String    @id @default(cuid())
+  name                  String
+  slug                  String    @unique
+  category              String?
+  bio                   String?
+  profileImage          String?
+  coverImage            String?
+  accentColor           String?   @default("#EAB308")
+  status                String    @default("PENDING") // PENDING, ACTIVE, INACTIVE
+  commissionRate        Float     @default(15)
+  commissionDiscountVal Float     @default(0)
+  adminUserId           String?
+  userId                String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  // العلاقات
+  bookings              Booking[]
+  reviews               Review[]
+  pricing               Pricing[]
+  availability          Availability[]
+  managers              User[]    @relation("ArtistManagerRelation")
+  
+  @@map("artists")
 }
 
 model Customer {
-  id              String       @id @default(cuid())
-  fullName        String
-  phone           String
-  email           String?
-  address         String?
-  city            String?
-  notes           String?
+  id        String    @id @default(cuid())
+  fullName  String
+  phone     String
+  email     String?
+  city      String?
+  address   String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   
-  // Relations
-  bookings        Booking[]
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt @default(now())
+  bookings  Booking[]
+  
+  @@map("customers")
 }
-
-// ═══════════════════════════════════════════
-// Artists & Music
-// ═══════════════════════════════════════════
-
-model Artist {
-  id                     String         @id @default(cuid())
-  name                   String
-  slug                   String         @unique
-  category               String?
-  bio                    String?
-  profileImage           String?
-  coverImage             String?
-  accentColor            String         @default("#D4AF37")
-  status                 String         @default("ACTIVE")
-
-  baseCommissionRate     Float          @default(10)
-  commissionDiscountType String         @default("PERCENTAGE")
-  commissionDiscountVal  Float          @default(0)
-
-  // Relation: الأدمن الذي يدير هذا الفنان
-  adminUserId            String?        @unique
-  adminUser              User?          @relation("UserAsAdmin", fields: [adminUserId], references: [id], onDelete: SetNull)
-
-  // Relation: المستخدم الذي يمثل هذا الفنان (الحساب الشخصي)
-  userId                 String?        @unique
-  user                   User?          @relation("UserAsArtist", fields: [userId], references: [id], onDelete: SetNull)
-
-  bookings               Booking[]
-  availability           Availability[]
-  reviews                Review[]
-  pricing                Pricing[]
-
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
-}
-
-// ═══════════════════════════════════════════
-// Venues
-// ═══════════════════════════════════════════
 
 model Venue {
-  id          String    @id @default(cuid())
-  name        String
-  address     String    @default("غير محدد")
-  city        String?
-  phone       String?
-  capacity    Int?
-  notes       String?
+  id        String    @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   
-  bookings    Booking[]
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt @default(now())
+  bookings  Booking[]
+  
+  @@map("venues")
 }
 
-// ═══════════════════════════════════════════
-// Bookings & Payments
-// ═══════════════════════════════════════════
-
 model Booking {
-  id              String          @id @default(cuid())
+  id              String    @id @default(cuid())
   artistId        String
-  artist          Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
   customerId      String?
-  customer        Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
-
   userId          String?
-  user            User?           @relation("UserBookings", fields: [userId], references: [id], onDelete: SetNull)
-
+  venueId         String
   clientName      String
   clientPhone     String
   clientEmail     String?
-
-  venueId         String
-  venue           Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
   date            DateTime
-  timeSlot        TimeSlot
-  status          BookingStatus   @default(PENDING_APPROVAL)
-
-  grossAmount     Float?
-  depositAmount   Float?
-  remainingAmount Float?
+  timeSlot        String
+  status          String    @default("PENDING_APPROVAL")
+  grossAmount     Float     @default(0)
+  depositAmount   Float     @default(0)
+  remainingAmount Float     @default(0)
   adminNotes      String?
-
-  // Relations
-  review          Review?
-  availability    Availability?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // العلاقات
+  artist          Artist    @relation(fields: [artistId], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  venue           Venue     @relation(fields: [venueId], references: [id])
   payments        Payment[]
-
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  
+  @@map("bookings")
 }
 
 model Payment {
-  id              String          @id @default(cuid())
-  bookingId       String
-  booking         Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-
-  amount          Float
-  status          PaymentStatus   @default(PENDING)
-  method          PaymentMethod   @default(CREDIT_CARD)
-  transactionId   String?
-  confirmedBy     String?
-  confirmedAt     DateTime?
-  notes           String?
-
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id            String    @id @default(cuid())
+  bookingId     String
+  amount        Float
+  status        String    @default("PENDING") // PENDING, COMPLETED, FAILED
+  method        String    @default("CREDIT_CARD")
+  transactionId String?
+  confirmedBy   String?
+  confirmedAt   DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  booking       Booking   @relation(fields: [bookingId], references: [id])
+  confirmer     User?     @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+  
+  @@map("payments")
 }
 
-// ═══════════════════════════════════════════
-// Availability & Pricing
-// ═══════════════════════════════════════════
-
-model Availability {
-  id          String      @id @default(cuid())
-  artistId    String
-  artist      Artist      @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
-  bookingId   String?     @unique
-  booking     Booking?    @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-
-  date        DateTime
-  timeSlot    TimeSlot
-  isBooked    Boolean     @default(false)
-  price       Float?
-
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt @default(now())
+model Review {
+  id        String    @id @default(cuid())
+  artistId  String
+  userId    String?
+  bookingId String?
+  rating    Int
+  comment   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  artist    Artist    @relation(fields: [artistId], references: [id])
+  
+  @@map("reviews")
 }
 
 model Pricing {
-  id                String   @id @default(cuid())
-  artistId          String
-  artist            Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
-  city              String   @default("غير محدد")
-  basePrice         Float
-  depositPercentage Float    @default(20)
-  travelFee         Float    @default(0)
-  notes             String?
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt @default(now())
+  id          String    @id @default(cuid())
+  artistId    String
+  name        String
+  description String?
+  price       Float
+  duration    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  artist      Artist    @relation(fields: [artistId], references: [id])
+  
+  @@map("pricings")
 }
 
-// ═══════════════════════════════════════════
-// Reviews & Notifications
-// ═══════════════════════════════════════════
-
-model Review {
-  id          String   @id @default(cuid())
+model Availability {
+  id          String    @id @default(cuid())
   artistId    String
-  artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  bookingId   String?  @unique
-  booking     Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-
-  rating      Int
-  comment     String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  bookingId   String?
+  date        DateTime
+  timeSlot    String
+  isBooked    Boolean   @default(false)
+  price       Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  artist      Artist    @relation(fields: [artistId], references: [id])
+  
+  @@map("availabilities")
 }
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   title     String
   message   String
-  type      String
+  type      String    @default("info")
   link      String?
-  isRead    Boolean  @default(false)
-
-  createdAt DateTime @default(now())
+  isRead    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  user      User      @relation(fields: [userId], references: [id])
+  
+  @@map("notifications")
 }

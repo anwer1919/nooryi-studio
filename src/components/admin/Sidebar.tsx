@@ -2,103 +2,150 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { 
+  LayoutDashboard, 
+  Calendar, 
+  Music, 
+  Users, 
+  TrendingUp,
+  UserCog,
+  Menu,
+  X,
+  LogOut,
+  Home
+} from "lucide-react"
 import { useState } from "react"
-import { Music, Menu, X, Calendar } from "lucide-react"
+import { signOut } from "next-auth/react"
 
-export default function Navbar() {
+interface SidebarProps {
+  userRole?: string
+}
+
+export default function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
-  const navLinks = [
-    { name: "الرئيسية", href: "/" },
-    { name: "الفنانين", href: "/artists" },
-    { name: "حجوزاتي", href: "/my-bookings" },
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  const isArtistManager = userRole === "ARTIST_MANAGER"
+
+  // روابط مختلفة حسب الدور
+  const adminLinks = [
+    { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/admin/bookings", label: "الحجوزات", icon: Calendar },
+    { href: "/admin/artists", label: "الفنانين", icon: Music },
+    { href: "/admin/artists-managers", label: "مديرو الأعمال", icon: UserCog },
+    { href: "/admin/stats", label: "التقارير المالية", icon: TrendingUp },
   ]
 
-  const isActive = (href: string) => {
-    if (href === "/") return pathname === "/"
-    return pathname.startsWith(href)
-  }
+  const managerLinks = [
+    { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
+  ]
+
+  const links = isAdmin ? adminLinks : managerLinks
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="p-6 border-b border-white/5">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-amber-600 blur-xl opacity-50" />
+            <div className="relative bg-gradient-to-br from-yellow-400 to-amber-600 p-2 rounded-xl">
+              <Music className="text-black" size={20} />
+            </div>
+          </div>
+          <div>
+            <p className="text-lg font-black">Nooryi</p>
+            <p className="text-[10px] text-white/40 uppercase tracking-wider">
+              {isAdmin ? "Admin Panel" : "Manager Panel"}
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {links.map((link) => {
+          const Icon = link.icon
+          const isActive = pathname === link.href || 
+            (link.href !== "/admin" && pathname.startsWith(link.href))
+          
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setIsOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                isActive
+                  ? "bg-gradient-to-r from-yellow-500/20 to-amber-600/20 text-yellow-400 border border-yellow-500/20"
+                  : "text-white/60 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Icon size={18} />
+              <span className="font-semibold text-sm">{link.label}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-white/5 space-y-2">
+        <Link 
+          href="/"
+          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all"
+        >
+          <Home size={18} />
+          <span className="text-sm">العودة للموقع</span>
+        </Link>
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
+        >
+          <LogOut size={18} />
+          <span className="text-sm">تسجيل الخروج</span>
+        </button>
+      </div>
+    </div>
+  )
 
   return (
-    <header className="border-b border-neutral-800 bg-black/95 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg flex items-center justify-center">
-              <Music size={18} className="text-black" />
-            </div>
-            <span className="text-xl font-bold text-yellow-500">Nooryi Studio</span>
-          </Link>
+    <>
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl text-white"
+      >
+        <Menu size={20} />
+      </button>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`font-medium transition ${
-                  isActive(link.href)
-                    ? "text-yellow-500"
-                    : "text-neutral-300 hover:text-yellow-500"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link 
-              href="/artists" 
-              className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-2 px-5 rounded-lg transition"
-            >
-              <Calendar size={18} />
-              احجز الآن
-            </Link>
-          </div>
+      {/* Mobile Sidebar */}
+      <aside className={`
+        lg:hidden fixed top-0 right-0 h-full w-72 bg-black border-l border-white/5 z-50
+        transform transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "translate-x-full"}
+      `}>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute top-4 left-4 p-2 text-white/60 hover:text-white"
+        >
+          <X size={20} />
+        </button>
+        <SidebarContent />
+      </aside>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-white p-2"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-neutral-800">
-            <nav className="flex flex-col gap-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`font-medium py-2 px-4 rounded-lg transition ${
-                    isActive(link.href)
-                      ? "bg-yellow-600/20 text-yellow-500"
-                      : "text-neutral-300 hover:bg-neutral-800"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              <Link 
-                href="/artists" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 px-5 rounded-lg transition mt-2"
-              >
-                <Calendar size={18} />
-                احجز الآن
-              </Link>
-            </nav>
-          </div>
-        )}
-      </div>
-    </header>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block fixed top-0 right-0 h-full w-72 bg-black border-l border-white/5">
+        <SidebarContent />
+      </aside>
+    </>
   )
 }
