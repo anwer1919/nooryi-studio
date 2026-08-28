@@ -1,14 +1,19 @@
 import type { Config } from "tailwindcss"
 
 const config: Config = {
+  // تفعيل الوضع الليلي يدوياً عبر إضافة كلاس "dark" للـ html
   darkMode: "class",
+  
+  // تحديد المسارات التي يبحث فيها Tailwind عن الكلاسات
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  
   theme: {
     extend: {
+      // 1. نظام الألوان الفاخر
       colors: {
         primary: {
           DEFAULT: "#4B2E83", // Deep Purple
@@ -21,8 +26,8 @@ const config: Config = {
           light: "#C8E6D2",
         },
         background: {
-          DEFAULT: "#FFFFFF",
-          subtle: "#F8F9FC",
+          DEFAULT: "#FFFFFF", // Pure White
+          subtle: "#F8F9FC", // Off-white for subtle backgrounds
         },
         surface: "#FFFFFF",
         dark: {
@@ -31,9 +36,13 @@ const config: Config = {
           border: "#2D2145",
         }
       },
+      
+      // 2. الخطوط (تتوافق مع المتغير المعرف في layout.tsx)
       fontFamily: {
         sans: ["var(--font-tajawal)", "system-ui", "sans-serif"],
       },
+      
+      // 3. زوايا دائرية ناعمة وفاخرة
       borderRadius: {
         "sm": "8px",
         "md": "12px",
@@ -41,16 +50,22 @@ const config: Config = {
         "xl": "20px",
         "2xl": "24px",
       },
+      
+      // 4. ظلال ناعمة وعصرية
       boxShadow: {
         "soft": "0 4px 20px rgba(75, 46, 131, 0.06)",
         "hover": "0 12px 40px rgba(75, 46, 131, 0.12)",
         "glow": "0 0 25px rgba(168, 213, 186, 0.4)",
       },
+      
+      // 5. تحسين حركات الانتقال (Animations)
       transitionDuration: {
-        'smooth': '300ms',
-      }
+        "smooth": "300ms",
+      },
     },
   },
+  
   plugins: [],
 }
+
 export default config

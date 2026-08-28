@@ -19,9 +19,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`${tajawal.variable}`} suppressHydrationWarning>
       <body 
-        className="min-h-screen bg-background text-primary dark:bg-dark-bg dark:text-white antialiased transition-colors duration-300"
+        className="min-h-screen font-sans antialiased transition-colors duration-300"
         suppressHydrationWarning
       >
         <Providers>
