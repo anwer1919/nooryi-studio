@@ -1,8 +1,6 @@
 import { Tajawal } from "next/font/google"
-import type { Metadata } from "next"
 import "./globals.css"
 import { Providers } from "@/components/Providers"
-import Navbar from "@/components/Navbar"
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -10,7 +8,7 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
 })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Nooryi Studio | منصة حجز الفنانين",
   description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين",
 }
@@ -22,18 +20,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
-      <head>
-        <meta name="color-scheme" content="dark" />
-      </head>
       <body 
-        className="bg-[#0a0a0a] text-white font-sans antialiased"
+        className="min-h-screen bg-background text-primary dark:bg-dark-bg dark:text-white antialiased transition-colors duration-300"
         suppressHydrationWarning
       >
         <Providers>
-          <Navbar />
-          <main suppressHydrationWarning>
-            {children}
-          </main>
+          {children}
         </Providers>
       </body>
     </html>

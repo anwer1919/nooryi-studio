@@ -23,19 +23,17 @@ export default async function AdminLayout({
   }
 
   return (
-    // ✅ suppressHydrationWarning يمنع خطأ #441 في الجذر
-    <div className="min-h-screen bg-[#0a0a0a] text-white" dir="rtl" suppressHydrationWarning>
+    // ✅ suppressHydrationWarning يمنع أي تعارض في هذا الغلاف
+    <div className="min-h-screen bg-background-subtle dark:bg-dark-bg text-primary dark:text-white" dir="rtl" suppressHydrationWarning>
       <AdminSidebar 
         userRole={userRole} 
         userName={session.user.name || "المستخدم"} 
         userEmail={session.user.email || ""}
       />
       
-      <main className="lg:mr-72 min-h-screen">
-        <div className="p-4 lg:p-10">
-          <div className="lg:hidden h-16" />
-          {children}
-        </div>
+      <main className="lg:mr-72 min-h-screen p-6 lg:p-10">
+        <div className="lg:hidden h-16" />
+        {children}
       </main>
     </div>
   )

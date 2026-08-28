@@ -1,80 +1,52 @@
-@import "tailwindcss";
-
-@theme {
-  --font-sans: var(--font-tajawal), system-ui, sans-serif;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
-  }
-  
   body {
-    font-family: var(--font-sans);
+    @apply bg-background text-primary dark:bg-dark-bg dark:text-white antialiased transition-colors duration-300;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background-subtle dark:bg-dark-bg;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent/40 rounded-full hover:bg-accent dark:bg-accent-dark/40;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  /* الأزرار الفاخرة */
+  .btn-primary {
+    @apply bg-primary text-white font-bold px-6 py-3 rounded-xl 
+           shadow-soft transition-all duration-300 
+           hover:bg-primary-dark hover:shadow-hover hover:scale-[1.02] 
+           active:scale-[0.98];
   }
-  
-  .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .gradient-text {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-  
-  .animate-float-delayed {
-    animation: float 6s ease-in-out 2s infinite;
-  }
-  
-  .animate-pulse-slow {
-    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient-shift 8s ease infinite;
-  }
-}
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+  .btn-secondary {
+    @apply bg-accent text-primary-dark font-bold px-6 py-3 rounded-xl 
+           shadow-soft transition-all duration-300 
+           hover:bg-accent-light hover:shadow-glow hover:scale-[1.02]
+           dark:bg-accent-dark dark:text-white dark:hover:bg-accent;
   }
-  50% {
-    transform: translateY(-20px);
-  }
-}
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  /* البطاقات الفاخرة */
+  .card-premium {
+    @apply bg-surface dark:bg-dark-surface border border-gray-100 dark:border-dark-border 
+           rounded-2xl shadow-soft p-6 
+           transition-all duration-300 hover:shadow-hover hover:-translate-y-1;
   }
-  50% {
-    opacity: 0.5;
-  }
-}
 
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+  /* حقول الإدخال الحديثة */
+  .input-modern {
+    @apply w-full bg-background-subtle dark:bg-dark-bg border border-gray-200 dark:border-dark-border 
+           rounded-xl px-4 py-3 text-primary dark:text-white 
+           focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent 
+           transition-all duration-300 placeholder:text-gray-400;
   }
 }
