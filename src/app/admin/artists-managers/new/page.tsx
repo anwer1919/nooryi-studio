@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowRight, UserCog, Loader2 } from "lucide-react"
+import { ArrowRight, UserCog, Loader2, Music } from "lucide-react"
 
 export default function NewManagerPage() {
   const router = useRouter()
@@ -57,99 +57,110 @@ export default function NewManagerPage() {
     <div className="max-w-2xl mx-auto">
       <Link 
         href="/admin/artists-managers"
-        className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white mb-6"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-accent mb-6 transition-colors"
       >
         <ArrowRight size={16} className="rotate-180" />
         العودة لمديري الأعمال
       </Link>
 
-      <div className="glass rounded-3xl p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-            <UserCog className="text-yellow-400" size={24} />
+      <div className="card-premium p-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-soft">
+            <UserCog className="text-white" size={28} />
           </div>
           <div>
-            <h1 className="text-2xl font-black">إضافة مدير أعمال</h1>
-            <p className="text-sm text-white/60">إنشاء حساب مدير أعمال لفنان</p>
+            <h1 className="text-3xl font-black text-primary dark:text-white">إضافة مدير أعمال</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">إنشاء حساب مدير أعمال لفنان</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-sm text-red-400">
+            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 font-semibold">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">الاسم الكامل *</label>
+            <label className="block text-sm font-semibold text-primary dark:text-white mb-2">الاسم الكامل *</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 focus:outline-none focus:border-yellow-500/50"
+              placeholder="أدخل اسم مدير الأعمال"
+              className="input-modern"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">البريد الإلكتروني *</label>
+            <label className="block text-sm font-semibold text-primary dark:text-white mb-2">البريد الإلكتروني *</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 focus:outline-none focus:border-yellow-500/50"
+              placeholder="example@email.com"
+              className="input-modern"
+              dir="ltr"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">كلمة المرور *</label>
+            <label className="block text-sm font-semibold text-primary dark:text-white mb-2">كلمة المرور *</label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
               minLength={6}
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 focus:outline-none focus:border-yellow-500/50"
+              placeholder="••••••••"
+              className="input-modern"
+              dir="ltr"
             />
+            <p className="text-xs text-gray-400 mt-1">6 أحرف على الأقل</p>
           </div>
 
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">رقم الهاتف</label>
+            <label className="block text-sm font-semibold text-primary dark:text-white mb-2">رقم الهاتف</label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 focus:outline-none focus:border-yellow-500/50"
+              placeholder="01xxxxxxxxx"
+              className="input-modern"
+              dir="ltr"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-white/60 mb-1.5">الفنان المُدار *</label>
-            <select
-              value={formData.artistId}
-              onChange={(e) => setFormData({ ...formData, artistId: e.target.value })}
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 focus:outline-none focus:border-yellow-500/50"
-            >
-              <option value="">اختر فنان</option>
-              {artists.map((artist) => (
-                <option key={artist.id} value={artist.id} className="bg-black">
-                  {artist.name}
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-semibold text-primary dark:text-white mb-2">الفنان المُدار *</label>
+            <div className="relative">
+              <Music className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <select
+                value={formData.artistId}
+                onChange={(e) => setFormData({ ...formData, artistId: e.target.value })}
+                required
+                className="input-modern pr-12 appearance-none"
+              >
+                <option value="">اختر فنان</option>
+                {artists.map((artist) => (
+                  <option key={artist.id} value={artist.id} className="bg-white dark:bg-dark-surface">
+                    {artist.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn-primary w-full flex items-center justify-center gap-2 py-4 mt-6"
           >
             {loading ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={20} className="animate-spin" />
                 جاري الإنشاء...
               </>
             ) : (

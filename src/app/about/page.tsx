@@ -1,180 +1,126 @@
-"use client"
-
 import Link from "next/link"
-import { Music, Target, Heart, Zap, Users, Award, Star } from "lucide-react"
-import FluidBackground from "@/components/LazyFluidBackground"
+import { Music, Target, Users, Shield, Award, Heart } from "lucide-react"
 
 export default function AboutPage() {
-  const values = [
-    {
-      icon: Target,
-      title: "رسالتنا",
-      description: "نهدف إلى تقديم تجربة حجز استثنائية للفنانين والعملاء على حد سواء، مع ضمان الجودة والاحترافية في كل حفلة.",
-      color: "text-orange-400",
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/30",
-    },
-    {
-      icon: Heart,
-      title: "شغفنا",
-      description: "نؤمن بأن الموسيقى والفن هما لغة عالمية توحد القلوب، ونسعى لإيصال أفضل الفنانين إلى مناسباتكم الخاصة.",
-      color: "text-red-400",
-      bg: "bg-red-500/10",
-      border: "border-red-500/30",
-    },
-    {
-      icon: Zap,
-      title: "سرعتنا",
-      description: "نضمن استجابة سريعة لطلبات الحجز، مع تأكيد خلال 24 ساعة ودعم فني متاح على مدار الساعة.",
-      color: "text-yellow-400",
-      bg: "bg-yellow-500/10",
-      border: "border-yellow-500/30",
-    },
-    {
-      icon: Award,
-      title: "جودتنا",
-      description: "نختار بعناية نخبة من الفنانين المحترفين ذوي الخبرة الطويلة في إحياء الحفلات والمناسبات الكبرى.",
-      color: "text-amber-400",
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/30",
-    },
-  ]
-
-  const stats = [
-    { value: "50+", label: "فنان محترف" },
-    { value: "10K+", label: "حجز ناجح" },
-    { value: "4.9", label: "متوسط التقييم", icon: Star },
-    { value: "24/7", label: "دعم فني" },
-  ]
-
   return (
-    <div className="relative min-h-screen bg-[#1a0a04]">
-      <FluidBackground scrimStrength="strong" />
+    <div className="min-h-screen bg-background dark:bg-dark-bg">
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-gray-100 dark:border-dark-border">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-background to-primary/5 dark:from-accent-dark/10 dark:via-dark-bg dark:to-primary/10" />
+        <div className="absolute top-10 right-20 w-72 h-72 bg-accent/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+        
+        <div className="relative max-w-4xl mx-auto px-6 lg:px-8 py-20 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 dark:bg-accent-dark/20 text-primary dark:text-accent text-sm font-semibold mb-6">
+            <Music size={16} />
+            <span>عن Nooryi Studio</span>
+          </div>
+          <h1 className="text-5xl lg:text-6xl font-black text-primary dark:text-white mb-6 leading-tight">
+            منصة <span className="text-accent">احترافية</span>
+            <br />
+            لحجز الفنانين
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+            نربط بين أفضل الفنانين والعملاء في منصة واحدة آمنة وموثوقة
+          </p>
+        </div>
+      </section>
 
-      <div className="relative z-10">
-        {/* Header */}
-        <header className="border-b border-white/10 py-4 px-4 sticky top-0 bg-black/40 backdrop-blur-xl z-40">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-amber-700 rounded-lg flex items-center justify-center">
-                <Music size={18} className="text-black" />
+      {/* Mission */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-black text-primary dark:text-white mb-6">
+                رؤيتنا و<span className="text-accent">رسالتنا</span>
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
+                نؤمن بأن كل فعالية تستحق لمسة فنية مميزة. لذلك أنشأنا Nooryi Studio لتكون الجسر الذي يربط بين الفنانين الموهوبين والعملاء الباحثين عن التميز.
+              </p>
+              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                هدفنا هو تقديم تجربة حجز سلسة وآمنة، مع ضمان أعلى معايير الجودة والاحترافية.
+              </p>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 rounded-3xl blur-2xl" />
+              <div className="relative card-premium p-8">
+                <Target className="text-accent mb-4" size={48} />
+                <h3 className="text-2xl font-bold text-primary dark:text-white mb-3">هدفنا</h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  أن نكون المنصة الأولى في الوطن العربي لحجز الفنانين المحترفين
+                </p>
               </div>
-              <span className="text-xl font-bold text-yellow-500">Nooryi Studio</span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/artists" className="text-white/70 hover:text-yellow-500 transition text-sm">
-                الفنانين
-              </Link>
-              <Link href="/contact" className="text-white/70 hover:text-yellow-500 transition text-sm">
-                اتصل بنا
-              </Link>
             </div>
           </div>
-        </header>
+        </div>
+      </section>
 
-        {/* Hero Section */}
-        <section className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <div className="animate-fade-up">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              من <span className="text-yellow-500">نحن</span>
-            </h1>
-            <p className="text-xl text-white/70 leading-relaxed max-w-2xl mx-auto">
-              Nooryi Studio هي منصة رائدة في مجال حجز الفنانين للحفلات والمناسبات الخاصة، 
-              نجمع بين أفضل المواهب وأرقى الخدمات لنقدم لكم تجربة لا تُنسى.
-            </p>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="max-w-4xl mx-auto px-4 pb-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-fade-up-delay">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon
-              return (
-                <div
-                  key={index}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 text-center hover:border-yellow-500/30 transition"
-                >
-                  <div className="text-3xl md:text-4xl font-bold text-yellow-500 mb-2 flex items-center justify-center gap-1">
-                    {stat.value}
-                    {Icon && <Icon size={24} className="fill-yellow-400 text-yellow-400" />}
-                  </div>
-                  <div className="text-white/60 text-sm">{stat.label}</div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* Values Section */}
-        <section className="max-w-6xl mx-auto px-4 pb-20">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">قيمنا</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {values.map((value, index) => {
-              const Icon = value.icon
-              return (
-                <div
-                  key={index}
-                  className={`bg-white/5 backdrop-blur-xl border rounded-2xl p-8 hover:-translate-y-1 transition-all duration-300 ${value.border}`}
-                >
-                  <div className={`w-14 h-14 ${value.bg} rounded-xl flex items-center justify-center mb-4`}>
-                    <Icon size={28} className={value.color} />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">{value.title}</h3>
-                  <p className="text-white/60 leading-relaxed">{value.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="max-w-4xl mx-auto px-4 pb-20 text-center">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-12">
-            <Users size={48} className="mx-auto text-yellow-500 mb-6" />
-            <h2 className="text-3xl font-bold text-white mb-4">
-              جاهز تبدأ رحلتك معنا؟
+      {/* Values */}
+      <section className="py-20 bg-background-subtle dark:bg-dark-surface">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-primary dark:text-white mb-4">
+              قيمنا <span className="text-accent">الأساسية</span>
             </h2>
-            <p className="text-white/60 mb-8 max-w-lg mx-auto">
-              انضم إلى آلاف العملاء الذين وثقوا بنا لإحياء مناسباتهم الخاصة بأفضل الفنانين.
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              المبادئ التي نلتزم بها في كل ما نقدمه
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/artists"
-                className="bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-4 px-8 rounded-full transition shadow-lg shadow-amber-500/20"
-              >
-                استكشف الفنانين ←
-              </Link>
-              <Link
-                href="/contact"
-                className="bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full border border-white/20 transition"
-              >
-                تواصل معنا
-              </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="card-premium text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center mx-auto mb-6">
+                <Shield className="text-primary dark:text-accent" size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-3">الأمان والموثوقية</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                نضمن لك تجربة آمنة 100% مع حماية كاملة لبياناتك ومعاملاتك المالية
+              </p>
+            </div>
+
+            <div className="card-premium text-center">
+              <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-6">
+                <Award className="text-primary dark:text-accent" size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-3">الجودة والاحترافية</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                نتعامل فقط مع فنانين معتمدين ومختارين بعناية لضمان أعلى مستوى من الأداء
+              </p>
+            </div>
+
+            <div className="card-premium text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center mx-auto mb-6">
+                <Heart className="text-primary dark:text-accent" size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-3">رضا العملاء</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                نسعى دائماً لتجاوز توقعاتك وتقديم تجربة لا تُنسى في كل فعالية
+              </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="border-t border-white/10 py-8 px-4">
-          <div className="max-w-6xl mx-auto text-center text-white/40 text-sm">
-            © 2026 Nooryi Studio — جميع الحقوق محفوظة
+      {/* CTA */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-black text-primary dark:text-white mb-4">
+            جاهز لبدء <span className="text-accent">رحلتك</span>؟
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+            انضم إلى آلاف العملاء الذين يثقون بنا
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/artists" className="btn-primary flex items-center gap-2">
+              <Users size={20} />
+              تصفح الفنانين
+            </Link>
+            <Link href="/register" className="btn-secondary flex items-center gap-2">
+              إنشاء حساب مجاني
+            </Link>
           </div>
-        </footer>
-      </div>
-
-      <style jsx>{`
-        @keyframes fade-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-up {
-          animation: fade-up 0.7s cubic-bezier(0.2, 0, 0, 1) both;
-        }
-        .animate-fade-up-delay {
-          animation: fade-up 0.7s cubic-bezier(0.2, 0, 0, 1) 0.2s both;
-        }
-      `}</style>
+        </div>
+      </section>
     </div>
   )
 }
