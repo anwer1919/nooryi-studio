@@ -1,36 +1,49 @@
 @import "tailwindcss";
 
-/* تعريف الألوان المخصصة بنظام Tailwind v4 */
+/* 1. تعريف نظام التصميم بالكامل (Tailwind v4 Syntax) */
 @theme {
+  /* الألوان الأساسية */
   --color-primary: #4B2E83;
   --color-primary-dark: #3A2266;
   --color-primary-light: #6B4C9A;
   
+  /* ألوان التمييز (Mint Green) */
   --color-accent: #A8D5BA;
   --color-accent-dark: #7AB890;
   --color-accent-light: #C8E6D2;
   
+  /* الخلفيات والأسطح */
   --color-background: #FFFFFF;
   --color-background-subtle: #F8F9FC;
   --color-surface: #FFFFFF;
   
+  /* ألوان الوضع الليلي */
   --color-dark-bg: #0F0A1A;
   --color-dark-surface: #1A122B;
   --color-dark-border: #2D2145;
 
+  /* الخطوط */
   --font-sans: var(--font-tajawal), system-ui, sans-serif;
   
+  /* الزوايا الدائرية */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-2xl: 24px;
+
+  /* الظلال الفاخرة */
+  --shadow-soft: 0 4px 20px rgba(75, 46, 131, 0.06);
+  --shadow-hover: 0 12px 40px rgba(75, 46, 131, 0.12);
+  --shadow-glow: 0 0 25px rgba(168, 213, 186, 0.4);
 }
 
+/* 2. الأنماط الأساسية (نستخدم CSS Variables مباشرة لتجنب خطأ @apply في v4) */
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-primary);
+    font-family: var(--font-sans);
     @apply antialiased transition-colors duration-300;
   }
   
@@ -59,40 +72,35 @@
   }
 }
 
+/* 3. المكونات الجاهزة (Premium Components) */
 @layer components {
-  /* الأزرار الفاخرة */
   .btn-primary {
     background-color: var(--color-primary);
     color: white;
-    @apply font-bold px-6 py-3 rounded-xl shadow-[0_4px_20px_rgba(75,46,131,0.06)] 
-           transition-all duration-300 hover:bg-[var(--color-primary-dark)] 
-           hover:shadow-[0_12px_40px_rgba(75,46,131,0.12)] hover:scale-[1.02] 
-           active:scale-[0.98];
+    @apply font-bold px-6 py-3 rounded-xl shadow-soft transition-all duration-300 
+           hover:bg-primary-dark hover:shadow-hover hover:scale-[1.02] active:scale-[0.98];
   }
 
   .btn-secondary {
     background-color: var(--color-accent);
     color: var(--color-primary-dark);
-    @apply font-bold px-6 py-3 rounded-xl shadow-[0_4px_20px_rgba(75,46,131,0.06)] 
-           transition-all duration-300 hover:bg-[var(--color-accent-light)] 
-           hover:shadow-[0_0_25px_rgba(168,213,186,0.4)] hover:scale-[1.02]
-           dark:bg-[var(--color-accent-dark)] dark:text-white dark:hover:bg-[var(--color-accent)];
+    @apply font-bold px-6 py-3 rounded-xl shadow-soft transition-all duration-300 
+           hover:bg-accent-light hover:shadow-glow hover:scale-[1.02]
+           dark:bg-accent-dark dark:text-white dark:hover:bg-accent;
   }
 
-  /* البطاقات الفاخرة */
   .card-premium {
     background-color: var(--color-surface);
-    @apply border border-gray-100 rounded-2xl shadow-[0_4px_20px_rgba(75,46,131,0.06)] p-6 
-           transition-all duration-300 hover:shadow-[0_12px_40px_rgba(75,46,131,0.12)] hover:-translate-y-1
-           dark:bg-[var(--color-dark-surface)] dark:border-[var(--color-dark-border)];
+    @apply border border-gray-100 rounded-2xl shadow-soft p-6 
+           transition-all duration-300 hover:shadow-hover hover:-translate-y-1
+           dark:bg-dark-surface dark:border-dark-border;
   }
 
-  /* حقول الإدخال الحديثة */
   .input-modern {
     background-color: var(--color-background-subtle);
     @apply w-full border border-gray-200 rounded-xl px-4 py-3 
-           focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_50%,transparent)] focus:border-[var(--color-accent)] 
+           focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent 
            transition-all duration-300 placeholder:text-gray-400
-           dark:bg-[var(--color-dark-bg)] dark:border-[var(--color-dark-border)] dark:text-white;
+           dark:bg-dark-bg dark:border-dark-border dark:text-white;
   }
 }

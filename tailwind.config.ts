@@ -13,7 +13,7 @@ const config: Config = {
   
   theme: {
     extend: {
-      // 1. نظام الألوان الفاخر
+      // 1. نظام الألوان الفاخر (Mint Green & Deep Purple)
       colors: {
         primary: {
           DEFAULT: "#4B2E83", // Deep Purple
@@ -42,7 +42,7 @@ const config: Config = {
         sans: ["var(--font-tajawal)", "system-ui", "sans-serif"],
       },
       
-      // 3. زوايا دائرية ناعمة وفاخرة
+      // 3. زوايا دائرية ناعمة وفاخرة (12px - 20px)
       borderRadius: {
         "sm": "8px",
         "md": "12px",
@@ -56,11 +56,6 @@ const config: Config = {
         "soft": "0 4px 20px rgba(75, 46, 131, 0.06)",
         "hover": "0 12px 40px rgba(75, 46, 131, 0.12)",
         "glow": "0 0 25px rgba(168, 213, 186, 0.4)",
-      },
-      
-      // 5. تحسين حركات الانتقال (Animations)
-      transitionDuration: {
-        "smooth": "300ms",
       },
     },
   },
