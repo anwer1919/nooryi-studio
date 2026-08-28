@@ -9,9 +9,23 @@ import {
   Star, 
   Calendar, 
   Music,
+  MapPin,
+  CheckCircle2,
+  Clock,
+  Users,
+  Award
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
+
+function formatSafeDate(date: Date | string): string {
+  try {
+    const d = new Date(date)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  } catch {
+    return "تاريخ غير صالح"
+  }
+}
 
 export default async function ArtistDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -49,14 +63,10 @@ export default async function ArtistDetailsPage({ params }: { params: Promise<{ 
     console.error("Error fetching venues:", error)
   }
 
-  // إذا لم توجد أماكن، أنشئ مكان افتراضي
   if (venues.length === 0) {
     try {
       const defaultVenue = await prisma.venue.create({
-        data: {
-          name: "مكان عام",
-          address: "سيتم تحديده لاحقاً",
-        },
+        data: { name: "مكان عام", address: "سيتم تحديده لاحقاً" },
       })
       venues = [defaultVenue]
     } catch (error) {
@@ -70,7 +80,7 @@ export default async function ArtistDetailsPage({ params }: { params: Promise<{ 
     : 0
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background dark:bg-dark-bg">
       {/* Cover Image */}
       <div className="relative h-[400px] overflow-hidden">
         {artist.coverImage ? (
@@ -80,13 +90,13 @@ export default async function ArtistDetailsPage({ params }: { params: Promise<{ 
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-yellow-500/20 to-amber-600/20" />
+          <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/30" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent dark:from-dark-bg dark:via-dark-bg/50" />
 
         <Link
           href="/artists"
-          className="absolute top-6 right-6 glass rounded-xl px-4 py-2 flex items-center gap-2 hover:bg-white/10 transition-colors"
+          className="absolute top-6 right-6 glass rounded-xl px-4 py-2 flex items-center gap-2 hover:bg-white/20 transition-colors bg-white/80 dark:bg-dark-surface/80 text-primary dark:text-white border border-gray-200 dark:border-dark-border"
         >
           <ArrowRight size={16} />
           العودة
@@ -98,58 +108,109 @@ export default async function ArtistDetailsPage({ params }: { params: Promise<{ 
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Artist Info Card */}
-            <div className="glass rounded-3xl p-8">
+            <div className="card-premium">
               <div className="flex items-start gap-4 mb-6">
                 {artist.profileImage && (
                   <img
                     src={artist.profileImage}
                     alt={artist.name}
-                    className="w-24 h-24 rounded-2xl object-cover border-4 border-black"
+                    className="w-24 h-24 rounded-2xl object-cover border-4 border-white dark:border-dark-surface shadow-soft"
                   />
                 )}
                 <div className="flex-1">
-                  <h1 className="text-4xl font-black mb-2">{artist.name}</h1>
-                  <p className="text-lg text-white/60 mb-3">{artist.category || "فنان"}</p>
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <Star className="text-yellow-400 fill-yellow-400" size={16} />
-                      <span className="font-bold">{avgRating > 0 ? avgRating.toFixed(1) : "جديد"}</span>
-                      <span className="text-white/40">({artist._count?.reviews || 0} تقييم)</span>
+                  <h1 className="text-4xl font-black text-primary dark:text-white mb-2">{artist.name}</h1>
+                  <p className="text-lg text-accent font-semibold mb-3">{artist.category || "فنان"}</p>
+                  <div className="flex items-center gap-4 text-sm flex-wrap">
+                    <div className="flex items-center gap-1 bg-accent/10 dark:bg-accent-dark/20 px-3 py-1.5 rounded-lg">
+                      <Star className="text-accent fill-accent" size={16} />
+                      <span className="font-bold text-primary dark:text-white">
+                        {avgRating > 0 ? avgRating.toFixed(1) : "جديد"}
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400">
+                        ({artist._count?.reviews || 0} تقييم)
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="text-yellow-400" size={16} />
-                      <span>{artist._count?.bookings || 0} حجز ناجح</span>
+                    <div className="flex items-center gap-1 bg-primary/10 dark:bg-accent/20 px-3 py-1.5 rounded-lg">
+                      <Calendar className="text-primary dark:text-accent" size={16} />
+                      <span className="font-semibold text-primary dark:text-white">
+                        {artist._count?.bookings || 0} حجز ناجح
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold mb-3">نبذة عن الفنان</h3>
-              <p className="text-white/70 leading-relaxed">
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-3 flex items-center gap-2">
+                <Music size={20} className="text-accent" />
+                نبذة عن الفنان
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 {artist.bio || "لا توجد سيرة ذاتية متاحة"}
               </p>
             </div>
 
+            {/* Stats Cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="card-premium text-center">
+                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mx-auto mb-3">
+                  <Star className="text-accent" size={24} />
+                </div>
+                <p className="text-2xl font-black text-primary dark:text-white">
+                  {avgRating > 0 ? avgRating.toFixed(1) : "-"}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">التقييم العام</p>
+              </div>
+
+              <div className="card-premium text-center">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center mx-auto mb-3">
+                  <Users className="text-primary dark:text-accent" size={24} />
+                </div>
+                <p className="text-2xl font-black text-primary dark:text-white">
+                  {artist._count?.bookings || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">حجز مكتمل</p>
+              </div>
+
+              <div className="card-premium text-center">
+                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mx-auto mb-3">
+                  <Award className="text-accent" size={24} />
+                </div>
+                <p className="text-2xl font-black text-primary dark:text-white">
+                  {artist._count?.reviews || 0}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">تقييم عملاء</p>
+              </div>
+            </div>
+
             {/* Reviews */}
             {artist.reviews && artist.reviews.length > 0 && (
-              <div className="glass rounded-3xl p-8">
-                <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                  <Star className="text-yellow-400" size={20} />
+              <div className="card-premium">
+                <h3 className="text-xl font-bold text-primary dark:text-white mb-6 flex items-center gap-2">
+                  <Star className="text-accent fill-accent" size={20} />
                   التقييمات ({artist.reviews.length})
                 </h3>
                 <div className="space-y-4">
-                  {artist.reviews.slice(0, 3).map((review: any, i: number) => (
-                    <div key={i} className="bg-white/[0.02] rounded-2xl p-4 border border-white/5">
-                      <div className="flex items-center gap-1 mb-2">
+                  {artist.reviews.map((review: any, i: number) => (
+                    <div 
+                      key={i} 
+                      className="p-5 bg-background-subtle dark:bg-dark-bg rounded-2xl border border-gray-100 dark:border-dark-border"
+                    >
+                      <div className="flex items-center gap-1 mb-3">
                         {[...Array(5)].map((_, idx) => (
                           <Star
                             key={idx}
-                            size={14}
-                            className={idx < review.rating ? "text-yellow-400 fill-yellow-400" : "text-white/20"}
+                            size={16}
+                            className={idx < review.rating ? "text-accent fill-accent" : "text-gray-200 dark:text-gray-700"}
                           />
                         ))}
                       </div>
-                      <p className="text-sm text-white/70">{review.comment || "تقييم ممتاز"}</p>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {review.comment || "تقييم ممتاز"}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                        <Clock size={12} />
+                        {formatSafeDate(review.createdAt)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -159,11 +220,21 @@ export default async function ArtistDetailsPage({ params }: { params: Promise<{ 
 
           {/* Booking Form Sidebar */}
           <div className="lg:col-span-1">
-            <div className="glass rounded-3xl p-6 sticky top-24">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Calendar className="text-yellow-400" size={20} />
+            <div className="card-premium sticky top-24">
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-4 flex items-center gap-2">
+                <Calendar className="text-accent" size={20} />
                 احجز الآن
               </h3>
+
+              {/* Price Preview */}
+              <div className="bg-gradient-to-br from-accent/10 to-primary/5 dark:from-accent-dark/20 dark:to-primary/10 rounded-2xl p-5 mb-6 border border-accent/20 dark:border-accent-dark/30">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">السعر التقديري</p>
+                <p className="text-3xl font-black text-primary dark:text-accent">5,000 <span className="text-sm">ج.م</span></p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1">
+                  <CheckCircle2 size={12} className="text-accent" />
+                  العربون: 1,000 ج.م (20%)
+                </p>
+              </div>
 
               <BookingForm 
                 artistId={artist.id}

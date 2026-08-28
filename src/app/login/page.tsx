@@ -4,15 +4,17 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Music, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react"
+import { Music, Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,163 +23,191 @@ export default function LoginPage() {
 
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: formData.email,
+        password: formData.password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError("البريد الإلكتروني أو كلمة السر غير صحيحة")
-      } else {
-        // جلب بيانات الجلسة لمعرفة دور المستخدم
-        const sessionResponse = await fetch("/api/auth/session")
-        const session = await sessionResponse.json()
-        
-        // توجيه حسب الدور
-        if (session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN") {
-          router.push("/admin")
-        } else if (session?.user?.role === "ARTIST") {
-          router.push("/admin/artists")
-        } else {
-          // المستخدم العادي يذهب إلى حجوزاته
-          router.push("/my-bookings")
-        }
-        router.refresh()
+        setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
+        setLoading(false)
+        return
       }
+
+      router.push("/")
+      router.refresh()
     } catch (err) {
-      setError("حدث خطأ غير متوقع، حاول مرة أخرى")
-    } finally {
+      setError("حدث خطأ أثناء تسجيل الدخول")
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-yellow-500/5 rounded-full blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-1/4 left-1/4 w-[500px] h-[500px] bg-amber-600/5 rounded-full blur-[120px] animate-pulse-slow" />
-        <div 
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
-      </div>
+    <div className="min-h-screen bg-background dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-      <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-amber-600 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-              <div className="relative bg-gradient-to-br from-yellow-400 to-amber-600 p-2.5 rounded-2xl">
-                <Music className="text-black" size={24} />
+      <div className="relative w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:block">
+          <div className="mb-8">
+            <Link href="/" className="flex items-center gap-3 mb-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-accent blur-xl opacity-50" />
+                <div className="relative bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
+                  <Music className="text-primary" size={24} />
+                </div>
               </div>
-            </div>
-            <span className="text-2xl font-black tracking-tight">Nooryi</span>
-          </Link>
+              <span className="text-3xl font-black text-primary dark:text-white">
+                Nooryi<span className="text-accent">.</span>
+              </span>
+            </Link>
+
+            <h1 className="text-5xl font-black text-primary dark:text-white mb-4 leading-tight">
+              مرحباً بعودتك
+              <br />
+              <span className="bg-gradient-to-r from-primary to-accent dark:from-accent dark:to-accent-light bg-clip-text text-transparent">
+                إلى عالم الإبداع
+              </span>
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+              سجل دخولك للوصول إلى لوحة التحكم الخاصة بك، وإدارة حجوزاتك، ومتابعة فعالياتك بكل سهولة.
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="space-y-4 mt-12">
+            {[
+              { icon: "🎵", title: "إدارة الحجوزات", desc: "تابع جميع حجوزاتك في مكان واحد" },
+              { icon: "💳", title: "دفع آمن", desc: "نظام دفع مشفر ومحمي 100%" },
+              { icon: "📊", title: "تقارير شاملة", desc: "إحصائيات مفصلة عن أداء حسابك" },
+            ].map((feature, i) => (
+              <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/50 dark:bg-dark-surface/50 backdrop-blur-sm border border-gray-100 dark:border-dark-border">
+                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center text-2xl flex-shrink-0">
+                  {feature.icon}
+                </div>
+                <div>
+                  <p className="font-bold text-primary dark:text-white">{feature.title}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{feature.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Login Card */}
-        <div className="glass rounded-3xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-black mb-2">مرحباً بعودتك</h1>
-            <p className="text-white/60 text-sm">سجّل الدخول للوصول إلى حسابك</p>
+        {/* Right Side - Login Form */}
+        <div className="card-premium p-8 lg:p-10">
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-8 text-center">
+            <Link href="/" className="inline-flex items-center gap-3 mb-6">
+              <div className="bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
+                <Music className="text-primary" size={24} />
+              </div>
+              <span className="text-3xl font-black text-primary dark:text-white">
+                Nooryi<span className="text-accent">.</span>
+              </span>
+            </Link>
+            <h1 className="text-3xl font-black text-primary dark:text-white mb-2">تسجيل الدخول</h1>
+            <p className="text-gray-500 dark:text-gray-400">مرحباً بعودتك! أدخل بياناتك للمتابعة</p>
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden lg:block mb-8">
+            <h2 className="text-3xl font-black text-primary dark:text-white mb-2">تسجيل الدخول</h2>
+            <p className="text-gray-500 dark:text-gray-400">أدخل بياناتك للوصول إلى حسابك</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Field */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 font-semibold">
+                {error}
+              </div>
+            )}
+
+            {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-white/80 mb-2">
+              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
                 البريد الإلكتروني
               </label>
               <div className="relative">
-                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="your@email.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pr-12 pl-4 text-white placeholder:text-white/40 focus:outline-none focus:border-yellow-500/50 focus:bg-white/[0.07] transition-all"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="example@email.com"
+                  className="input-modern pr-12"
+                  dir="ltr"
                 />
               </div>
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-white/80 mb-2">
-                كلمة السر
+              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
+                كلمة المرور
               </label>
               <div className="relative">
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pr-12 pl-12 text-white placeholder:text-white/40 focus:outline-none focus:border-yellow-500/50 focus:bg-white/[0.07] transition-all"
+                  className="input-modern pr-12 pl-12"
+                  dir="ltr"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary dark:hover:text-accent transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm">
-                <AlertCircle size={16} />
-                <span>{error}</span>
-              </div>
-            )}
-
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full"
+              className="btn-primary w-full flex items-center justify-center gap-2 py-4"
             >
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-amber-600 rounded-xl opacity-75 group-hover:opacity-100 blur transition-all" />
-              <div className="relative bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold py-3.5 rounded-xl transition-all group-hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:group-hover:scale-100">
-                <span className="flex items-center justify-center gap-2">
-                  {loading ? (
-                    <>
-                      <Loader2 size={18} className="animate-spin" />
-                      جاري تسجيل الدخول...
-                    </>
-                  ) : (
-                    <>
-                      تسجيل الدخول
-                      <ArrowRight size={18} className="rotate-180" />
-                    </>
-                  )}
-                </span>
-              </div>
+              {loading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  جاري تسجيل الدخول...
+                </>
+              ) : (
+                <>
+                  تسجيل الدخول
+                  <ArrowRight size={20} className="rotate-180" />
+                </>
+              )}
             </button>
           </form>
 
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
+            <span className="text-xs text-gray-400 font-semibold">أو</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
+          </div>
+
           {/* Sign Up Link */}
-          <div className="mt-6 text-center text-sm text-white/60">
+          <p className="text-center text-gray-600 dark:text-gray-400">
             ليس لديك حساب؟{" "}
-            <Link href="/register" className="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors">
+            <Link 
+              href="/register" 
+              className="text-primary dark:text-accent font-bold hover:underline inline-flex items-center gap-1"
+            >
+              <Sparkles size={14} />
               أنشئ حساباً جديداً
             </Link>
-          </div>
-        </div>
-
-        {/* Footer Link */}
-        <div className="text-center mt-6">
-          <Link href="/" className="text-sm text-white/40 hover:text-white/70 transition-colors">
-            ← العودة للصفحة الرئيسية
-          </Link>
+          </p>
         </div>
       </div>
     </div>
