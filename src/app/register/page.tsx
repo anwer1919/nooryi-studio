@@ -36,14 +36,14 @@ export default function RegisterPage() {
     setLoading(true)
     setError("")
 
-    // التحقق من تطابق كلمات المرور
+    // 1. التحقق من تطابق كلمات المرور
     if (formData.password !== formData.confirmPassword) {
       setError("كلمات المرور غير متطابقة")
       setLoading(false)
       return
     }
 
-    // التحقق من طول كلمة المرور
+    // 2. التحقق من طول كلمة المرور
     if (formData.password.length < 6) {
       setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل")
       setLoading(false)
@@ -51,7 +51,9 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      // ✅ الإصلاح الجذري: استخدام /api/register بدلاً من /api/auth/register
+      // لمنع NextAuth من اعتراض الطلب ورفضه
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,7 +67,7 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        // ✅ عرض رسالة الخطأ الدقيقة القادمة من الـ API
+        // عرض رسالة الخطأ الدقيقة القادمة من الـ API
         throw new Error(data.error || "فشل إنشاء الحساب، يرجى المحاولة لاحقاً")
       }
 
@@ -95,7 +97,7 @@ export default function RegisterPage() {
       position: "relative",
       overflow: "hidden"
     }}>
-      {/* Background Decorations */}
+      {/* خلفية زخرفية ناعمة */}
       <div style={{
         position: "absolute", top: 0, left: 0, width: "400px", height: "400px",
         borderRadius: "50%", backgroundColor: "var(--color-accent)", opacity: 0.1,
@@ -116,7 +118,7 @@ export default function RegisterPage() {
         alignItems: "center" 
       }} className="lg:grid-cols-2">
         
-        {/* Left Side - Branding (Desktop Only) */}
+        {/* الجانب الأيسر - العلامة التجارية (للديسكتوب فقط) */}
         <div className="hidden lg:block">
           <div style={{ marginBottom: "var(--space-8)" }}>
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-8)", textDecoration: "none" }}>
@@ -125,7 +127,7 @@ export default function RegisterPage() {
                 backgroundColor: "var(--color-accent)", display: "flex",
                 alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-glow)"
               }}>
-                <Music className="text-primary" size={24} style={{ color: "var(--color-primary)" }} />
+                <Music size={24} style={{ color: "var(--color-primary)" }} />
               </div>
               <span style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-primary)" }}>
                 Nooryi<span style={{ color: "var(--color-accent-dark)" }}>.</span>
@@ -147,7 +149,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Benefits */}
+          {/* مزايا التسجيل */}
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", marginTop: "var(--space-12)" }}>
             {[
               { icon: "✨", title: "تسجيل مجاني", desc: "أنشئ حسابك في أقل من دقيقة" },
@@ -175,9 +177,9 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Right Side - Register Form */}
+        {/* الجانب الأيمن - نموذج التسجيل */}
         <div className="card" style={{ padding: "var(--space-8)" }}>
-          {/* Mobile Logo */}
+          {/* شعار الجوال */}
           <div className="lg:hidden" style={{ textAlign: "center", marginBottom: "var(--space-8)" }}>
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-6)", textDecoration: "none" }}>
               <div style={{
@@ -195,13 +197,14 @@ export default function RegisterPage() {
             <p style={{ color: "var(--color-text-secondary)" }}>انضم إلينا وابدأ رحلتك</p>
           </div>
 
-          {/* Desktop Header */}
+          {/* عنوان الديسكتوب */}
           <div className="hidden lg:block" style={{ marginBottom: "var(--space-8)" }}>
             <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>إنشاء حساب جديد</h2>
             <p style={{ color: "var(--color-text-secondary)" }}>املأ البيانات التالية لإنشاء حسابك</p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+            {/* رسالة الخطأ */}
             {error && (
               <div style={{
                 backgroundColor: "#FEE2E2", border: "1px solid #FECACA", borderRadius: "var(--radius-lg)",
@@ -211,7 +214,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Name */}
+            {/* الاسم */}
             <div>
               <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 الاسم الكامل *
@@ -230,7 +233,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* البريد الإلكتروني */}
             <div>
               <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 البريد الإلكتروني *
@@ -251,7 +254,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Phone */}
+            {/* رقم الهاتف */}
             <div>
               <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 رقم الهاتف
@@ -270,7 +273,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Password */}
+            {/* كلمة المرور */}
             <div>
               <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 كلمة المرور *
@@ -302,7 +305,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Confirm Password */}
+            {/* تأكيد كلمة المرور */}
             <div>
               <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 تأكيد كلمة المرور *
@@ -323,7 +326,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Password Checks */}
+            {/* مؤشرات التحقق */}
             {formData.password && (
               <div style={{
                 display: "flex", flexDirection: "column", gap: "var(--space-2)", padding: "var(--space-3)",
@@ -347,7 +350,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* زر الإرسال */}
             <button
               type="submit"
               disabled={loading}
@@ -375,14 +378,14 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          {/* Divider */}
+          {/* فاصل */}
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", margin: "var(--space-6) 0" }}>
             <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-border)" }} />
             <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontWeight: "600" }}>أو</span>
             <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-border)" }} />
           </div>
 
-          {/* Login Link */}
+          {/* رابط تسجيل الدخول */}
           <p style={{ textAlign: "center", color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" }}>
             لديك حساب بالفعل؟{" "}
             <Link 
