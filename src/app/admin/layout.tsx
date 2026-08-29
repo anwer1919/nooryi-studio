@@ -1,36 +1,38 @@
-import { Tajawal } from "next/font/google"
-import "./globals.css"
-import { Providers } from "@/components/Providers"
-import Navbar from "@/components/Navbar"
+import { redirect } from "next/navigation"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import AdminSidebarClient from "./AdminSidebarClient"
 
-const tajawal = Tajawal({
-  subsets: ["arabic"],
-  weight: ["400", "500", "700", "800"],
-  variable: "--font-tajawal",
-})
-
-export const metadata = {
-  title: "Nooryi Studio | منصة حجز الفنانين",
-  description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين",
-}
-
-export default function RootLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  const userRole = session.user.role || "USER"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  const isArtistManager = userRole === "ARTIST_MANAGER"
+
+  if (!isAdmin && !isArtistManager) {
+    redirect("/")
+  }
+
   return (
-    // ✅ suppressHydrationWarning على المستوى الجذري
-    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
-      <body 
-        className="min-h-screen font-sans antialiased"
-        suppressHydrationWarning
-      >
-        <Providers>
-          <Navbar />
-          {children}
-        </Providers>
-      </body>
-    </html>
+    <div suppressHydrationWarning style={{ minHeight: "100vh", backgroundColor: "var(--color-background-subtle)" }}>
+      <AdminSidebarClient 
+        userRole={userRole}
+        userName={session.user.name || "المستخدم"}
+        userEmail={session.user.email || ""}
+      />
+      
+      <main suppressHydrationWarning style={{ minHeight: "100vh" }} className="lg:mr-72">
+        {children}
+      </main>
+    </div>
   )
 }
