@@ -10,25 +10,21 @@ export default async function AdminLayout({
 }) {
   const session = await getServerSession(authOptions)
   
-  // إذا لم توجد جلسة، أعد التوجيه (هذا طبيعي ويحدث إذا لم تضف متغيرات البيئة في الخطوة 1)
+  // إذا لم توجد جلسة، أعد التوجيه (هذا سيحدث فقط إذا لم تنفذ الخطوة الأولى أعلاه)
   if (!session?.user) {
     redirect("/login")
   }
 
-  // ✅ الحل الجذري: تحويل كل شيء إلى String لضمان عدم وجود undefined يسبب انهيار المتصفح
-  const userRole = String(session.user.role || "USER")
-  const userName = String(session.user.name || "المستخدم")
-  const userEmail = String(session.user.email || "")
-
   return (
-    <div suppressHydrationWarning style={{ minHeight: "100vh", backgroundColor: "var(--color-background-subtle)" }}>
+    // نستخدم ألوان Tailwind قياسية مضمونة الظهور
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminSidebar 
-        userRole={userRole}
-        userName={userName}
-        userEmail={userEmail}
+        userRole={session.user.role || "USER"}
+        userName={session.user.name || "المستخدم"}
+        userEmail={session.user.email || ""}
       />
       
-      <main suppressHydrationWarning style={{ minHeight: "100vh" }} className="lg:mr-72">
+      <main className="lg:mr-72 min-h-screen p-4 lg:p-8 pt-20 lg:pt-8">
         {children}
       </main>
     </div>

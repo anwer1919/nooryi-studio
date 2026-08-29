@@ -6,131 +6,97 @@ import { signOut } from "next-auth/react"
 import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, BarChart3 } from "lucide-react"
 import { useState } from "react"
 
-export default function AdminSidebar({ userRole, userName, userEmail }: { userRole: string, userName: string, userEmail: string }) {
+export default function AdminSidebar({ userRole, userName, userEmail }: any) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  // حماية قصوى: قيم افتراضية تمنع أي انهيار للكود
+  const safeRole = userRole || "USER"
+  const safeName = userName || "مستخدم"
+  const safeEmail = userEmail || "no-email"
+  const isAdmin = safeRole === "SUPER_ADMIN" || safeRole === "ADMIN"
 
-  const links = isAdmin
-    ? [
-        { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
-        { href: "/admin/bookings", label: "الحجوزات", icon: Calendar },
-        { href: "/admin/artists", label: "الفنانين", icon: Music },
-        { href: "/admin/artists-managers", label: "مديرو الأعمال", icon: UserCog },
-        { href: "/admin/stats", label: "التقارير المالية", icon: BarChart3 },
-      ]
-    : [
-        { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
-        { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
-      ]
+  const links = isAdmin ? [
+    { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/admin/bookings", label: "الحجوزات", icon: Calendar },
+    { href: "/admin/artists", label: "الفنانين", icon: Music },
+    { href: "/admin/artists-managers", label: "مديرو الأعمال", icon: UserCog },
+    { href: "/admin/stats", label: "التقارير", icon: BarChart3 },
+  ] : [
+    { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+    { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
+  ]
 
-  // ✅ حماية قصوى: ضمان وجود حرف واحد على الأقل لمنع انهيار التطبيق
-  const safeName = userName.trim() || "المستخدم"
-  const initial = safeName.charAt(0).toUpperCase()
+  const initial = safeName.trim().charAt(0).toUpperCase()
 
   return (
     <>
-      {/* Mobile Header */}
-      <div className="lg:hidden" style={{
-        position: "sticky", top: 0, zIndex: 40, backgroundColor: "var(--color-background)",
-        borderBottom: "1px solid var(--color-border)", padding: "var(--space-4)"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={18} style={{ color: "var(--color-primary)" }} />
-            </div>
-            <span style={{ fontSize: "var(--text-lg)", fontWeight: "900", color: "var(--color-text-primary)" }}>Nooryi</span>
-          </div>
-          <button onClick={() => setIsOpen(!isOpen)} style={{ width: "40px", height: "40px", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-background-subtle)", border: "1px solid var(--color-border)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {isOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+      {/* Mobile Header - مضمون الظهور بألوان قياسية */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex items-center justify-between px-4">
+        <span className="font-bold text-xl text-purple-900 dark:text-white">Nooryi</span>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile Overlay */}
-      {isOpen && (
-        <div className="lg:hidden" style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 10, 26, 0.6)", backdropFilter: "blur(4px)", zIndex: 45 }} onClick={() => setIsOpen(false)} />
-      )}
+      {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />}
 
-      {/* Mobile Sidebar */}
-      <aside className="lg:hidden" style={{
-        position: "fixed", top: 0, right: 0, height: "100vh", width: "280px",
-        backgroundColor: "var(--color-background)", borderLeft: "1px solid var(--color-border)",
-        zIndex: 50, transform: isOpen ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)", overflowY: "auto"
-      }}>
-        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={userEmail} isAdmin={isAdmin} initial={initial} onClose={() => setIsOpen(false)} />
-      </aside>
+      {/* Sidebar Container - مضمون الظهور 100% */}
+      <aside className={`
+        fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 z-50
+        transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}>
+        <div className="flex flex-col h-full p-4">
+          
+          {/* User Info Card */}
+          <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+                {initial}
+              </div>
+              <div className="overflow-hidden">
+                <p className="font-bold text-gray-900 dark:text-white truncate">{safeName}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{safeEmail}</p>
+              </div>
+            </div>
+          </div>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block" style={{
-        position: "fixed", top: 0, right: 0, height: "100vh", width: "288px",
-        backgroundColor: "var(--color-background)", borderLeft: "1px solid var(--color-border)",
-        overflowY: "auto", boxShadow: "var(--shadow-sm)"
-      }}>
-        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={userEmail} isAdmin={isAdmin} initial={initial} />
+          {/* Navigation Links */}
+          <nav className="flex-1 space-y-2 overflow-y-auto">
+            {links.map((link, idx) => {
+              const Icon = link.icon
+              const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+              return (
+                <Link
+                  key={idx}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-semibold shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <Icon size={20} className="flex-shrink-0" />
+                  <span>{link.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Logout Button */}
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-auto border border-transparent hover:border-red-100 dark:hover:border-red-900"
+          >
+            <LogOut size={20} className="flex-shrink-0" />
+            <span className="font-medium">تسجيل الخروج</span>
+          </button>
+        </div>
       </aside>
     </>
-  )
-}
-
-function SidebarContent({ links, pathname, userName, userEmail, isAdmin, initial, onClose }: any) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ padding: "var(--space-6)", borderBottom: "1px solid var(--color-border-light)" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", textDecoration: "none" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-lg)", backgroundColor: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Music size={20} style={{ color: "var(--color-primary)" }} />
-          </div>
-          <div>
-            <p style={{ fontSize: "var(--text-lg)", fontWeight: "900", color: "var(--color-text-primary)" }}>Nooryi</p>
-            <p style={{ fontSize: "10px", color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              {isAdmin ? "Admin Panel" : "Manager Panel"}
-            </p>
-          </div>
-        </Link>
-      </div>
-
-      <div style={{ padding: "var(--space-4)", borderBottom: "1px solid var(--color-border-light)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3)", borderRadius: "var(--radius-lg)", backgroundColor: "var(--color-background-subtle)" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-full)", background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF", fontSize: "var(--text-sm)", fontWeight: "700", flexShrink: 0 }}>
-            {initial}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
-          </div>
-        </div>
-      </div>
-
-      <nav style={{ flex: 1, padding: "var(--space-4)", overflowY: "auto" }}>
-        <p style={{ fontSize: "var(--text-xs)", fontWeight: "600", color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0 var(--space-3)", marginBottom: "var(--space-2)" }}>القائمة الرئيسية</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
-          {links.map((link: any, index: number) => {
-            const Icon = link.icon
-            const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href)
-            return (
-              <Link key={index} href={link.href} onClick={onClose} style={{
-                display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)",
-                borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "500", textDecoration: "none",
-                color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)",
-                backgroundColor: isActive ? "var(--color-primary-50)" : "transparent"
-              }}>
-                <Icon size={18} style={{ flexShrink: 0 }} />
-                <span>{link.label}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
-
-      <div style={{ padding: "var(--space-4)", borderTop: "1px solid var(--color-border-light)", backgroundColor: "var(--color-background-subtle)" }}>
-        <button onClick={() => signOut({ callbackUrl: "/" })} style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)", borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-danger)", backgroundColor: "transparent", border: "none", cursor: "pointer", width: "100%", textAlign: "right" }}>
-          <LogOut size={18} /> <span>تسجيل الخروج</span>
-        </button>
-      </div>
-    </div>
   )
 }
