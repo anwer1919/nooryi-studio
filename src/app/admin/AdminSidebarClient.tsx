@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, Home, BarChart3 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface AdminSidebarProps {
   userRole: string
@@ -12,9 +12,16 @@ interface AdminSidebarProps {
   userEmail: string
 }
 
-export default function AdminSidebar({ userRole, userName, userEmail }: AdminSidebarProps) {
+export default function AdminSidebarClient({ userRole, userName, userEmail }: AdminSidebarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  
+  // ✅ الحارس لمنع تعارض Hydration
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
@@ -30,6 +37,13 @@ export default function AdminSidebar({ userRole, userName, userEmail }: AdminSid
         { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
         { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
       ]
+
+  // ✅ الحل الجذري: إرجاع هيكل مطابق تماماً للأبعاد لمنع اهتزاز الصفحة وتعارض Hydration
+  if (!isMounted) {
+    return (
+      <div className="hidden lg:block fixed top-0 right-0 h-full w-72 bg-white dark:bg-[var(--color-dark-surface)] border-l border-gray-200 dark:border-[var(--color-dark-border)] z-30" />
+    )
+  }
 
   return (
     <>
