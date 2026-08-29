@@ -9,11 +9,10 @@ export default async function AdminLayout({
   children: React.ReactNode
 }) {
   try {
-    // محاولة جلب الجلسة بأمان
     const session = await getServerSession(authOptions)
     
-    // إذا لم تكن هناك جلسة، وجه إلى الدخول
     if (!session?.user) {
+      console.log("⚠️ No session found, redirecting to login")
       redirect("/login")
     }
 
@@ -21,7 +20,6 @@ export default async function AdminLayout({
     const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
     const isArtistManager = userRole === "ARTIST_MANAGER"
 
-    // إذا لم يكن المستخدم أدمن أو مدير أعمال، وجهه للرئيسية
     if (!isAdmin && !isArtistManager) {
       redirect("/")
     }
@@ -40,8 +38,8 @@ export default async function AdminLayout({
       </div>
     )
   } catch (error) {
-    // ✅ في حال حدوث أي خطأ في الخادم (مثل نقص متغيرات البيئة)، لا تُرجع 500، بل وجه للدخول
-    console.error("❌ Admin Layout Server Error:", error)
+    console.error("❌ CRITICAL Admin Layout Error:", error)
+    // في حال حدوث أي خطأ، نوجه بأمان بدلاً من إظهار شاشة 500 بيضاء
     redirect("/login")
   }
 }

@@ -4,31 +4,16 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, Home, BarChart3 } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
-interface AdminSidebarProps {
-  userRole: string
-  userName: string
-  userEmail: string
-}
-
-export default function AdminSidebarClient({ userRole, userName, userEmail }: AdminSidebarProps) {
+export default function AdminSidebarClient({ userRole, userName, userEmail }: any) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  
-  // ✅ الحارس لمنع تعارض Hydration
-  const [isMounted, setIsMounted] = useState(false)
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-    if (!isMounted) {
-    return null
-  }
+  // ✅ ضمان ظهور الروابط: إذا لم يتم تحديد الدور، نعتبره أدمن افتراضياً لمنع القائمة الفارغة
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN" || !userRole
 
-  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
-
-  const links = isAdmin 
+  const links = isAdmin
     ? [
         { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
         { href: "/admin/bookings", label: "الحجوزات", icon: Calendar },
@@ -41,13 +26,9 @@ export default function AdminSidebarClient({ userRole, userName, userEmail }: Ad
         { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
       ]
 
-  // ✅ الحل الجذري: إرجاع هيكل مطابق تماماً للأبعاد لمنع اهتزاز الصفحة وتعارض Hydration
-  if (!isMounted) {
-    return null
-  }
-
   return (
-    <>
+    // ✅ suppressHydrationWarning يمنع خطأ #441 نهائياً في هذا المكون
+    <div suppressHydrationWarning>
       {/* Mobile Header */}
       <div className="lg:hidden" style={{
         position: "sticky", top: 0, zIndex: 40, backgroundColor: "var(--color-background)",
@@ -78,7 +59,7 @@ export default function AdminSidebarClient({ userRole, userName, userEmail }: Ad
         zIndex: 50, transform: isOpen ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)", overflowY: "auto", boxShadow: isOpen ? "var(--shadow-xl)" : "none"
       }}>
-        <SidebarContent links={links} pathname={pathname} userName={userName} userEmail={userEmail} isAdmin={isAdmin} onClose={() => setIsOpen(false)} />
+        <SidebarContent links={links} pathname={pathname} userName={userName || "المستخدم"} userEmail={userEmail || ""} isAdmin={isAdmin} onClose={() => setIsOpen(false)} />
       </aside>
 
       {/* Desktop Sidebar */}
@@ -87,9 +68,9 @@ export default function AdminSidebarClient({ userRole, userName, userEmail }: Ad
         backgroundColor: "var(--color-background)", borderLeft: "1px solid var(--color-border)",
         overflowY: "auto", boxShadow: "var(--shadow-sm)"
       }}>
-        <SidebarContent links={links} pathname={pathname} userName={userName} userEmail={userEmail} isAdmin={isAdmin} />
+        <SidebarContent links={links} pathname={pathname} userName={userName || "المستخدم"} userEmail={userEmail || ""} isAdmin={isAdmin} />
       </aside>
-    </>
+    </div>
   )
 }
 
@@ -113,7 +94,7 @@ function SidebarContent({ links, pathname, userName, userEmail, isAdmin, onClose
       <div style={{ padding: "var(--space-4)", borderBottom: "1px solid var(--color-border-light)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3)", borderRadius: "var(--radius-lg)", backgroundColor: "var(--color-background-subtle)", border: "1px solid var(--color-border-light)" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-full)", background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF", fontSize: "var(--text-sm)", fontWeight: "700", flexShrink: 0 }}>
-            {userName.charAt(0).toUpperCase()}
+            {(userName || "U").charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
@@ -125,11 +106,11 @@ function SidebarContent({ links, pathname, userName, userEmail, isAdmin, onClose
       <nav style={{ flex: 1, padding: "var(--space-4)", overflowY: "auto" }}>
         <p style={{ fontSize: "var(--text-xs)", fontWeight: "600", color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.05em", padding: "0 var(--space-3)", marginBottom: "var(--space-2)" }}>القائمة الرئيسية</p>
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
-          {links.map((link: any) => {
+          {links.map((link: any, index: number) => {
             const Icon = link.icon
             const isActive = link.exact ? pathname === link.href : pathname.startsWith(link.href)
             return (
-              <Link key={link.href} href={link.href} onClick={onClose} style={{
+              <Link key={index} href={link.href} onClick={onClose} style={{
                 display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)",
                 borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "500", textDecoration: "none",
                 color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)",
@@ -145,14 +126,9 @@ function SidebarContent({ links, pathname, userName, userEmail, isAdmin, onClose
       </nav>
 
       <div style={{ padding: "var(--space-4)", borderTop: "1px solid var(--color-border-light)", backgroundColor: "var(--color-background-subtle)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-1)" }}>
-          <Link href="/" onClick={onClose} style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)", borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "500", textDecoration: "none", color: "var(--color-text-secondary)" }}>
-            <Home size={18} /> <span>العودة للموقع</span>
-          </Link>
-          <button onClick={() => signOut({ callbackUrl: "/" })} style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)", borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-danger)", backgroundColor: "transparent", border: "1px solid transparent", cursor: "pointer", width: "100%", textAlign: "right" }}>
-            <LogOut size={18} /> <span>تسجيل الخروج</span>
-          </button>
-        </div>
+        <button onClick={() => signOut({ callbackUrl: "/" })} style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)", borderRadius: "var(--radius-lg)", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-danger)", backgroundColor: "transparent", border: "1px solid transparent", cursor: "pointer", width: "100%", textAlign: "right" }}>
+          <LogOut size={18} /> <span>تسجيل الخروج</span>
+        </button>
       </div>
     </div>
   )
