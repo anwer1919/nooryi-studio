@@ -10,11 +10,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  // حماية قصوى: قيم افتراضية تمنع أي انهيار للكود
-  const safeRole = userRole || "USER"
-  const safeName = userName || "مستخدم"
-  const safeEmail = userEmail || "no-email"
-  const isAdmin = safeRole === "SUPER_ADMIN" || safeRole === "ADMIN"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
   const links = isAdmin ? [
     { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
@@ -27,14 +23,14 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
     { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
   ]
 
-  const initial = safeName.trim().charAt(0).toUpperCase()
+  const initial = (userName || "U").trim().charAt(0).toUpperCase()
 
   return (
     <>
       {/* Mobile Header - مضمون الظهور بألوان قياسية */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-50 flex items-center justify-between px-4">
-        <span className="font-bold text-xl text-purple-900 dark:text-white">Nooryi</span>
-        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4">
+        <span className="font-bold text-xl text-purple-900">Nooryi</span>
+        <button onClick={() => setIsOpen(!isOpen)} className="p-2 text-gray-600 rounded-lg hover:bg-gray-100">
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -42,9 +38,9 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
       {/* Mobile Overlay */}
       {isOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setIsOpen(false)} />}
 
-      {/* Sidebar Container - مضمون الظهور 100% */}
+      {/* Sidebar Container - مضمون الظهور 100% بألوان صريحة */}
       <aside className={`
-        fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 z-50
+        fixed top-0 right-0 h-full w-72 bg-white border-l border-gray-200 z-50
         transform transition-transform duration-300 ease-in-out
         lg:translate-x-0
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
@@ -52,14 +48,14 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
         <div className="flex flex-col h-full p-4">
           
           {/* User Info Card */}
-          <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
+          <div className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
                 {initial}
               </div>
               <div className="overflow-hidden">
-                <p className="font-bold text-gray-900 dark:text-white truncate">{safeName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{safeEmail}</p>
+                <p className="font-bold text-gray-900 truncate">{userName}</p>
+                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
               </div>
             </div>
           </div>
@@ -76,8 +72,8 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 font-semibold shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      ? 'bg-purple-100 text-purple-700 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   <Icon size={20} className="flex-shrink-0" />
@@ -90,7 +86,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
           {/* Logout Button */}
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-auto border border-transparent hover:border-red-100 dark:hover:border-red-900"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors mt-auto"
           >
             <LogOut size={20} className="flex-shrink-0" />
             <span className="font-medium">تسجيل الخروج</span>
