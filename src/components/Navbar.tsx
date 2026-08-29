@@ -10,10 +10,12 @@ import {
   LayoutDashboard, 
   LogIn, 
   UserPlus, 
-  User,
   LogOut,
   Calendar,
-  Home
+  Home,
+  Users,
+  Info,
+  Phone
 } from "lucide-react"
 import { useState, useEffect } from "react"
 
@@ -23,12 +25,11 @@ export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false)
   const { data: session, status } = useSession()
 
-  // منع Hydration mismatch
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // إخفاء الـ Navbar في صفحات تسجيل الدخول والتسجيل
+  // إخفاء في صفحات الدخول
   if (pathname === "/login" || pathname === "/register") {
     return null
   }
@@ -39,26 +40,26 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/", label: "الرئيسية", icon: Home },
-    { href: "/artists", label: "الفنانين", icon: Music },
-    { href: "/about", label: "عن المنصة", icon: User },
-    { href: "/contact", label: "تواصل معنا", icon: Calendar },
+    { href: "/artists", label: "الفنانين", icon: Users },
+    { href: "/about", label: "عن المنصة", icon: Info },
+    { href: "/contact", label: "تواصل معنا", icon: Phone },
   ]
 
-  // أثناء التحميل، عرض navbar بسيط
+  // Skeleton أثناء التحميل
   if (!isMounted) {
     return (
-      <nav className="sticky top-0 w-full z-50 bg-white dark:bg-dark-bg border-b border-gray-100 dark:border-dark-border">
+      <nav className="sticky top-0 w-full z-50 bg-background dark:bg-dark-bg border-b border-accent/10 dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20" />
       </nav>
     )
   }
 
   return (
-    <nav className="sticky top-0 w-full z-50 bg-white dark:bg-dark-bg border-b border-gray-200 dark:border-dark-border shadow-soft transition-colors duration-300">
+    <nav className="sticky top-0 w-full z-50 bg-background dark:bg-dark-bg border-b border-accent/10 dark:border-dark-border shadow-soft">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          {/* ============ LOGO ============ */}
+          {/* LOGO */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
               <div className="absolute inset-0 bg-accent blur-xl opacity-40 group-hover:opacity-70 transition-all duration-300" />
@@ -66,12 +67,12 @@ export default function Navbar() {
                 <Music className="text-primary" size={22} />
               </div>
             </div>
-            <span className="text-2xl font-black text-primary dark:text-white">
+            <span className="text-2xl font-black text-primary dark:text-background">
               Nooryi<span className="text-accent">.</span>
             </span>
           </Link>
 
-          {/* ============ DESKTOP NAV ============ */}
+          {/* DESKTOP NAV */}
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon
@@ -83,8 +84,8 @@ export default function Navbar() {
                   href={link.href}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                     isActive
-                      ? "text-primary dark:text-accent bg-accent/10 dark:bg-accent/20"
-                      : "text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent hover:bg-accent/5 dark:hover:bg-white/5"
+                      ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
+                      : "text-primary dark:text-background hover:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
                   }`}
                 >
                   <Icon size={16} />
@@ -93,13 +94,12 @@ export default function Navbar() {
               )
             })}
             
-            {/* رابط لوحة التحكم للأدمن */}
             {isAdmin && (
               <Link
                 href="/admin"
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   pathname.startsWith("/admin")
-                    ? "text-primary dark:text-accent bg-accent/10 dark:bg-accent/20"
+                    ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
                     : "text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
                 }`}
               >
@@ -109,35 +109,32 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ============ DESKTOP AUTH BUTTONS ============ */}
+          {/* DESKTOP AUTH */}
           <div className="hidden lg:flex items-center gap-3">
             {isLoggedIn ? (
               <>
-                {/* اسم المستخدم */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/10 dark:bg-accent/20">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                    <span className="text-xs font-black text-white">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/20 dark:bg-accent/30">
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                    <span className="text-xs font-black text-background">
                       {userName.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-primary dark:text-white">
+                  <span className="text-sm font-semibold text-primary dark:text-background">
                     {userName}
                   </span>
                 </div>
 
-                {/* زر حجوزاتي */}
                 <Link 
                   href="/my-bookings"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-primary-dark font-bold hover:bg-accent-light hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-primary font-bold hover:bg-accent-light hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
                 >
                   <Calendar size={16} />
                   <span className="text-sm">حجوزاتي</span>
                 </Link>
                 
-                {/* زر خروج */}
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-all duration-300"
                 >
                   <LogOut size={16} />
                   <span className="text-sm font-semibold">خروج</span>
@@ -145,7 +142,6 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {/* زر تسجيل الدخول */}
                 <Link 
                   href="/login"
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 transition-all duration-300"
@@ -154,7 +150,6 @@ export default function Navbar() {
                   تسجيل الدخول
                 </Link>
                 
-                {/* زر ابدأ الآن */}
                 <Link 
                   href="/register"
                   className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2"
@@ -166,10 +161,11 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ============ MOBILE MENU BUTTON ============ */}
+          {/* MOBILE MENU BUTTON */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2.5 rounded-xl bg-accent/10 dark:bg-accent/20 hover:bg-accent/20 dark:hover:bg-accent/30 transition-all"
+            className="lg:flex lg:items-center lg:justify-center p-2.5 rounded-xl bg-accent/20 dark:bg-accent/30 hover:bg-accent/30 dark:hover:bg-accent/40 transition-all"
+            style={{ display: 'flex' }}
           >
             {mobileOpen ? (
               <X size={22} className="text-primary dark:text-accent" />
@@ -179,11 +175,10 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* ============ MOBILE MENU ============ */}
+        {/* MOBILE MENU */}
         {mobileOpen && (
-          <div className="lg:hidden py-4 pb-6 border-t border-gray-200 dark:border-dark-border space-y-1">
+          <div className="lg:hidden py-4 pb-6 border-t border-accent/10 dark:border-dark-border space-y-1">
             
-            {/* روابط التنقل */}
             {navLinks.map((link) => {
               const Icon = link.icon
               const isActive = pathname === link.href
@@ -195,8 +190,8 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                     isActive
-                      ? "text-primary dark:text-accent bg-accent/10 dark:bg-accent/20"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-accent/5 dark:hover:bg-white/5"
+                      ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
+                      : "text-primary dark:text-background hover:bg-accent/10 dark:hover:bg-accent/20"
                   }`}
                 >
                   <Icon size={18} />
@@ -205,14 +200,13 @@ export default function Navbar() {
               )
             })}
             
-            {/* لوحة التحكم للأدمن */}
             {isAdmin && (
               <Link
                 href="/admin"
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   pathname.startsWith("/admin")
-                    ? "text-primary dark:text-accent bg-accent/10 dark:bg-accent/20"
+                    ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
                     : "text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
                 }`}
               >
@@ -221,44 +215,39 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* فاصل */}
-            <div className="my-3 border-t border-gray-200 dark:border-dark-border" />
+            <div className="my-3 border-t border-accent/10 dark:border-dark-border" />
 
-            {/* معلومات المستخدم والأزرار */}
             {isLoggedIn ? (
               <>
-                {/* بطاقة المستخدم */}
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 dark:bg-accent/20 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center">
-                    <span className="text-sm font-black text-white">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/20 dark:bg-accent/30 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                    <span className="text-sm font-black text-background">
                       {userName.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-primary dark:text-white">{userName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-sm font-bold text-primary dark:text-background">{userName}</p>
+                    <p className="text-xs text-primary/60 dark:text-background/60">
                       {isAdmin ? "مدير عام" : "عميل"}
                     </p>
                   </div>
                 </div>
 
-                {/* زر حجوزاتي */}
                 <Link
                   href="/my-bookings"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-accent text-primary-dark hover:bg-accent-light transition-all"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-accent text-primary hover:bg-accent-light transition-all"
                 >
                   <Calendar size={18} />
                   حجوزاتي
                 </Link>
                 
-                {/* زر خروج */}
                 <button
                   onClick={() => {
                     setMobileOpen(false)
                     signOut({ callbackUrl: "/" })
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 bg-red-500/10 dark:bg-red-500/20 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-all"
                 >
                   <LogOut size={18} />
                   تسجيل الخروج
@@ -266,7 +255,6 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {/* زر تسجيل الدخول */}
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
@@ -276,7 +264,6 @@ export default function Navbar() {
                   تسجيل الدخول
                 </Link>
                 
-                {/* زر ابدأ الآن */}
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
