@@ -4,32 +4,19 @@ import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
-    console.log("📥 Registration request received")
-    
+    // 1. قراءة البيانات بأمان
     const body = await request.json()
-    console.log("📦 Received body:", body)
-    
-    const { name, email, password } = body
+    const { name, email, password, phone } = body
 
-    // التحقق من البيانات المطلوبة
+    // 2. التحقق من الحقول المطلوبة
     if (!name || !email || !password) {
-      console.error("❌ Missing fields:", { name: !!name, email: !!email, password: !!password })
       return NextResponse.json(
-        { error: "جميع الحقول مطلوبة" },
+        { error: "الاسم والبريد الإلكتروني وكلمة المرور حقول مطلوبة" },
         { status: 400 }
       )
     }
 
-    // التحقق من صيغة البريد الإلكتروني
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "صيغة البريد الإلكتروني غير صحيحة" },
-        { status: 400 }
-      )
-    }
-
-    // التحقق من طول كلمة المرور
+    // 3. التحقق من طول كلمة المرور
     if (password.length < 6) {
       return NextResponse.json(
         { error: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" },
@@ -37,51 +24,54 @@ export async function POST(request: Request) {
       )
     }
 
-    // التحقق من وجود المستخدم
+    // 4. التحقق من عدم وجود البريد مسبقاً
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase().trim() },
     })
 
     if (existingUser) {
-      console.log("⚠️ User already exists:", email)
+      return NextResponse.json(
+        { error: "البريد الإلكتروني مسجل بالفعل، يرجى تسجيل الدخول أو استخدام بريد آخر" },
+        { status: 400 }
+      )
+    }
+
+    // 5. تشفير كلمة المرور
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // 6. إنشاء المستخدم في قاعدة البيانات
+    const user = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        phone: phone ? phone.trim() : null,
+        role: "USER", // الدور الافتراضي للعميل العادي
+      },
+    })
+
+    // 7. إرجاع نجاح العملية (بدون إرجاع كلمة المرور)
+    return NextResponse.json(
+      { 
+        message: "تم إنشاء الحساب بنجاح",
+        user: { id: user.id, name: user.name, email: user.email }
+      },
+      { status: 201 }
+    )
+
+  } catch (error: any) {
+    console.error("❌ Registration API Error:", error)
+    
+    // التعامل مع أخطاء Prisma المحددة (مثل تكرار البريد رغم التحقق)
+    if (error.code === "P2002") {
       return NextResponse.json(
         { error: "البريد الإلكتروني مستخدم بالفعل" },
         { status: 400 }
       )
     }
 
-    // تشفير كلمة المرور
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // إنشاء المستخدم
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: "CLIENT",
-      },
-    })
-
-    console.log("✅ User created successfully:", user.email)
-
     return NextResponse.json(
-      { 
-        success: true, 
-        message: "تم إنشاء الحساب بنجاح",
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        }
-      }, 
-      { status: 201 }
-    )
-  } catch (error: any) {
-    console.error("❌ Registration error:", error.message)
-    console.error("❌ Error stack:", error.stack)
-    return NextResponse.json(
-      { error: error.message || "فشل في إنشاء الحساب" },
+      { error: "حدث خطأ غير متوقع في الخادم، يرجى المحاولة لاحقاً" },
       { status: 500 }
     )
   }
