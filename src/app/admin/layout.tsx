@@ -22,17 +22,16 @@ export default async function AdminLayout({
     redirect("/")
   }
 
+  // ✅ تمرير كل البيانات كـ Props (لا نستخدم useSession في Client)
   return (
-    // ✅ suppressHydrationWarning يمنع أي تعارض في هذا الغلاف
-    <div className="min-h-screen bg-background-subtle dark:bg-dark-bg text-primary dark:text-white" dir="rtl" suppressHydrationWarning>
+    <div suppressHydrationWarning style={{ minHeight: "100vh", backgroundColor: "var(--color-background-subtle)" }}>
       <AdminSidebar 
-        userRole={userRole} 
-        userName={session.user.name || "المستخدم"} 
+        userRole={userRole}
+        userName={session.user.name || "المستخدم"}
         userEmail={session.user.email || ""}
       />
       
-      <main className="lg:mr-72 min-h-screen p-6 lg:p-10">
-        <div className="lg:hidden h-16" />
+      <main suppressHydrationWarning style={{ minHeight: "100vh" }} className="lg:mr-72">
         {children}
       </main>
     </div>
