@@ -6,15 +6,11 @@ import { signOut } from "next-auth/react"
 import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, BarChart3 } from "lucide-react"
 import { useState } from "react"
 
-export default function ActualSidebar({ userRole, userName, userEmail }: any) {
+export default function AdminSidebar({ userRole, userName, userEmail }: { userRole: string, userName: string, userEmail: string }) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  // ✅ حماية قصوى: إذا لم يأتِ دور، افترض أنه أدمن لضمان ظهور الروابط
-  const safeRole = userRole || "SUPER_ADMIN"
-  const safeName = userName || "المستخدم"
-  const safeEmail = userEmail || "user@example.com"
-  const isAdmin = safeRole === "SUPER_ADMIN" || safeRole === "ADMIN"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
   const links = isAdmin
     ? [
@@ -29,7 +25,9 @@ export default function ActualSidebar({ userRole, userName, userEmail }: any) {
         { href: "/admin/bookings", label: "حجوزاتي", icon: Calendar },
       ]
 
-  const initial = safeName.toString().charAt(0).toUpperCase()
+  // ✅ حماية قصوى: ضمان وجود حرف واحد على الأقل لمنع انهيار التطبيق
+  const safeName = userName.trim() || "المستخدم"
+  const initial = safeName.charAt(0).toUpperCase()
 
   return (
     <>
@@ -63,7 +61,7 @@ export default function ActualSidebar({ userRole, userName, userEmail }: any) {
         zIndex: 50, transform: isOpen ? "translateX(0)" : "translateX(100%)",
         transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)", overflowY: "auto"
       }}>
-        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={safeEmail} isAdmin={isAdmin} onClose={() => setIsOpen(false)} />
+        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={userEmail} isAdmin={isAdmin} initial={initial} onClose={() => setIsOpen(false)} />
       </aside>
 
       {/* Desktop Sidebar */}
@@ -72,15 +70,13 @@ export default function ActualSidebar({ userRole, userName, userEmail }: any) {
         backgroundColor: "var(--color-background)", borderLeft: "1px solid var(--color-border)",
         overflowY: "auto", boxShadow: "var(--shadow-sm)"
       }}>
-        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={safeEmail} isAdmin={isAdmin} />
+        <SidebarContent links={links} pathname={pathname} userName={safeName} userEmail={userEmail} isAdmin={isAdmin} initial={initial} />
       </aside>
     </>
   )
 }
 
-function SidebarContent({ links, pathname, userName, userEmail, isAdmin, onClose }: any) {
-  const initial = userName.toString().charAt(0).toUpperCase()
-
+function SidebarContent({ links, pathname, userName, userEmail, isAdmin, initial, onClose }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ padding: "var(--space-6)", borderBottom: "1px solid var(--color-border-light)" }}>
