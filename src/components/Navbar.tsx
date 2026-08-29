@@ -15,16 +15,15 @@ export default function Navbar() {
     setIsMounted(true)
   }, [])
 
-  // إخفاء في صفحات الدخول
   if (pathname === "/login" || pathname === "/register") {
     return null
   }
 
   const isLoggedIn = status === "authenticated"
   const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
+  const isManager = session?.user?.role === "ARTIST_MANAGER"
   const userName = session?.user?.name || "المستخدم"
 
-  // Skeleton أثناء التحميل
   if (!isMounted) {
     return (
       <nav style={{ 
@@ -42,10 +41,10 @@ export default function Navbar() {
   }
 
   const navLinks = [
-    { href: "/", label: "الرئيسية" },
-    { href: "/artists", label: "الفنانين" },
-    { href: "/about", label: "عن المنصة" },
-    { href: "/contact", label: "تواصل معنا" },
+    { href: "/", label: "الرئيسية", icon: "🏠" },
+    { href: "/artists", label: "الفنانين", icon: "🎵" },
+    { href: "/about", label: "عن المنصة", icon: "ℹ️" },
+    { href: "/contact", label: "تواصل معنا", icon: "📞" },
   ]
 
   return (
@@ -58,7 +57,7 @@ export default function Navbar() {
       borderBottom: "1px solid #E5E7EB",
       boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
     }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px" }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 16px" }}>
         <div style={{ 
           display: "flex", 
           justifyContent: "space-between", 
@@ -83,7 +82,8 @@ export default function Navbar() {
               justifyContent: "center",
               fontSize: "24px",
               fontWeight: "bold",
-              color: "#4B2E83"
+              color: "#4B2E83",
+              boxShadow: "0 4px 12px rgba(168, 213, 186, 0.3)"
             }}>
               🎵
             </div>
@@ -96,7 +96,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* DESKTOP NAV - يظهر فقط على الشاشات الكبيرة */}
+          {/* DESKTOP NAV */}
           <div style={{ 
             display: "flex", 
             alignItems: "center", 
@@ -125,7 +125,7 @@ export default function Navbar() {
               )
             })}
             
-            {isAdmin && (
+            {(isAdmin || isManager) && (
               <Link
                 href="/admin"
                 style={{
@@ -151,7 +151,6 @@ export default function Navbar() {
           }} className="hidden lg:flex">
             {isLoggedIn ? (
               <>
-                {/* اسم المستخدم */}
                 <div style={{
                   display: "flex",
                   alignItems: "center",
@@ -183,7 +182,6 @@ export default function Navbar() {
                   </span>
                 </div>
 
-                {/* زر حجوزاتي */}
                 <Link 
                   href="/my-bookings"
                   style={{
@@ -196,13 +194,13 @@ export default function Navbar() {
                     color: "#4B2E83",
                     fontSize: "14px",
                     fontWeight: "700",
-                    textDecoration: "none"
+                    textDecoration: "none",
+                    transition: "all 0.3s"
                   }}
                 >
                   📅 حجوزاتي
                 </Link>
                 
-                {/* زر خروج */}
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
                   style={{
@@ -216,7 +214,8 @@ export default function Navbar() {
                     fontSize: "14px",
                     fontWeight: "600",
                     border: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    transition: "all 0.3s"
                   }}
                 >
                   🚪 خروج
@@ -224,7 +223,6 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {/* زر تسجيل الدخول */}
                 <Link 
                   href="/login"
                   style={{
@@ -242,7 +240,6 @@ export default function Navbar() {
                   🔑 تسجيل الدخول
                 </Link>
                 
-                {/* زر ابدأ الآن */}
                 <Link 
                   href="/register"
                   style={{
@@ -255,7 +252,8 @@ export default function Navbar() {
                     color: "#FFFFFF",
                     fontSize: "14px",
                     fontWeight: "700",
-                    textDecoration: "none"
+                    textDecoration: "none",
+                    transition: "all 0.3s"
                   }}
                 >
                   ✨ ابدأ الآن
@@ -264,19 +262,20 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* MOBILE MENU BUTTON - يظهر دائماً */}
+          {/* MOBILE MENU BUTTON */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             style={{
-              padding: "10px",
+              padding: "12px",
               borderRadius: "12px",
               backgroundColor: "#A8D5BA40",
               border: "none",
               cursor: "pointer",
-              fontSize: "22px",
+              fontSize: "24px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              transition: "all 0.3s"
             }}
             className="lg:hidden"
           >
@@ -284,68 +283,74 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* MOBILE MENU */}
+        {/* MOBILE MENU - تصميم احترافي */}
         {mobileOpen && (
           <div style={{
-            paddingTop: "16px",
+            paddingTop: "20px",
             paddingBottom: "24px",
             borderTop: "1px solid #E5E7EB"
           }} className="lg:hidden">
             
             {/* روابط التنقل */}
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href
-              
-              return (
+            <div style={{ marginBottom: "16px" }}>
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href
+                
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "14px 16px",
+                      borderRadius: "12px",
+                      fontSize: "15px",
+                      fontWeight: "600",
+                      textDecoration: "none",
+                      color: isActive ? "#4B2E83" : "#374151",
+                      backgroundColor: isActive ? "#A8D5BA40" : "transparent",
+                      marginBottom: "4px",
+                      transition: "all 0.3s"
+                    }}
+                  >
+                    <span style={{ fontSize: "18px" }}>{link.icon}</span>
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </div>
+
+            {/* لوحة التحكم للأدمن */}
+            {(isAdmin || isManager) && (
+              <div style={{ marginBottom: "16px" }}>
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  href="/admin"
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: "12px",
-                    padding: "12px 16px",
+                    padding: "14px 16px",
                     borderRadius: "12px",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: "600",
                     textDecoration: "none",
-                    color: isActive ? "#4B2E83" : "#374151",
-                    backgroundColor: isActive ? "#A8D5BA40" : "transparent",
-                    marginBottom: "4px"
+                    color: "#4B2E83",
+                    backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
                   }}
                 >
-                  {link.label}
+                  <span style={{ fontSize: "18px" }}>📊</span>
+                  لوحة التحكم
                 </Link>
-              )
-            })}
-            
-            {/* لوحة التحكم للأدمن */}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "12px 16px",
-                  borderRadius: "12px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  textDecoration: "none",
-                  color: "#4B2E83",
-                  backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent",
-                  marginBottom: "4px"
-                }}
-              >
-                📊 لوحة التحكم
-              </Link>
+              </div>
             )}
 
             {/* فاصل */}
             <div style={{
-              margin: "12px 0",
+              margin: "16px 0",
               borderTop: "1px solid #E5E7EB"
             }} />
 
@@ -357,28 +362,28 @@ export default function Navbar() {
                   display: "flex",
                   alignItems: "center",
                   gap: "12px",
-                  padding: "12px 16px",
+                  padding: "16px",
                   borderRadius: "12px",
                   backgroundColor: "#A8D5BA40",
-                  marginBottom: "8px"
+                  marginBottom: "12px"
                 }}>
                   <div style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "8px",
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "12px",
                     backgroundColor: "#4B2E83",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#FFFFFF",
-                    fontSize: "14px",
+                    fontSize: "18px",
                     fontWeight: "900"
                   }}>
                     {userName.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <p style={{ 
-                      fontSize: "14px", 
+                      fontSize: "16px", 
                       fontWeight: "700", 
                       color: "#4B2E83",
                       margin: 0
@@ -386,11 +391,11 @@ export default function Navbar() {
                       {userName}
                     </p>
                     <p style={{ 
-                      fontSize: "12px", 
+                      fontSize: "13px", 
                       color: "#6B7280",
                       margin: 0
                     }}>
-                      {isAdmin ? "مدير عام" : "عميل"}
+                      {isAdmin ? "مدير عام" : isManager ? "مدير أعمال" : "عميل"}
                     </p>
                   </div>
                 </div>
@@ -402,15 +407,17 @@ export default function Navbar() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 16px",
+                    justifyContent: "center",
+                    gap: "10px",
+                    padding: "14px 16px",
                     borderRadius: "12px",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: "700",
                     textDecoration: "none",
                     color: "#4B2E83",
                     backgroundColor: "#A8D5BA",
-                    marginBottom: "8px"
+                    marginBottom: "8px",
+                    transition: "all 0.3s"
                   }}
                 >
                   📅 حجوزاتي
@@ -426,15 +433,17 @@ export default function Navbar() {
                     width: "100%",
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 16px",
+                    justifyContent: "center",
+                    gap: "10px",
+                    padding: "14px 16px",
                     borderRadius: "12px",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: "700",
                     color: "#DC2626",
                     backgroundColor: "#FEE2E2",
                     border: "none",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    transition: "all 0.3s"
                   }}
                 >
                   🚪 تسجيل الخروج
@@ -449,14 +458,17 @@ export default function Navbar() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
-                    padding: "12px 16px",
+                    justifyContent: "center",
+                    gap: "10px",
+                    padding: "14px 16px",
                     borderRadius: "12px",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: "600",
                     textDecoration: "none",
                     color: "#4B2E83",
-                    marginBottom: "8px"
+                    backgroundColor: "#F8F9FC",
+                    marginBottom: "8px",
+                    transition: "all 0.3s"
                   }}
                 >
                   🔑 تسجيل الدخول
@@ -470,14 +482,15 @@ export default function Navbar() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "8px",
-                    padding: "12px 16px",
+                    gap: "10px",
+                    padding: "14px 16px",
                     borderRadius: "12px",
-                    fontSize: "14px",
+                    fontSize: "15px",
                     fontWeight: "700",
                     textDecoration: "none",
                     color: "#FFFFFF",
-                    backgroundColor: "#4B2E83"
+                    backgroundColor: "#4B2E83",
+                    transition: "all 0.3s"
                   }}
                 >
                   ✨ ابدأ الآن

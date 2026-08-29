@@ -4,15 +4,6 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import PaymentForm from "./PaymentForm"
 import Link from "next/link"
-import { 
-  ArrowRight, 
-  CreditCard, 
-  Wallet, 
-  Building2,
-  DollarSign,
-  CheckCircle2,
-  Info
-} from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -31,56 +22,57 @@ export default async function PaymentPage({
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: {
-      artist: {
-        select: { name: true, category: true, profileImage: true },
-      },
-      venue: {
-        select: { name: true },
-      },
+      artist: { select: { name: true, category: true, profileImage: true } },
+      venue: { select: { name: true } },
     },
   })
 
-  if (!booking) {
-    redirect("/my-bookings")
-  }
+  if (!booking) redirect("/my-bookings")
 
-  // التحقق من الملكية
   if (booking.clientEmail !== session.user.email) {
     const isAdmin = session.user.role === "SUPER_ADMIN" || session.user.role === "ADMIN"
-    if (!isAdmin) {
-      redirect("/my-bookings")
-    }
+    if (!isAdmin) redirect("/my-bookings")
   }
 
-  // التحقق من حالة الحجز
-  if (booking.status !== "APPROVED") {
-    redirect(`/booking/${id}`)
-  }
+  if (booking.status !== "APPROVED") redirect(`/booking/${id}`)
 
   const grossAmount = booking.grossAmount || 0
   const depositAmount = booking.depositAmount || grossAmount * 0.2
   const remainingAmount = booking.remainingAmount || (grossAmount - depositAmount)
-  const platformFee = Math.round(grossAmount * 0.05) // 5% رسوم المنصة
+  const platformFee = Math.round(grossAmount * 0.05)
   const totalWithFee = grossAmount + platformFee
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12">
+    <div style={{ 
+      minHeight: "100vh", 
+      backgroundColor: "#F8F9FC",
+      color: "#4B2E83"
+    }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "48px 24px" }}>
         {/* Header */}
-        <div className="mb-8">
+        <div style={{ marginBottom: "32px" }}>
           <Link 
             href={`/booking/${id}`} 
-            className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white mb-4 transition-colors"
+            style={{ 
+              display: "inline-flex", 
+              alignItems: "center", 
+              gap: "8px", 
+              color: "#6B7280",
+              fontSize: "14px",
+              textDecoration: "none",
+              marginBottom: "16px"
+            }}
           >
-            <ArrowRight size={16} className="rotate-180" />
-            العودة لتفاصيل الحجز
+            ← العودة لتفاصيل الحجز
           </Link>
-          <h1 className="text-4xl font-black mb-2">إتمام الدفع</h1>
-          <p className="text-white/60">اختر طريقة الدفع والمبلغ المناسب لك</p>
+          <h1 style={{ fontSize: "36px", fontWeight: "900", marginBottom: "8px", color: "#4B2E83" }}>
+            إتمام الدفع
+          </h1>
+          <p style={{ color: "#6B7280" }}>اختر طريقة الدفع والمبلغ المناسب لك</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Side - Payment Form */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "32px" }} className="lg:grid-cols-2">
+          {/* Payment Form */}
           <div>
             <PaymentForm 
               bookingId={booking.id}
@@ -91,102 +83,122 @@ export default async function PaymentPage({
             />
           </div>
 
-          {/* Right Side - Summary */}
-          <div className="space-y-6">
+          {/* Summary */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             {/* Booking Summary */}
-            <div className="glass rounded-3xl p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Info size={18} className="text-yellow-400" />
-                ملخص الحجز
+            <div style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 4px 20px rgba(75, 46, 131, 0.06)"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px", color: "#4B2E83" }}>
+                ℹ️ ملخص الحجز
               </h3>
               
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  {booking.artist?.profileImage && (
-                    <img 
-                      src={booking.artist.profileImage}
-                      alt={booking.artist.name}
-                      className="w-14 h-14 rounded-xl object-cover"
-                    />
-                  )}
-                  <div>
-                    <p className="font-bold">{booking.artist?.name}</p>
-                    <p className="text-xs text-white/60">{booking.artist?.category}</p>
-                  </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                {booking.artist?.profileImage && (
+                  <img 
+                    src={booking.artist.profileImage}
+                    alt={booking.artist.name}
+                    style={{ width: "56px", height: "56px", borderRadius: "12px", objectFit: "cover" }}
+                  />
+                )}
+                <div>
+                  <p style={{ fontWeight: "700", color: "#4B2E83" }}>{booking.artist?.name}</p>
+                  <p style={{ fontSize: "12px", color: "#6B7280" }}>{booking.artist?.category}</p>
                 </div>
+              </div>
 
-                <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-white/60">التاريخ</span>
-                    <span className="font-semibold">
-                      {new Date(booking.date).toLocaleDateString("ar-EG")}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/60">الوقت</span>
-                    <span className="font-semibold">{booking.timeSlot}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-white/60">المكان</span>
-                    <span className="font-semibold">{booking.venue?.name}</span>
-                  </div>
+              <div style={{ paddingTop: "12px", borderTop: "1px solid #E5E7EB" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px" }}>
+                  <span style={{ color: "#6B7280" }}>التاريخ</span>
+                  <span style={{ fontWeight: "600", color: "#4B2E83" }}>
+                    {new Date(booking.date).toLocaleDateString("en-GB")}
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px" }}>
+                  <span style={{ color: "#6B7280" }}>الوقت</span>
+                  <span style={{ fontWeight: "600", color: "#4B2E83" }}>{booking.timeSlot}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
+                  <span style={{ color: "#6B7280" }}>المكان</span>
+                  <span style={{ fontWeight: "600", color: "#4B2E83" }}>{booking.venue?.name}</span>
                 </div>
               </div>
             </div>
 
             {/* Price Breakdown */}
-            <div className="glass rounded-3xl p-6">
-              <h3 className="text-lg font-bold mb-4">تفاصيل المبالغ</h3>
+            <div style={{
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E5E7EB",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 4px 20px rgba(75, 46, 131, 0.06)"
+            }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "16px", color: "#4B2E83" }}>
+                تفاصيل المبالغ
+              </h3>
               
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/60">المبلغ الإجمالي للفعالية</span>
-                  <span className="font-bold">{grossAmount.toLocaleString()} ج.م</span>
-                </div>
-                
-                <div className="flex justify-between text-sm text-yellow-400">
-                  <span>رسوم المنصة (5%)</span>
-                  <span>{platformFee.toLocaleString()} ج.م</span>
-                </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "14px" }}>
+                <span style={{ color: "#6B7280" }}>المبلغ الإجمالي للفعالية</span>
+                <span style={{ fontWeight: "700", color: "#4B2E83" }}>{grossAmount.toLocaleString()} ج.م</span>
+              </div>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "14px", color: "#A8D5BA" }}>
+                <span>رسوم المنصة (5%)</span>
+                <span>{platformFee.toLocaleString()} ج.م</span>
+              </div>
 
-                <div className="flex justify-between text-sm pt-3 border-t border-white/10">
-                  <span className="text-white/60">الإجمالي مع الرسوم</span>
-                  <span className="font-bold text-lg">{totalWithFee.toLocaleString()} ج.م</span>
-                </div>
+              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "12px", borderTop: "1px solid #E5E7EB", fontSize: "14px" }}>
+                <span style={{ color: "#6B7280" }}>الإجمالي مع الرسوم</span>
+                <span style={{ fontWeight: "700", fontSize: "18px", color: "#4B2E83" }}>{totalWithFee.toLocaleString()} ج.م</span>
+              </div>
 
-                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mt-4">
-                  <p className="text-xs text-white/60 mb-2">💡 خيارات الدفع:</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>• العربون (20%)</span>
-                      <span className="font-bold text-green-400">
-                        {depositAmount.toLocaleString()} ج.م
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>• المبلغ المتبقي (يُدفَع يوم الفعالية)</span>
-                      <span className="font-bold text-orange-400">
-                        {remainingAmount.toLocaleString()} ج.م
-                      </span>
-                    </div>
-                    <div className="flex justify-between pt-2 border-t border-white/10">
-                      <span>• الدفع الكامل الآن</span>
-                      <span className="font-bold text-yellow-400">
-                        {totalWithFee.toLocaleString()} ج.م
-                      </span>
-                    </div>
-                  </div>
+              <div style={{
+                backgroundColor: "#A8D5BA20",
+                border: "1px solid #A8D5BA40",
+                borderRadius: "12px",
+                padding: "16px",
+                marginTop: "16px"
+              }}>
+                <p style={{ fontSize: "12px", color: "#6B7280", marginBottom: "8px" }}>💡 خيارات الدفع:</p>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px" }}>
+                  <span>• العربون (20%)</span>
+                  <span style={{ fontWeight: "700", color: "#10B981" }}>
+                    {depositAmount.toLocaleString()} ج.م
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "14px" }}>
+                  <span>• المبلغ المتبقي</span>
+                  <span style={{ fontWeight: "700", color: "#F59E0B" }}>
+                    {remainingAmount.toLocaleString()} ج.م
+                  </span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px solid #E5E7EB", fontSize: "14px" }}>
+                  <span>• الدفع الكامل الآن</span>
+                  <span style={{ fontWeight: "700", color: "#A8D5BA" }}>
+                    {totalWithFee.toLocaleString()} ج.م
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Security Notice */}
-            <div className="glass rounded-2xl p-4 bg-green-500/5 border border-green-500/20">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="text-green-400 flex-shrink-0 mt-0.5" size={20} />
+            <div style={{
+              backgroundColor: "#ECFDF5",
+              border: "1px solid #10B98140",
+              borderRadius: "12px",
+              padding: "16px"
+            }}>
+              <div style={{ display: "flex", alignItems: "start", gap: "12px" }}>
+                <span style={{ fontSize: "20px", color: "#10B981" }}>✓</span>
                 <div>
-                  <p className="text-sm font-semibold text-green-400 mb-1">دفع آمن 100%</p>
-                  <p className="text-xs text-white/60">
+                  <p style={{ fontSize: "14px", fontWeight: "700", color: "#10B981", marginBottom: "4px" }}>
+                    دفع آمن 100%
+                  </p>
+                  <p style={{ fontSize: "12px", color: "#6B7280" }}>
                     جميع المعاملات مشفرة ومحمية. يمكنك طلب استرداد كامل قبل 48 ساعة من الفعالية.
                   </p>
                 </div>
