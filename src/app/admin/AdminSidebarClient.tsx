@@ -22,6 +22,9 @@ export default function AdminSidebarClient({ userRole, userName, userEmail }: Ad
   useEffect(() => {
     setIsMounted(true)
   }, [])
+    if (!isMounted) {
+    return null
+  }
 
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
