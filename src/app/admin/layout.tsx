@@ -22,7 +22,6 @@ export default async function AdminLayout({
     redirect("/")
   }
 
-  // ✅ تمرير كل البيانات كـ Props (لا نستخدم useSession في Client)
   return (
     <div suppressHydrationWarning style={{ minHeight: "100vh", backgroundColor: "var(--color-background-subtle)" }}>
       <AdminSidebar 
