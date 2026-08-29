@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import AdminSidebarClient from "./AdminSidebarClient"
+import AdminSidebarWrapper from "./AdminSidebarWrapper" // ✅ استدعاء الغلاف الجديد
 
 export default async function AdminLayout({
   children,
@@ -12,7 +12,6 @@ export default async function AdminLayout({
     const session = await getServerSession(authOptions)
     
     if (!session?.user) {
-      console.log("⚠️ No session found, redirecting to login")
       redirect("/login")
     }
 
@@ -26,7 +25,8 @@ export default async function AdminLayout({
 
     return (
       <div suppressHydrationWarning style={{ minHeight: "100vh", backgroundColor: "var(--color-background-subtle)" }}>
-        <AdminSidebarClient 
+        {/* ✅ الغلاف يتكفل بمنع أي تعارض Hydration */}
+        <AdminSidebarWrapper 
           userRole={userRole}
           userName={session.user.name || "المستخدم"}
           userEmail={session.user.email || ""}
@@ -38,8 +38,7 @@ export default async function AdminLayout({
       </div>
     )
   } catch (error) {
-    console.error("❌ CRITICAL Admin Layout Error:", error)
-    // في حال حدوث أي خطأ، نوجه بأمان بدلاً من إظهار شاشة 500 بيضاء
+    console.error("❌ Admin Layout Error:", error)
     redirect("/login")
   }
 }
