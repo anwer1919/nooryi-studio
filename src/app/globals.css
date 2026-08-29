@@ -400,3 +400,24 @@ body {
     color: black !important;
   }
 }
+/* منع السكرول الأفقي نهائياً في الجوال */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ضمان عدم تجاوز الحاويات للعرض */
+.container-custom {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  overflow-x: hidden;
+}
+
+@media (min-width: 640px) {
+  .container-custom { padding: 0 var(--space-6); }
+}
+@media (min-width: 1024px) {
+  .container-custom { padding: 0 var(--space-8); }
+}

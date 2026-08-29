@@ -18,17 +18,14 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
-  const [isMounted, setIsMounted] = useState(false) // ✅ الحارس
+  const [isMounted, setIsMounted] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsMounted(true)
     fetchNotifications()
-    
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setIsOpen(false)
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
@@ -68,7 +65,6 @@ export default function NotificationBell() {
     const minutes = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    
     if (minutes < 1) return "الآن"
     if (minutes < 60) return `منذ ${minutes} دقيقة`
     if (hours < 24) return `منذ ${hours} ساعة`
@@ -85,16 +81,10 @@ export default function NotificationBell() {
     }
   }
 
-  // ✅ العودة بهيكل ثابت تماماً أثناء التحميل لمنع أي تعارض
+  // ✅ الحل المطلق: إرجاع هيكل له نفس الأبعاد تماماً لمنع خطأ Hydration
   if (!isMounted) {
     return (
-      <div style={{
-        width: "44px",
-        height: "44px",
-        borderRadius: "var(--radius-lg)",
-        backgroundColor: "var(--color-background-subtle)",
-        border: "none"
-      }} />
+      <div style={{ width: "44px", height: "44px", borderRadius: "var(--radius-lg)", backgroundColor: "var(--color-background-subtle)", border: "1px solid var(--color-border)" }} />
     )
   }
 
@@ -103,26 +93,20 @@ export default function NotificationBell() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          position: "relative",
-          width: "44px",
-          height: "44px",
-          borderRadius: "var(--radius-lg)",
+          width: "44px", height: "44px", borderRadius: "var(--radius-lg)",
           backgroundColor: isOpen ? "var(--color-primary-50)" : "var(--color-background-subtle)",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          border: "1px solid var(--color-border)", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
           transition: "all var(--transition-fast)"
         }}
       >
         <Bell size={20} style={{ color: isOpen ? "var(--color-primary)" : "var(--color-text-secondary)" }} />
         {unreadCount > 0 && (
           <span style={{
-            position: "absolute", top: "6px", right: "6px", minWidth: "18px", height: "18px",
+            position: "absolute", top: "4px", right: "4px", minWidth: "18px", height: "18px",
             borderRadius: "var(--radius-full)", backgroundColor: "var(--color-danger)",
             color: "#FFFFFF", fontSize: "11px", fontWeight: "700",
-            display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px",
             border: "2px solid var(--color-background)"
           }}>
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -132,18 +116,16 @@ export default function NotificationBell() {
 
       {isOpen && (
         <div className="animate-fade-in" style={{
-          position: "absolute", top: "calc(100% + 8px)", left: 0, width: "360px",
-          maxWidth: "calc(100vw - 32px)", backgroundColor: "var(--color-background)",
-          borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)",
-          boxShadow: "var(--shadow-xl)", zIndex: 100, overflow: "hidden"
+          position: "absolute", top: "calc(100% + 8px)", left: 0, 
+          width: "90vw", maxWidth: "360px", // ✅ منع السكرول الأفقي للقائمة
+          backgroundColor: "var(--color-background)", borderRadius: "var(--radius-xl)",
+          border: "1px solid var(--color-border)", boxShadow: "var(--shadow-xl)",
+          zIndex: 100, overflow: "hidden"
         }}>
-          <div style={{ padding: "var(--space-4) var(--space-5)", borderBottom: "1px solid var(--color-border-light)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <h3 style={{ fontSize: "var(--text-base)", fontWeight: "700", color: "var(--color-text-primary)", margin: 0 }}>الإشعارات</h3>
-              {unreadCount > 0 && <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", margin: "2px 0 0 0" }}>{unreadCount} غير مقروء</p>}
-            </div>
+          <div style={{ padding: "var(--space-4)", borderBottom: "1px solid var(--color-border-light)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h3 style={{ fontSize: "var(--text-base)", fontWeight: "700", color: "var(--color-text-primary)", margin: 0 }}>الإشعارات</h3>
             {unreadCount > 0 && (
-              <button onClick={markAllAsRead} style={{ display: "flex", alignItems: "center", gap: "4px", padding: "6px 10px", borderRadius: "var(--radius-md)", backgroundColor: "transparent", color: "var(--color-primary)", fontSize: "var(--text-xs)", fontWeight: "600", border: "none", cursor: "pointer" }}>
+              <button onClick={markAllAsRead} style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 8px", borderRadius: "var(--radius-md)", backgroundColor: "transparent", color: "var(--color-primary)", fontSize: "var(--text-xs)", fontWeight: "600", border: "none", cursor: "pointer" }}>
                 <CheckCheck size={14} /> قراءة الكل
               </button>
             )}
@@ -157,7 +139,7 @@ export default function NotificationBell() {
               </div>
             ) : (
               notifications.map((notification) => (
-                <div key={notification.id} style={{ padding: "var(--space-3) var(--space-4)", borderRadius: "var(--radius-lg)", backgroundColor: notification.isRead ? "transparent" : "var(--color-primary-50)", marginBottom: "4px", cursor: "pointer" }}
+                <div key={notification.id} style={{ padding: "var(--space-3)", borderRadius: "var(--radius-lg)", backgroundColor: notification.isRead ? "transparent" : "var(--color-primary-50)", marginBottom: "4px", cursor: "pointer" }}
                   onClick={() => { if (!notification.isRead) markAsRead(notification.id); if (notification.link) window.location.href = notification.link }}>
                   <div style={{ display: "flex", gap: "12px" }}>
                     <div style={{ width: "36px", height: "36px", borderRadius: "var(--radius-md)", backgroundColor: notification.isRead ? "var(--color-background-subtle)" : "var(--color-accent-50)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
@@ -165,13 +147,11 @@ export default function NotificationBell() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
-                        <p style={{ fontSize: "var(--text-sm)", fontWeight: notification.isRead ? "500" : "700", color: "var(--color-text-primary)", margin: 0, lineHeight: 1.4 }}>{notification.title}</p>
+                        <p style={{ fontSize: "var(--text-sm)", fontWeight: notification.isRead ? "500" : "700", color: "var(--color-text-primary)", margin: 0, lineHeight: 1.4, wordBreak: "break-word" }}>{notification.title}</p>
                         {!notification.isRead && <div style={{ width: "8px", height: "8px", borderRadius: "var(--radius-full)", backgroundColor: "var(--color-primary)", flexShrink: 0, marginTop: "6px" }} />}
                       </div>
                       <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{notification.message}</p>
-                      <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", margin: 0 }}>
-                        {formatTime(notification.createdAt)}
-                      </p>
+                      <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", margin: 0 }}>{formatTime(notification.createdAt)}</p>
                     </div>
                   </div>
                 </div>
