@@ -3,13 +3,26 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Music, Mail, Lock, User, Phone, Loader2, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react"
+import { 
+  Music, 
+  Mail, 
+  Lock, 
+  User, 
+  Phone, 
+  Loader2, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  CheckCircle2, 
+  Sparkles 
+} from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,12 +36,14 @@ export default function RegisterPage() {
     setLoading(true)
     setError("")
 
+    // التحقق من تطابق كلمات المرور
     if (formData.password !== formData.confirmPassword) {
       setError("كلمات المرور غير متطابقة")
       setLoading(false)
       return
     }
 
+    // التحقق من طول كلمة المرور
     if (formData.password.length < 6) {
       setError("كلمة المرور يجب أن تكون 6 أحرف على الأقل")
       setLoading(false)
@@ -50,69 +65,110 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "فشل إنشاء الحساب")
+        // ✅ عرض رسالة الخطأ الدقيقة القادمة من الـ API
+        throw new Error(data.error || "فشل إنشاء الحساب، يرجى المحاولة لاحقاً")
       }
 
+      // عند النجاح، توجيه المستخدم لصفحة الدخول
       router.push("/login?registered=true")
+      
     } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء إنشاء الحساب")
+      setError(err.message)
       setLoading(false)
     }
   }
 
+  // مؤشرات التحقق من كلمة المرور
   const passwordChecks = [
     { label: "6 أحرف على الأقل", valid: formData.password.length >= 6 },
     { label: "تطابق كلمة المرور", valid: formData.password === formData.confirmPassword && formData.confirmPassword.length > 0 },
   ]
 
   return (
-    <div className="min-h-screen bg-background dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
+    <div style={{ 
+      minHeight: "100vh", 
+      backgroundColor: "var(--color-background)",
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center", 
+      padding: "var(--space-4)",
+      position: "relative",
+      overflow: "hidden"
+    }}>
       {/* Background Decorations */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-1/2 translate-x-1/2" />
+      <div style={{
+        position: "absolute", top: 0, left: 0, width: "400px", height: "400px",
+        borderRadius: "50%", backgroundColor: "var(--color-accent)", opacity: 0.1,
+        filter: "blur(100px)", transform: "translate(-30%, -30%)"
+      }} />
+      <div style={{
+        position: "absolute", bottom: 0, right: 0, width: "400px", height: "400px",
+        borderRadius: "50%", backgroundColor: "var(--color-primary)", opacity: 0.05,
+        filter: "blur(100px)", transform: "translate(30%, 30%)"
+      }} />
 
-      <div className="relative w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Branding */}
+      <div style={{ 
+        position: "relative", 
+        width: "100%", 
+        maxWidth: "1100px", 
+        display: "grid", 
+        gap: "var(--space-8)", 
+        alignItems: "center" 
+      }} className="lg:grid-cols-2">
+        
+        {/* Left Side - Branding (Desktop Only) */}
         <div className="hidden lg:block">
-          <div className="mb-8">
-            <Link href="/" className="flex items-center gap-3 mb-8">
-              <div className="relative">
-                <div className="absolute inset-0 bg-accent blur-xl opacity-50" />
-                <div className="relative bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
-                  <Music className="text-primary" size={24} />
-                </div>
+          <div style={{ marginBottom: "var(--space-8)" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-8)", textDecoration: "none" }}>
+              <div style={{
+                width: "48px", height: "48px", borderRadius: "var(--radius-xl)",
+                backgroundColor: "var(--color-accent)", display: "flex",
+                alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-glow)"
+              }}>
+                <Music className="text-primary" size={24} style={{ color: "var(--color-primary)" }} />
               </div>
-              <span className="text-3xl font-black text-primary dark:text-white">
-                Nooryi<span className="text-accent">.</span>
+              <span style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-primary)" }}>
+                Nooryi<span style={{ color: "var(--color-accent-dark)" }}>.</span>
               </span>
             </Link>
 
-            <h1 className="text-5xl font-black text-primary dark:text-white mb-4 leading-tight">
+            <h1 style={{ fontSize: "var(--text-5xl)", fontWeight: "900", color: "var(--color-text-primary)", marginBottom: "var(--space-4)", lineHeight: 1.1 }}>
               انضم إلى
               <br />
-              <span className="bg-gradient-to-r from-primary to-accent dark:from-accent dark:to-accent-light bg-clip-text text-transparent">
+              <span style={{
+                background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-dark) 100%)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+              }}>
                 عائلة Nooryi
               </span>
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p style={{ fontSize: "var(--text-lg)", color: "var(--color-text-secondary)", lineHeight: 1.7 }}>
               أنشئ حسابك الآن واستمتع بتجربة حجز فريدة من نوعها. انضم إلى آلاف العملاء الراضين.
             </p>
           </div>
 
           {/* Benefits */}
-          <div className="space-y-4 mt-12">
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", marginTop: "var(--space-12)" }}>
             {[
               { icon: "✨", title: "تسجيل مجاني", desc: "أنشئ حسابك في أقل من دقيقة" },
               { icon: "🎯", title: "حجز مباشر", desc: "احجز فنانك المفضل بضغطة زر" },
               { icon: "🔒", title: "خصوصية تامة", desc: "بياناتك محمية بأعلى معايير الأمان" },
             ].map((benefit, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/50 dark:bg-dark-surface/50 backdrop-blur-sm border border-gray-100 dark:border-dark-border">
-                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center text-2xl flex-shrink-0">
+              <div key={i} style={{
+                display: "flex", alignItems: "flex-start", gap: "var(--space-4)", padding: "var(--space-4)",
+                borderRadius: "var(--radius-xl)", backgroundColor: "var(--color-background-subtle)",
+                border: "1px solid var(--color-border-light)"
+              }}>
+                <div style={{
+                  width: "48px", height: "48px", borderRadius: "var(--radius-lg)",
+                  backgroundColor: "var(--color-accent-50)", display: "flex",
+                  alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0
+                }}>
                   {benefit.icon}
                 </div>
                 <div>
-                  <p className="font-bold text-primary dark:text-white">{benefit.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{benefit.desc}</p>
+                  <p style={{ fontWeight: "700", color: "var(--color-text-primary)", marginBottom: "4px" }}>{benefit.title}</p>
+                  <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>{benefit.desc}</p>
                 </div>
               </div>
             ))}
@@ -120,66 +176,76 @@ export default function RegisterPage() {
         </div>
 
         {/* Right Side - Register Form */}
-        <div className="card-premium p-8 lg:p-10">
+        <div className="card" style={{ padding: "var(--space-8)" }}>
           {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
-            <Link href="/" className="inline-flex items-center gap-3 mb-6">
-              <div className="bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
-                <Music className="text-primary" size={24} />
+          <div className="lg:hidden" style={{ textAlign: "center", marginBottom: "var(--space-8)" }}>
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "var(--space-3)", marginBottom: "var(--space-6)", textDecoration: "none" }}>
+              <div style={{
+                width: "48px", height: "48px", borderRadius: "var(--radius-xl)",
+                backgroundColor: "var(--color-accent)", display: "flex",
+                alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-glow)"
+              }}>
+                <Music size={24} style={{ color: "var(--color-primary)" }} />
               </div>
-              <span className="text-3xl font-black text-primary dark:text-white">
-                Nooryi<span className="text-accent">.</span>
+              <span style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-primary)" }}>
+                Nooryi<span style={{ color: "var(--color-accent-dark)" }}>.</span>
               </span>
             </Link>
-            <h1 className="text-3xl font-black text-primary dark:text-white mb-2">إنشاء حساب جديد</h1>
-            <p className="text-gray-500 dark:text-gray-400">انضم إلينا وابدأ رحلتك</p>
+            <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>إنشاء حساب جديد</h1>
+            <p style={{ color: "var(--color-text-secondary)" }}>انضم إلينا وابدأ رحلتك</p>
           </div>
 
           {/* Desktop Header */}
-          <div className="hidden lg:block mb-8">
-            <h2 className="text-3xl font-black text-primary dark:text-white mb-2">إنشاء حساب جديد</h2>
-            <p className="text-gray-500 dark:text-gray-400">املأ البيانات التالية لإنشاء حسابك</p>
+          <div className="hidden lg:block" style={{ marginBottom: "var(--space-8)" }}>
+            <h2 style={{ fontSize: "var(--text-3xl)", fontWeight: "900", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>إنشاء حساب جديد</h2>
+            <p style={{ color: "var(--color-text-secondary)" }}>املأ البيانات التالية لإنشاء حسابك</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
             {error && (
-              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 font-semibold">
+              <div style={{
+                backgroundColor: "#FEE2E2", border: "1px solid #FECACA", borderRadius: "var(--radius-lg)",
+                padding: "var(--space-3)", fontSize: "var(--text-sm)", color: "#DC2626", fontWeight: "600"
+              }}>
                 {error}
               </div>
             )}
 
             {/* Name */}
             <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                الاسم الكامل
+              <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
+                الاسم الكامل *
               </label>
-              <div className="relative">
-                <User className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <div style={{ position: "relative" }}>
+                <User size={18} style={{ position: "absolute", right: "var(--space-3)", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="أدخل اسمك الكامل"
-                  className="input-modern pr-12"
+                  className="input"
+                  style={{ paddingRight: "44px" }}
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                البريد الإلكتروني
+              <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
+                البريد الإلكتروني *
               </label>
-              <div className="relative">
-                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <div style={{ position: "relative" }}>
+                <Mail size={18} style={{ position: "absolute", right: "var(--space-3)", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="example@email.com"
-                  className="input-modern pr-12"
+                  className="input"
+                  style={{ paddingRight: "44px" }}
                   dir="ltr"
                 />
               </div>
@@ -187,17 +253,18 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
+              <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
                 رقم الهاتف
               </label>
-              <div className="relative">
-                <Phone className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <div style={{ position: "relative" }}>
+                <Phone size={18} style={{ position: "absolute", right: "var(--space-3)", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="01xxxxxxxxx"
-                  className="input-modern pr-12"
+                  className="input"
+                  style={{ paddingRight: "44px" }}
                   dir="ltr"
                 />
               </div>
@@ -205,24 +272,30 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                كلمة المرور
+              <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
+                كلمة المرور *
               </label>
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <div style={{ position: "relative" }}>
+                <Lock size={18} style={{ position: "absolute", right: "var(--space-3)", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"
-                  className="input-modern pr-12 pl-12"
+                  className="input"
+                  style={{ paddingRight: "44px", paddingLeft: "44px" }}
                   dir="ltr"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary dark:hover:text-accent transition-colors"
+                  style={{
+                    position: "absolute", left: "var(--space-3)", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer", color: "var(--color-text-tertiary)",
+                    display: "flex", alignItems: "center", justifyContent: "center"
+                  }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -231,18 +304,20 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                تأكيد كلمة المرور
+              <label style={{ display: "block", fontSize: "var(--text-sm)", fontWeight: "600", color: "var(--color-text-primary)", marginBottom: "var(--space-2)" }}>
+                تأكيد كلمة المرور *
               </label>
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <div style={{ position: "relative" }}>
+                <Lock size={18} style={{ position: "absolute", right: "var(--space-3)", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-tertiary)" }} />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                   placeholder="••••••••"
-                  className="input-modern pr-12"
+                  className="input"
+                  style={{ paddingRight: "44px" }}
                   dir="ltr"
                 />
               </div>
@@ -250,14 +325,21 @@ export default function RegisterPage() {
 
             {/* Password Checks */}
             {formData.password && (
-              <div className="space-y-2 p-3 rounded-xl bg-background-subtle dark:bg-dark-surface">
+              <div style={{
+                display: "flex", flexDirection: "column", gap: "var(--space-2)", padding: "var(--space-3)",
+                borderRadius: "var(--radius-lg)", backgroundColor: "var(--color-background-subtle)"
+              }}>
                 {passwordChecks.map((check, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
                     <CheckCircle2 
                       size={14} 
-                      className={check.valid ? "text-accent" : "text-gray-300 dark:text-gray-600"} 
+                      style={{ color: check.valid ? "var(--color-success)" : "var(--color-text-tertiary)" }} 
                     />
-                    <span className={check.valid ? "text-primary dark:text-white font-semibold" : "text-gray-500"}>
+                    <span style={{ 
+                      fontSize: "var(--text-xs)", 
+                      color: check.valid ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+                      fontWeight: check.valid ? "600" : "400"
+                    }}>
                       {check.label}
                     </span>
                   </div>
@@ -269,7 +351,15 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 py-4 mt-6"
+              className="btn-primary"
+              style={{ 
+                width: "100%", 
+                justifyContent: "center", 
+                padding: "var(--space-4)", 
+                marginTop: "var(--space-2)",
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? "not-allowed" : "pointer"
+              }}
             >
               {loading ? (
                 <>
@@ -279,26 +369,27 @@ export default function RegisterPage() {
               ) : (
                 <>
                   إنشاء الحساب
-                  <ArrowRight size={20} className="rotate-180" />
+                  <ArrowRight size={20} style={{ transform: "rotate(180deg)" }} />
                 </>
               )}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
-            <span className="text-xs text-gray-400 font-semibold">أو</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", margin: "var(--space-6) 0" }}>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-border)" }} />
+            <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontWeight: "600" }}>أو</span>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-border)" }} />
           </div>
 
           {/* Login Link */}
-          <p className="text-center text-gray-600 dark:text-gray-400">
+          <p style={{ textAlign: "center", color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" }}>
             لديك حساب بالفعل؟{" "}
             <Link 
               href="/login" 
-              className="text-primary dark:text-accent font-bold hover:underline inline-flex items-center gap-1"
+              style={{ color: "var(--color-primary)", fontWeight: "700", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
             >
+              <Sparkles size={14} />
               سجل دخولك الآن
             </Link>
           </p>
