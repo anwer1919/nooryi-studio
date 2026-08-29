@@ -4,6 +4,21 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { useState, useEffect } from "react"
+import { 
+  Home, 
+  Music, 
+  Info, 
+  Phone, 
+  LayoutDashboard, 
+  LogIn, 
+  UserPlus,
+  LogOut,
+  Calendar,
+  Menu,
+  X,
+  ChevronDown
+} from "lucide-react"
+import NotificationBell from "./NotificationBell"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -23,6 +38,7 @@ export default function Navbar() {
   const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
   const isManager = session?.user?.role === "ARTIST_MANAGER"
   const userName = session?.user?.name || "المستخدم"
+  const userEmail = session?.user?.email || ""
 
   if (!isMounted) {
     return (
@@ -31,20 +47,20 @@ export default function Navbar() {
         top: 0, 
         width: "100%", 
         zIndex: 50, 
-        backgroundColor: "#FFFFFF",
-        borderBottom: "1px solid #E5E7EB",
-        height: "80px"
+        backgroundColor: "var(--color-background)",
+        borderBottom: "1px solid var(--color-border)",
+        height: "72px"
       }}>
-        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", height: "80px" }} />
+        <div className="container-custom" style={{ height: "72px" }} />
       </nav>
     )
   }
 
   const navLinks = [
-    { href: "/", label: "الرئيسية", icon: "🏠" },
-    { href: "/artists", label: "الفنانين", icon: "🎵" },
-    { href: "/about", label: "عن المنصة", icon: "ℹ️" },
-    { href: "/contact", label: "تواصل معنا", icon: "📞" },
+    { href: "/", label: "الرئيسية", icon: Home },
+    { href: "/artists", label: "الفنانين", icon: Music },
+    { href: "/about", label: "عن المنصة", icon: Info },
+    { href: "/contact", label: "تواصل معنا", icon: Phone },
   ]
 
   return (
@@ -53,46 +69,47 @@ export default function Navbar() {
       top: 0, 
       width: "100%", 
       zIndex: 50, 
-      backgroundColor: "#FFFFFF",
-      borderBottom: "1px solid #E5E7EB",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
+      backgroundColor: "rgba(255, 255, 255, 0.85)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderBottom: "1px solid var(--color-border-light)",
     }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 16px" }}>
+      <div className="container-custom">
         <div style={{ 
           display: "flex", 
           justifyContent: "space-between", 
           alignItems: "center", 
-          height: "80px" 
+          height: "72px",
+          gap: "var(--space-6)"
         }}>
           
           {/* LOGO */}
           <Link href="/" style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px", 
-            textDecoration: "none" 
+            gap: "var(--space-3)", 
+            textDecoration: "none",
+            flexShrink: 0
           }}>
             <div style={{
-              width: "44px",
-              height: "44px",
-              backgroundColor: "#A8D5BA",
-              borderRadius: "12px",
+              width: "40px",
+              height: "40px",
+              backgroundColor: "var(--color-accent)",
+              borderRadius: "var(--radius-lg)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "24px",
-              fontWeight: "bold",
-              color: "#4B2E83",
-              boxShadow: "0 4px 12px rgba(168, 213, 186, 0.3)"
+              boxShadow: "var(--shadow-sm)"
             }}>
-              🎵
+              <Music size={22} style={{ color: "var(--color-primary)" }} />
             </div>
             <span style={{ 
-              fontSize: "24px", 
+              fontSize: "var(--text-xl)", 
               fontWeight: "900", 
-              color: "#4B2E83" 
+              color: "var(--color-primary)",
+              letterSpacing: "-0.02em"
             }}>
-              Nooryi<span style={{ color: "#A8D5BA" }}>.</span>
+              Nooryi<span style={{ color: "var(--color-accent-dark)" }}>.</span>
             </span>
           </Link>
 
@@ -100,9 +117,10 @@ export default function Navbar() {
           <div style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "8px" 
+            gap: "var(--space-1)" 
           }} className="hidden lg:flex">
             {navLinks.map((link) => {
+              const Icon = link.icon
               const isActive = pathname === link.href
               
               return (
@@ -110,16 +128,20 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   style={{
-                    padding: "10px 16px",
-                    borderRadius: "12px",
-                    fontSize: "14px",
-                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "var(--space-2)",
+                    padding: "var(--space-2) var(--space-4)",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "var(--text-sm)",
+                    fontWeight: "500",
                     textDecoration: "none",
-                    color: isActive ? "#4B2E83" : "#374151",
-                    backgroundColor: isActive ? "#A8D5BA40" : "transparent",
-                    transition: "all 0.3s"
+                    color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)",
+                    backgroundColor: isActive ? "var(--color-primary-50)" : "transparent",
+                    transition: "all var(--transition-fast)"
                   }}
                 >
+                  <Icon size={16} />
                   {link.label}
                 </Link>
               )
@@ -129,54 +151,68 @@ export default function Navbar() {
               <Link
                 href="/admin"
                 style={{
-                  padding: "10px 16px",
-                  borderRadius: "12px",
-                  fontSize: "14px",
-                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--space-2)",
+                  padding: "var(--space-2) var(--space-4)",
+                  borderRadius: "var(--radius-md)",
+                  fontSize: "var(--text-sm)",
+                  fontWeight: "500",
                   textDecoration: "none",
-                  color: "#4B2E83",
-                  backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
+                  color: pathname.startsWith("/admin") ? "var(--color-primary)" : "var(--color-text-secondary)",
+                  backgroundColor: pathname.startsWith("/admin") ? "var(--color-primary-50)" : "transparent",
+                  transition: "all var(--transition-fast)"
                 }}
               >
-                📊 لوحة التحكم
+                <LayoutDashboard size={16} />
+                لوحة التحكم
               </Link>
             )}
           </div>
 
-          {/* DESKTOP AUTH BUTTONS */}
+          {/* DESKTOP AUTH */}
           <div style={{ 
             display: "flex", 
             alignItems: "center", 
-            gap: "12px" 
+            gap: "var(--space-3)" 
           }} className="hidden lg:flex">
             {isLoggedIn ? (
               <>
+                {/* Notification Bell */}
+                <NotificationBell />
+                
+                {/* User Menu */}
                 <div style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 12px",
-                  borderRadius: "12px",
-                  backgroundColor: "#A8D5BA40"
+                  gap: "var(--space-2)",
+                  padding: "var(--space-1) var(--space-3) var(--space-1) var(--space-1)",
+                  borderRadius: "var(--radius-full)",
+                  backgroundColor: "var(--color-background-subtle)",
+                  border: "1px solid var(--color-border)"
                 }}>
                   <div style={{
                     width: "32px",
                     height: "32px",
-                    borderRadius: "8px",
-                    backgroundColor: "#4B2E83",
+                    borderRadius: "var(--radius-full)",
+                    background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#FFFFFF",
-                    fontSize: "12px",
-                    fontWeight: "900"
+                    fontSize: "var(--text-sm)",
+                    fontWeight: "700"
                   }}>
                     {userName.charAt(0).toUpperCase()}
                   </div>
                   <span style={{ 
-                    fontSize: "14px", 
+                    fontSize: "var(--text-sm)", 
                     fontWeight: "600", 
-                    color: "#4B2E83" 
+                    color: "var(--color-text-primary)",
+                    maxWidth: "120px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
                   }}>
                     {userName}
                   </span>
@@ -184,116 +220,144 @@ export default function Navbar() {
 
                 <Link 
                   href="/my-bookings"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 16px",
-                    borderRadius: "12px",
-                    backgroundColor: "#A8D5BA",
-                    color: "#4B2E83",
-                    fontSize: "14px",
-                    fontWeight: "700",
-                    textDecoration: "none",
-                    transition: "all 0.3s"
-                  }}
+                  className="btn-secondary"
+                  style={{ padding: "var(--space-2) var(--space-4)" }}
                 >
-                  📅 حجوزاتي
+                  <Calendar size={16} />
+                  <span>حجوزاتي</span>
                 </Link>
                 
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 16px",
-                    borderRadius: "12px",
-                    backgroundColor: "#FEE2E2",
-                    color: "#DC2626",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.3s"
-                  }}
+                  className="btn-ghost"
+                  style={{ color: "var(--color-danger)" }}
+                  title="تسجيل الخروج"
                 >
-                  🚪 خروج
+                  <LogOut size={18} />
                 </button>
               </>
             ) : (
               <>
                 <Link 
                   href="/login"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 16px",
-                    borderRadius: "12px",
-                    color: "#4B2E83",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    textDecoration: "none"
-                  }}
+                  className="btn-ghost"
                 >
-                  🔑 تسجيل الدخول
+                  <LogIn size={16} />
+                  تسجيل الدخول
                 </Link>
                 
                 <Link 
                   href="/register"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 20px",
-                    borderRadius: "12px",
-                    backgroundColor: "#4B2E83",
-                    color: "#FFFFFF",
-                    fontSize: "14px",
-                    fontWeight: "700",
-                    textDecoration: "none",
-                    transition: "all 0.3s"
-                  }}
+                  className="btn-primary"
                 >
-                  ✨ ابدأ الآن
+                  <UserPlus size={16} />
+                  ابدأ الآن
                 </Link>
               </>
             )}
           </div>
 
           {/* MOBILE MENU BUTTON */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            style={{
-              padding: "12px",
-              borderRadius: "12px",
-              backgroundColor: "#A8D5BA40",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.3s"
-            }}
-            className="lg:hidden"
-          >
-            {mobileOpen ? "✕" : "☰"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }} className="lg:hidden">
+            {isLoggedIn && <NotificationBell />}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "var(--radius-lg)",
+                backgroundColor: "var(--color-background-subtle)",
+                border: "1px solid var(--color-border)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--color-text-primary)"
+              }}
+              aria-label="القائمة"
+            >
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
 
-        {/* MOBILE MENU - تصميم احترافي */}
+        {/* MOBILE MENU */}
         {mobileOpen && (
-          <div style={{
-            paddingTop: "20px",
-            paddingBottom: "24px",
-            borderTop: "1px solid #E5E7EB"
-          }} className="lg:hidden">
-            
-            {/* روابط التنقل */}
-            <div style={{ marginBottom: "16px" }}>
+          <div 
+            className="animate-fade-in lg:hidden"
+            style={{
+              padding: "var(--space-4) 0 var(--space-6)",
+              borderTop: "1px solid var(--color-border-light)"
+            }}
+          >
+            {/* User Card (if logged in) */}
+            {isLoggedIn && (
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--space-3)",
+                padding: "var(--space-4)",
+                borderRadius: "var(--radius-xl)",
+                background: "linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-accent-50) 100%)",
+                marginBottom: "var(--space-4)",
+                border: "1px solid var(--color-border-light)"
+              }}>
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "var(--radius-full)",
+                  background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#FFFFFF",
+                  fontSize: "var(--text-lg)",
+                  fontWeight: "700",
+                  flexShrink: 0
+                }}>
+                  {userName.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ 
+                    fontSize: "var(--text-base)", 
+                    fontWeight: "700", 
+                    color: "var(--color-text-primary)",
+                    margin: 0,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>
+                    {userName}
+                  </p>
+                  <p style={{ 
+                    fontSize: "var(--text-xs)", 
+                    color: "var(--color-text-secondary)",
+                    margin: "2px 0 0 0",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>
+                    {userEmail}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Links */}
+            <div style={{ marginBottom: "var(--space-4)" }}>
+              <p style={{
+                fontSize: "var(--text-xs)",
+                fontWeight: "600",
+                color: "var(--color-text-tertiary)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                padding: "0 var(--space-4)",
+                marginBottom: "var(--space-2)"
+              }}>
+                القائمة
+              </p>
               {navLinks.map((link) => {
+                const Icon = link.icon
                 const isActive = pathname === link.href
                 
                 return (
@@ -304,126 +368,72 @@ export default function Navbar() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "12px",
-                      padding: "14px 16px",
-                      borderRadius: "12px",
-                      fontSize: "15px",
-                      fontWeight: "600",
+                      gap: "var(--space-3)",
+                      padding: "var(--space-3) var(--space-4)",
+                      borderRadius: "var(--radius-lg)",
+                      fontSize: "var(--text-base)",
+                      fontWeight: "500",
                       textDecoration: "none",
-                      color: isActive ? "#4B2E83" : "#374151",
-                      backgroundColor: isActive ? "#A8D5BA40" : "transparent",
-                      marginBottom: "4px",
-                      transition: "all 0.3s"
+                      color: isActive ? "var(--color-primary)" : "var(--color-text-primary)",
+                      backgroundColor: isActive ? "var(--color-primary-50)" : "transparent",
+                      marginBottom: "2px",
+                      transition: "all var(--transition-fast)"
                     }}
                   >
-                    <span style={{ fontSize: "18px" }}>{link.icon}</span>
+                    <Icon size={20} style={{ color: isActive ? "var(--color-primary)" : "var(--color-text-secondary)" }} />
                     {link.label}
                   </Link>
                 )
               })}
-            </div>
-
-            {/* لوحة التحكم للأدمن */}
-            {(isAdmin || isManager) && (
-              <div style={{ marginBottom: "16px" }}>
+              
+              {(isAdmin || isManager) && (
                 <Link
                   href="/admin"
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    fontSize: "15px",
-                    fontWeight: "600",
+                    gap: "var(--space-3)",
+                    padding: "var(--space-3) var(--space-4)",
+                    borderRadius: "var(--radius-lg)",
+                    fontSize: "var(--text-base)",
+                    fontWeight: "500",
                     textDecoration: "none",
-                    color: "#4B2E83",
-                    backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
+                    color: pathname.startsWith("/admin") ? "var(--color-primary)" : "var(--color-text-primary)",
+                    backgroundColor: pathname.startsWith("/admin") ? "var(--color-primary-50)" : "transparent"
                   }}
                 >
-                  <span style={{ fontSize: "18px" }}>📊</span>
+                  <LayoutDashboard size={20} style={{ color: pathname.startsWith("/admin") ? "var(--color-primary)" : "var(--color-text-secondary)" }} />
                   لوحة التحكم
                 </Link>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* فاصل */}
+            {/* Divider */}
             <div style={{
-              margin: "16px 0",
-              borderTop: "1px solid #E5E7EB"
+              height: "1px",
+              backgroundColor: "var(--color-border-light)",
+              margin: "var(--space-2) 0"
             }} />
 
-            {/* معلومات المستخدم والأزرار */}
+            {/* Auth Actions */}
             {isLoggedIn ? (
-              <>
-                {/* بطاقة المستخدم */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "16px",
-                  borderRadius: "12px",
-                  backgroundColor: "#A8D5BA40",
-                  marginBottom: "12px"
-                }}>
-                  <div style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "12px",
-                    backgroundColor: "#4B2E83",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#FFFFFF",
-                    fontSize: "18px",
-                    fontWeight: "900"
-                  }}>
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ 
-                      fontSize: "16px", 
-                      fontWeight: "700", 
-                      color: "#4B2E83",
-                      margin: 0
-                    }}>
-                      {userName}
-                    </p>
-                    <p style={{ 
-                      fontSize: "13px", 
-                      color: "#6B7280",
-                      margin: 0
-                    }}>
-                      {isAdmin ? "مدير عام" : isManager ? "مدير أعمال" : "عميل"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* زر حجوزاتي */}
+              <div style={{ padding: "0 var(--space-2)" }}>
                 <Link
                   href="/my-bookings"
                   onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
+                  className="btn-secondary"
+                  style={{ 
+                    width: "100%", 
                     justifyContent: "center",
-                    gap: "10px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    textDecoration: "none",
-                    color: "#4B2E83",
-                    backgroundColor: "#A8D5BA",
-                    marginBottom: "8px",
-                    transition: "all 0.3s"
+                    marginBottom: "var(--space-2)",
+                    padding: "var(--space-3)"
                   }}
                 >
-                  📅 حجوزاتي
+                  <Calendar size={18} />
+                  حجوزاتي
                 </Link>
                 
-                {/* زر خروج */}
                 <button
                   onClick={() => {
                     setMobileOpen(false)
@@ -434,68 +444,50 @@ export default function Navbar() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "10px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    color: "#DC2626",
+                    gap: "var(--space-2)",
+                    padding: "var(--space-3)",
+                    borderRadius: "var(--radius-lg)",
+                    fontSize: "var(--text-base)",
+                    fontWeight: "600",
+                    color: "var(--color-danger)",
                     backgroundColor: "#FEE2E2",
                     border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.3s"
+                    cursor: "pointer"
                   }}
                 >
-                  🚪 تسجيل الخروج
+                  <LogOut size={18} />
+                  تسجيل الخروج
                 </button>
-              </>
+              </div>
             ) : (
-              <>
-                {/* زر تسجيل الدخول */}
+              <div style={{ padding: "0 var(--space-2)", display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
+                  className="btn-ghost"
+                  style={{ 
                     justifyContent: "center",
-                    gap: "10px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    fontSize: "15px",
-                    fontWeight: "600",
-                    textDecoration: "none",
-                    color: "#4B2E83",
-                    backgroundColor: "#F8F9FC",
-                    marginBottom: "8px",
-                    transition: "all 0.3s"
+                    border: "1px solid var(--color-border)",
+                    padding: "var(--space-3)"
                   }}
                 >
-                  🔑 تسجيل الدخول
+                  <LogIn size={18} />
+                  تسجيل الدخول
                 </Link>
                 
-                {/* زر ابدأ الآن */}
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
+                  className="btn-primary"
+                  style={{ 
                     justifyContent: "center",
-                    gap: "10px",
-                    padding: "14px 16px",
-                    borderRadius: "12px",
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    textDecoration: "none",
-                    color: "#FFFFFF",
-                    backgroundColor: "#4B2E83",
-                    transition: "all 0.3s"
+                    padding: "var(--space-3)"
                   }}
                 >
-                  ✨ ابدأ الآن
+                  <UserPlus size={18} />
+                  ابدأ الآن
                 </Link>
-              </>
+              </div>
             )}
           </div>
         )}
