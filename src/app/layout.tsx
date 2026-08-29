@@ -1,6 +1,7 @@
 import { Tajawal } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/Providers"
+import Navbar from "@/components/Navbar"
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -19,12 +20,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable}`} suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
       <body 
-        className="min-h-screen font-sans antialiased transition-colors duration-300"
+        className="min-h-screen font-sans antialiased"
         suppressHydrationWarning
+        style={{ backgroundColor: "#FFFFFF", color: "#4B2E83" }}
       >
         <Providers>
+          <Navbar />
           {children}
         </Providers>
       </body>

@@ -1,106 +1,109 @@
 @import "tailwindcss";
 
-/* 1. تعريف نظام التصميم بالكامل (Tailwind v4 Syntax) */
 @theme {
-  /* الألوان الأساسية */
   --color-primary: #4B2E83;
   --color-primary-dark: #3A2266;
   --color-primary-light: #6B4C9A;
   
-  /* ألوان التمييز (Mint Green) */
   --color-accent: #A8D5BA;
   --color-accent-dark: #7AB890;
   --color-accent-light: #C8E6D2;
   
-  /* الخلفيات والأسطح */
   --color-background: #FFFFFF;
   --color-background-subtle: #F8F9FC;
   --color-surface: #FFFFFF;
   
-  /* ألوان الوضع الليلي */
   --color-dark-bg: #0F0A1A;
   --color-dark-surface: #1A122B;
   --color-dark-border: #2D2145;
-
-  /* الخطوط */
-  --font-sans: var(--font-tajawal), system-ui, sans-serif;
-  
-  /* الزوايا الدائرية */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-
-  /* الظلال الفاخرة */
-  --shadow-soft: 0 4px 20px rgba(75, 46, 131, 0.06);
-  --shadow-hover: 0 12px 40px rgba(75, 46, 131, 0.12);
-  --shadow-glow: 0 0 25px rgba(168, 213, 186, 0.4);
 }
 
-/* 2. الأنماط الأساسية (نستخدم CSS Variables مباشرة لتجنب خطأ @apply في v4) */
-@layer base {
-  body {
-    background-color: var(--color-background);
-    color: var(--color-primary);
-    font-family: var(--font-sans);
-    @apply antialiased transition-colors duration-300;
-  }
-  
-  .dark body {
-    background-color: var(--color-dark-bg);
-    color: white;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  /* تحسين شريط التمرير */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+body {
+  font-family: var(--font-tajawal), system-ui, sans-serif;
+  background-color: #FFFFFF;
+  color: #4B2E83;
+}
+
+.btn-primary {
+  background-color: #4B2E83 !important;
+  color: #FFFFFF !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.3s !important;
+}
+
+.btn-primary:hover {
+  background-color: #3A2266 !important;
+  transform: scale(1.02) !important;
+}
+
+.btn-secondary {
+  background-color: #A8D5BA !important;
+  color: #4B2E83 !important;
+  padding: 12px 24px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.3s !important;
+}
+
+.btn-secondary:hover {
+  background-color: #C8E6D2 !important;
+  transform: scale(1.02) !important;
+}
+
+.card-premium {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  box-shadow: 0 4px 20px rgba(75, 46, 131, 0.06) !important;
+  transition: all 0.3s !important;
+}
+
+.card-premium:hover {
+  box-shadow: 0 12px 40px rgba(75, 46, 131, 0.12) !important;
+  transform: translateY(-4px) !important;
+}
+
+.input-modern {
+  width: 100% !important;
+  background-color: #F8F9FC !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  color: #4B2E83 !important;
+  transition: all 0.3s !important;
+}
+
+.input-modern:focus {
+  outline: none !important;
+  border-color: #A8D5BA !important;
+  box-shadow: 0 0 0 3px rgba(168, 213, 186, 0.2) !important;
+}
+
+/* Responsive classes */
+@media (min-width: 1024px) {
+  .lg\:hidden {
+    display: none !important;
   }
-  ::-webkit-scrollbar-track {
-    background-color: var(--color-background-subtle);
-  }
-  .dark ::-webkit-scrollbar-track {
-    background-color: var(--color-dark-bg);
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-accent);
+  .lg\:flex {
+    display: flex !important;
   }
 }
 
-/* 3. المكونات الجاهزة (Premium Components) */
-@layer components {
-  .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    @apply font-bold px-6 py-3 rounded-xl shadow-soft transition-all duration-300 
-           hover:bg-primary-dark hover:shadow-hover hover:scale-[1.02] active:scale-[0.98];
-  }
-
-  .btn-secondary {
-    background-color: var(--color-accent);
-    color: var(--color-primary-dark);
-    @apply font-bold px-6 py-3 rounded-xl shadow-soft transition-all duration-300 
-           hover:bg-accent-light hover:shadow-glow hover:scale-[1.02]
-           dark:bg-accent-dark dark:text-white dark:hover:bg-accent;
-  }
-
-  .card-premium {
-    background-color: var(--color-surface);
-    @apply border border-gray-100 rounded-2xl shadow-soft p-6 
-           transition-all duration-300 hover:shadow-hover hover:-translate-y-1
-           dark:bg-dark-surface dark:border-dark-border;
-  }
-
-  .input-modern {
-    background-color: var(--color-background-subtle);
-    @apply w-full border border-gray-200 rounded-xl px-4 py-3 
-           focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent 
-           transition-all duration-300 placeholder:text-gray-400
-           dark:bg-dark-bg dark:border-dark-border dark:text-white;
+@media (max-width: 1023px) {
+  .hidden {
+    display: none !important;
   }
 }

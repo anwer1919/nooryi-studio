@@ -3,20 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { 
-  Music, 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  LogIn, 
-  UserPlus, 
-  LogOut,
-  Calendar,
-  Home,
-  Users,
-  Info,
-  Phone
-} from "lucide-react"
 import { useState, useEffect } from "react"
 
 export default function Navbar() {
@@ -38,57 +24,102 @@ export default function Navbar() {
   const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
   const userName = session?.user?.name || "المستخدم"
 
-  const navLinks = [
-    { href: "/", label: "الرئيسية", icon: Home },
-    { href: "/artists", label: "الفنانين", icon: Users },
-    { href: "/about", label: "عن المنصة", icon: Info },
-    { href: "/contact", label: "تواصل معنا", icon: Phone },
-  ]
-
   // Skeleton أثناء التحميل
   if (!isMounted) {
     return (
-      <nav className="sticky top-0 w-full z-50 bg-background dark:bg-dark-bg border-b border-accent/10 dark:border-dark-border">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20" />
+      <nav style={{ 
+        position: "sticky", 
+        top: 0, 
+        width: "100%", 
+        zIndex: 50, 
+        backgroundColor: "#FFFFFF",
+        borderBottom: "1px solid #E5E7EB",
+        height: "80px"
+      }}>
+        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px", height: "80px" }} />
       </nav>
     )
   }
 
+  const navLinks = [
+    { href: "/", label: "الرئيسية" },
+    { href: "/artists", label: "الفنانين" },
+    { href: "/about", label: "عن المنصة" },
+    { href: "/contact", label: "تواصل معنا" },
+  ]
+
   return (
-    <nav className="sticky top-0 w-full z-50 bg-background dark:bg-dark-bg border-b border-accent/10 dark:border-dark-border shadow-soft">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+    <nav style={{ 
+      position: "sticky", 
+      top: 0, 
+      width: "100%", 
+      zIndex: 50, 
+      backgroundColor: "#FFFFFF",
+      borderBottom: "1px solid #E5E7EB",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
+    }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 24px" }}>
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          height: "80px" 
+        }}>
           
           {/* LOGO */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-accent blur-xl opacity-40 group-hover:opacity-70 transition-all duration-300" />
-              <div className="relative bg-accent w-11 h-11 rounded-xl flex items-center justify-center shadow-soft">
-                <Music className="text-primary" size={22} />
-              </div>
+          <Link href="/" style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px", 
+            textDecoration: "none" 
+          }}>
+            <div style={{
+              width: "44px",
+              height: "44px",
+              backgroundColor: "#A8D5BA",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: "#4B2E83"
+            }}>
+              🎵
             </div>
-            <span className="text-2xl font-black text-primary dark:text-background">
-              Nooryi<span className="text-accent">.</span>
+            <span style={{ 
+              fontSize: "24px", 
+              fontWeight: "900", 
+              color: "#4B2E83" 
+            }}>
+              Nooryi<span style={{ color: "#A8D5BA" }}>.</span>
             </span>
           </Link>
 
-          {/* DESKTOP NAV */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* DESKTOP NAV - يظهر فقط على الشاشات الكبيرة */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "8px" 
+          }} className="hidden lg:flex">
             {navLinks.map((link) => {
-              const Icon = link.icon
               const isActive = pathname === link.href
               
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    isActive
-                      ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
-                      : "text-primary dark:text-background hover:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
-                  }`}
+                  style={{
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    textDecoration: "none",
+                    color: isActive ? "#4B2E83" : "#374151",
+                    backgroundColor: isActive ? "#A8D5BA40" : "transparent",
+                    transition: "all 0.3s"
+                  }}
                 >
-                  <Icon size={16} />
                   {link.label}
                 </Link>
               )
@@ -97,90 +128,172 @@ export default function Navbar() {
             {isAdmin && (
               <Link
                 href="/admin"
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                  pathname.startsWith("/admin")
-                    ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
-                    : "text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
-                }`}
+                style={{
+                  padding: "10px 16px",
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                  color: "#4B2E83",
+                  backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
+                }}
               >
-                <LayoutDashboard size={16} />
-                لوحة التحكم
+                📊 لوحة التحكم
               </Link>
             )}
           </div>
 
-          {/* DESKTOP AUTH */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* DESKTOP AUTH BUTTONS */}
+          <div style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px" 
+          }} className="hidden lg:flex">
             {isLoggedIn ? (
               <>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-accent/20 dark:bg-accent/30">
-                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                    <span className="text-xs font-black text-background">
-                      {userName.charAt(0).toUpperCase()}
-                    </span>
+                {/* اسم المستخدم */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 12px",
+                  borderRadius: "12px",
+                  backgroundColor: "#A8D5BA40"
+                }}>
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    backgroundColor: "#4B2E83",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#FFFFFF",
+                    fontSize: "12px",
+                    fontWeight: "900"
+                  }}>
+                    {userName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-semibold text-primary dark:text-background">
+                  <span style={{ 
+                    fontSize: "14px", 
+                    fontWeight: "600", 
+                    color: "#4B2E83" 
+                  }}>
                     {userName}
                   </span>
                 </div>
 
+                {/* زر حجوزاتي */}
                 <Link 
                   href="/my-bookings"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-primary font-bold hover:bg-accent-light hover:shadow-glow transition-all duration-300 hover:scale-[1.02]"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    backgroundColor: "#A8D5BA",
+                    color: "#4B2E83",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    textDecoration: "none"
+                  }}
                 >
-                  <Calendar size={16} />
-                  <span className="text-sm">حجوزاتي</span>
+                  📅 حجوزاتي
                 </Link>
                 
+                {/* زر خروج */}
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-all duration-300"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    backgroundColor: "#FEE2E2",
+                    color: "#DC2626",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    border: "none",
+                    cursor: "pointer"
+                  }}
                 >
-                  <LogOut size={16} />
-                  <span className="text-sm font-semibold">خروج</span>
+                  🚪 خروج
                 </button>
               </>
             ) : (
               <>
+                {/* زر تسجيل الدخول */}
                 <Link 
                   href="/login"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 transition-all duration-300"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 16px",
+                    borderRadius: "12px",
+                    color: "#4B2E83",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    textDecoration: "none"
+                  }}
                 >
-                  <LogIn size={16} />
-                  تسجيل الدخول
+                  🔑 تسجيل الدخول
                 </Link>
                 
+                {/* زر ابدأ الآن */}
                 <Link 
                   href="/register"
-                  className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "10px 20px",
+                    borderRadius: "12px",
+                    backgroundColor: "#4B2E83",
+                    color: "#FFFFFF",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    textDecoration: "none"
+                  }}
                 >
-                  <UserPlus size={16} />
-                  ابدأ الآن
+                  ✨ ابدأ الآن
                 </Link>
               </>
             )}
           </div>
 
-          {/* MOBILE MENU BUTTON */}
+          {/* MOBILE MENU BUTTON - يظهر دائماً */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:flex lg:items-center lg:justify-center p-2.5 rounded-xl bg-accent/20 dark:bg-accent/30 hover:bg-accent/30 dark:hover:bg-accent/40 transition-all"
-            style={{ display: 'flex' }}
+            style={{
+              padding: "10px",
+              borderRadius: "12px",
+              backgroundColor: "#A8D5BA40",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "22px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            className="lg:hidden"
           >
-            {mobileOpen ? (
-              <X size={22} className="text-primary dark:text-accent" />
-            ) : (
-              <Menu size={22} className="text-primary dark:text-accent" />
-            )}
+            {mobileOpen ? "✕" : "☰"}
           </button>
         </div>
 
         {/* MOBILE MENU */}
         {mobileOpen && (
-          <div className="lg:hidden py-4 pb-6 border-t border-accent/10 dark:border-dark-border space-y-1">
+          <div style={{
+            paddingTop: "16px",
+            paddingBottom: "24px",
+            borderTop: "1px solid #E5E7EB"
+          }} className="lg:hidden">
             
+            {/* روابط التنقل */}
             {navLinks.map((link) => {
-              const Icon = link.icon
               const isActive = pathname === link.href
               
               return (
@@ -188,89 +301,186 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    isActive
-                      ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
-                      : "text-primary dark:text-background hover:bg-accent/10 dark:hover:bg-accent/20"
-                  }`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    textDecoration: "none",
+                    color: isActive ? "#4B2E83" : "#374151",
+                    backgroundColor: isActive ? "#A8D5BA40" : "transparent",
+                    marginBottom: "4px"
+                  }}
                 >
-                  <Icon size={18} />
                   {link.label}
                 </Link>
               )
             })}
             
+            {/* لوحة التحكم للأدمن */}
             {isAdmin && (
               <Link
                 href="/admin"
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  pathname.startsWith("/admin")
-                    ? "text-primary dark:text-accent bg-accent/20 dark:bg-accent/30"
-                    : "text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20"
-                }`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  textDecoration: "none",
+                  color: "#4B2E83",
+                  backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent",
+                  marginBottom: "4px"
+                }}
               >
-                <LayoutDashboard size={18} />
-                لوحة التحكم
+                📊 لوحة التحكم
               </Link>
             )}
 
-            <div className="my-3 border-t border-accent/10 dark:border-dark-border" />
+            {/* فاصل */}
+            <div style={{
+              margin: "12px 0",
+              borderTop: "1px solid #E5E7EB"
+            }} />
 
+            {/* معلومات المستخدم والأزرار */}
             {isLoggedIn ? (
               <>
-                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/20 dark:bg-accent/30 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                    <span className="text-sm font-black text-background">
-                      {userName.charAt(0).toUpperCase()}
-                    </span>
+                {/* بطاقة المستخدم */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  padding: "12px 16px",
+                  borderRadius: "12px",
+                  backgroundColor: "#A8D5BA40",
+                  marginBottom: "8px"
+                }}>
+                  <div style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "8px",
+                    backgroundColor: "#4B2E83",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#FFFFFF",
+                    fontSize: "14px",
+                    fontWeight: "900"
+                  }}>
+                    {userName.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-primary dark:text-background">{userName}</p>
-                    <p className="text-xs text-primary/60 dark:text-background/60">
+                  <div>
+                    <p style={{ 
+                      fontSize: "14px", 
+                      fontWeight: "700", 
+                      color: "#4B2E83",
+                      margin: 0
+                    }}>
+                      {userName}
+                    </p>
+                    <p style={{ 
+                      fontSize: "12px", 
+                      color: "#6B7280",
+                      margin: 0
+                    }}>
                       {isAdmin ? "مدير عام" : "عميل"}
                     </p>
                   </div>
                 </div>
 
+                {/* زر حجوزاتي */}
                 <Link
                   href="/my-bookings"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-accent text-primary hover:bg-accent-light transition-all"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    textDecoration: "none",
+                    color: "#4B2E83",
+                    backgroundColor: "#A8D5BA",
+                    marginBottom: "8px"
+                  }}
                 >
-                  <Calendar size={18} />
-                  حجوزاتي
+                  📅 حجوزاتي
                 </Link>
                 
+                {/* زر خروج */}
                 <button
                   onClick={() => {
                     setMobileOpen(false)
                     signOut({ callbackUrl: "/" })
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 bg-red-500/10 dark:bg-red-500/20 hover:bg-red-500/20 dark:hover:bg-red-500/30 transition-all"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    color: "#DC2626",
+                    backgroundColor: "#FEE2E2",
+                    border: "none",
+                    cursor: "pointer"
+                  }}
                 >
-                  <LogOut size={18} />
-                  تسجيل الخروج
+                  🚪 تسجيل الخروج
                 </button>
               </>
             ) : (
               <>
+                {/* زر تسجيل الدخول */}
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-primary dark:text-accent hover:bg-accent/10 dark:hover:bg-accent/20 transition-all"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    textDecoration: "none",
+                    color: "#4B2E83",
+                    marginBottom: "8px"
+                  }}
                 >
-                  <LogIn size={18} />
-                  تسجيل الدخول
+                  🔑 تسجيل الدخول
                 </Link>
                 
+                {/* زر ابدأ الآن */}
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="btn-primary flex items-center justify-center gap-2 text-sm"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    textDecoration: "none",
+                    color: "#FFFFFF",
+                    backgroundColor: "#4B2E83"
+                  }}
                 >
-                  <UserPlus size={16} />
-                  ابدأ الآن
+                  ✨ ابدأ الآن
                 </Link>
               </>
             )}
