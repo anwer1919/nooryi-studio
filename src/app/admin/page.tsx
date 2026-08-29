@@ -30,7 +30,6 @@ export default async function AdminDashboardPage() {
     redirect("/")
   }
 
-  // جلب البيانات بشكل آمن ومجمع
   let totalBookings = 0
   let pendingBookings = 0
   let completedBookings = 0
@@ -56,22 +55,16 @@ export default async function AdminDashboardPage() {
         where,
         orderBy: { createdAt: "desc" },
         take: 5,
-        include: {
-          artist: { select: { name: true, profileImage: true } },
-        },
+        include: { artist: { select: { name: true, profileImage: true } } },
       }),
       isAdmin ? prisma.artist.count() : Promise.resolve(0),
       isAdmin ? prisma.user.count({ where: { role: "ARTIST_MANAGER" } }) : Promise.resolve(0),
-      prisma.booking.findMany({
-        where,
-        select: { status: true, grossAmount: true }
-      })
+      prisma.booking.findMany({ where, select: { status: true, grossAmount: true } })
     ])
 
     recentBookings = bookings
     totalArtists = artists
     totalManagers = managers
-
     totalBookings = allBookings.length
     pendingBookings = allBookings.filter(b => b.status === "PENDING_APPROVAL").length
     completedBookings = allBookings.filter(b => b.status === "COMPLETED").length
@@ -82,199 +75,135 @@ export default async function AdminDashboardPage() {
   }
 
   return (
-    // ✅ suppressHydrationWarning يمنع تحذيرات الاختلافات الطفيفة في الخادم/المتصفح
-    <div suppressHydrationWarning style={{ padding: "var(--space-6) 0" }}>
-      <div className="container-custom">
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8" suppressHydrationWarning>
+      <div className="max-w-7xl mx-auto">
         
         {/* Header */}
-        <div style={{ marginBottom: "var(--space-8)" }}>
-          <h1 style={{
-            fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
-            fontWeight: "900",
-            color: "var(--color-text-primary)",
-            marginBottom: "var(--space-2)"
-          }}>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {isAdmin ? "مرحباً بك" : "لوحة مدير الأعمال"}
           </h1>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" }}>
+          <p className="text-gray-500">
             {isAdmin ? "نظرة عامة على أداء المنصة" : "إدارة حجوزات الفنان"}
           </p>
         </div>
 
-        {/* Stats Grid - Mobile First (2 columns on mobile, 4 on desktop) */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "var(--space-4)",
-          marginBottom: "var(--space-8)"
-        }} className="md:grid-cols-4">
-          
-          {/* Total Bookings */}
-          <div className="card" style={{ padding: "var(--space-4)" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "var(--radius-md)",
-              backgroundColor: "var(--color-primary-50)", display: "flex",
-              alignItems: "center", justifyContent: "center", marginBottom: "var(--space-3)"
-            }}>
-              <Calendar size={20} style={{ color: "var(--color-primary)" }} />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <Calendar size={20} className="text-purple-600" />
             </div>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>الحجوزات</p>
-            <p style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: "900", color: "var(--color-text-primary)" }}>{totalBookings}</p>
+            <p className="text-sm text-gray-500 mb-1">الحجوزات</p>
+            <p className="text-3xl font-bold text-gray-900">{totalBookings}</p>
           </div>
 
-          {/* Pending */}
-          <div className="card" style={{ padding: "var(--space-4)" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "var(--radius-md)",
-              backgroundColor: "#FEF3C7", display: "flex",
-              alignItems: "center", justifyContent: "center", marginBottom: "var(--space-3)"
-            }}>
-              <Clock size={20} style={{ color: "var(--color-warning)" }} />
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+              <Clock size={20} className="text-yellow-600" />
             </div>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>قيد المراجعة</p>
-            <p style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: "900", color: "var(--color-text-primary)" }}>{pendingBookings}</p>
+            <p className="text-sm text-gray-500 mb-1">قيد المراجعة</p>
+            <p className="text-3xl font-bold text-gray-900">{pendingBookings}</p>
           </div>
 
-          {/* Revenue */}
-          <div className="card" style={{ padding: "var(--space-4)" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "var(--radius-md)",
-              backgroundColor: "var(--color-accent-50)", display: "flex",
-              alignItems: "center", justifyContent: "center", marginBottom: "var(--space-3)"
-            }}>
-              <DollarSign size={20} style={{ color: "var(--color-primary)" }} />
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <DollarSign size={20} className="text-green-600" />
             </div>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>الإيرادات</p>
-            <p style={{ fontSize: "clamp(1rem, 2vw, 1.5rem)", fontWeight: "900", color: "var(--color-text-primary)" }}>{revenue.toLocaleString()}</p>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)" }}>ج.م</p>
+            <p className="text-sm text-gray-500 mb-1">الإيرادات</p>
+            <p className="text-2xl font-bold text-gray-900">{revenue.toLocaleString()}</p>
+            <p className="text-xs text-gray-400">ج.م</p>
           </div>
 
-          {/* Completed */}
-          <div className="card" style={{ padding: "var(--space-4)" }}>
-            <div style={{
-              width: "40px", height: "40px", borderRadius: "var(--radius-md)",
-              backgroundColor: "#D1FAE5", display: "flex",
-              alignItems: "center", justifyContent: "center", marginBottom: "var(--space-3)"
-            }}>
-              <CheckCircle2 size={20} style={{ color: "var(--color-success)" }} />
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <CheckCircle2 size={20} className="text-blue-600" />
             </div>
-            <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>مكتملة</p>
-            <p style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: "900", color: "var(--color-text-primary)" }}>{completedBookings}</p>
+            <p className="text-sm text-gray-500 mb-1">مكتملة</p>
+            <p className="text-3xl font-bold text-gray-900">{completedBookings}</p>
           </div>
         </div>
 
         {/* Admin Only Links */}
         {isAdmin && (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "var(--space-4)",
-            marginBottom: "var(--space-8)"
-          }}>
-            <Link href="/admin/artists" className="card card-hover" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--space-4)" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Link href="/admin/artists" className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all flex items-center justify-between group">
               <div>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>الفنانين</p>
-                <p style={{ fontSize: "var(--text-xl)", fontWeight: "900", color: "var(--color-text-primary)" }}>{totalArtists}</p>
+                <p className="text-sm text-gray-500 mb-1">الفنانين</p>
+                <p className="text-2xl font-bold text-gray-900">{totalArtists}</p>
               </div>
-              <Music size={24} style={{ color: "var(--color-primary)" }} />
+              <Music size={24} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
             </Link>
 
-            <Link href="/admin/artists-managers" className="card card-hover" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--space-4)" }}>
+            <Link href="/admin/artists-managers" className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all flex items-center justify-between group">
               <div>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>مديرو الأعمال</p>
-                <p style={{ fontSize: "var(--text-xl)", fontWeight: "900", color: "var(--color-text-primary)" }}>{totalManagers}</p>
+                <p className="text-sm text-gray-500 mb-1">مديرو الأعمال</p>
+                <p className="text-2xl font-bold text-gray-900">{totalManagers}</p>
               </div>
-              <UserCog size={24} style={{ color: "var(--color-primary)" }} />
+              <UserCog size={24} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
             </Link>
 
-            <Link href="/admin/stats" className="card card-hover" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--space-4)" }}>
+            <Link href="/admin/stats" className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all flex items-center justify-between group">
               <div>
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", marginBottom: "var(--space-1)" }}>التقارير</p>
-                <p style={{ fontSize: "var(--text-base)", fontWeight: "700", color: "var(--color-text-primary)" }}>عرض</p>
+                <p className="text-sm text-gray-500 mb-1">التقارير</p>
+                <p className="text-lg font-semibold text-gray-900">عرض</p>
               </div>
-              <BarChart3 size={24} style={{ color: "var(--color-primary)" }} />
+              <BarChart3 size={24} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
             </Link>
           </div>
         )}
 
         {/* Recent Bookings */}
-        <div className="card" style={{ padding: 0 }}>
-          <div style={{
-            padding: "var(--space-4) var(--space-6)",
-            borderBottom: "1px solid var(--color-border-light)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}>
-            <h2 style={{ fontSize: "var(--text-base)", fontWeight: "700", color: "var(--color-text-primary)" }}>أحدث الحجوزات</h2>
-            <Link href="/admin/bookings" style={{ fontSize: "var(--text-xs)", fontWeight: "600", color: "var(--color-primary)", textDecoration: "none" }}>عرض الكل ←</Link>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">أحدث الحجوزات</h2>
+            <Link href="/admin/bookings" className="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors">عرض الكل ←</Link>
           </div>
 
           {recentBookings.length === 0 ? (
-            <div style={{ padding: "var(--space-10)", textAlign: "center" }}>
-              <p style={{ color: "var(--color-text-secondary)" }}>لا توجد حجوزات بعد</p>
+            <div className="p-10 text-center">
+              <p className="text-gray-500">لا توجد حجوزات بعد</p>
             </div>
           ) : (
-            // ✅ suppressHydrationWarning للقائمة لمنع أي تعارض في العناصر الداخلية
-            <div suppressHydrationWarning>
+            <div>
               {recentBookings.map((booking, index) => (
                 <Link 
                   key={booking.id}
                   href={`/admin/bookings/${booking.id}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "var(--space-4) var(--space-6)",
-                    textDecoration: "none",
-                    borderBottom: index < recentBookings.length - 1 ? "1px solid var(--color-border-light)" : "none",
-                    transition: "background-color var(--transition-fast)"
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-background-subtle)" }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent" }}
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 transition-colors hover:bg-gray-50 ${
+                    index < recentBookings.length - 1 ? "border-b border-gray-100" : ""
+                  }`}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
                     {booking.artist?.profileImage ? (
                       <img 
                         src={booking.artist.profileImage}
                         alt={booking.artist.name}
-                        style={{ width: "40px", height: "40px", borderRadius: "var(--radius-md)", objectFit: "cover" }}
+                        className="w-12 h-12 rounded-lg object-cover"
                       />
                     ) : (
-                      <div style={{
-                        width: "40px", height: "40px", borderRadius: "var(--radius-md)",
-                        backgroundColor: "var(--color-accent-50)", display: "flex",
-                        alignItems: "center", justifyContent: "center"
-                      }}>
-                        <Music size={18} style={{ color: "var(--color-primary)" }} />
+                      <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <Music size={20} className="text-purple-600" />
                       </div>
                     )}
                     <div>
-                      <p style={{ fontWeight: "600", fontSize: "var(--text-sm)", color: "var(--color-text-primary)", marginBottom: "2px" }}>
-                        {booking.artist?.name}
-                      </p>
-                      <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
-                        {booking.clientName}
-                      </p>
+                      <p className="font-semibold text-gray-900 text-sm">{booking.artist?.name}</p>
+                      <p className="text-xs text-gray-500">{booking.clientName}</p>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: "left" }}>
-                    <p style={{ fontWeight: "700", color: "var(--color-primary)", fontSize: "var(--text-sm)" }}>
-                      {(booking.grossAmount || 0).toLocaleString()} ج.م
-                    </p>
+                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+                    <div className="text-left">
+                      <p className="font-bold text-gray-900 text-sm">{(booking.grossAmount || 0).toLocaleString()} ج.م</p>
+                      <p className="text-xs text-gray-400">{new Date(booking.date).toISOString().split('T')[0]}</p>
+                    </div>
                     
-                    {/* ✅ الحل الجذري للتاريخ: استخدام toISOString يمنع تعارض المناطق الزمنية بين الخادم والمتصفح */}
-                    <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)" }}>
-                      {new Date(booking.date).toISOString().split('T')[0]}
-                    </p>
-                    
-                    <span className={`badge ${
-                      booking.status === "COMPLETED" ? "badge-success" :
-                      booking.status === "APPROVED" ? "badge-accent" :
-                      booking.status === "CANCELLED" ? "badge-danger" :
-                      "badge-warning"
-                    }`} style={{ fontSize: "10px", padding: "2px 8px", marginTop: "4px", display: "inline-block" }}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      booking.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                      booking.status === "APPROVED" ? "bg-purple-100 text-purple-700" :
+                      booking.status === "CANCELLED" ? "bg-red-100 text-red-700" :
+                      "bg-yellow-100 text-yellow-700"
+                    }`}>
                       {booking.status === "COMPLETED" ? "مكتمل" :
                        booking.status === "APPROVED" ? "موافق" :
                        booking.status === "CANCELLED" ? "ملغي" :
