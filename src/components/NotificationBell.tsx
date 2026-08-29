@@ -18,7 +18,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
-  const [isMounted, setIsMounted] = useState(false) // ✅ لمنع تعارض الوقت
+  const [isMounted, setIsMounted] = useState(false) // ✅ الحارس
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,7 +30,6 @@ export default function NotificationBell() {
         setIsOpen(false)
       }
     }
-    
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
@@ -43,9 +42,7 @@ export default function NotificationBell() {
         setNotifications(data.notifications || [])
         setUnreadCount(data.unreadCount || 0)
       }
-    } catch (error) {
-      // تجاهل الأخطاء في حال عدم وجود API
-    }
+    } catch (error) {}
   }
 
   const markAsRead = async (id: string) => {
@@ -86,6 +83,19 @@ export default function NotificationBell() {
       case "new_booking": return "📅"
       default: return "🔔"
     }
+  }
+
+  // ✅ العودة بهيكل ثابت تماماً أثناء التحميل لمنع أي تعارض
+  if (!isMounted) {
+    return (
+      <div style={{
+        width: "44px",
+        height: "44px",
+        borderRadius: "var(--radius-lg)",
+        backgroundColor: "var(--color-background-subtle)",
+        border: "none"
+      }} />
+    )
   }
 
   return (
@@ -159,9 +169,8 @@ export default function NotificationBell() {
                         {!notification.isRead && <div style={{ width: "8px", height: "8px", borderRadius: "var(--radius-full)", backgroundColor: "var(--color-primary)", flexShrink: 0, marginTop: "6px" }} />}
                       </div>
                       <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", margin: "4px 0", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{notification.message}</p>
-                      {/* ✅ الإصلاح هنا: عرض الوقت فقط بعد التأكد من التحميل */}
                       <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", margin: 0 }}>
-                        {isMounted ? formatTime(notification.createdAt) : "..."}
+                        {formatTime(notification.createdAt)}
                       </p>
                     </div>
                   </div>

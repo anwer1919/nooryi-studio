@@ -15,8 +15,7 @@ import {
   LogOut,
   Calendar,
   Menu,
-  X,
-  ChevronDown
+  X
 } from "lucide-react"
 import NotificationBell from "./NotificationBell"
 
@@ -30,6 +29,7 @@ export default function Navbar() {
     setIsMounted(true)
   }, [])
 
+  // إخفاء الـ Navbar في صفحات الدخول والتسجيل
   if (pathname === "/login" || pathname === "/register") {
     return null
   }
@@ -40,9 +40,10 @@ export default function Navbar() {
   const userName = session?.user?.name || "المستخدم"
   const userEmail = session?.user?.email || ""
 
+  // ✅ هيكل ثابت أثناء التحميل لمنع تعارض الـ Hydration
   if (!isMounted) {
     return (
-      <nav style={{ 
+      <nav suppressHydrationWarning style={{ 
         position: "sticky", 
         top: 0, 
         width: "100%", 
@@ -64,7 +65,8 @@ export default function Navbar() {
   ]
 
   return (
-    <nav style={{ 
+    // ✅ suppressHydrationWarning يمنع تحذيرات الاختلافات الطفيفة
+    <nav suppressHydrationWarning style={{ 
       position: "sticky", 
       top: 0, 
       width: "100%", 
