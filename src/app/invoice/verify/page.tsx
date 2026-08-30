@@ -1,6 +1,4 @@
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -11,238 +9,81 @@ export default async function VerifyInvoicePage({
 }) {
   const params = await searchParams
   const invoiceId = params.id
-  const invoiceType = params.type || "report" // report أو payment
+  const invoiceType = params.type || "report"
 
-  if (!invoiceId) {
-    return (
-      <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-100 p-4">
-        <div className="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-md border-t-4 border-red-500">
-          <XCircle className="w-24 h-24 text-red-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-black text-gray-900 mb-4">رابط غير صالح</h1>
-          <p className="text-gray-600 text-lg mb-8">هذا الرابط لا يحتوي على معرف الفاتورة المطلوب.</p>
-          <a href="/" className="inline-block px-8 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition">
-            العودة للرئيسية
-          </a>
-        </div>
-      </div>
-    )
-  }
+  let booking: any = null
+  let error: string | null = null
 
-  let invoiceData = null
-  let verificationDate = new Date().toLocaleDateString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-
-  try {
-    if (invoiceType === "payment") {
-      // جلب فاتورة الدفع (حجز واحد)
-      const booking = await prisma.booking.findUnique({
+  // محاولة جلب الحجز
+  if (invoiceId) {
+    try {
+      booking = await prisma.booking.findUnique({
         where: { id: invoiceId },
         include: {
           artist: { select: { name: true, category: true } },
           venue: { select: { name: true } },
-          user: { select: { name: true, email: true } },
+          customer: { select: { fullName: true, email: true, phone: true } },
         },
       })
-
-      if (booking) {
-        const grossAmount = Number(booking.grossAmount || 0)
-        const platformFee = Math.round(grossAmount * 0.05)
-        const taxAmount = Math.round(grossAmount * 0.14)
-
-        invoiceData = {
-          id: invoiceId,
-          type: "payment",
-          title: "فاتورة دفع",
-          clientName: booking.user?.name || booking.clientName,
-          items: [
-            {
-              name: booking.artist?.name || "خدمة فنية",
-              description: booking.artist?.category || "",
-              amount: grossAmount,
-              date: booking.date,
-            },
-          ],
-          totalRevenue: grossAmount,
-          taxAmount,
-          platformFee,
-          netRevenue: grossAmount + taxAmount,
-          paymentStatus: booking.paymentStatus,
-        }
-      }
-    } else {
-      // جلب تقرير مالي (جميع الحجوزات)
-      const bookings = await prisma.booking.findMany({
-        orderBy: { date: "desc" },
-        take: 50,
-        include: {
-          artist: { select: { name: true, category: true } },
-          venue: { select: { name: true } },
-        },
-      })
-
-      if (bookings.length > 0) {
-        const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
-        const platformFee = Math.round(totalRevenue * 0.05)
-        const netRevenue = totalRevenue - platformFee
-
-        invoiceData = {
-          id: invoiceId,
-          type: "report",
-          title: "تقرير مالي",
-          clientName: "الإدارة العامة",
-          items: bookings.map((b) => ({
-            name: b.artist?.name || "غير محدد",
-            description: b.artist?.category || "",
-            amount: Number(b.grossAmount || 0),
-            date: b.date,
-          })),
-          totalRevenue,
-          platformFee,
-          netRevenue,
-        }
-      }
+    } catch (err: any) {
+      error = err.message
     }
-  } catch (error) {
-    console.error("Verification error:", error)
-  }
-
-  if (!invoiceData) {
-    return (
-      <div dir="rtl" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-100 p-4">
-        <div className="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-md border-t-4 border-red-500">
-          <XCircle className="w-24 h-24 text-red-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-black text-gray-900 mb-4">الفاتورة غير موجودة</h1>
-          <p className="text-gray-600 text-lg mb-8">لا يمكن العثور على فاتورة بهذا المعرف في نظامنا.</p>
-          <a href="/" className="inline-block px-8 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition">
-            العودة للرئيسية
-          </a>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-green-50 via-purple-50 to-gray-100 p-4 md:p-8">
-      
-      {/* شريط التحقق الناجح */}
-      <div className="max-w-[210mm] mx-auto mb-6">
-        <div className="bg-gradient-to-l from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-xl flex items-center gap-4">
-          <CheckCircle2 className="w-16 h-16 flex-shrink-0" />
-          <div>
-            <h2 className="text-2xl font-black mb-1">✓ تم التحقق من صحة الفاتورة</h2>
-            <p className="text-green-50">هذه {invoiceData.title} رسمية ومعتمدة من نظام Nooryi Studio</p>
-          </div>
-        </div>
-      </div>
+    <div dir="rtl" className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+        <h1 className="text-3xl font-bold text-purple-700 mb-6">
+          صفحة تشخيص التحقق من الفاتورة
+        </h1>
 
-      {/* ورقة الفاتورة */}
-      <div className="max-w-[210mm] mx-auto bg-white shadow-2xl p-12 md:p-16 relative overflow-hidden">
-        
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.02]">
-          <span className="text-[120px] font-black text-gray-900 rotate-[-30deg] tracking-tighter">NOORYI</span>
-        </div>
-
-        <div className="flex justify-between items-start mb-12 pb-8 border-b-4 border-double border-gray-900">
-          <div className="text-right">
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-l from-purple-700 to-purple-900 mb-2 tracking-tight">
-              Nooryi
-            </h1>
-            <p className="text-sm text-gray-600 font-bold uppercase tracking-widest mb-4">STUDIO FOR ARTISTS & EVENTS</p>
-            <div className="text-xs text-gray-500 space-y-1.5 border-r-2 border-purple-200 pr-4">
-              <p><span className="font-bold text-gray-700">السجل التجاري:</span> 123456789</p>
-              <p><span className="font-bold text-gray-700">الرقم الضريبي:</span> 300000000000003</p>
-              <p><span className="font-bold text-gray-700">البريد:</span> info@nooryi.com</p>
-            </div>
+        <div className="space-y-4">
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <p className="font-bold text-purple-900">🔍 المعرف المستلم (id):</p>
+            <p className="text-purple-700 font-mono">{invoiceId || "غير موجود"}</p>
           </div>
 
-          <div className="text-left">
-            <div className="bg-gradient-to-l from-purple-700 to-purple-900 px-6 py-3 rounded-xl shadow-lg mb-4">
-              <h2 className="text-2xl font-black text-white uppercase tracking-wider">{invoiceData.title}</h2>
-            </div>
-            <div className="bg-green-50 border-2 border-green-500 p-4 rounded-xl">
-              <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
-              <p className="text-sm font-bold text-green-700 text-center">موثقة ومعتمدة</p>
-            </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <p className="font-bold text-purple-900">📋 النوع (type):</p>
+            <p className="text-purple-700">{invoiceType}</p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl border border-purple-100">
-            <h3 className="text-xs font-black text-purple-700 uppercase tracking-widest mb-3">فاتورة إلى:</h3>
-            <p className="text-xl font-bold text-gray-900 mb-1">{invoiceData.clientName}</p>
-            <p className="text-sm text-gray-600">Nooryi Studio</p>
-          </div>
-          <div className="md:text-left">
-            <div className="inline-grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-              <span className="text-gray-500 font-medium">رقم الفاتورة:</span>
-              <span className="font-bold text-gray-900 font-mono text-base">{invoiceData.id}</span>
-
-              <span className="text-gray-500 font-medium">تاريخ التحقق:</span>
-              <span className="font-bold text-gray-900">{verificationDate}</span>
-
-              <span className="text-gray-500 font-medium">عدد البنود:</span>
-              <span className="font-bold text-gray-900">{invoiceData.items.length}</span>
-
-              <span className="text-gray-500 font-medium">نوع الفاتورة:</span>
-              <span className="font-bold text-gray-900">{invoiceData.type === "payment" ? "دفع" : "تقرير"}</span>
+          {error && (
+            <div className="bg-red-50 p-4 rounded-lg">
+              <p className="font-bold text-red-900">❌ خطأ في قاعدة البيانات:</p>
+              <p className="text-red-700">{error}</p>
             </div>
-          </div>
-        </div>
+          )}
 
-        <div className="mb-12">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-gradient-to-l from-purple-700 to-purple-900 text-white">
-                <th className="py-4 px-3 text-right font-bold w-12 rounded-tr-lg">#</th>
-                <th className="py-4 px-3 text-right font-bold">الوصف</th>
-                <th className="py-4 px-3 text-right font-bold">التفاصيل</th>
-                <th className="py-4 px-3 text-left font-bold rounded-tl-lg">المبلغ (ج.م)</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-              {invoiceData.items.map((item: any, index: number) => (
-                <tr key={index} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                  <td className="py-4 px-3 text-gray-500 font-mono font-bold">{index + 1}</td>
-                  <td className="py-4 px-3 font-bold text-gray-900">{item.name}</td>
-                  <td className="py-4 px-3 text-gray-600">
-                    {item.description} • {new Date(item.date).toLocaleDateString("ar-EG")}
-                  </td>
-                  <td className="py-4 px-3 text-left font-bold text-purple-700">{item.amount.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex justify-end mb-16">
-          <div className="w-full md:w-[400px] bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl">
-            <div className="flex justify-between py-4 px-6 border-b border-gray-200">
-              <span className="text-gray-600 font-bold">الإجمالي:</span>
-              <span className="font-bold text-gray-900 text-lg">{invoiceData.totalRevenue.toLocaleString()} ج.م</span>
+          {booking ? (
+            <div className="bg-green-50 p-4 rounded-lg">
+              <p className="font-bold text-green-900">✅ تم العثور على الحجز:</p>
+              <p className="text-green-700 mt-2">
+                <strong>العميل:</strong> {booking.customer?.fullName || booking.clientName}
+              </p>
+              <p className="text-green-700">
+                <strong>الفنان:</strong> {booking.artist?.name}
+              </p>
+              <p className="text-green-700">
+                <strong>المبلغ:</strong> {Number(booking.grossAmount || 0).toLocaleString()} ج.م
+              </p>
+              <p className="text-green-700">
+                <strong>الحالة:</strong> {booking.status}
+              </p>
+              <pre className="text-green-700 text-sm mt-2 overflow-auto bg-green-100 p-3 rounded">
+                {JSON.stringify(booking, null, 2)}
+              </pre>
             </div>
-            {invoiceData.taxAmount && (
-              <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
-                <span className="text-gray-600 font-bold">الضريبة (14%):</span>
-                <span className="font-bold text-gray-700 text-lg">{invoiceData.taxAmount.toLocaleString()} ج.م</span>
+          ) : (
+            !error && (
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <p className="font-bold text-yellow-900">⚠️ الحجز غير موجود في قاعدة البيانات</p>
+                <p className="text-yellow-700 mt-2">
+                  المعرف <code className="bg-yellow-200 px-2 py-1 rounded">{invoiceId}</code> غير موجود في جدول Booking.
+                </p>
               </div>
-            )}
-            <div className="flex justify-between py-6 px-6 bg-gradient-to-l from-purple-700 to-purple-900 text-white">
-              <span className="font-bold text-xl">الصافي:</span>
-              <span className="font-black text-3xl">{invoiceData.netRevenue.toLocaleString()} ج.م</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t-4 border-double border-gray-900 pt-8 text-center">
-          <p className="text-sm text-gray-600 font-semibold mb-4">
-            ✓ تم التحقق من صحة هذه الفاتورة عبر نظام Nooryi Studio المعتمد
-          </p>
-          <p className="text-xs text-gray-500">تاريخ التحقق: {verificationDate}</p>
+            )
+          )}
         </div>
       </div>
     </div>
