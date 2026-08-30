@@ -33,13 +33,18 @@ export default async function VerifyInvoicePage({
         <div className="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-md border-t-4 border-red-500">
           <XCircle className="w-24 h-24 text-red-500 mx-auto mb-6" />
           <h1 className="text-3xl font-black text-gray-900 mb-4">رابط غير صالح</h1>
+          <p className="text-gray-600 text-lg mb-8">هذا الرابط لا يحتوي على المعرف المطلوب.</p>
         </div>
       </div>
     )
   }
 
   const verificationDate = new Date().toLocaleDateString("ar-EG", {
-    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   })
 
   // ====== محاولة 1: البحث في التقارير ======
@@ -57,13 +62,22 @@ export default async function VerifyInvoicePage({
           <div className="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-md border-t-4 border-red-500">
             <XCircle className="w-24 h-24 text-red-500 mx-auto mb-6" />
             <h1 className="text-3xl font-black text-gray-900 mb-4">التقرير غير موجود</h1>
-            <p className="text-gray-600 text-lg">لا يمكن العثور على تقرير بهذا الرقم: <span className="font-mono font-bold">{invoiceId}</span></p>
+            <p className="text-gray-600 text-lg">الرقم: <span className="font-mono font-bold">{invoiceId}</span></p>
           </div>
         </div>
       )
     }
 
-    const reportStats = (report.data as any)?.stats || {}
+    // قراءة البيانات من JSON المخزن
+    const reportData = (report.data as any) || {}
+    const reportStats = reportData.stats || {}
+    const reportBookings = reportData.bookings || []
+
+    // استخدام القيم من الحقول المنفصلة أو من stats
+    const totalAmount = Number(report.totalAmount) || Number(reportStats.totalRevenue) || 0
+    const platformFee = Number(report.platformFee) || Number(reportStats.platformFee) || 0
+    const netAmount = Number(report.netAmount) || Number(reportStats.netRevenue) || 0
+    const bookingsCount = Number(report.bookingsCount) || Number(reportStats.totalBookings) || reportBookings.length
 
     return (
       <div dir="rtl" className="min-h-screen bg-gray-100 p-4 md:p-8">
@@ -114,7 +128,7 @@ export default async function VerifyInvoicePage({
                 <span className="text-gray-500">تاريخ التحقق:</span>
                 <span className="font-bold text-black text-xs">{verificationDate}</span>
                 <span className="text-gray-500">عدد الحجوزات:</span>
-                <span className="font-bold text-black">{report.bookingsCount}</span>
+                <span className="font-bold text-black">{bookingsCount}</span>
               </div>
             </div>
           </div>
@@ -124,37 +138,132 @@ export default async function VerifyInvoicePage({
             <div className="bg-black p-5 rounded-xl text-center">
               <DollarSign className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" />
               <p className="text-xs text-gray-400 mb-1">إجمالي الإيرادات</p>
-              <p className="text-xl font-black text-[#D4AF37]">{Number(report.totalAmount).toLocaleString()}</p>
+              <p className="text-xl font-black text-[#D4AF37]">{totalAmount.toLocaleString()}</p>
               <p className="text-xs text-gray-400">ج.م</p>
             </div>
             <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border-2 border-black text-center">
               <Clock className="w-8 h-8 text-red-600 mx-auto mb-2" />
-              <p className="text-xs text-gray-500 mb-1">رسوم المنصة</p>
-              <p className="text-xl font-black text-black">{Number(report.platformFee).toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mb-1">رسوم المنصة (5%)</p>
+              <p className="text-xl font-black text-black">{platformFee.toLocaleString()}</p>
               <p className="text-xs text-gray-500">ج.م</p>
             </div>
             <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border-2 border-black text-center">
               <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
               <p className="text-xs text-gray-500 mb-1">صافي الإيرادات</p>
-              <p className="text-xl font-black text-black">{Number(report.netAmount).toLocaleString()}</p>
+              <p className="text-xl font-black text-black">{netAmount.toLocaleString()}</p>
               <p className="text-xs text-gray-500">ج.م</p>
             </div>
           </div>
+
+          {/* إحصائيات الحالة */}
+          {reportStats.byStatus && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+              <div className="bg-gradient-to-br from-green-50 to-white p-4 rounded-xl border-2 border-green-500 text-center">
+                <p className="text-xs text-gray-500 mb-1">مكتملة</p>
+                <p className="text-2xl font-black text-green-600">{reportStats.byStatus.completed || 0}</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border-2 border-blue-500 text-center">
+                <p className="text-xs text-gray-500 mb-1">موافق عليها</p>
+                <p className="text-2xl font-black text-blue-600">{reportStats.byStatus.approved || 0}</p>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-50 to-white p-4 rounded-xl border-2 border-yellow-500 text-center">
+                <p className="text-xs text-gray-500 mb-1">قيد المراجعة</p>
+                <p className="text-2xl font-black text-yellow-600">{reportStats.byStatus.pending || 0}</p>
+              </div>
+              <div className="bg-gradient-to-br from-red-50 to-white p-4 rounded-xl border-2 border-red-500 text-center">
+                <p className="text-xs text-gray-500 mb-1">ملغية</p>
+                <p className="text-2xl font-black text-red-600">{reportStats.byStatus.cancelled || 0}</p>
+              </div>
+            </div>
+          )}
+
+          {/* إحصائيات الدفع */}
+          {reportStats.byPayment && (
+            <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border-2 border-black mb-12">
+              <h4 className="font-black text-black mb-4 text-sm uppercase tracking-wider">تحليل حالة الدفع</h4>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-3xl font-black text-green-600">{reportStats.byPayment.paid || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">مدفوع بالكامل</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-black text-blue-600">{reportStats.byPayment.partial || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">مدفوع جزئياً</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-black text-red-600">{reportStats.byPayment.unpaid || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">غير مدفوع</p>
+                </div>
+              </div>
+              {reportStats.totalDeposits !== undefined && (
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-gray-700">إجمالي العربون المدفوع:</span>
+                    <span className="font-black text-green-600">{Number(reportStats.totalDeposits).toLocaleString()} ج.م</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="font-semibold text-gray-700">إجمالي المبالغ المتبقية:</span>
+                    <span className="font-black text-red-600">{Number(reportStats.totalRemaining).toLocaleString()} ج.م</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* جدول الحجوزات */}
+          {reportBookings.length > 0 && (
+            <div className="mb-12">
+              <h3 className="text-lg font-black text-black mb-4 pb-2 border-b-2 border-[#D4AF37]">تفاصيل الحجوزات</h3>
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-black text-white">
+                    <th className="py-3 px-2 text-right font-bold w-10">#</th>
+                    <th className="py-3 px-2 text-right font-bold">الفنان</th>
+                    <th className="py-3 px-2 text-right font-bold">العميل</th>
+                    <th className="py-3 px-2 text-right font-bold">التاريخ</th>
+                    <th className="py-3 px-2 text-right font-bold">الحالة</th>
+                    <th className="py-3 px-2 text-left font-bold text-[#D4AF37]">المبلغ</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-700">
+                  {reportBookings.map((b: any, i: number) => {
+                    const sLabels: any = {
+                      COMPLETED: { t: "مكتمل", c: "bg-green-100 text-green-700" },
+                      APPROVED: { t: "موافق", c: "bg-blue-100 text-blue-700" },
+                      PENDING_APPROVAL: { t: "مراجعة", c: "bg-yellow-100 text-yellow-700" },
+                      CANCELLED: { t: "ملغي", c: "bg-red-100 text-red-700" },
+                    }
+                    const sl = sLabels[b.status] || sLabels.PENDING_APPROVAL
+                    return (
+                      <tr key={i} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+                        <td className="py-3 px-2 text-gray-500 font-mono font-bold">{i + 1}</td>
+                        <td className="py-3 px-2 font-bold text-black text-xs">{b.artistName || "-"}</td>
+                        <td className="py-3 px-2 text-xs">{b.clientName || "-"}</td>
+                        <td className="py-3 px-2 whitespace-nowrap text-xs">{new Date(b.date).toLocaleDateString("ar-EG")}</td>
+                        <td className="py-3 px-2"><span className={`px-2 py-1 rounded text-[10px] font-bold ${sl.c}`}>{sl.t}</span></td>
+                        <td className="py-3 px-2 text-left font-bold text-black">{Number(b.grossAmount || 0).toLocaleString()}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* الإجماليات */}
           <div className="flex justify-end mb-16">
             <div className="w-full md:w-[400px] rounded-2xl border-2 border-black overflow-hidden shadow-xl">
               <div className="flex justify-between py-4 px-6 border-b border-gray-200">
                 <span className="text-gray-600 font-bold">الإجمالي:</span>
-                <span className="font-bold text-black text-lg">{Number(report.totalAmount).toLocaleString()} ج.م</span>
+                <span className="font-bold text-black text-lg">{totalAmount.toLocaleString()} ج.م</span>
               </div>
               <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
-                <span className="text-gray-600 font-bold">رسوم المنصة:</span>
-                <span className="font-bold text-red-600 text-lg">{Number(report.platformFee).toLocaleString()} ج.م</span>
+                <span className="text-gray-600 font-bold">رسوم المنصة (5%):</span>
+                <span className="font-bold text-red-600 text-lg">{platformFee.toLocaleString()} ج.م</span>
               </div>
               <div className="flex justify-between py-6 px-6 bg-black text-white">
                 <span className="font-bold text-xl text-[#D4AF37]">الصافي:</span>
-                <span className="font-black text-3xl text-[#D4AF37]">{Number(report.netAmount).toLocaleString()} ج.م</span>
+                <span className="font-black text-3xl text-[#D4AF37]">{netAmount.toLocaleString()} ج.م</span>
               </div>
             </div>
           </div>
@@ -240,7 +349,7 @@ export default async function VerifyInvoicePage({
           </div>
         </div>
 
-        {/* معلومات */}
+        {/* معلومات الفاتورة */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border-2 border-black">
             <h3 className="text-xs font-black text-[#D4AF37] uppercase tracking-[0.3em] mb-3">فاتورة إلى:</h3>
@@ -254,19 +363,23 @@ export default async function VerifyInvoicePage({
               <span className="font-bold text-black">{invoiceDate}</span>
               <span className="text-gray-500">تاريخ الحجز:</span>
               <span className="font-bold text-black">{eventDate}</span>
+              <span className="text-gray-500">وقت الفعالية:</span>
+              <span className="font-bold text-black">{timeSlotLabel}</span>
               <span className="text-gray-500">تاريخ التحقق:</span>
               <span className="font-bold text-black text-xs">{verificationDate}</span>
             </div>
           </div>
         </div>
 
-        {/* تفاصيل */}
+        {/* تفاصيل الحجز */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="flex items-center gap-4 bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border-2 border-black">
             {booking.artist?.profileImage ? (
               <img src={booking.artist.profileImage} alt={booking.artist.name} className="w-16 h-16 rounded-xl object-cover border-2 border-[#D4AF37]" />
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center text-[#D4AF37] font-bold text-xl">{booking.artist?.name?.charAt(0) || "ف"}</div>
+              <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center text-[#D4AF37] font-bold text-xl">
+                {booking.artist?.name?.charAt(0) || "ف"}
+              </div>
             )}
             <div>
               <p className="text-xs text-[#D4AF37] font-semibold uppercase">الفنان</p>
@@ -281,28 +394,32 @@ export default async function VerifyInvoicePage({
           </div>
         </div>
 
-        {/* الجدول */}
+        {/* جدول البنود */}
         <table className="w-full text-sm border-collapse mb-12">
           <thead>
             <tr className="bg-black text-white">
               <th className="py-4 px-3 text-right font-bold w-12">#</th>
               <th className="py-4 px-3 text-right font-bold">الخدمة</th>
               <th className="py-4 px-3 text-right font-bold">التفاصيل</th>
-              <th className="py-4 px-3 text-left font-bold text-[#D4AF37]">المبلغ</th>
+              <th className="py-4 px-3 text-left font-bold text-[#D4AF37]">المبلغ (ج.م)</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="text-gray-700">
             <tr className="border-b border-gray-100">
               <td className="py-4 px-3 text-gray-500 font-mono font-bold">1</td>
               <td className="py-4 px-3">
                 <div className="font-bold text-black">حجز فني خاص</div>
-                <div className="text-xs text-gray-500 mt-1">{booking.artist?.name} • {booking.artist?.category}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {booking.artist?.name || "غير محدد"} • {booking.artist?.category || ""}
+                </div>
               </td>
               <td className="py-4 px-3">
                 <div className="text-sm">{eventDate}</div>
-                <div className="text-xs text-gray-500 mt-1">{timeSlotLabel} • {booking.venue?.name}</div>
+                <div className="text-xs text-gray-500 mt-1">{timeSlotLabel} • {booking.venue?.name || ""}</div>
               </td>
-              <td className="py-4 px-3 text-left font-bold text-black text-base">{grossAmount.toLocaleString()}</td>
+              <td className="py-4 px-3 text-left font-bold text-black text-base">
+                {grossAmount.toLocaleString()}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -315,23 +432,62 @@ export default async function VerifyInvoicePage({
               <span className="font-bold text-black text-lg">{grossAmount.toLocaleString()} ج.م</span>
             </div>
             <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
-              <span className="text-gray-600 font-bold">الضريبة (14%):</span>
+              <span className="text-gray-600 font-bold">ضريبة القيمة المضافة (14%):</span>
               <span className="font-bold text-gray-700 text-lg">{taxAmount.toLocaleString()} ج.م</span>
             </div>
             <div className="flex justify-between py-4 px-6 border-b border-gray-200">
               <span className="text-gray-600 font-bold">العربون المدفوع:</span>
               <span className="font-bold text-green-600 text-lg">{depositAmount.toLocaleString()} ج.م</span>
             </div>
-            <div className="flex justify-between py-6 px-6 bg-black text-white">
+            <div className="flex justify-between py-6 px-6 bg-black text-white shadow-inner">
               <span className="font-bold text-xl text-[#D4AF37]">المبلغ المتبقي:</span>
               <span className="font-black text-3xl text-[#D4AF37]">{remainingAmount.toLocaleString()} ج.م</span>
             </div>
           </div>
         </div>
 
-        <div className="border-t-4 border-black pt-8 text-center">
-          <p className="text-sm text-gray-600 font-semibold">✓ تم التحقق من صحة هذه الفاتورة عبر نظام Nooryi Studio</p>
-          <p className="text-xs text-gray-500 mt-2">تاريخ التحقق: {verificationDate}</p>
+        {/* التذييل */}
+        <div className="border-t-4 border-black pt-8 mt-auto relative">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#D4AF37]"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 className="font-black text-black mb-3 text-sm uppercase tracking-[0.2em]">الشروط والأحكام:</h4>
+              <ul className="text-xs text-gray-600 space-y-2 leading-relaxed">
+                <li className="flex gap-2">
+                  <span className="text-[#D4AF37] font-bold">•</span>
+                  <span>هذه الفاتورة صادرة آلياً من نظام Nooryi Studio وتعتبر وثيقة دفع معتمدة.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#D4AF37] font-bold">•</span>
+                  <span>جميع المبالغ بالجنيه المصري (EGP) وشاملة الضرائب والرسوم.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="md:text-left flex flex-col items-end justify-end">
+              <div className="text-center">
+                <div className="w-48 h-20 border-b-2 border-black mb-3 mx-auto"></div>
+                <p className="text-sm font-black text-black">توقيع المدير المالي</p>
+                <p className="text-xs text-gray-500 mt-1">Nooryi Studio Finance Dept.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* QR Code سفلي */}
+          <div className="flex justify-center pt-6 border-t border-gray-200">
+            <div className="text-center">
+              <div className="bg-white p-3 rounded-xl border-2 border-black inline-block shadow-lg">
+                <QRCodeSVG
+                  value={`https://nooryi-studio.vercel.app/invoice/verify?id=${invoiceId}&type=payment`}
+                  size={80}
+                  level="H"
+                  includeMargin={false}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                />
+              </div>
+              <p className="text-[10px] text-gray-500 mt-2 font-bold">امسح للتحقق من صحة الفاتورة</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

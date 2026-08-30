@@ -21,9 +21,10 @@ export async function GET(request: Request) {
     const userRole = session.user.role || "USER"
     const isManager = userRole === "ARTIST_MANAGER"
 
+    // بناء شروط البحث
     const whereClause: any = {}
 
-    // فلترة حسب مدير الفنان
+    // فلترة حسب مدير الأعمال
     if (isManager) {
       try {
         const managerUser = await prisma.user.findUnique({
@@ -34,14 +35,14 @@ export async function GET(request: Request) {
           whereClause.artistId = managerUser.artistId
         }
       } catch (e) {
-        // تجاهل إذا لم يكن هناك حقل artistId
+        // تجاهل
       }
     }
 
     // فلترة حسب التاريخ
     if (dateFrom || dateTo) {
       whereClause.date = {}
-      if (dateFrom) whereClause.date.gte = new Date(dateFrom)
+      if (dateFrom) whereClause.date.gte = new Date(dateFrom + "T00:00:00")
       if (dateTo) whereClause.date.lte = new Date(dateTo + "T23:59:59")
     }
 
@@ -55,8 +56,8 @@ export async function GET(request: Request) {
       whereClause.artistId = artistFilter
     }
 
-    // جلب الحجوزات
-    let bookings = await prisma.booking.findMany({
+    // جلب جميع الحجوزات المطابقة
+    const allBookings = await prisma.booking.findMany({
       where: whereClause,
       orderBy: { date: "desc" },
       include: {
@@ -66,9 +67,10 @@ export async function GET(request: Request) {
       },
     })
 
-    // فلترة حسب حالة الدفع
+    // فلترة حسب حالة الدفع (بعد الجلب لأنها تعتمد على حسابات)
+    let filteredBookings = allBookings
     if (paymentFilter && paymentFilter !== "ALL") {
-      bookings = bookings.filter((b) => {
+      filteredBookings = allBookings.filter((b) => {
         const remaining = Number(b.remainingAmount || 0)
         const deposit = Number(b.depositAmount || 0)
         if (paymentFilter === "PAID") return remaining === 0 && deposit > 0
@@ -78,46 +80,54 @@ export async function GET(request: Request) {
       })
     }
 
-    // إضافة clientName من customer أو الحقل المباشر
-    const bookingsWithNames = bookings.map((b) => ({
-      ...b,
+    // إضافة clientName
+    const bookingsWithNames = filteredBookings.map((b) => ({
+      id: b.id,
+      date: b.date,
+      status: b.status,
+      timeSlot: b.timeSlot,
       clientName: b.customer?.fullName || b.clientName || "عميل",
+      artistName: b.artist?.name || "غير محدد",
+      artistCategory: b.artist?.category || "",
+      venueName: b.venue?.name || "",
+      grossAmount: Number(b.grossAmount || 0),
+      depositAmount: Number(b.depositAmount || 0),
+      remainingAmount: Number(b.remainingAmount || 0),
     }))
 
-    // حساب الإجماليات
-    const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
-    const totalDeposits = bookings.reduce((sum, b) => sum + Number(b.depositAmount || 0), 0)
-    const totalRemaining = bookings.reduce((sum, b) => sum + Number(b.remainingAmount || 0), 0)
+    // ====== حساب الإجماليات بدقة ======
+    const totalRevenue = bookingsWithNames.reduce((sum, b) => sum + b.grossAmount, 0)
+    const totalDeposits = bookingsWithNames.reduce((sum, b) => sum + b.depositAmount, 0)
+    const totalRemaining = bookingsWithNames.reduce((sum, b) => sum + b.remainingAmount, 0)
     const platformFee = Math.round(totalRevenue * 0.05)
     const netRevenue = totalRevenue - platformFee
+    const totalBookings = bookingsWithNames.length
 
     // إحصائيات حسب الحالة
     const byStatus = {
-      completed: bookings.filter((b) => b.status === "COMPLETED").length,
-      approved: bookings.filter((b) => b.status === "APPROVED").length,
-      pending: bookings.filter((b) => b.status === "PENDING_APPROVAL").length,
-      cancelled: bookings.filter((b) => b.status === "CANCELLED").length,
+      completed: bookingsWithNames.filter((b) => b.status === "COMPLETED").length,
+      approved: bookingsWithNames.filter((b) => b.status === "APPROVED").length,
+      pending: bookingsWithNames.filter((b) => b.status === "PENDING_APPROVAL").length,
+      cancelled: bookingsWithNames.filter((b) => b.status === "CANCELLED").length,
     }
 
     // إحصائيات حسب الدفع
     const byPayment = {
-      paid: bookings.filter((b) => Number(b.remainingAmount || 0) === 0 && Number(b.depositAmount || 0) > 0).length,
-      partial: bookings.filter((b) => Number(b.depositAmount || 0) > 0 && Number(b.remainingAmount || 0) > 0).length,
-      unpaid: bookings.filter((b) => Number(b.depositAmount || 0) === 0).length,
+      paid: bookingsWithNames.filter((b) => b.remainingAmount === 0 && b.depositAmount > 0).length,
+      partial: bookingsWithNames.filter((b) => b.depositAmount > 0 && b.remainingAmount > 0).length,
+      unpaid: bookingsWithNames.filter((b) => b.depositAmount === 0).length,
     }
 
     // إحصائيات حسب الفنان
     const byArtist: any = {}
-    bookings.forEach((b) => {
-      const artistName = b.artist?.name || "غير محدد"
+    bookingsWithNames.forEach((b) => {
+      const artistName = b.artistName
       if (!byArtist[artistName]) byArtist[artistName] = { count: 0, revenue: 0 }
       byArtist[artistName].count++
-      byArtist[artistName].revenue += Number(b.grossAmount || 0)
+      byArtist[artistName].revenue += b.grossAmount
     })
 
-    const managerName = isManager
-      ? session.user.name || "المدير"
-      : "الإدارة العامة"
+    const managerName = isManager ? session.user.name || "المدير" : "الإدارة العامة"
 
     // قائمة الفنانين للفلتر
     let artists: any[] = []
@@ -136,17 +146,18 @@ export async function GET(request: Request) {
       totalRemaining,
       platformFee,
       netRevenue,
-      totalBookings: bookings.length,
+      totalBookings,
       byStatus,
       byPayment,
       byArtist,
     }
 
-    // حفظ التقرير إذا طُلب
+    // ====== حفظ التقرير ======
     let reportNumber = ""
-    if (saveReport) {
+    if (saveReport && totalBookings > 0) {
       try {
         reportNumber = `RPT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`
+        
         await prisma.generatedReport.create({
           data: {
             reportNumber,
@@ -156,15 +167,17 @@ export async function GET(request: Request) {
             dateFrom: dateFrom ? new Date(dateFrom) : null,
             dateTo: dateTo ? new Date(dateTo) : null,
             totalAmount: totalRevenue,
-            platformFee,
+            platformFee: platformFee,
             netAmount: netRevenue,
-            bookingsCount: bookings.length,
-            data: { stats, bookings: bookingsWithNames } as any,
+            bookingsCount: totalBookings,
+            data: {
+              stats,
+              bookings: bookingsWithNames,
+            } as any,
           },
         })
-      } catch (e) {
-        console.error("Error saving report:", e)
-        // التقرير يعمل حتى لو فشل الحفظ
+      } catch (e: any) {
+        console.error("Error saving report:", e.message)
       }
     }
 
