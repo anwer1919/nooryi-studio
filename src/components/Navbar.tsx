@@ -1,191 +1,137 @@
-"use client"
+"use client" // ⚠️ هذا السطر ضروري جداً لكي تعمل useSession
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useSession, signOut } from "next-auth/react"
-import { useState, useEffect } from "react"
-import { Menu, X, LogOut, Calendar, Home, Music, Info, Phone, LayoutDashboard } from "lucide-react"
+import { useSession, signIn, signOut } from "next-auth/react"
+import { useState } from "react"
+import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react"
 
 export default function Navbar() {
-  const pathname = usePathname()
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
   const { data: session, status } = useSession()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
-
-  if (pathname === "/login" || pathname === "/register") return null
+  // ✅ عرض مؤشر تحميل بدلاً من اختفاء القائمة تماماً
+  if (status === "loading") {
+    return (
+      <nav className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-center shadow-sm">
+        <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+      </nav>
+    )
+  }
 
   const isLoggedIn = status === "authenticated"
-  const isAdmin = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN"
-  const isManager = session?.user?.role === "ARTIST_MANAGER"
   const userName = session?.user?.name || "المستخدم"
-
-  const navLinks = [
-    { href: "/", label: "الرئيسية", icon: Home },
-    { href: "/artists", label: "الفنانين", icon: Music },
-    { href: "/about", label: "من نحن", icon: Info },
-    { href: "/contact", label: "تواصل معنا", icon: Phone },
-  ]
+  const userRole = session?.user?.role || "USER"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
   return (
-    <nav style={{ 
-      position: "sticky", 
-      top: 0, 
-      width: "100%", 
-      zIndex: 50, 
-      backgroundColor: "white",
-      borderBottom: "1px solid #E5E7EB",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-    }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 16px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "64px" }}>
+    <nav className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           
-          {/* LOGO */}
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
-            <div style={{ width: "32px", height: "32px", backgroundColor: "#A8D5BA", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={18} style={{ color: "#4B2E83" }} />
-            </div>
-            <span style={{ fontSize: "20px", fontWeight: "bold", color: "#4B2E83" }}>Nooryi</span>
+          {/* الشعار */}
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl font-black text-purple-700">Nooryi</span>
+            <span className="text-xs text-gray-500 font-bold hidden sm:block">STUDIO</span>
           </Link>
 
-          {/* DESKTOP NAV */}
-          {!isMobile && (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                {navLinks.map((link) => {
-                  const Icon = link.icon
-                  const isActive = pathname === link.href
-                  return (
-                    <Link key={link.href} href={link.href} style={{
-                      display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
-                      borderRadius: "8px", fontSize: "14px", fontWeight: "500", textDecoration: "none",
-                      color: isActive ? "#4B2E83" : "#6B7280",
-                      backgroundColor: isActive ? "#A8D5BA40" : "transparent"
-                    }}>
-                      <Icon size={16} /> {link.label}
-                    </Link>
-                  )
-                })}
-                {(isAdmin || isManager) && (
-                  <Link href="/admin" style={{
-                    display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
-                    borderRadius: "8px", fontSize: "14px", fontWeight: "500", textDecoration: "none",
-                    color: pathname.startsWith("/admin") ? "#4B2E83" : "#6B7280",
-                    backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
-                  }}>
-                    <LayoutDashboard size={16} /> لوحة التحكم
-                  </Link>
-                )}
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                {isLoggedIn ? (
-                  <>
-                    <span style={{ fontSize: "14px", fontWeight: "600", color: "#4B2E83" }}>{userName}</span>
-                    <Link href="/my-bookings" style={{
-                      display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
-                      borderRadius: "8px", fontSize: "14px", fontWeight: "600", textDecoration: "none",
-                      backgroundColor: "#A8D5BA", color: "#4B2E83"
-                    }}>
-                      <Calendar size={16} /> حجوزاتي
-                    </Link>
-                    <button onClick={() => signOut({ callbackUrl: "/" })} style={{
-                      display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
-                      borderRadius: "8px", fontSize: "14px", fontWeight: "600",
-                      backgroundColor: "transparent", color: "#DC2626", border: "none", cursor: "pointer"
-                    }}>
-                      <LogOut size={16} /> خروج
-                    </button>
-                  </>
-                ) : (
-                  <Link href="/login" style={{
-                    padding: "8px 16px", borderRadius: "8px", fontSize: "14px", fontWeight: "600",
-                    textDecoration: "none", backgroundColor: "#4B2E83", color: "white"
-                  }}>
-                    تسجيل الدخول
-                  </Link>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* MOBILE MENU BUTTON */}
-          {isMobile && (
-            <button onClick={() => setMobileOpen(!mobileOpen)} style={{
-              padding: "8px", borderRadius: "8px", backgroundColor: "transparent",
-              border: "none", cursor: "pointer", color: "#6B7280"
-            }}>
-              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          )}
-        </div>
-
-        {/* MOBILE MENU */}
-        {isMobile && mobileOpen && (
-          <div style={{ padding: "16px 0", borderTop: "1px solid #E5E7EB" }}>
-            {navLinks.map((link) => {
-              const Icon = link.icon
-              const isActive = pathname === link.href
-              return (
-                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{
-                  display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
-                  borderRadius: "8px", fontSize: "16px", fontWeight: "500", textDecoration: "none",
-                  color: isActive ? "#4B2E83" : "#111827",
-                  backgroundColor: isActive ? "#A8D5BA40" : "transparent", marginBottom: "4px"
-                }}>
-                  <Icon size={20} /> {link.label}
-                </Link>
-              )
-            })}
+          {/* روابط سطح المكتب */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/" className="text-gray-700 hover:text-purple-700 font-semibold transition">الرئيسية</Link>
+            <Link href="/artists" className="text-gray-700 hover:text-purple-700 font-semibold transition">الفنانين</Link>
             
-            {(isAdmin || isManager) && (
-              <Link href="/admin" onClick={() => setMobileOpen(false)} style={{
-                display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
-                borderRadius: "8px", fontSize: "16px", fontWeight: "500", textDecoration: "none",
-                color: "#4B2E83", backgroundColor: "#A8D5BA40", marginBottom: "4px"
-              }}>
-                <LayoutDashboard size={20} /> لوحة التحكم
-              </Link>
-            )}
-
-            <div style={{ height: "1px", backgroundColor: "#E5E7EB", margin: "12px 0" }} />
-
             {isLoggedIn ? (
-              <>
-                <p style={{ padding: "0 16px", fontSize: "14px", fontWeight: "600", color: "#4B2E83", marginBottom: "8px" }}>{userName}</p>
-                <Link href="/my-bookings" onClick={() => setMobileOpen(false)} style={{
-                  display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
-                  borderRadius: "8px", fontSize: "16px", fontWeight: "600", textDecoration: "none",
-                  backgroundColor: "#A8D5BA", color: "#4B2E83", marginBottom: "8px"
-                }}>
-                  <Calendar size={20} /> حجوزاتي
-                </Link>
-                <button onClick={() => { setMobileOpen(false); signOut({ callbackUrl: "/" }) }} style={{
-                  width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
-                  borderRadius: "8px", fontSize: "16px", fontWeight: "600",
-                  color: "#DC2626", backgroundColor: "transparent", border: "none", cursor: "pointer"
-                }}>
-                  <LogOut size={20} /> تسجيل الخروج
+              <div className="flex items-center gap-4 border-r border-gray-200 pr-6 mr-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold">
+                    {userName.charAt(0)}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-gray-900">{userName}</span>
+                    <span className="text-[10px] text-gray-500">{userRole === "SUPER_ADMIN" ? "مدير عام" : userRole === "ADMIN" ? "إدارة" : "عميل"}</span>
+                  </div>
+                </div>
+
+                {isAdmin && (
+                  <Link href="/admin" className="flex items-center gap-1 px-3 py-1.5 bg-purple-700 text-white text-sm font-bold rounded-lg hover:bg-purple-800 transition">
+                    <LayoutDashboard size={16} />
+                    لوحة التحكم
+                  </Link>
+                )}
+
+                <button 
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 text-sm font-bold rounded-lg transition"
+                >
+                  <LogOut size={16} />
+                  خروج
                 </button>
-              </>
+              </div>
             ) : (
-              <Link href="/login" onClick={() => setMobileOpen(false)} style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px 16px",
-                borderRadius: "8px", fontSize: "16px", fontWeight: "600", textDecoration: "none",
-                backgroundColor: "#4B2E83", color: "white"
-              }}>
-                تسجيل الدخول
-              </Link>
+              <div className="flex items-center gap-3 border-r border-gray-200 pr-6 mr-2">
+                <button 
+                  onClick={() => signIn()}
+                  className="px-4 py-2 text-purple-700 font-bold hover:bg-purple-50 rounded-lg transition"
+                >
+                  تسجيل الدخول
+                </button>
+                <Link 
+                  href="/register"
+                  className="px-4 py-2 bg-purple-700 text-white font-bold rounded-lg hover:bg-purple-800 transition"
+                >
+                  حساب جديد
+                </Link>
+              </div>
             )}
           </div>
-        )}
+
+          {/* زر القائمة للجوال */}
+          <div className="md:hidden">
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* قائمة الجوال المنسدلة */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-t border-gray-200 p-4 space-y-3 shadow-lg">
+          <Link href="/" className="block py-2 text-gray-700 font-semibold" onClick={() => setMobileMenuOpen(false)}>الرئيسية</Link>
+          <Link href="/artists" className="block py-2 text-gray-700 font-semibold" onClick={() => setMobileMenuOpen(false)}>الفنانين</Link>
+          
+          {isLoggedIn ? (
+            <>
+              <div className="flex items-center gap-3 py-2 border-t border-gray-100 mt-2 pt-3">
+                <User size={20} className="text-purple-700" />
+                <span className="font-bold text-gray-900">{userName}</span>
+              </div>
+              {isAdmin && (
+                <Link href="/admin" className="block py-2 text-purple-700 font-bold" onClick={() => setMobileMenuOpen(false)}>
+                  لوحة التحكم
+                </Link>
+              )}
+              <button 
+                onClick={() => { signOut({ callbackUrl: "/" }); setMobileMenuOpen(false); }}
+                className="w-full text-right py-2 text-red-600 font-bold border-t border-gray-100 mt-2 pt-3"
+              >
+                تسجيل الخروج
+              </button>
+            </>
+          ) : (
+            <div className="space-y-2 pt-3 border-t border-gray-100">
+              <button onClick={() => { signIn(); setMobileMenuOpen(false); }} className="w-full py-2 text-center text-purple-700 font-bold border border-purple-700 rounded-lg">
+                تسجيل الدخول
+              </button>
+              <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="block w-full py-2 text-center bg-purple-700 text-white font-bold rounded-lg">
+                حساب جديد
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   )
 }
