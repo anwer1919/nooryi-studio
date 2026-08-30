@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Share2, AlertCircle, Download } from "lucide-react"
+import { Share2, AlertCircle, Download, CheckCircle2 } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 
 const OfficialStamp = () => (
@@ -46,8 +46,6 @@ export default function PrintReportPage() {
         } else {
           setReportData(result.data || [])
           setManagerName(result.managerName || "الإدارة العامة")
-          
-          // إنشاء معرف فاتورة فريد
           const id = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`
           setInvoiceId(id)
         }
@@ -64,7 +62,7 @@ export default function PrintReportPage() {
   
   const handleShareWhatsApp = () => {
     const url = window.location.href
-    const text = encodeURIComponent(`فاتورة / تقرير مالي رسمي من Nooryi Studio:\n${url}`)
+    const text = encodeURIComponent(`تقرير مالي رسمي من Nooryi Studio:\n${url}`)
     window.open(`https://wa.me/?text=${text}`, "_blank")
   }
 
@@ -73,7 +71,7 @@ export default function PrintReportPage() {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-700 font-bold text-lg">جاري إعداد الفاتورة الرسمية...</p>
+          <p className="text-gray-700 font-bold text-lg">جاري إعداد التقرير المالي...</p>
         </div>
       </div>
     )
@@ -84,7 +82,7 @@ export default function PrintReportPage() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-100 text-center max-w-md">
           <AlertCircle className="w-20 h-20 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">تعذر تحميل الفاتورة</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">تعذر تحميل التقرير</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button onClick={() => router.back()} className="px-8 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg">
             العودة للخلف
@@ -99,7 +97,6 @@ export default function PrintReportPage() {
   const netRevenue = totalRevenue - platformFee
   const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
   
-  // رابط التحقق الآمن (سيكون محتوى QR Code)
   const verificationUrl = `https://nooryi-studio.vercel.app/invoice/verify?id=${invoiceId}`
 
   return (
@@ -156,7 +153,7 @@ export default function PrintReportPage() {
           
           <div className="text-left flex flex-col items-end gap-4">
             <div className="bg-gradient-to-l from-purple-700 to-purple-900 px-6 py-3 rounded-xl shadow-lg">
-              <h2 className="text-2xl font-black text-white uppercase tracking-wider">فاتورة رسمية</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-wider">تقرير مالي شامل</h2>
             </div>
             
             <div className="bg-white p-3 rounded-xl border-2 border-gray-200 shadow-md">
@@ -181,7 +178,7 @@ export default function PrintReportPage() {
           </div>
           <div className="md:text-left">
             <div className="inline-grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-              <span className="text-gray-500 font-medium">رقم الفاتورة:</span>
+              <span className="text-gray-500 font-medium">رقم التقرير:</span>
               <span className="font-bold text-gray-900 font-mono text-base">{invoiceId}</span>
               
               <span className="text-gray-500 font-medium">تاريخ الإصدار:</span>
@@ -271,7 +268,7 @@ export default function PrintReportPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-purple-700 font-bold">•</span>
-                  <span>يمكن التحقق من صحة هذه الفاتورة عبر مسح رمز QR أعلاه.</span>
+                  <span>يمكن التحقق من صحة هذا التقرير عبر مسح رمز QR أعلاه.</span>
                 </li>
               </ul>
             </div>
@@ -294,7 +291,7 @@ export default function PrintReportPage() {
                 bgColor="#FFFFFF"
                 fgColor="#4B2E83"
               />
-              <p className="text-[10px] text-gray-500 mt-2 font-bold">امسح للتحقق من صحة الفاتورة</p>
+              <p className="text-[10px] text-gray-500 mt-2 font-bold">امسح للتحقق من صحة التقرير</p>
             </div>
           </div>
         </div>
