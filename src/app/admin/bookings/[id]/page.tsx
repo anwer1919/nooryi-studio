@@ -74,14 +74,6 @@ export default async function BookingDetailsPage({
             email: true,
           },
         },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
       },
     })
   } catch (error: any) {
@@ -177,18 +169,17 @@ export default async function BookingDetailsPage({
     minute: "2-digit",
   })
 
-  // تحديد اسم العميل (من customer أو user أو clientName)
+  // تحديد اسم العميل (من customer أو clientName)
   const clientName =
     booking.customer?.fullName ||
-    booking.user?.name ||
     booking.clientName ||
     "غير محدد"
 
   const clientEmail =
-    booking.customer?.email || booking.user?.email || booking.clientEmail || null
+    booking.customer?.email || booking.clientEmail || null
 
   const clientPhone =
-    booking.customer?.phone || booking.user?.phone || booking.clientPhone || null
+    booking.customer?.phone || booking.clientPhone || null
 
   // وقت الحجز
   const timeSlotLabels: any = {
@@ -197,7 +188,7 @@ export default async function BookingDetailsPage({
     EVENING: "مساءً",
     NIGHT: "ليلاً",
   }
-  const timeSlotLabel = timeSlotLabels[booking.timeSlot] || booking.timeSlot
+  const timeSlotLabel = timeSlotLabels[booking.timeSlot] || booking.timeSlot || "غير محدد"
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
