@@ -1,17 +1,17 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { QRCodeSVG } from "qrcode.react"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
 export default async function VerifyInvoicePage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>
+  searchParams: Promise<{ id?: string; type?: string }>
 }) {
   const params = await searchParams
   const invoiceId = params.id
+  const invoiceType = params.type || "report" // report أو payment
 
   if (!invoiceId) {
     return (
@@ -28,41 +28,83 @@ export default async function VerifyInvoicePage({
     )
   }
 
-  // محاولة جلب الفاتورة من قاعدة البيانات
-  // ملاحظة: يجب إنشاء جدول Invoice في Prisma Schema أولاً
-  // أو استخدام bookings مباشرة مع invoiceId كمعرف مؤقت
-  
   let invoiceData = null
-  let verificationDate = new Date().toLocaleDateString("ar-EG", { 
-    year: "numeric", 
-    month: "long", 
+  let verificationDate = new Date().toLocaleDateString("ar-EG", {
+    year: "numeric",
+    month: "long",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   })
 
   try {
-    // جلب جميع الحجوزات (كمثال - يجب استبدالها بجلب فاتورة محددة)
-    const bookings = await prisma.booking.findMany({
-      orderBy: { date: "desc" },
-      take: 50,
-      include: {
-        artist: { select: { name: true, category: true } },
-        venue: { select: { name: true } },
-      },
-    })
+    if (invoiceType === "payment") {
+      // جلب فاتورة الدفع (حجز واحد)
+      const booking = await prisma.booking.findUnique({
+        where: { id: invoiceId },
+        include: {
+          artist: { select: { name: true, category: true } },
+          venue: { select: { name: true } },
+          user: { select: { name: true, email: true } },
+        },
+      })
 
-    if (bookings.length > 0) {
-      const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
-      const platformFee = Math.round(totalRevenue * 0.05)
-      const netRevenue = totalRevenue - platformFee
+      if (booking) {
+        const grossAmount = Number(booking.grossAmount || 0)
+        const platformFee = Math.round(grossAmount * 0.05)
+        const taxAmount = Math.round(grossAmount * 0.14)
 
-      invoiceData = {
-        id: invoiceId,
-        bookings,
-        totalRevenue,
-        platformFee,
-        netRevenue,
+        invoiceData = {
+          id: invoiceId,
+          type: "payment",
+          title: "فاتورة دفع",
+          clientName: booking.user?.name || booking.clientName,
+          items: [
+            {
+              name: booking.artist?.name || "خدمة فنية",
+              description: booking.artist?.category || "",
+              amount: grossAmount,
+              date: booking.date,
+            },
+          ],
+          totalRevenue: grossAmount,
+          taxAmount,
+          platformFee,
+          netRevenue: grossAmount + taxAmount,
+          paymentStatus: booking.paymentStatus,
+        }
+      }
+    } else {
+      // جلب تقرير مالي (جميع الحجوزات)
+      const bookings = await prisma.booking.findMany({
+        orderBy: { date: "desc" },
+        take: 50,
+        include: {
+          artist: { select: { name: true, category: true } },
+          venue: { select: { name: true } },
+        },
+      })
+
+      if (bookings.length > 0) {
+        const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
+        const platformFee = Math.round(totalRevenue * 0.05)
+        const netRevenue = totalRevenue - platformFee
+
+        invoiceData = {
+          id: invoiceId,
+          type: "report",
+          title: "تقرير مالي",
+          clientName: "الإدارة العامة",
+          items: bookings.map((b) => ({
+            name: b.artist?.name || "غير محدد",
+            description: b.artist?.category || "",
+            amount: Number(b.grossAmount || 0),
+            date: b.date,
+          })),
+          totalRevenue,
+          platformFee,
+          netRevenue,
+        }
       }
     }
   } catch (error) {
@@ -93,7 +135,7 @@ export default async function VerifyInvoicePage({
           <CheckCircle2 className="w-16 h-16 flex-shrink-0" />
           <div>
             <h2 className="text-2xl font-black mb-1">✓ تم التحقق من صحة الفاتورة</h2>
-            <p className="text-green-50">هذه الفاتورة رسمية ومعتمدة من نظام Nooryi Studio</p>
+            <p className="text-green-50">هذه {invoiceData.title} رسمية ومعتمدة من نظام Nooryi Studio</p>
           </div>
         </div>
       </div>
@@ -117,10 +159,10 @@ export default async function VerifyInvoicePage({
               <p><span className="font-bold text-gray-700">البريد:</span> info@nooryi.com</p>
             </div>
           </div>
-          
+
           <div className="text-left">
             <div className="bg-gradient-to-l from-purple-700 to-purple-900 px-6 py-3 rounded-xl shadow-lg mb-4">
-              <h2 className="text-2xl font-black text-white uppercase tracking-wider">فاتورة رسمية</h2>
+              <h2 className="text-2xl font-black text-white uppercase tracking-wider">{invoiceData.title}</h2>
             </div>
             <div className="bg-green-50 border-2 border-green-500 p-4 rounded-xl">
               <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
@@ -132,19 +174,22 @@ export default async function VerifyInvoicePage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl border border-purple-100">
             <h3 className="text-xs font-black text-purple-700 uppercase tracking-widest mb-3">فاتورة إلى:</h3>
-            <p className="text-xl font-bold text-gray-900 mb-1">الإدارة العامة</p>
+            <p className="text-xl font-bold text-gray-900 mb-1">{invoiceData.clientName}</p>
             <p className="text-sm text-gray-600">Nooryi Studio</p>
           </div>
           <div className="md:text-left">
             <div className="inline-grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
               <span className="text-gray-500 font-medium">رقم الفاتورة:</span>
               <span className="font-bold text-gray-900 font-mono text-base">{invoiceData.id}</span>
-              
+
               <span className="text-gray-500 font-medium">تاريخ التحقق:</span>
               <span className="font-bold text-gray-900">{verificationDate}</span>
-              
+
               <span className="text-gray-500 font-medium">عدد البنود:</span>
-              <span className="font-bold text-gray-900">{invoiceData.bookings.length} حجز</span>
+              <span className="font-bold text-gray-900">{invoiceData.items.length}</span>
+
+              <span className="text-gray-500 font-medium">نوع الفاتورة:</span>
+              <span className="font-bold text-gray-900">{invoiceData.type === "payment" ? "دفع" : "تقرير"}</span>
             </div>
           </div>
         </div>
@@ -154,20 +199,20 @@ export default async function VerifyInvoicePage({
             <thead>
               <tr className="bg-gradient-to-l from-purple-700 to-purple-900 text-white">
                 <th className="py-4 px-3 text-right font-bold w-12 rounded-tr-lg">#</th>
-                <th className="py-4 px-3 text-right font-bold">الفنان</th>
-                <th className="py-4 px-3 text-right font-bold">العميل</th>
-                <th className="py-4 px-3 text-right font-bold">التاريخ</th>
+                <th className="py-4 px-3 text-right font-bold">الوصف</th>
+                <th className="py-4 px-3 text-right font-bold">التفاصيل</th>
                 <th className="py-4 px-3 text-left font-bold rounded-tl-lg">المبلغ (ج.م)</th>
               </tr>
             </thead>
             <tbody className="text-gray-700">
-              {invoiceData.bookings.map((booking: any, index: number) => (
-                <tr key={booking.id} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+              {invoiceData.items.map((item: any, index: number) => (
+                <tr key={index} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
                   <td className="py-4 px-3 text-gray-500 font-mono font-bold">{index + 1}</td>
-                  <td className="py-4 px-3 font-bold text-gray-900">{booking.artist?.name || "-"}</td>
-                  <td className="py-4 px-3">{booking.clientName || "-"}</td>
-                  <td className="py-4 px-3 whitespace-nowrap">{new Date(booking.date).toLocaleDateString("ar-EG")}</td>
-                  <td className="py-4 px-3 text-left font-bold text-purple-700">{Number(booking.grossAmount || 0).toLocaleString()}</td>
+                  <td className="py-4 px-3 font-bold text-gray-900">{item.name}</td>
+                  <td className="py-4 px-3 text-gray-600">
+                    {item.description} • {new Date(item.date).toLocaleDateString("ar-EG")}
+                  </td>
+                  <td className="py-4 px-3 text-left font-bold text-purple-700">{item.amount.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -180,8 +225,14 @@ export default async function VerifyInvoicePage({
               <span className="text-gray-600 font-bold">الإجمالي:</span>
               <span className="font-bold text-gray-900 text-lg">{invoiceData.totalRevenue.toLocaleString()} ج.م</span>
             </div>
+            {invoiceData.taxAmount && (
+              <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
+                <span className="text-gray-600 font-bold">الضريبة (14%):</span>
+                <span className="font-bold text-gray-700 text-lg">{invoiceData.taxAmount.toLocaleString()} ج.م</span>
+              </div>
+            )}
             <div className="flex justify-between py-6 px-6 bg-gradient-to-l from-purple-700 to-purple-900 text-white">
-              <span className="font-bold text-xl">صافي المبلغ:</span>
+              <span className="font-bold text-xl">الصافي:</span>
               <span className="font-black text-3xl">{invoiceData.netRevenue.toLocaleString()} ج.م</span>
             </div>
           </div>
@@ -191,9 +242,7 @@ export default async function VerifyInvoicePage({
           <p className="text-sm text-gray-600 font-semibold mb-4">
             ✓ تم التحقق من صحة هذه الفاتورة عبر نظام Nooryi Studio المعتمد
           </p>
-          <p className="text-xs text-gray-500">
-            تاريخ التحقق: {verificationDate}
-          </p>
+          <p className="text-xs text-gray-500">تاريخ التحقق: {verificationDate}</p>
         </div>
       </div>
     </div>
