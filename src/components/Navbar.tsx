@@ -1,4 +1,4 @@
-"use client"
+"use client" // ⚠️ هذا السطر إلزامي ولا يمكن حذفه
 
 import Link from "next/link"
 import { useSession, signIn, signOut } from "next-auth/react"
@@ -8,6 +8,15 @@ import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react"
 export default function Navbar() {
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // ✅ منع اختفاء القائمة أثناء التحميل (السبب الرئيسي لعدم ظهورها سابقاً)
+  if (status === "loading") {
+    return (
+      <nav className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-center shadow-sm sticky top-0 z-50">
+        <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+      </nav>
+    )
+  }
 
   const isLoggedIn = status === "authenticated"
   const userName = session?.user?.name || "المستخدم"
