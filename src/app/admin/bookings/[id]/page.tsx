@@ -147,7 +147,7 @@ export default async function BookingDetailsPage({
 
   // حالة الدفع
   const paymentStatus =
-    remainingAmount === 0
+    remainingAmount === 0 && depositAmount > 0
       ? { label: "مدفوع بالكامل", color: "bg-green-100 text-green-700" }
       : depositAmount > 0
       ? { label: "مدفوع جزئياً", color: "bg-blue-100 text-blue-700" }
@@ -169,7 +169,7 @@ export default async function BookingDetailsPage({
     minute: "2-digit",
   })
 
-  // تحديد اسم العميل (من customer أو clientName)
+  // تحديد اسم العميل
   const clientName =
     booking.customer?.fullName ||
     booking.clientName ||
@@ -241,6 +241,11 @@ export default async function BookingDetailsPage({
               <>
                 <Link
                   href={`/admin/bookings/${booking.id}/approve`}
+                  onClick={(e) => {
+                    if (!confirm("هل أنت متأكد من الموافقة على هذا الحجز؟")) {
+                      e.preventDefault()
+                    }
+                  }}
                   className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg"
                 >
                   <CheckCircle2 size={20} />
@@ -248,6 +253,11 @@ export default async function BookingDetailsPage({
                 </Link>
                 <Link
                   href={`/admin/bookings/${booking.id}/reject`}
+                  onClick={(e) => {
+                    if (!confirm("هل أنت متأكد من رفض هذا الحجز؟")) {
+                      e.preventDefault()
+                    }
+                  }}
                   className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg"
                 >
                   <XCircle size={20} />
@@ -259,10 +269,30 @@ export default async function BookingDetailsPage({
             {booking.status === "APPROVED" && remainingAmount > 0 && isAdmin && (
               <Link
                 href={`/admin/bookings/${booking.id}/confirm-payment`}
+                onClick={(e) => {
+                  if (!confirm("هل تريد تأكيد الدفع بالكامل لهذا الحجز؟")) {
+                    e.preventDefault()
+                  }
+                }}
                 className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg"
               >
                 <CreditCard size={20} />
-                تأكيد الدفع
+                تأكيد الدفع بالكامل
+              </Link>
+            )}
+
+            {booking.status === "APPROVED" && isAdmin && (
+              <Link
+                href={`/admin/bookings/${booking.id}/complete`}
+                onClick={(e) => {
+                  if (!confirm("هل تريد تحديد هذا الحجز كمكتمل؟")) {
+                    e.preventDefault()
+                  }
+                }}
+                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition shadow-lg"
+              >
+                <CheckCircle2 size={20} />
+                تحديد كمكتمل
               </Link>
             )}
           </div>

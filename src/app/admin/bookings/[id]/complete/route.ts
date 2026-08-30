@@ -23,12 +23,12 @@ export async function GET(
 
     await prisma.booking.update({
       where: { id },
-      data: { status: "REJECTED" },
+      data: { status: "COMPLETED" },
     })
 
     return NextResponse.redirect(new URL(`/admin/bookings/${id}`, request.url))
   } catch (error: any) {
-    console.error("Reject booking error:", error)
+    console.error("Complete booking error:", error)
     return NextResponse.redirect(new URL("/admin/bookings", request.url))
   }
 }
