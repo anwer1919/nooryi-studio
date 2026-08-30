@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import { AuthProvider } from "@/components/AuthProvider"
+import { SessionProvider } from "next-auth/react"
 
 export const metadata: Metadata = {
   title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
@@ -13,11 +13,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
+    // ✅ إضافة suppressHydrationWarning لمنع أخطاء Hydration في المتصفح
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body suppressHydrationWarning className="font-sans">
-        <AuthProvider>
+      {/* ✅ إضافة suppressHydrationWarning هنا أيضاً لتجنب أي تعارض في التواريخ أو الثيم */}
+      <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
+        
+        {/* SessionProvider ضروري لعمل نظام تسجيل الدخول (NextAuth) في Next.js App Router */}
+        <SessionProvider>
           {children}
-        </AuthProvider>
+        </SessionProvider>
+        
       </body>
     </html>
   )
