@@ -1,4 +1,4 @@
-"use client" // ⚠️ هذا السطر ضروري جداً لكي تعمل useSession
+"use client" // ⚠️ هذا السطر هو الأهم على الإطلاق
 
 import Link from "next/link"
 import { useSession, signIn, signOut } from "next-auth/react"
@@ -9,10 +9,10 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // ✅ عرض مؤشر تحميل بدلاً من اختفاء القائمة تماماً
+  // ✅ الحل الجذري: لا ترجع null أبداً. اعرض شريط تحميل بدلاً من ذلك
   if (status === "loading") {
     return (
-      <nav className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-center shadow-sm">
+      <nav className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-center shadow-sm sticky top-0 z-50">
         <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
       </nav>
     )
@@ -47,7 +47,9 @@ export default function Navbar() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-gray-900">{userName}</span>
-                    <span className="text-[10px] text-gray-500">{userRole === "SUPER_ADMIN" ? "مدير عام" : userRole === "ADMIN" ? "إدارة" : "عميل"}</span>
+                    <span className="text-[10px] text-gray-500">
+                      {userRole === "SUPER_ADMIN" ? "مدير عام" : userRole === "ADMIN" ? "إدارة" : "عميل"}
+                    </span>
                   </div>
                 </div>
 
