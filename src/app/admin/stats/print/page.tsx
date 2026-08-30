@@ -2,7 +2,39 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Printer, Share2, AlertCircle, FileText } from "lucide-react"
+import { Printer, Share2, AlertCircle, FileText, Download } from "lucide-react"
+
+// مكون الباركود (مولد بـ CSS لضمان العمل بدون مكتبات خارجية)
+const Barcode = ({ value }: { value: string }) => (
+  <div className="flex flex-col items-center">
+    <div 
+      className="h-12 w-48"
+      style={{
+        background: `repeating-linear-gradient(to right, 
+          #000 0px, #000 2px, 
+          transparent 2px, transparent 4px, 
+          #000 4px, #000 5px, 
+          transparent 5px, transparent 8px,
+          #000 8px, #000 10px,
+          transparent 10px, transparent 11px
+        )`
+      }}
+    />
+    <span className="text-[10px] font-mono text-gray-600 mt-1 tracking-widest">{value}</span>
+  </div>
+)
+
+// مكون الختم الرسمي
+const OfficialStamp = () => (
+  <div className="absolute bottom-24 left-16 w-36 h-36 border-4 border-red-700 rounded-full flex items-center justify-center opacity-60 rotate-[-12deg] mix-blend-multiply pointer-events-none print:opacity-80">
+    <div className="border-2 border-red-700 rounded-full w-32 h-32 flex flex-col items-center justify-center gap-1">
+      <span className="text-red-700 font-black text-xl tracking-wider">NOORYI</span>
+      <span className="text-red-700 font-bold text-xs uppercase">Studio</span>
+      <div className="w-20 h-0.5 bg-red-700 my-1"></div>
+      <span className="text-red-700 font-bold text-sm">معتمد رسمياً</span>
+    </div>
+  </div>
+)
 
 export default function PrintReportPage() {
   const searchParams = useSearchParams()
@@ -41,10 +73,9 @@ export default function PrintReportPage() {
   }, [from, to])
 
   const handlePrint = () => window.print()
-
   const handleShareWhatsApp = () => {
     const url = window.location.href
-    const text = encodeURIComponent(`تقرير مالي رسمي من Nooryi Studio:\n${url}`)
+    const text = encodeURIComponent(`فاتورة / تقرير مالي رسمي من Nooryi Studio:\n${url}`)
     window.open(`https://wa.me/?text=${text}`, "_blank")
   }
 
@@ -52,8 +83,8 @@ export default function PrintReportPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-semibold">جاري إعداد التقرير المالي...</p>
+          <div className="w-12 h-12 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-semibold">جاري إعداد الفاتورة الرسمية...</p>
         </div>
       </div>
     )
@@ -64,9 +95,9 @@ export default function PrintReportPage() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 text-center max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">تعذر تحميل التقرير</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">تعذر تحميل الفاتورة</h2>
           <p className="text-gray-600 mb-6">{error}</p>
-          <button onClick={() => router.back()} className="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition">
+          <button onClick={() => router.back()} className="px-6 py-2 bg-purple-700 text-white rounded-lg font-semibold hover:bg-purple-800 transition">
             العودة للخلف
           </button>
         </div>
@@ -77,156 +108,157 @@ export default function PrintReportPage() {
   const totalRevenue = reportData.reduce((sum: number, b: any) => sum + Number(b.grossAmount || 0), 0)
   const platformFee = Math.round(totalRevenue * 0.05)
   const netRevenue = totalRevenue - platformFee
-  const reportId = `RPT-${from ? from.replace(/-/g, '') : 'ALL'}-${to ? to.replace(/-/g, '') : 'NOW'}`
+  const invoiceId = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`
   const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans">
+    <div dir="rtl" className="min-h-screen bg-gray-200 p-4 md:p-8 font-sans">
       
       {/* أزرار الإجراءات (تختفي تماماً عند الطباعة) */}
       <div className="no-print max-w-[210mm] mx-auto mb-6 flex gap-3 justify-end">
         <button 
           onClick={handleShareWhatsApp} 
-          className="flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-bold shadow-lg hover:bg-green-600 transition transform hover:scale-105"
+          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg font-bold shadow-md hover:bg-green-700 transition"
         >
-          <Share2 size={20} /> مشاركة عبر واتساب
+          <Share2 size={18} /> إرسال واتساب
         </button>
         <button 
           onClick={handlePrint} 
-          className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg hover:bg-purple-700 transition transform hover:scale-105"
+          className="flex items-center gap-2 px-5 py-2.5 bg-purple-700 text-white rounded-lg font-bold shadow-md hover:bg-purple-800 transition"
         >
-          <Printer size={20} /> حفظ كـ PDF / طباعة
+          <Download size={18} /> حفظ كـ PDF / طباعة
         </button>
       </div>
 
-      {/* ورقة التقرير (محاكاة A4) */}
-      <div className="print-container max-w-[210mm] mx-auto bg-white p-10 md:p-12 rounded-lg shadow-xl border border-gray-200">
+      {/* ورقة الفاتورة (A4) */}
+      <div className="print-container max-w-[210mm] mx-auto bg-white shadow-2xl p-10 md:p-14 relative overflow-hidden">
         
-        {/* 1. الترويسة الرسمية */}
-        <div className="flex flex-col md:flex-row justify-between items-start mb-8 border-b-4 border-purple-600 pb-6">
-          <div className="text-right mb-4 md:mb-0">
-            <h1 className="text-3xl font-black text-purple-600 mb-1">Nooryi Studio</h1>
-            <p className="text-gray-500 text-sm mb-1">منصة حجز الفنانين والفعاليات</p>
-            <p className="text-gray-400 text-xs">info@nooryi.com | +20 123 456 7890</p>
+        {/* علامة مائية خلفية */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+          <span className="text-8xl font-black text-gray-900 rotate-[-30deg]">NOORYI STUDIO</span>
+        </div>
+
+        {/* الختم الرسمي */}
+        <OfficialStamp />
+
+        {/* 1. الترويسة (Header) */}
+        <div className="flex justify-between items-start mb-10 border-b-2 border-gray-900 pb-6">
+          <div className="text-right">
+            <h1 className="text-4xl font-black text-gray-900 mb-1 tracking-tight">Nooryi</h1>
+            <p className="text-sm text-gray-500 font-medium">STUDIO FOR ARTISTS & EVENTS</p>
+            <div className="mt-3 text-xs text-gray-600 space-y-1">
+              <p>السجل التجاري: 123456789</p>
+              <p>الرقم الضريبي: 300000000000003</p>
+              <p>info@nooryi.com | +20 123 456 7890</p>
+            </div>
           </div>
-          <div className="text-left">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3 flex items-center justify-end gap-2">
-              <FileText size={24} className="text-purple-600" />
-              تقرير مالي شامل
-            </h2>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p><strong>رقم التقرير:</strong> <span className="text-purple-600 font-mono">{reportId}</span></p>
-              <p><strong>تاريخ الإصدار:</strong> {reportDate}</p>
-              <p><strong>مُعد التقرير:</strong> النظام الآلي</p>
+          
+          <div className="text-left flex flex-col items-end gap-4">
+            <div className="bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+              <h2 className="text-2xl font-black text-purple-700 uppercase tracking-wider">فاتورة / تقرير مالي</h2>
+            </div>
+            <Barcode value={invoiceId} />
+          </div>
+        </div>
+
+        {/* 2. معلومات الفاتورة (Meta Info) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">فاتورة إلى:</h3>
+            <p className="text-lg font-bold text-gray-900">{managerName}</p>
+            <p className="text-sm text-gray-600">Nooryi Studio - إدارة المنصة</p>
+          </div>
+          <div className="md:text-left">
+            <div className="inline-grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+              <span className="text-gray-500">رقم الفاتورة:</span>
+              <span className="font-bold text-gray-900 font-mono">{invoiceId}</span>
+              
+              <span className="text-gray-500">تاريخ الإصدار:</span>
+              <span className="font-bold text-gray-900">{reportDate}</span>
+              
+              <span className="text-gray-500">فترة التقرير:</span>
+              <span className="font-bold text-gray-900">
+                {from ? new Date(from).toLocaleDateString("ar-EG") : "من البداية"} إلى {to ? new Date(to).toLocaleDateString("ar-EG") : "الآن"}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* 2. ملخص الفترة */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-purple-50 p-5 rounded-xl border border-purple-100">
-          <div className="text-right">
-            <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wider">موجه إلى:</p>
-            <p className="font-bold text-purple-700 text-lg">{managerName}</p>
-          </div>
-          <div className="text-center md:border-x md:border-purple-200">
-            <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wider">الفترة الزمنية:</p>
-            <p className="font-bold text-gray-900 text-lg">
-              {from ? new Date(from).toLocaleDateString("ar-EG") : "من البداية"} 
-              <span className="text-gray-400 mx-2">إلى</span> 
-              {to ? new Date(to).toLocaleDateString("ar-EG") : "حتّى الآن"}
-            </p>
-          </div>
-          <div className="text-left">
-            <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wider">إجمالي العمليات:</p>
-            <p className="font-bold text-gray-900 text-lg">{reportData.length} حجز</p>
-          </div>
-        </div>
-
-        {/* 3. جدول التفاصيل */}
-        <div className="overflow-x-auto mb-8">
+        {/* 3. جدول البنود (Items Table) */}
+        <div className="mb-10">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-purple-600 text-white">
-                <th className="p-4 text-right font-bold rounded-tr-lg w-12">م</th>
-                <th className="p-4 text-right font-bold">الفنان / الفئة</th>
-                <th className="p-4 text-right font-bold">العميل</th>
-                <th className="p-4 text-right font-bold">تاريخ الحجز</th>
-                <th className="p-4 text-right font-bold">المبلغ (ج.م)</th>
-                <th className="p-4 text-right font-bold rounded-tl-lg">الحالة</th>
+              <tr className="border-b-2 border-gray-900">
+                <th className="py-3 text-right font-bold text-gray-900 w-12">#</th>
+                <th className="py-3 text-right font-bold text-gray-900">وصف الخدمة / الفنان</th>
+                <th className="py-3 text-right font-bold text-gray-900">العميل</th>
+                <th className="py-3 text-right font-bold text-gray-900">التاريخ</th>
+                <th className="py-3 text-left font-bold text-gray-900">المبلغ (ج.م)</th>
               </tr>
             </thead>
-            <tbody>
-              {reportData.map((booking: any, index: number) => {
-                const statusStyles: any = {
-                  COMPLETED: "bg-green-100 text-green-700 border border-green-200",
-                  APPROVED: "bg-purple-100 text-purple-700 border border-purple-200",
-                  CANCELLED: "bg-red-100 text-red-700 border border-red-200",
-                  PENDING_APPROVAL: "bg-yellow-100 text-yellow-700 border border-yellow-200",
-                }
-                const statusLabels: any = {
-                  COMPLETED: "مكتمل", APPROVED: "معتمد", CANCELLED: "ملغي", PENDING_APPROVAL: "قيد المراجعة"
-                }
-                
-                return (
-                  <tr key={booking.id} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                    <td className="p-4 text-gray-500 font-mono">{index + 1}</td>
-                    <td className="p-4">
-                      <div className="font-bold text-gray-900">{booking.artist?.name || "-"}</div>
-                      <div className="text-xs text-gray-500">{booking.artist?.category || ""}</div>
-                    </td>
-                    <td className="p-4 text-gray-700">{booking.clientName || "-"}</td>
-                    <td className="p-4 text-gray-600 whitespace-nowrap">{new Date(booking.date).toLocaleDateString("ar-EG")}</td>
-                    <td className="p-4 font-bold text-purple-600 whitespace-nowrap">{Number(booking.grossAmount || 0).toLocaleString()}</td>
-                    <td className="p-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusStyles[booking.status] || "bg-gray-100 text-gray-600"}`}>
-                        {statusLabels[booking.status] || booking.status}
-                      </span>
-                    </td>
-                  </tr>
-                )
-              })}
+            <tbody className="text-gray-700">
+              {reportData.map((booking: any, index: number) => (
+                <tr key={booking.id} className="border-b border-gray-200">
+                  <td className="py-4 text-gray-500 font-mono">{index + 1}</td>
+                  <td className="py-4">
+                    <div className="font-bold text-gray-900">{booking.artist?.name || "غير محدد"}</div>
+                    <div className="text-xs text-gray-500">{booking.artist?.category || ""} | {booking.venue?.name || "بدون مكان"}</div>
+                  </td>
+                  <td className="py-4">{booking.clientName || "-"}</td>
+                  <td className="py-4 whitespace-nowrap">{new Date(booking.date).toLocaleDateString("ar-EG")}</td>
+                  <td className="py-4 text-left font-bold text-gray-900">{Number(booking.grossAmount || 0).toLocaleString()}</td>
+                </tr>
+              ))}
               {reportData.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500">لا توجد بيانات لعرضها في هذه الفترة</td>
+                  <td colSpan={5} className="py-8 text-center text-gray-500 italic">لا توجد بنود في هذه الفترة</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* 4. الملخص المالي (أسلوب الفواتير) */}
-        <div className="flex justify-end mb-10">
-          <div className="w-full md:w-80 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            <div className="flex justify-between p-4 border-b border-gray-200">
-              <span className="text-gray-600 font-medium">إجمالي قيمة الحجوزات:</span>
+        {/* 4. الإجماليات (Totals) */}
+        <div className="flex justify-end mb-12">
+          <div className="w-full md:w-96">
+            <div className="flex justify-between py-3 border-b border-gray-200">
+              <span className="text-gray-600 font-medium">المجموع الفرعي:</span>
               <span className="font-bold text-gray-900">{totalRevenue.toLocaleString()} ج.م</span>
             </div>
-            <div className="flex justify-between p-4 border-b border-gray-200">
+            <div className="flex justify-between py-3 border-b border-gray-200">
               <span className="text-gray-600 font-medium">رسوم المنصة (5%):</span>
-              <span className="font-bold text-red-600">- {platformFee.toLocaleString()} ج.م</span>
+              <span className="font-bold text-gray-600">{platformFee.toLocaleString()} ج.م</span>
             </div>
-            <div className="flex justify-between p-5 bg-purple-600 text-white">
-              <span className="font-bold text-lg">صافي الإيرادات:</span>
+            <div className="flex justify-between py-4 bg-gray-900 text-white px-4 rounded-lg mt-2 shadow-lg">
+              <span className="font-bold text-lg">صافي المبلغ المستحق:</span>
               <span className="font-black text-2xl">{netRevenue.toLocaleString()} ج.م</span>
             </div>
           </div>
         </div>
 
-        {/* 5. التذييل الرسمي */}
-        <div className="text-center pt-8 border-t-2 border-dashed border-gray-300">
-          <p className="text-sm text-gray-500 font-semibold mb-6">
-            تم استخراج هذا التقرير آلياً من نظام Nooryi Studio وهو يعتبر وثيقة رسمية معتمدة داخلياً.
-          </p>
+        {/* 5. التذييل والشروط (Footer) */}
+        <div className="border-t-2 border-gray-900 pt-6 mt-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 className="font-bold text-gray-900 mb-2 text-sm">الشروط والأحكام:</h4>
+              <ul className="text-xs text-gray-500 space-y-1 list-disc list-inside">
+                <li>هذا التقرير صادر آلياً من نظام Nooryi Studio ويعتبر وثيقة معتمدة.</li>
+                <li>جميع المبالغ بالجنيه المصري (EGP).</li>
+                <li>للاستفسار يرجى التواصل مع الدعم المالي خلال 14 يوم من تاريخ الإصدار.</li>
+              </ul>
+            </div>
+            <div className="md:text-left flex flex-col items-end justify-end">
+              <div className="text-center">
+                <div className="w-40 h-16 border-b-2 border-gray-400 mb-2 mx-auto"></div>
+                <p className="text-xs font-bold text-gray-900">توقيع المدير المالي</p>
+                <p className="text-[10px] text-gray-500">Nooryi Studio Finance Dept.</p>
+              </div>
+            </div>
+          </div>
           
-          <div className="flex justify-between max-w-lg mx-auto px-4">
-            <div className="text-center">
-              <div className="w-32 h-12 border-b border-gray-400 mb-2 mx-auto"></div>
-              <p className="text-xs text-gray-500 font-medium">توقيع مُعد التقرير</p>
-            </div>
-            <div className="text-center">
-              <div className="w-32 h-12 border-b border-gray-400 mb-2 mx-auto"></div>
-              <p className="text-xs text-gray-500 font-medium">ختم المنصة المعتمد</p>
-            </div>
+          {/* باركود سفلي إضافي للمصداقية */}
+          <div className="flex justify-center pt-4 border-t border-gray-200">
+            <Barcode value={`NOORYI-${new Date().getTime()}`} />
           </div>
         </div>
       </div>
@@ -243,7 +275,7 @@ export default function PrintReportPage() {
             max-width: 100% !important; 
             padding: 0 !important;
           }
-          @page { margin: 15mm; size: A4 portrait; }
+          @page { margin: 10mm 15mm; size: A4 portrait; }
         }
       `}</style>
     </div>
