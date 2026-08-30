@@ -53,7 +53,7 @@ export default function PrintBookingInvoicePage() {
   const handleShareWhatsApp = () => {
     const url = window.location.href
     const text = encodeURIComponent(
-      `فاتورة دفع رسمية من Nooryi Studio:\n${url}\n\nرقم الفاتورة: ${booking?.invoiceNumber || bookingId}`
+      `فاتورة دفع رسمية من Nooryi Studio:\n${url}\n\nرقم الفاتورة: ${invoiceNumber}`
     )
     window.open(`https://wa.me/?text=${text}`, "_blank")
   }
@@ -102,13 +102,40 @@ export default function PrintBookingInvoicePage() {
   const verificationUrl = `https://nooryi-studio.vercel.app/invoice/verify?id=${bookingId}&type=payment`
 
   // حالة الدفع
-  const paymentStatus = {
-    PAID: { label: "مدفوع", color: "text-green-700", bg: "bg-green-100", icon: CheckCircle2 },
-    PENDING: { label: "قيد الانتظار", color: "text-yellow-700", bg: "bg-yellow-100", icon: Clock },
-    CANCELLED: { label: "ملغي", color: "text-red-700", bg: "bg-red-100", icon: XCircle },
+  const paymentStatusConfig: any = {
+    PAID: { label: "مدفوع بالكامل", color: "text-green-700", bg: "bg-green-100", border: "border-green-300", icon: CheckCircle2 },
+    PARTIAL: { label: "مدفوع جزئياً", color: "text-blue-700", bg: "bg-blue-100", border: "border-blue-300", icon: Clock },
+    PENDING: { label: "قيد الانتظار", color: "text-yellow-700", bg: "bg-yellow-100", border: "border-yellow-300", icon: Clock },
+    REFUNDED: { label: "مسترد", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300", icon: XCircle },
   }
-  const status = paymentStatus[booking.paymentStatus as keyof typeof paymentStatus] || paymentStatus.PENDING
+
+  // تحديد حالة الدفع بناءً على المبالغ
+  const remainingAmount = Number(booking.remainingAmount || 0)
+  const depositAmount = Number(booking.depositAmount || 0)
+  
+  let paymentStatusKey = "PENDING"
+  if (remainingAmount === 0 && depositAmount > 0) {
+    paymentStatusKey = "PAID"
+  } else if (depositAmount > 0) {
+    paymentStatusKey = "PARTIAL"
+  }
+
+  const status = paymentStatusConfig[paymentStatusKey] || paymentStatusConfig.PENDING
   const StatusIcon = status.icon
+
+  // وقت الحجز
+  const timeSlotLabels: any = {
+    MORNING: "صباحاً",
+    AFTERNOON: "ظهراً",
+    EVENING: "مساءً",
+    NIGHT: "ليلاً",
+  }
+  const timeSlotLabel = timeSlotLabels[booking.timeSlot] || booking.timeSlot || ""
+
+  // استخدام clientName من البيانات المعادة من API
+  const clientName = booking.clientName || "عميل"
+  const clientEmail = booking.clientEmail || null
+  const clientPhone = booking.clientPhone || null
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-gray-100 via-purple-50 to-gray-100 p-4 md:p-8 font-sans">
@@ -179,7 +206,7 @@ export default function PrintBookingInvoicePage() {
             </div>
 
             {/* شارة حالة الدفع */}
-            <div className={`${status.bg} ${status.color} px-4 py-2 rounded-xl font-bold flex items-center gap-2 border-2`}>
+            <div className={`${status.bg} ${status.color} ${status.border} border-2 px-4 py-2 rounded-xl font-bold flex items-center gap-2`}>
               <StatusIcon size={20} />
               <span>{status.label}</span>
             </div>
@@ -204,15 +231,12 @@ export default function PrintBookingInvoicePage() {
           {/* بيانات العميل */}
           <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl border border-purple-100">
             <h3 className="text-xs font-black text-purple-700 uppercase tracking-widest mb-3">فاتورة إلى:</h3>
-            <p className="text-xl font-bold text-gray-900 mb-1">{booking.user?.name || booking.clientName}</p>
-            {booking.user?.email && (
-              <p className="text-sm text-gray-600 mb-1">{booking.user.email}</p>
+            <p className="text-xl font-bold text-gray-900 mb-1">{clientName}</p>
+            {clientEmail && (
+              <p className="text-sm text-gray-600 mb-1">{clientEmail}</p>
             )}
-            {booking.user?.phone && (
-              <p className="text-sm text-gray-600" dir="ltr">{booking.user.phone}</p>
-            )}
-            {booking.clientPhone && (
-              <p className="text-sm text-gray-600 mt-2" dir="ltr">{booking.clientPhone}</p>
+            {clientPhone && (
+              <p className="text-sm text-gray-600" dir="ltr">{clientPhone}</p>
             )}
           </div>
 
@@ -228,8 +252,8 @@ export default function PrintBookingInvoicePage() {
               <span className="text-gray-500 font-medium">تاريخ الحجز:</span>
               <span className="font-bold text-gray-900">{eventDate}</span>
 
-              <span className="text-gray-500 font-medium">طريقة الدفع:</span>
-              <span className="font-bold text-gray-900">{booking.paymentMethod || "بطاقة ائتمان"}</span>
+              <span className="text-gray-500 font-medium">وقت الفعالية:</span>
+              <span className="font-bold text-gray-900">{timeSlotLabel}</span>
             </div>
           </div>
         </div>
@@ -256,8 +280,8 @@ export default function PrintBookingInvoicePage() {
               )}
               <div>
                 <p className="text-xs text-gray-500 font-semibold uppercase">الفنان</p>
-                <p className="text-lg font-bold text-gray-900">{booking.artist?.name}</p>
-                <p className="text-sm text-purple-700">{booking.artist?.category}</p>
+                <p className="text-lg font-bold text-gray-900">{booking.artist?.name || "غير محدد"}</p>
+                <p className="text-sm text-purple-700">{booking.artist?.category || ""}</p>
               </div>
             </div>
 
@@ -287,15 +311,15 @@ export default function PrintBookingInvoicePage() {
                 <td className="py-4 px-3">
                   <div className="font-bold text-gray-900">حجز فني خاص</div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {booking.artist?.name} • {booking.artist?.category}
+                    {booking.artist?.name || "غير محدد"} • {booking.artist?.category || ""}
                   </div>
                 </td>
                 <td className="py-4 px-3">
                   <div className="text-sm">{eventDate}</div>
-                  <div className="text-xs text-gray-500 mt-1">{booking.venue?.name}</div>
+                  <div className="text-xs text-gray-500 mt-1">{timeSlotLabel} • {booking.venue?.name || ""}</div>
                 </td>
                 <td className="py-4 px-3 text-left font-bold text-purple-700 text-base">
-                  {booking.grossAmount?.toLocaleString()}
+                  {Number(booking.grossAmount || 0).toLocaleString()}
                 </td>
               </tr>
             </tbody>
@@ -307,19 +331,27 @@ export default function PrintBookingInvoicePage() {
           <div className="w-full md:w-[400px] bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl">
             <div className="flex justify-between py-4 px-6 border-b border-gray-200">
               <span className="text-gray-600 font-bold">المجموع الفرعي:</span>
-              <span className="font-bold text-gray-900 text-lg">{booking.grossAmount?.toLocaleString()} ج.م</span>
+              <span className="font-bold text-gray-900 text-lg">
+                {Number(booking.grossAmount || 0).toLocaleString()} ج.م
+              </span>
             </div>
             <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
               <span className="text-gray-600 font-bold">ضريبة القيمة المضافة (14%):</span>
-              <span className="font-bold text-gray-700 text-lg">{booking.taxAmount?.toLocaleString()} ج.م</span>
+              <span className="font-bold text-gray-700 text-lg">
+                {Number(booking.taxAmount || 0).toLocaleString()} ج.م
+              </span>
             </div>
             <div className="flex justify-between py-4 px-6 border-b border-gray-200">
-              <span className="text-gray-600 font-bold">رسوم المنصة (5%):</span>
-              <span className="font-bold text-red-600 text-lg">{booking.platformFee?.toLocaleString()} ج.م</span>
+              <span className="text-gray-600 font-bold">العربون المدفوع:</span>
+              <span className="font-bold text-green-600 text-lg">
+                {Number(booking.depositAmount || 0).toLocaleString()} ج.م
+              </span>
             </div>
             <div className="flex justify-between py-6 px-6 bg-gradient-to-l from-purple-700 to-purple-900 text-white shadow-inner">
-              <span className="font-bold text-xl">الإجمالي النهائي:</span>
-              <span className="font-black text-3xl">{(Number(booking.grossAmount) + booking.taxAmount).toLocaleString()} ج.م</span>
+              <span className="font-bold text-xl">المبلغ المتبقي:</span>
+              <span className="font-black text-3xl">
+                {Number(booking.remainingAmount || 0).toLocaleString()} ج.م
+              </span>
             </div>
           </div>
         </div>

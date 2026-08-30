@@ -17,7 +17,7 @@ export async function GET(
     const userRole = session.user.role || "USER"
     const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
-    // جلب الحجز مع جميع التفاصيل
+    // جلب الحجز مع التفاصيل المطلوبة (بدون user)
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
@@ -35,9 +35,9 @@ export async function GET(
             address: true,
           },
         },
-        user: {
+        customer: {
           select: {
-            name: true,
+            fullName: true,
             email: true,
             phone: true,
           },
@@ -50,29 +50,54 @@ export async function GET(
     }
 
     // التحقق من الصلاحيات
-    const isOwner = booking.userId === session.user.id
-    if (!isAdmin && !isOwner) {
+    if (!isAdmin) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
 
-    // حساب المبالغ
+    // حساب المبالغ بأمان
     const grossAmount = Number(booking.grossAmount || 0)
+    const depositAmount = Number(booking.depositAmount || 0)
+    const remainingAmount = Number(booking.remainingAmount || 0)
     const platformFee = Math.round(grossAmount * 0.05)
-    const taxAmount = Math.round(grossAmount * 0.14) // ضريبة القيمة المضافة 14%
-    const netAmount = grossAmount - platformFee
+    const taxAmount = Math.round(grossAmount * 0.14)
+    const totalWithTax = grossAmount + taxAmount
+
+    // تحديد بيانات العميل من مصادر متعددة
+    const clientName =
+      booking.customer?.fullName ||
+      booking.clientName ||
+      "عميل"
+
+    const clientEmail =
+      booking.customer?.email ||
+      booking.clientEmail ||
+      null
+
+    const clientPhone =
+      booking.customer?.phone ||
+      booking.clientPhone ||
+      null
 
     return NextResponse.json({
       success: true,
       data: {
         ...booking,
         grossAmount,
+        depositAmount,
+        remainingAmount,
         platformFee,
         taxAmount,
-        netAmount,
+        totalWithTax,
+        clientName,
+        clientEmail,
+        clientPhone,
       },
     })
   } catch (error: any) {
     console.error("Invoice API Error:", error)
-    return NextResponse.json({ error: "حدث خطأ في الخادم" }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || "حدث خطأ في الخادم" },
+      { status: 500 }
+    )
   }
 }
