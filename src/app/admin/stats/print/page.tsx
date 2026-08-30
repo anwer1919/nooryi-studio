@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Printer, Share2, AlertCircle, Download, QrCode } from "lucide-react"
+import { Share2, AlertCircle, Download } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 
-// مكون الختم الرسمي الفاخر
 const OfficialStamp = () => (
   <div className="absolute bottom-32 left-20 w-40 h-40 pointer-events-none print:opacity-90">
     <div className="relative w-full h-full border-[3px] border-red-700 rounded-full flex items-center justify-center opacity-70 rotate-[-15deg]">
@@ -30,6 +29,7 @@ export default function PrintReportPage() {
   const [error, setError] = useState("")
   const [reportData, setReportData] = useState<any[]>([])
   const [managerName, setManagerName] = useState("الإدارة العامة")
+  const [invoiceId, setInvoiceId] = useState("")
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -46,6 +46,10 @@ export default function PrintReportPage() {
         } else {
           setReportData(result.data || [])
           setManagerName(result.managerName || "الإدارة العامة")
+          
+          // إنشاء معرف فاتورة فريد
+          const id = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`
+          setInvoiceId(id)
         }
       } catch (err) {
         setError("تعذر الاتصال بالخادم")
@@ -66,7 +70,7 @@ export default function PrintReportPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-mint-50">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-gray-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-700 font-bold text-lg">جاري إعداد الفاتورة الرسمية...</p>
@@ -93,16 +97,14 @@ export default function PrintReportPage() {
   const totalRevenue = reportData.reduce((sum: number, b: any) => sum + Number(b.grossAmount || 0), 0)
   const platformFee = Math.round(totalRevenue * 0.05)
   const netRevenue = totalRevenue - platformFee
-  const invoiceId = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`
   const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
   
-  // رابط الفاتورة الحالي (سيكون محتوى QR Code)
-  const invoiceUrl = typeof window !== "undefined" ? window.location.href : `https://nooryi-studio.vercel.app/admin/stats/print?from=${from}&to=${to}`
+  // رابط التحقق الآمن (سيكون محتوى QR Code)
+  const verificationUrl = `https://nooryi-studio.vercel.app/invoice/verify?id=${invoiceId}`
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-gray-100 via-purple-50 to-gray-100 p-4 md:p-8 font-sans">
       
-      {/* أزرار الإجراءات */}
       <div className="no-print max-w-[210mm] mx-auto mb-6 flex gap-3 justify-end">
         <button 
           onClick={handleShareWhatsApp} 
@@ -118,18 +120,14 @@ export default function PrintReportPage() {
         </button>
       </div>
 
-      {/* ورقة الفاتورة الفاخرة */}
       <div className="print-container max-w-[210mm] mx-auto bg-white shadow-2xl p-12 md:p-16 relative overflow-hidden">
         
-        {/* علامة مائية فاخرة */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.02]">
           <span className="text-[120px] font-black text-gray-900 rotate-[-30deg] tracking-tighter">NOORYI</span>
         </div>
 
-        {/* الختم الرسمي */}
         <OfficialStamp />
 
-        {/* 1. الترويسة الفاخرة */}
         <div className="flex justify-between items-start mb-12 pb-8 border-b-4 border-double border-gray-900">
           <div className="text-right">
             <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-l from-purple-700 to-purple-900 mb-2 tracking-tight">
@@ -161,10 +159,9 @@ export default function PrintReportPage() {
               <h2 className="text-2xl font-black text-white uppercase tracking-wider">فاتورة رسمية</h2>
             </div>
             
-            {/* QR Code حقيقي */}
             <div className="bg-white p-3 rounded-xl border-2 border-gray-200 shadow-md">
               <QRCodeSVG
-                value={invoiceUrl}
+                value={verificationUrl}
                 size={120}
                 level="H"
                 includeMargin={false}
@@ -176,7 +173,6 @@ export default function PrintReportPage() {
           </div>
         </div>
 
-        {/* 2. معلومات الفاتورة */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <div className="bg-gradient-to-br from-purple-50 to-white p-6 rounded-xl border border-purple-100">
             <h3 className="text-xs font-black text-purple-700 uppercase tracking-widest mb-3">فاتورة إلى:</h3>
@@ -191,9 +187,9 @@ export default function PrintReportPage() {
               <span className="text-gray-500 font-medium">تاريخ الإصدار:</span>
               <span className="font-bold text-gray-900">{reportDate}</span>
               
-              <span className="text-gray-500 font-medium">فترة التقرير:</span>
+              <span className="text-gray-500 font-medium">من تاريخ:</span>
               <span className="font-bold text-gray-900">
-                {from ? new Date(from).toLocaleDateString("ar-EG") : "من البداية"}
+                {from ? new Date(from).toLocaleDateString("ar-EG") : "البداية"}
               </span>
               
               <span className="text-gray-500 font-medium">إلى تاريخ:</span>
@@ -204,7 +200,6 @@ export default function PrintReportPage() {
           </div>
         </div>
 
-        {/* 3. جدول البنود الفاخر */}
         <div className="mb-12">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -218,7 +213,7 @@ export default function PrintReportPage() {
             </thead>
             <tbody className="text-gray-700">
               {reportData.map((booking: any, index: number) => (
-                <tr key={booking.id} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"} hover:bg-purple-50/30 transition`}>
+                <tr key={booking.id} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
                   <td className="py-4 px-3 text-gray-500 font-mono font-bold">{index + 1}</td>
                   <td className="py-4 px-3">
                     <div className="font-bold text-gray-900">{booking.artist?.name || "غير محدد"}</div>
@@ -240,7 +235,6 @@ export default function PrintReportPage() {
           </table>
         </div>
 
-        {/* 4. الإجماليات الفاخرة */}
         <div className="flex justify-end mb-16">
           <div className="w-full md:w-[400px] bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-xl">
             <div className="flex justify-between py-4 px-6 border-b border-gray-200">
@@ -258,7 +252,6 @@ export default function PrintReportPage() {
           </div>
         </div>
 
-        {/* 5. التذييل والشروط */}
         <div className="border-t-4 border-double border-gray-900 pt-8 mt-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
@@ -291,11 +284,10 @@ export default function PrintReportPage() {
             </div>
           </div>
           
-          {/* QR Code سفلي إضافي */}
           <div className="flex justify-center pt-6 border-t border-gray-200">
             <div className="text-center">
               <QRCodeSVG
-                value={invoiceUrl}
+                value={verificationUrl}
                 size={80}
                 level="H"
                 includeMargin={false}
@@ -308,10 +300,15 @@ export default function PrintReportPage() {
         </div>
       </div>
 
-      {/* أنماط الطباعة */}
       <style>{`
         @media print {
-          body { background: white !important; padding: 0 !important; margin: 0 !important; }
+          body { 
+            background: white !important; 
+            padding: 0 !important; 
+            margin: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
           .no-print { display: none !important; }
           .print-container { 
             box-shadow: none !important; 
@@ -319,8 +316,15 @@ export default function PrintReportPage() {
             margin: 0 !important; 
             max-width: 100% !important; 
             padding: 10mm !important;
+            page-break-inside: avoid;
           }
-          @page { margin: 10mm; size: A4 portrait; }
+          @page { 
+            margin: 10mm; 
+            size: A4 portrait;
+          }
+          table { page-break-inside: auto; }
+          tr { page-break-inside: avoid; page-break-after: auto; }
+          thead { display: table-header-group; }
         }
       `}</style>
     </div>
