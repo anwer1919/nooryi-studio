@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import Providers from "@/components/Providers"
+import { SessionProvider } from "next-auth/react"
 import Navbar from "@/components/Navbar"
 
 export const metadata: Metadata = {
@@ -14,15 +14,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    // ✅ suppressHydrationWarning يمنع أخطاء التطابق بين الخادم والمتصفح
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
-        
-        {/* ✅ استخدام مكون Providers المعزول يمنع تعارضات البناء في صفحات مثل /_not-found */}
-        <Providers>
-          {children}
-        </Providers>
-        
+        <SessionProvider>
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+        </SessionProvider>
       </body>
     </html>
   )
