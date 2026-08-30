@@ -44,10 +44,10 @@ export default function AdminSidebar({ userRole, userName, userEmail }: { userRo
           padding: "0 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "32px", height: "32px", backgroundColor: "#9333EA", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={18} style={{ color: "white" }} />
+            <div style={{ width: "32px", height: "32px", backgroundColor: "#A8D5BA", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Music size={18} style={{ color: "#4B2E83" }} />
             </div>
-            <span style={{ fontSize: "18px", fontWeight: "bold", color: "#111827" }}>Nooryi</span>
+            <span style={{ fontSize: "18px", fontWeight: "bold", color: "#4B2E83" }}>Nooryi</span>
           </div>
           <button onClick={() => setIsOpen(!isOpen)} style={{
             padding: "8px", borderRadius: "8px", backgroundColor: "transparent",
@@ -79,11 +79,11 @@ export default function AdminSidebar({ userRole, userName, userEmail }: { userRo
           {/* LOGO (Desktop) */}
           {!isMobile && (
             <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "24px", borderBottom: "1px solid #F3F4F6" }}>
-              <div style={{ width: "40px", height: "40px", backgroundColor: "#9333EA", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 15px -3px rgba(147, 51, 234, 0.2)" }}>
-                <Music size={20} style={{ color: "white" }} />
+              <div style={{ width: "40px", height: "40px", backgroundColor: "#A8D5BA", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 15px -3px rgba(168, 213, 186, 0.3)" }}>
+                <Music size={20} style={{ color: "#4B2E83" }} />
               </div>
               <div>
-                <p style={{ fontSize: "20px", fontWeight: "bold", color: "#111827", margin: 0 }}>Nooryi</p>
+                <p style={{ fontSize: "20px", fontWeight: "bold", color: "#4B2E83", margin: 0 }}>Nooryi</p>
                 <p style={{ fontSize: "10px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: "600", margin: 0 }}>
                   {isAdmin ? "Admin Panel" : "Manager Panel"}
                 </p>
@@ -93,17 +93,17 @@ export default function AdminSidebar({ userRole, userName, userEmail }: { userRo
 
           {/* USER CARD */}
           <div style={{ padding: "16px", borderBottom: "1px solid #F3F4F6" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", backgroundColor: "#FAF5FF", borderRadius: "12px", border: "1px solid #E9D5FF" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", backgroundColor: "#F0FAF4", borderRadius: "12px", border: "1px solid #A8D5BA60" }}>
               <div style={{
                 width: "40px", height: "40px", borderRadius: "9999px",
-                background: "linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)",
+                background: "linear-gradient(135deg, #4B2E83 0%, #6B4C9A 100%)",
                 color: "white", display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: "bold", fontSize: "18px", flexShrink: 0, boxShadow: "0 4px 6px -1px rgba(147, 51, 234, 0.3)"
+                fontWeight: "bold", fontSize: "18px", flexShrink: 0, boxShadow: "0 4px 6px -1px rgba(75, 46, 131, 0.3)"
               }}>
                 {initial}
               </div>
               <div style={{ overflow: "hidden" }}>
-                <p style={{ fontSize: "14px", fontWeight: "bold", color: "#111827", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
+                <p style={{ fontSize: "14px", fontWeight: "bold", color: "#4B2E83", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
                 <p style={{ fontSize: "12px", color: "#6B7280", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
               </div>
             </div>
@@ -122,9 +122,9 @@ export default function AdminSidebar({ userRole, userName, userEmail }: { userRo
                   display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
                   borderRadius: "12px", fontSize: "14px", fontWeight: isActive ? "600" : "500",
                   textDecoration: "none", marginBottom: "4px",
-                  backgroundColor: isActive ? "#9333EA" : "transparent",
+                  backgroundColor: isActive ? "#4B2E83" : "transparent",
                   color: isActive ? "white" : "#6B7280",
-                  boxShadow: isActive ? "0 4px 6px -1px rgba(147, 51, 234, 0.3)" : "none",
+                  boxShadow: isActive ? "0 4px 6px -1px rgba(75, 46, 131, 0.3)" : "none",
                   transition: "all 0.2s"
                 }}>
                   <Icon size={20} style={{ flexShrink: 0, color: isActive ? "white" : "#9CA3AF" }} />

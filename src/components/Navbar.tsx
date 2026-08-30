@@ -48,13 +48,13 @@ export default function Navbar() {
           
           {/* LOGO */}
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
-            <div style={{ width: "32px", height: "32px", backgroundColor: "#9333EA", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={18} style={{ color: "white" }} />
+            <div style={{ width: "32px", height: "32px", backgroundColor: "#A8D5BA", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Music size={18} style={{ color: "#4B2E83" }} />
             </div>
-            <span style={{ fontSize: "20px", fontWeight: "bold", color: "#111827" }}>Nooryi</span>
+            <span style={{ fontSize: "20px", fontWeight: "bold", color: "#4B2E83" }}>Nooryi</span>
           </Link>
 
-          {/* DESKTOP NAV - يظهر فقط على الشاشات الكبيرة */}
+          {/* DESKTOP NAV */}
           {!isMobile && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -65,8 +65,8 @@ export default function Navbar() {
                     <Link key={link.href} href={link.href} style={{
                       display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
                       borderRadius: "8px", fontSize: "14px", fontWeight: "500", textDecoration: "none",
-                      color: isActive ? "#9333EA" : "#6B7280",
-                      backgroundColor: isActive ? "#F3E8FF" : "transparent"
+                      color: isActive ? "#4B2E83" : "#6B7280",
+                      backgroundColor: isActive ? "#A8D5BA40" : "transparent"
                     }}>
                       <Icon size={16} /> {link.label}
                     </Link>
@@ -76,8 +76,8 @@ export default function Navbar() {
                   <Link href="/admin" style={{
                     display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
                     borderRadius: "8px", fontSize: "14px", fontWeight: "500", textDecoration: "none",
-                    color: pathname.startsWith("/admin") ? "#9333EA" : "#6B7280",
-                    backgroundColor: pathname.startsWith("/admin") ? "#F3E8FF" : "transparent"
+                    color: pathname.startsWith("/admin") ? "#4B2E83" : "#6B7280",
+                    backgroundColor: pathname.startsWith("/admin") ? "#A8D5BA40" : "transparent"
                   }}>
                     <LayoutDashboard size={16} /> لوحة التحكم
                   </Link>
@@ -87,11 +87,11 @@ export default function Navbar() {
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {isLoggedIn ? (
                   <>
-                    <span style={{ fontSize: "14px", fontWeight: "600", color: "#111827" }}>{userName}</span>
+                    <span style={{ fontSize: "14px", fontWeight: "600", color: "#4B2E83" }}>{userName}</span>
                     <Link href="/my-bookings" style={{
                       display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
                       borderRadius: "8px", fontSize: "14px", fontWeight: "600", textDecoration: "none",
-                      backgroundColor: "#9333EA", color: "white"
+                      backgroundColor: "#A8D5BA", color: "#4B2E83"
                     }}>
                       <Calendar size={16} /> حجوزاتي
                     </Link>
@@ -106,7 +106,7 @@ export default function Navbar() {
                 ) : (
                   <Link href="/login" style={{
                     padding: "8px 16px", borderRadius: "8px", fontSize: "14px", fontWeight: "600",
-                    textDecoration: "none", backgroundColor: "#9333EA", color: "white"
+                    textDecoration: "none", backgroundColor: "#4B2E83", color: "white"
                   }}>
                     تسجيل الدخول
                   </Link>
@@ -115,7 +115,7 @@ export default function Navbar() {
             </>
           )}
 
-          {/* MOBILE MENU BUTTON - يظهر فقط على الجوال */}
+          {/* MOBILE MENU BUTTON */}
           {isMobile && (
             <button onClick={() => setMobileOpen(!mobileOpen)} style={{
               padding: "8px", borderRadius: "8px", backgroundColor: "transparent",
@@ -136,8 +136,8 @@ export default function Navbar() {
                 <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} style={{
                   display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
                   borderRadius: "8px", fontSize: "16px", fontWeight: "500", textDecoration: "none",
-                  color: isActive ? "#9333EA" : "#111827",
-                  backgroundColor: isActive ? "#F3E8FF" : "transparent", marginBottom: "4px"
+                  color: isActive ? "#4B2E83" : "#111827",
+                  backgroundColor: isActive ? "#A8D5BA40" : "transparent", marginBottom: "4px"
                 }}>
                   <Icon size={20} /> {link.label}
                 </Link>
@@ -148,7 +148,7 @@ export default function Navbar() {
               <Link href="/admin" onClick={() => setMobileOpen(false)} style={{
                 display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
                 borderRadius: "8px", fontSize: "16px", fontWeight: "500", textDecoration: "none",
-                color: "#9333EA", backgroundColor: "#F3E8FF", marginBottom: "4px"
+                color: "#4B2E83", backgroundColor: "#A8D5BA40", marginBottom: "4px"
               }}>
                 <LayoutDashboard size={20} /> لوحة التحكم
               </Link>
@@ -158,11 +158,11 @@ export default function Navbar() {
 
             {isLoggedIn ? (
               <>
-                <p style={{ padding: "0 16px", fontSize: "14px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>{userName}</p>
+                <p style={{ padding: "0 16px", fontSize: "14px", fontWeight: "600", color: "#4B2E83", marginBottom: "8px" }}>{userName}</p>
                 <Link href="/my-bookings" onClick={() => setMobileOpen(false)} style={{
                   display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px",
                   borderRadius: "8px", fontSize: "16px", fontWeight: "600", textDecoration: "none",
-                  backgroundColor: "#9333EA", color: "white", marginBottom: "8px"
+                  backgroundColor: "#A8D5BA", color: "#4B2E83", marginBottom: "8px"
                 }}>
                   <Calendar size={20} /> حجوزاتي
                 </Link>
@@ -178,7 +178,7 @@ export default function Navbar() {
               <Link href="/login" onClick={() => setMobileOpen(false)} style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px 16px",
                 borderRadius: "8px", fontSize: "16px", fontWeight: "600", textDecoration: "none",
-                backgroundColor: "#9333EA", color: "white"
+                backgroundColor: "#4B2E83", color: "white"
               }}>
                 تسجيل الدخول
               </Link>
