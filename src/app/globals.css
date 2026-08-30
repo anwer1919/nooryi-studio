@@ -421,3 +421,27 @@ html, body {
 @media (min-width: 1024px) {
   .container-custom { padding: 0 var(--space-8); }
 }
+/* ==========================================
+   Print Styles (تنسيقات الطباعة والتقارير)
+   ========================================== */
+@media print {
+  body { 
+    background-color: white !important; 
+    padding: 0 !important; 
+    margin: 0 !important;
+  }
+  .no-print { 
+    display: none !important; 
+  }
+  .print-container { 
+    box-shadow: none !important; 
+    border: none !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    max-width: 100% !important;
+  }
+  @page { 
+    margin: 15mm; 
+    size: A4 portrait; 
+  }
+}

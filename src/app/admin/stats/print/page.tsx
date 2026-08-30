@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic"
 export default async function PrintStatsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string; to?: string }>
+  searchParams: Promise<{ from?: string; to?: string }> | { from?: string; to?: string }
 }) {
   const session = await getServerSession(authOptions)
   
@@ -24,19 +24,21 @@ export default async function PrintStatsPage({
     redirect("/admin")
   }
 
-  const params = await searchParams
+  // التعامل الآمن مع searchParams في Next.js 14 و 15
+  const params = 'then' in searchParams ? await searchParams : searchParams
   const dateFrom = params.from ? new Date(params.from) : null
   const dateTo = params.to ? new Date(params.to) : null
 
   let managerArtistId: string | null = null
   let managerName = "الإدارة العامة"
+  
   if (isManager) {
     const managerUser = await prisma.user.findUnique({
       where: { email: session.user.email! },
       select: { artistId: true, name: true },
     })
     managerArtistId = managerUser?.artistId || null
-    managerName = managerUser?.name || "مدير الأعمال"
+    managerName = String(managerUser?.name || "مدير الأعمال")
   }
 
   const where = isManager && managerArtistId ? { artistId: managerArtistId } : {}
@@ -58,11 +60,14 @@ export default async function PrintStatsPage({
     return true
   })
 
-  const totalRevenue = filteredBookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
+  // ✅ تحويل صريح إلى Number لمنع خطأ Prisma Decimal Object
+  const totalRevenue = filteredBookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
   const platformFee = Math.round(totalRevenue * 0.05)
   const netRevenue = totalRevenue - platformFee
+  
   const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
   const reportId = `RPT-${Date.now().toString().slice(-6)}`
+  const userName = String(session.user.name || "المستخدم")
 
   return (
     <div dir="rtl" style={{ 
@@ -71,17 +76,6 @@ export default async function PrintStatsPage({
       padding: "40px 20px",
       fontFamily: "'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     }}>
-      {/* Print Specific Styles */}
-      <style>{`
-        @media print {
-          body { background-color: white !important; padding: 0 !important; }
-          .no-print { display: none !important; }
-          .print-container { box-shadow: none !important; border: none !important; padding: 0 !important; }
-          @page { margin: 15mm; size: A4; }
-        }
-      `}</style>
-
-      {/* A4 Paper Container */}
       <div className="print-container" style={{
         maxWidth: "210mm",
         margin: "0 auto",
@@ -92,7 +86,7 @@ export default async function PrintStatsPage({
         border: "1px solid #e5e7eb"
       }}>
         
-        {/* 1. Header (الترويسة) */}
+        {/* 1. Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "30px", borderBottom: "3px solid #4B2E83", paddingBottom: "20px" }}>
           <div style={{ textAlign: "right" }}>
             <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#4B2E83", margin: "0 0 8px 0" }}>Nooryi Studio</h1>
@@ -104,12 +98,12 @@ export default async function PrintStatsPage({
             <div style={{ fontSize: "13px", color: "#4B5563", lineHeight: "1.8" }}>
               <p style={{ margin: 0 }}><strong>رقم التقرير:</strong> {reportId}</p>
               <p style={{ margin: 0 }}><strong>تاريخ الإصدار:</strong> {reportDate}</p>
-              <p style={{ margin: 0 }}><strong>إعداد:</strong> {session.user.name}</p>
+              <p style={{ margin: 0 }}><strong>إعداد:</strong> {userName}</p>
             </div>
           </div>
         </div>
 
-        {/* 2. Period & Entity Info (بيانات الفترة والجهة) */}
+        {/* 2. Period Info */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "30px", backgroundColor: "#F0FAF4", padding: "16px", borderRadius: "8px", border: "1px solid #A8D5BA" }}>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 4px 0" }}>موجه إلى:</p>
@@ -125,11 +119,11 @@ export default async function PrintStatsPage({
           </div>
           <div style={{ flex: 1, textAlign: "left" }}>
             <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 4px 0" }}>عدد الحجوزات:</p>
-            <p style={{ fontSize: "15px", fontWeight: "700", color: "#111827", margin: 0 }}>{filteredBookings.length} حجز</p>
+            <p style={{ fontSize: "15px", fontWeight: "700", color: "#111827", margin: 0 }}>{String(filteredBookings.length)} حجز</p>
           </div>
         </div>
 
-        {/* 3. Detailed Table (جدول التفاصيل) */}
+        {/* 3. Table */}
         <div style={{ marginBottom: "30px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
             <thead>
@@ -154,20 +148,26 @@ export default async function PrintStatsPage({
                 else if (isApproved) { statusBg = "#E9DEFF"; statusColor = "#4B2E83"; statusText = "معتمد" }
                 else if (isCancelled) { statusBg = "#FEE2E2"; statusColor = "#991B1B"; statusText = "ملغي" }
 
+                // ✅ تحويل آمن للقيم
+                const amount = Number(booking.grossAmount || 0)
+                const artistName = String(booking.artist?.name || "-")
+                const artistCategory = String(booking.artist?.category || "")
+                const clientName = String(booking.clientName || "-")
+                const venueName = String(booking.venue?.name || "-")
+                const dateStr = new Date(booking.date).toLocaleDateString("ar-EG")
+
                 return (
                   <tr key={booking.id} style={{ backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
-                    <td style={{ padding: "12px", color: "#6B7280" }}>{index + 1}</td>
+                    <td style={{ padding: "12px", color: "#6B7280" }}>{String(index + 1)}</td>
                     <td style={{ padding: "12px" }}>
-                      <div style={{ fontWeight: "600", color: "#111827" }}>{booking.artist?.name || "-"}</div>
-                      <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{booking.artist?.category || ""}</div>
+                      <div style={{ fontWeight: "600", color: "#111827" }}>{artistName}</div>
+                      <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{artistCategory}</div>
                     </td>
-                    <td style={{ padding: "12px", color: "#374151" }}>{booking.clientName}</td>
-                    <td style={{ padding: "12px", color: "#374151", whiteSpace: "nowrap" }}>
-                      {new Date(booking.date).toLocaleDateString("ar-EG")}
-                    </td>
-                    <td style={{ padding: "12px", color: "#374151" }}>{booking.venue?.name || "-"}</td>
+                    <td style={{ padding: "12px", color: "#374151" }}>{clientName}</td>
+                    <td style={{ padding: "12px", color: "#374151", whiteSpace: "nowrap" }}>{dateStr}</td>
+                    <td style={{ padding: "12px", color: "#374151" }}>{venueName}</td>
                     <td style={{ padding: "12px", fontWeight: "700", color: "#4B2E83", whiteSpace: "nowrap" }}>
-                      {(booking.grossAmount || 0).toLocaleString()}
+                      {amount.toLocaleString()}
                     </td>
                     <td style={{ padding: "12px" }}>
                       <span style={{
@@ -184,7 +184,7 @@ export default async function PrintStatsPage({
           </table>
         </div>
 
-        {/* 4. Financial Summary (ملخص مالي بأسلوب الفواتير) */}
+        {/* 4. Financial Summary */}
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "40px" }}>
           <div style={{ width: "320px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #E5E7EB" }}>
@@ -202,7 +202,7 @@ export default async function PrintStatsPage({
           </div>
         </div>
 
-        {/* 5. Footer (التذييل الرسمي) */}
+        {/* 5. Footer */}
         <div style={{ marginTop: "60px", paddingTop: "20px", borderTop: "2px dashed #D1D5DB", textAlign: "center" }}>
           <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 8px 0", fontWeight: "600" }}>
             تم استخراج هذا التقرير آلياً من نظام Nooryi Studio وهو يعتبر وثيقة رسمية داخلياً.
@@ -211,7 +211,6 @@ export default async function PrintStatsPage({
             للاستفسارات المالية: finance@nooryi.com | الدعم الفني: support@nooryi.com
           </p>
           
-          {/* توقيع إلكتروني وهمي للمظهر الرسمي */}
           <div style={{ marginTop: "30px", display: "flex", justifyContent: "space-between", paddingLeft: "40px", paddingRight: "40px" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ width: "120px", height: "40px", borderBottom: "1px solid #9CA3AF", marginBottom: "8px" }}></div>
@@ -223,10 +222,9 @@ export default async function PrintStatsPage({
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* زر الطباعة العائم (يختفي عند الطباعة الفعلية) */}
+      {/* زر الطباعة العائم */}
       <div className="no-print" style={{ position: "fixed", bottom: "30px", left: "30px", zIndex: 100 }}>
         <button 
           onClick={() => window.print()}
@@ -237,21 +235,12 @@ export default async function PrintStatsPage({
             boxShadow: "0 10px 25px rgba(75, 46, 131, 0.4)",
             transition: "transform 0.2s"
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           🖨️ طباعة التقرير / حفظ كـ PDF
         </button>
       </div>
-
-      {/* تشغيل الطباعة تلقائياً عند فتح الصفحة */}
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          window.onload = function() {
-            // window.print(); // يمكنك إلغاء تعليق هذا السطر إذا أردت فتح نافذة الطباعة فوراً
-          }
-        `
-      }} />
     </div>
   )
 }
