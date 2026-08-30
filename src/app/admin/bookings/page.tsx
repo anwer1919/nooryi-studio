@@ -5,15 +5,13 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import {
   Calendar,
-  MapPin,
-  Music,
   CheckCircle2,
   XCircle,
   Clock,
-  Eye,
   Search,
   Filter,
 } from "lucide-react"
+import BookingsTable from "./BookingsTable"
 
 export const dynamic = "force-dynamic"
 
@@ -98,50 +96,21 @@ export default async function BookingsListPage({
     prisma.booking.count({ where: { ...whereClause, status: "CANCELLED" } }),
   ])
 
-  const statusConfig: any = {
-    PENDING_APPROVAL: {
-      label: "قيد المراجعة",
-      color: "bg-yellow-100 text-yellow-700 border-yellow-300",
-      icon: Clock,
-    },
-    APPROVED: {
-      label: "تمت الموافقة",
-      color: "bg-blue-100 text-blue-700 border-blue-300",
-      icon: CheckCircle2,
-    },
-    CONFIRMED: {
-      label: "مؤكد",
-      color: "bg-green-100 text-green-700 border-green-300",
-      icon: CheckCircle2,
-    },
-    COMPLETED: {
-      label: "مكتمل",
-      color: "bg-green-100 text-green-700 border-green-300",
-      icon: CheckCircle2,
-    },
-    CANCELLED: {
-      label: "ملغي",
-      color: "bg-red-100 text-red-700 border-red-300",
-      icon: XCircle,
-    },
-    REJECTED: {
-      label: "مرفوض",
-      color: "bg-red-100 text-red-700 border-red-300",
-      icon: XCircle,
-    },
-  }
-
-  const getPaymentStatus = (booking: any) => {
-    const remaining = Number(booking.remainingAmount || 0)
-    const deposit = Number(booking.depositAmount || 0)
-    if (remaining === 0 && deposit > 0) {
-      return { label: "مدفوع", color: "bg-green-100 text-green-700" }
-    } else if (deposit > 0) {
-      return { label: "جزئي", color: "bg-blue-100 text-blue-700" }
-    } else {
-      return { label: "غير مدفوع", color: "bg-red-100 text-red-700" }
-    }
-  }
+  // تحويل البيانات إلى صيغة بسيطة للـ Client Component
+  const bookingsData = bookings.map((booking) => ({
+    id: booking.id,
+    clientName: booking.customer?.fullName || booking.clientName || "غير محدد",
+    clientEmail: booking.customer?.email || booking.clientEmail || null,
+    artistName: booking.artist?.name || "غير محدد",
+    artistCategory: booking.artist?.category || "",
+    artistImage: booking.artist?.profileImage || null,
+    venueName: booking.venue?.name || null,
+    grossAmount: Number(booking.grossAmount || 0),
+    depositAmount: Number(booking.depositAmount || 0),
+    remainingAmount: Number(booking.remainingAmount || 0),
+    status: booking.status,
+    eventDate: new Date(booking.date).toISOString().split("T")[0],
+  }))
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
@@ -236,121 +205,7 @@ export default async function BookingsListPage({
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {bookings.length === 0 ? (
-            <div className="p-12 text-center">
-              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد حجوزات</h3>
-              <p className="text-gray-500">لم يتم العثور على حجوزات مطابقة للبحث.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">العميل</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الفنان</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">التاريخ</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">المبلغ</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الحالة</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الدفع</th>
-                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {bookings.map((booking) => {
-                    const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
-                    const StatusIcon = status.icon
-                    const paymentStatus = getPaymentStatus(booking)
-                    const clientName = booking.customer?.fullName || booking.clientName || "غير محدد"
-                    const grossAmount = Number(booking.grossAmount || 0)
-                    
-                    // استخدام صيغة ISO الثابتة (لا تتأثر بإعدادات المتصفح)
-                    const eventDateISO = new Date(booking.date).toISOString().split("T")[0]
-                    const eventDate = eventDateISO
-
-                    const clientInitial = clientName && clientName.length > 0 ? clientName.charAt(0) : "?"
-                    const artistInitial = booking.artist?.name && booking.artist.name.length > 0 ? booking.artist.name.charAt(0) : "ف"
-
-                    return (
-                      <tr 
-                        key={booking.id} 
-                        className="hover:bg-gray-50 transition"
-                        suppressHydrationWarning
-                      >
-                        <td className="py-4 px-4" suppressHydrationWarning>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold">
-                              {clientInitial}
-                            </div>
-                            <div>
-                              <p className="font-bold text-gray-900 text-sm">{clientName}</p>
-                              <p className="text-xs text-gray-500">
-                                {booking.customer?.email || booking.clientEmail || "-"}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4" suppressHydrationWarning>
-                          <div className="flex items-center gap-2">
-                            {booking.artist?.profileImage ? (
-                              <img
-                                src={booking.artist.profileImage}
-                                alt={booking.artist.name || "فنان"}
-                                className="w-8 h-8 rounded-lg object-cover"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold text-xs">
-                                {artistInitial}
-                              </div>
-                            )}
-                            <div>
-                              <p className="font-bold text-gray-900 text-sm">{booking.artist?.name || "-"}</p>
-                              <p className="text-xs text-gray-500">{booking.artist?.category || ""}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4" suppressHydrationWarning>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Calendar size={14} className="text-gray-400 flex-shrink-0" />
-                            <span className="text-gray-700">{eventDate}</span>
-                          </div>
-                          {booking.venue?.name && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                              <MapPin size={12} className="flex-shrink-0" />
-                              <span>{booking.venue.name}</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-4 px-4" suppressHydrationWarning>
-                          <p className="font-bold text-gray-900">{grossAmount.toLocaleString("en-US")} ج.م</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className={`${status.color} border px-3 py-1 rounded-lg inline-flex items-center gap-1 text-xs font-bold`}>
-                            <StatusIcon size={14} />
-                            <span>{status.label}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className={`${paymentStatus.color} px-3 py-1 rounded-lg text-xs font-bold`}>
-                            {paymentStatus.label}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Link
-                            href={`/admin/bookings/${booking.id}`}
-                            className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg text-sm font-bold hover:bg-purple-800 transition"
-                          >
-                            <Eye size={16} />
-                            عرض التفاصيل
-                          </Link>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <BookingsTable bookings={bookingsData} />
         </div>
 
         {totalPages > 1 && (
