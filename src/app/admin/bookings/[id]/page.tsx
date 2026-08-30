@@ -3,31 +3,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import {
-  ArrowLeft,
-  Calendar,
-  MapPin,
-  User,
-  Music,
-  DollarSign,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  CreditCard,
-  FileText,
-  Phone,
-  Mail,
-  Printer,
-  Share2,
-} from "lucide-react"
+import { ArrowLeft, Calendar, MapPin, User, Music, DollarSign, CheckCircle2, XCircle, Clock, FileText } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-export default async function BookingDetailsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
@@ -49,31 +29,9 @@ export default async function BookingDetailsPage({
     booking = await prisma.booking.findUnique({
       where: { id },
       include: {
-        artist: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            category: true,
-            profileImage: true,
-            bio: true,
-          },
-        },
-        venue: {
-          select: {
-            name: true,
-            address: true,
-            city: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
+        artist: true,
+        venue: true,
+        user: true,
       },
     })
   } catch (error) {
@@ -95,90 +53,26 @@ export default async function BookingDetailsPage({
     )
   }
 
-  // التحقق من الصلاحيات
-  const isOwner = booking.userId === session.user.id
-  if (!isAdmin && !isOwner) {
-    redirect("/")
-  }
-
-  // حساب المبالغ
   const grossAmount = Number(booking.grossAmount || 0)
   const platformFee = Math.round(grossAmount * 0.05)
   const taxAmount = Math.round(grossAmount * 0.14)
   const netAmount = grossAmount + taxAmount
 
-  // حالة الحجز
-  const statusConfig: any = {
-    PENDING_APPROVAL: {
-      label: "قيد المراجعة",
-      color: "text-yellow-700",
-      bg: "bg-yellow-100",
-      border: "border-yellow-300",
-      icon: Clock,
-    },
-    APPROVED: {
-      label: "تمت الموافقة",
-      color: "text-blue-700",
-      bg: "bg-blue-100",
-      border: "border-blue-300",
-      icon: CheckCircle2,
-    },
-    CONFIRMED: {
-      label: "مؤكد",
-      color: "text-green-700",
-      bg: "bg-green-100",
-      border: "border-green-300",
-      icon: CheckCircle2,
-    },
-    COMPLETED: {
-      label: "مكتمل",
-      color: "text-green-700",
-      bg: "bg-green-100",
-      border: "border-green-300",
-      icon: CheckCircle2,
-    },
-    CANCELLED: {
-      label: "ملغي",
-      color: "text-red-700",
-      bg: "bg-red-100",
-      border: "border-red-300",
-      icon: XCircle,
-    },
-    REJECTED: {
-      label: "مرفوض",
-      color: "text-red-700",
-      bg: "bg-red-100",
-      border: "border-red-300",
-      icon: XCircle,
-    },
+  const statusLabels: any = {
+    PENDING_APPROVAL: { label: "قيد المراجعة", color: "bg-yellow-100 text-yellow-700" },
+    APPROVED: { label: "تمت الموافقة", color: "bg-blue-100 text-blue-700" },
+    CONFIRMED: { label: "مؤكد", color: "bg-green-100 text-green-700" },
+    COMPLETED: { label: "مكتمل", color: "bg-green-100 text-green-700" },
+    CANCELLED: { label: "ملغي", color: "bg-red-100 text-red-700" },
+    REJECTED: { label: "مرفوض", color: "bg-red-100 text-red-700" },
   }
 
-  const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
-  const StatusIcon = status.icon
-
-  // حالة الدفع
-  const paymentStatusConfig: any = {
-    PENDING: { label: "غير مدفوع", color: "text-yellow-700", bg: "bg-yellow-100" },
-    PARTIAL: { label: "مدفوع جزئياً", color: "text-blue-700", bg: "bg-blue-100" },
-    PAID: { label: "مدفوع بالكامل", color: "text-green-700", bg: "bg-green-100" },
-    REFUNDED: { label: "مسترد", color: "text-gray-700", bg: "bg-gray-100" },
-  }
-
-  const paymentStatus = paymentStatusConfig[booking.paymentStatus] || paymentStatusConfig.PENDING
-
+  const status = statusLabels[booking.status] || statusLabels.PENDING_APPROVAL
   const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
-
-  const createdAt = new Date(booking.createdAt).toLocaleDateString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   })
 
   return (
@@ -187,10 +81,7 @@ export default async function BookingDetailsPage({
         
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/admin/bookings"
-            className="inline-flex items-center gap-2 text-purple-700 hover:text-purple-800 font-semibold mb-4 transition"
-          >
+          <Link href="/admin/bookings" className="inline-flex items-center gap-2 text-purple-700 hover:text-purple-800 font-semibold mb-4">
             <ArrowLeft size={20} />
             العودة للحجوزات
           </Link>
@@ -203,9 +94,8 @@ export default async function BookingDetailsPage({
               </p>
             </div>
 
-            {/* شارة الحالة */}
-            <div className={`${status.bg} ${status.color} ${status.border} border-2 px-6 py-3 rounded-xl font-bold flex items-center gap-2`}>
-              <StatusIcon size={24} />
+            <div className={`${status.color} px-6 py-3 rounded-xl font-bold flex items-center gap-2`}>
+              <Clock size={24} />
               <span className="text-lg">{status.label}</span>
             </div>
           </div>
@@ -214,47 +104,32 @@ export default async function BookingDetailsPage({
         {/* أزرار الإجراءات */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
           <div className="flex flex-wrap gap-3">
-            {/* زر عرض الفاتورة */}
             <Link
               href={`/booking/${booking.id}/invoice/print`}
               target="_blank"
-              className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg hover:shadow-xl"
+              className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg"
             >
               <FileText size={20} />
               عرض الفاتورة
             </Link>
 
-            {/* زر الموافقة (إذا كان معلق) */}
             {booking.status === "PENDING_APPROVAL" && isAdmin && (
-              <Link
-                href={`/admin/bookings/${booking.id}/approve`}
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg"
-              >
-                <CheckCircle2 size={20} />
-                موافقة
-              </Link>
-            )}
-
-            {/* زر الرفض (إذا كان معلق) */}
-            {booking.status === "PENDING_APPROVAL" && isAdmin && (
-              <Link
-                href={`/admin/bookings/${booking.id}/reject`}
-                className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg"
-              >
-                <XCircle size={20} />
-                رفض
-              </Link>
-            )}
-
-            {/* زر تأكيد الدفع */}
-            {booking.status === "APPROVED" && booking.paymentStatus === "PENDING" && isAdmin && (
-              <Link
-                href={`/admin/bookings/${booking.id}/confirm-payment`}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg"
-              >
-                <CreditCard size={20} />
-                تأكيد الدفع
-              </Link>
+              <>
+                <Link
+                  href={`/admin/bookings/${booking.id}/approve`}
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg"
+                >
+                  <CheckCircle2 size={20} />
+                  موافقة
+                </Link>
+                <Link
+                  href={`/admin/bookings/${booking.id}/reject`}
+                  className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg"
+                >
+                  <XCircle size={20} />
+                  رفض
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -277,19 +152,19 @@ export default async function BookingDetailsPage({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-gray-500 font-semibold mb-1">الاسم</p>
-                <p className="font-bold text-gray-900">{booking.user?.name || booking.clientName}</p>
+                <p className="font-bold text-gray-900">{booking.user?.name || booking.clientName || "غير محدد"}</p>
               </div>
               
               {booking.user?.email && (
-                <div className="flex items-center gap-2">
-                  <Mail size={16} className="text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">البريد الإلكتروني</p>
                   <p className="text-sm text-gray-700">{booking.user.email}</p>
                 </div>
               )}
               
               {(booking.user?.phone || booking.clientPhone) && (
-                <div className="flex items-center gap-2">
-                  <Phone size={16} className="text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">الهاتف</p>
                   <p className="text-sm text-gray-700" dir="ltr">
                     {booking.user?.phone || booking.clientPhone}
                   </p>
@@ -310,7 +185,7 @@ export default async function BookingDetailsPage({
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4">
               {booking.artist?.profileImage ? (
                 <img
                   src={booking.artist.profileImage}
@@ -323,17 +198,10 @@ export default async function BookingDetailsPage({
                 </div>
               )}
               <div>
-                <p className="font-bold text-gray-900 text-lg">{booking.artist?.name}</p>
-                <p className="text-sm text-purple-700">{booking.artist?.category}</p>
+                <p className="font-bold text-gray-900 text-lg">{booking.artist?.name || "غير محدد"}</p>
+                <p className="text-sm text-purple-700">{booking.artist?.category || ""}</p>
               </div>
             </div>
-
-            {booking.artist?.bio && (
-              <div>
-                <p className="text-xs text-gray-500 font-semibold mb-1">نبذة</p>
-                <p className="text-sm text-gray-700 line-clamp-3">{booking.artist.bio}</p>
-              </div>
-            )}
           </div>
 
           {/* بيانات المكان */}
@@ -360,13 +228,6 @@ export default async function BookingDetailsPage({
                   <p className="text-sm text-gray-700">{booking.venue.address}</p>
                 </div>
               )}
-              
-              {booking.venue?.city && (
-                <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">المدينة</p>
-                  <p className="text-sm text-gray-700">{booking.venue.city}</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -388,20 +249,8 @@ export default async function BookingDetailsPage({
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">تاريخ الحجز:</span>
-                <span className="font-bold text-gray-900">{createdAt}</span>
-              </div>
-
-              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">طريقة الدفع:</span>
                 <span className="font-bold text-gray-900">{booking.paymentMethod || "بطاقة ائتمان"}</span>
-              </div>
-
-              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">حالة الدفع:</span>
-                <span className={`${paymentStatus.bg} ${paymentStatus.color} px-3 py-1 rounded-lg text-sm font-bold`}>
-                  {paymentStatus.label}
-                </span>
               </div>
 
               {booking.notes && (
@@ -456,9 +305,9 @@ export default async function BookingDetailsPage({
             <Link
               href={`/booking/${booking.id}/invoice/print`}
               target="_blank"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-xl hover:shadow-2xl transform hover:scale-105"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-xl transform hover:scale-105"
             >
-              <Printer size={24} />
+              <FileText size={24} />
               عرض الفاتورة الرسمية
             </Link>
           </div>
