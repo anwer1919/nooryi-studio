@@ -194,7 +194,7 @@ model Notification {
 model GeneratedReport {
   id            String   @id @default(cuid())
   reportNumber  String   @unique
-  type          String   @default("REPORT") // REPORT أو INVOICE
+  type          String   @default("REPORT")
   title         String
   generatedFor  String
   dateFrom      DateTime?
