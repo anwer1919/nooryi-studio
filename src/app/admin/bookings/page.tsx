@@ -6,9 +6,7 @@ import Link from "next/link"
 import {
   Calendar,
   MapPin,
-  User,
   Music,
-  DollarSign,
   CheckCircle2,
   XCircle,
   Clock,
@@ -48,15 +46,12 @@ export default async function BookingsListPage({
   const currentPage = parseInt(params.page || "1")
   const pageSize = 10
 
-  // بناء شروط البحث
   const whereClause: any = {}
 
-  // فلترة حسب الحالة
   if (statusFilter !== "ALL") {
     whereClause.status = statusFilter
   }
 
-  // فلترة حسب مدير الأعمال
   if (isManager) {
     try {
       const managerUser = await prisma.user.findUnique({
@@ -71,7 +66,6 @@ export default async function BookingsListPage({
     }
   }
 
-  // فلترة حسب البحث
   if (searchQuery) {
     whereClause.OR = [
       { clientName: { contains: searchQuery, mode: "insensitive" } },
@@ -80,7 +74,6 @@ export default async function BookingsListPage({
     ]
   }
 
-  // جلب الحجوزات
   const [bookings, totalBookings] = await Promise.all([
     prisma.booking.findMany({
       where: whereClause,
@@ -98,7 +91,6 @@ export default async function BookingsListPage({
 
   const totalPages = Math.ceil(totalBookings / pageSize)
 
-  // إحصائيات سريعة
   const [pending, approved, completed, cancelled] = await Promise.all([
     prisma.booking.count({ where: { ...whereClause, status: "PENDING_APPROVAL" } }),
     prisma.booking.count({ where: { ...whereClause, status: "APPROVED" } }),
@@ -106,7 +98,6 @@ export default async function BookingsListPage({
     prisma.booking.count({ where: { ...whereClause, status: "CANCELLED" } }),
   ])
 
-  // إعدادات الحالة
   const statusConfig: any = {
     PENDING_APPROVAL: {
       label: "قيد المراجعة",
@@ -140,7 +131,6 @@ export default async function BookingsListPage({
     },
   }
 
-  // حالة الدفع
   const getPaymentStatus = (booking: any) => {
     const remaining = Number(booking.remainingAmount || 0)
     const deposit = Number(booking.depositAmount || 0)
@@ -156,13 +146,11 @@ export default async function BookingsListPage({
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-black text-gray-900 mb-2">إدارة الحجوزات</h1>
           <p className="text-gray-500">عرض وإدارة جميع حجوزات المنصة</p>
         </div>
 
-        {/* إحصائيات سريعة */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3">
@@ -210,7 +198,6 @@ export default async function BookingsListPage({
           </div>
         </div>
 
-        {/* فلاتر */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
           <form className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -248,7 +235,6 @@ export default async function BookingsListPage({
           </form>
         </div>
 
-        {/* قائمة الحجوزات */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {bookings.length === 0 ? (
             <div className="p-12 text-center">
@@ -277,14 +263,24 @@ export default async function BookingsListPage({
                     const paymentStatus = getPaymentStatus(booking)
                     const clientName = booking.customer?.fullName || booking.clientName || "غير محدد"
                     const grossAmount = Number(booking.grossAmount || 0)
-                    const eventDate = new Date(booking.date).toLocaleDateString("ar-EG")
+                    
+                    // استخدام صيغة ISO الثابتة (لا تتأثر بإعدادات المتصفح)
+                    const eventDateISO = new Date(booking.date).toISOString().split("T")[0]
+                    const eventDate = eventDateISO
+
+                    const clientInitial = clientName && clientName.length > 0 ? clientName.charAt(0) : "?"
+                    const artistInitial = booking.artist?.name && booking.artist.name.length > 0 ? booking.artist.name.charAt(0) : "ف"
 
                     return (
-                      <tr key={booking.id} className="hover:bg-gray-50 transition">
-                        <td className="py-4 px-4">
+                      <tr 
+                        key={booking.id} 
+                        className="hover:bg-gray-50 transition"
+                        suppressHydrationWarning
+                      >
+                        <td className="py-4 px-4" suppressHydrationWarning>
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold">
-                              {clientName.charAt(0)}
+                              {clientInitial}
                             </div>
                             <div>
                               <p className="font-bold text-gray-900 text-sm">{clientName}</p>
@@ -294,17 +290,17 @@ export default async function BookingsListPage({
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-4 px-4" suppressHydrationWarning>
                           <div className="flex items-center gap-2">
                             {booking.artist?.profileImage ? (
                               <img
                                 src={booking.artist.profileImage}
-                                alt={booking.artist.name}
+                                alt={booking.artist.name || "فنان"}
                                 className="w-8 h-8 rounded-lg object-cover"
                               />
                             ) : (
                               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold text-xs">
-                                {booking.artist?.name?.charAt(0) || "ف"}
+                                {artistInitial}
                               </div>
                             )}
                             <div>
@@ -313,20 +309,20 @@ export default async function BookingsListPage({
                             </div>
                           </div>
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-4 px-4" suppressHydrationWarning>
                           <div className="flex items-center gap-2 text-sm">
-                            <Calendar size={14} className="text-gray-400" />
-                            <span suppressHydrationWarning className="text-gray-700">{eventDate}</span>
+                            <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                            <span className="text-gray-700">{eventDate}</span>
                           </div>
                           {booking.venue?.name && (
                             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                              <MapPin size={12} />
+                              <MapPin size={12} className="flex-shrink-0" />
                               <span>{booking.venue.name}</span>
                             </div>
                           )}
                         </td>
-                        <td className="py-4 px-4">
-                          <p className="font-bold text-gray-900">{grossAmount.toLocaleString()} ج.م</p>
+                        <td className="py-4 px-4" suppressHydrationWarning>
+                          <p className="font-bold text-gray-900">{grossAmount.toLocaleString("en-US")} ج.م</p>
                         </td>
                         <td className="py-4 px-4">
                           <div className={`${status.color} border px-3 py-1 rounded-lg inline-flex items-center gap-1 text-xs font-bold`}>
@@ -357,7 +353,6 @@ export default async function BookingsListPage({
           )}
         </div>
 
-        {/* الترقيم */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-6">
             <Link
