@@ -191,3 +191,19 @@ model Notification {
   
   @@map("notifications")
 }
+model GeneratedReport {
+  id            String   @id @default(cuid())
+  reportNumber  String   @unique
+  type          String   @default("REPORT") // REPORT أو INVOICE
+  title         String
+  generatedFor  String
+  dateFrom      DateTime?
+  dateTo        DateTime?
+  totalAmount   Float    @default(0)
+  platformFee   Float    @default(0)
+  netAmount     Float    @default(0)
+  bookingsCount Int      @default(0)
+  data          Json
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+}
