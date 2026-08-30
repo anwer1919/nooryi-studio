@@ -435,7 +435,7 @@ export default async function BookingDetailsPage({
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">تاريخ الفعالية:</span>
-                <span className="font-bold text-gray-900 text-right">
+                <span suppressHydrationWarning className="font-bold text-gray-900 text-right">
                   {eventDate}
                 </span>
               </div>
@@ -447,7 +447,9 @@ export default async function BookingDetailsPage({
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">تاريخ الإنشاء:</span>
-                <span className="font-bold text-gray-900 text-sm">{createdAt}</span>
+                <span suppressHydrationWarning className="font-bold text-gray-900 text-sm">
+                  {createdAt}
+                </span>
               </div>
 
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
