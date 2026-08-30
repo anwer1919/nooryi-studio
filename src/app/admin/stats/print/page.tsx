@@ -18,8 +18,9 @@ export default async function PrintStatsPage({
 
   const userRole = session.user.role || "USER"
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  const isManager = userRole === "ARTIST_MANAGER"
 
-  if (!isAdmin) {
+  if (!isAdmin && !isManager) {
     redirect("/admin")
   }
 
@@ -27,16 +28,28 @@ export default async function PrintStatsPage({
   const dateFrom = params.from ? new Date(params.from) : null
   const dateTo = params.to ? new Date(params.to) : null
 
-  // جلب الحجوزات
+  let managerArtistId: string | null = null
+  let managerName = "الإدارة العامة"
+  if (isManager) {
+    const managerUser = await prisma.user.findUnique({
+      where: { email: session.user.email! },
+      select: { artistId: true, name: true },
+    })
+    managerArtistId = managerUser?.artistId || null
+    managerName = managerUser?.name || "مدير الأعمال"
+  }
+
+  const where = isManager && managerArtistId ? { artistId: managerArtistId } : {}
+
   const bookings = await prisma.booking.findMany({
-    orderBy: { createdAt: "desc" },
+    where,
+    orderBy: { date: "desc" },
     include: { 
       artist: { select: { name: true, category: true } },
       venue: { select: { name: true } }
     },
   })
 
-  // فلترة حسب التاريخ
   const filteredBookings = bookings.filter(booking => {
     if (!dateFrom && !dateTo) return true
     const bookingDate = new Date(booking.date)
@@ -46,119 +59,196 @@ export default async function PrintStatsPage({
   })
 
   const totalRevenue = filteredBookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
-  const completedBookings = filteredBookings.filter(b => b.status === "COMPLETED").length
   const platformFee = Math.round(totalRevenue * 0.05)
+  const netRevenue = totalRevenue - platformFee
+  const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+  const reportId = `RPT-${Date.now().toString().slice(-6)}`
 
   return (
-    <div style={{ padding: "40px", fontFamily: "Arial, sans-serif", maxWidth: "800px", margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "40px", borderBottom: "3px solid #4B2E83", paddingBottom: "20px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "bold", color: "#4B2E83", margin: "0 0 8px 0" }}>
-          Nooryi Studio
-        </h1>
-        <p style={{ fontSize: "16px", color: "#6B7280", margin: "0" }}>
-          التقرير المالي الشامل
-        </p>
-        <p style={{ fontSize: "14px", color: "#9CA3AF", marginTop: "8px" }}>
-          تاريخ الطباعة: {new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })}
-        </p>
-        {(dateFrom || dateTo) && (
-          <p style={{ fontSize: "14px", color: "#4B2E83", marginTop: "4px", fontWeight: "600" }}>
-            الفترة: {dateFrom ? dateFrom.toLocaleDateString("ar-EG") : "البداية"} - {dateTo ? dateTo.toLocaleDateString("ar-EG") : "الآن"}
-          </p>
-        )}
-      </div>
+    <div dir="rtl" style={{ 
+      backgroundColor: "#f3f4f6", 
+      minHeight: "100vh", 
+      padding: "40px 20px",
+      fontFamily: "'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    }}>
+      {/* Print Specific Styles */}
+      <style>{`
+        @media print {
+          body { background-color: white !important; padding: 0 !important; }
+          .no-print { display: none !important; }
+          .print-container { box-shadow: none !important; border: none !important; padding: 0 !important; }
+          @page { margin: 15mm; size: A4; }
+        }
+      `}</style>
 
-      {/* Summary Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "40px" }}>
-        <div style={{ backgroundColor: "#F0FAF4", padding: "20px", borderRadius: "12px", border: "2px solid #A8D5BA", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "8px" }}>إجمالي الإيرادات</p>
-          <p style={{ fontSize: "28px", fontWeight: "bold", color: "#4B2E83", margin: "0" }}>
-            {totalRevenue.toLocaleString()} ج.م
-          </p>
+      {/* A4 Paper Container */}
+      <div className="print-container" style={{
+        maxWidth: "210mm",
+        margin: "0 auto",
+        backgroundColor: "white",
+        padding: "40px",
+        borderRadius: "8px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+        border: "1px solid #e5e7eb"
+      }}>
+        
+        {/* 1. Header (الترويسة) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "30px", borderBottom: "3px solid #4B2E83", paddingBottom: "20px" }}>
+          <div style={{ textAlign: "right" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#4B2E83", margin: "0 0 8px 0" }}>Nooryi Studio</h1>
+            <p style={{ fontSize: "14px", color: "#6B7280", margin: 0 }}>منصة حجز الفنانين والفعاليات</p>
+            <p style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "8px" }}>info@nooryi.com | +20 123 456 7890</p>
+          </div>
+          <div style={{ textAlign: "left" }}>
+            <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#111827", margin: "0 0 12px 0" }}>تقرير مالي شامل</h2>
+            <div style={{ fontSize: "13px", color: "#4B5563", lineHeight: "1.8" }}>
+              <p style={{ margin: 0 }}><strong>رقم التقرير:</strong> {reportId}</p>
+              <p style={{ margin: 0 }}><strong>تاريخ الإصدار:</strong> {reportDate}</p>
+              <p style={{ margin: 0 }}><strong>إعداد:</strong> {session.user.name}</p>
+            </div>
+          </div>
         </div>
-        <div style={{ backgroundColor: "#F0FAF4", padding: "20px", borderRadius: "12px", border: "2px solid #A8D5BA", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "8px" }}>الحجوزات المكتملة</p>
-          <p style={{ fontSize: "28px", fontWeight: "bold", color: "#4B2E83", margin: "0" }}>
-            {completedBookings}
-          </p>
-        </div>
-        <div style={{ backgroundColor: "#F0FAF4", padding: "20px", borderRadius: "12px", border: "2px solid #A8D5BA", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: "#6B7280", marginBottom: "8px" }}>رسوم المنصة (5%)</p>
-          <p style={{ fontSize: "28px", fontWeight: "bold", color: "#4B2E83", margin: "0" }}>
-            {platformFee.toLocaleString()} ج.م
-          </p>
-        </div>
-      </div>
 
-      {/* Bookings Table */}
-      <div style={{ marginBottom: "40px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "#4B2E83", marginBottom: "16px", borderBottom: "2px solid #E5E7EB", paddingBottom: "8px" }}>
-          تفاصيل الحجوزات ({filteredBookings.length})
-        </h2>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#4B2E83", color: "white" }}>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>الفنان</th>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>العميل</th>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>التاريخ</th>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>المكان</th>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>المبلغ</th>
-              <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>الحالة</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBookings.map((booking, index) => (
-              <tr key={booking.id} style={{ backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F8F9FC" }}>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB" }}>
-                  <div>
-                    <p style={{ margin: "0", fontWeight: "600", color: "#111827" }}>{booking.artist?.name}</p>
-                    <p style={{ margin: "0", fontSize: "10px", color: "#6B7280" }}>{booking.artist?.category}</p>
-                  </div>
-                </td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB", color: "#111827" }}>{booking.clientName}</td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB", color: "#111827" }}>
-                  {new Date(booking.date).toLocaleDateString("ar-EG")}
-                </td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB", color: "#111827" }}>{booking.venue?.name || "-"}</td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB", fontWeight: "600", color: "#4B2E83" }}>
-                  {(booking.grossAmount || 0).toLocaleString()} ج.م
-                </td>
-                <td style={{ padding: "12px", borderBottom: "1px solid #E5E7EB" }}>
-                  <span style={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "10px",
-                    fontWeight: "600",
-                    backgroundColor: booking.status === "COMPLETED" ? "#D1FAE5" :
-                                   booking.status === "APPROVED" ? "#A8D5BA40" :
-                                   booking.status === "CANCELLED" ? "#FEE2E2" : "#FEF3C7",
-                    color: booking.status === "COMPLETED" ? "#065F46" :
-                           booking.status === "APPROVED" ? "#4B2E83" :
-                           booking.status === "CANCELLED" ? "#991B1B" : "#92400E"
-                  }}>
-                    {booking.status === "COMPLETED" ? "مكتمل" :
-                     booking.status === "APPROVED" ? "موافق" :
-                     booking.status === "CANCELLED" ? "ملغي" : "مراجعة"}
-                  </span>
-                </td>
+        {/* 2. Period & Entity Info (بيانات الفترة والجهة) */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "30px", backgroundColor: "#F0FAF4", padding: "16px", borderRadius: "8px", border: "1px solid #A8D5BA" }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 4px 0" }}>موجه إلى:</p>
+            <p style={{ fontSize: "15px", fontWeight: "700", color: "#4B2E83", margin: 0 }}>{managerName}</p>
+          </div>
+          <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid #A8D5BA", borderLeft: "1px solid #A8D5BA" }}>
+            <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 4px 0" }}>الفترة الزمنية:</p>
+            <p style={{ fontSize: "15px", fontWeight: "700", color: "#111827", margin: 0 }}>
+              {dateFrom ? dateFrom.toLocaleDateString("ar-EG") : "من البداية"} 
+              <span style={{ margin: "0 8px", color: "#9CA3AF" }}>إلى</span> 
+              {dateTo ? dateTo.toLocaleDateString("ar-EG") : "حتّى الآن"}
+            </p>
+          </div>
+          <div style={{ flex: 1, textAlign: "left" }}>
+            <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 4px 0" }}>عدد الحجوزات:</p>
+            <p style={{ fontSize: "15px", fontWeight: "700", color: "#111827", margin: 0 }}>{filteredBookings.length} حجز</p>
+          </div>
+        </div>
+
+        {/* 3. Detailed Table (جدول التفاصيل) */}
+        <div style={{ marginBottom: "30px" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#4B2E83", color: "white" }}>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600", borderRadius: "0 8px 0 0" }}>م</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>الفنان / الفئة</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>العميل</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>تاريخ الحجز</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>المكان</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>المبلغ (ج.م)</th>
+                <th style={{ padding: "12px", textAlign: "right", fontWeight: "600", borderRadius: "8px 0 0 0" }}>الحالة</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredBookings.map((booking, index) => {
+                const isCompleted = booking.status === "COMPLETED"
+                const isApproved = booking.status === "APPROVED"
+                const isCancelled = booking.status === "CANCELLED"
+                
+                let statusBg = "#FEF3C7", statusColor = "#92400E", statusText = "قيد المراجعة"
+                if (isCompleted) { statusBg = "#D1FAE5"; statusColor = "#065F46"; statusText = "مكتمل" }
+                else if (isApproved) { statusBg = "#E9DEFF"; statusColor = "#4B2E83"; statusText = "معتمد" }
+                else if (isCancelled) { statusBg = "#FEE2E2"; statusColor = "#991B1B"; statusText = "ملغي" }
+
+                return (
+                  <tr key={booking.id} style={{ backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+                    <td style={{ padding: "12px", color: "#6B7280" }}>{index + 1}</td>
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ fontWeight: "600", color: "#111827" }}>{booking.artist?.name || "-"}</div>
+                      <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{booking.artist?.category || ""}</div>
+                    </td>
+                    <td style={{ padding: "12px", color: "#374151" }}>{booking.clientName}</td>
+                    <td style={{ padding: "12px", color: "#374151", whiteSpace: "nowrap" }}>
+                      {new Date(booking.date).toLocaleDateString("ar-EG")}
+                    </td>
+                    <td style={{ padding: "12px", color: "#374151" }}>{booking.venue?.name || "-"}</td>
+                    <td style={{ padding: "12px", fontWeight: "700", color: "#4B2E83", whiteSpace: "nowrap" }}>
+                      {(booking.grossAmount || 0).toLocaleString()}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={{
+                        padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700",
+                        backgroundColor: statusBg, color: statusColor, display: "inline-block"
+                      }}>
+                        {statusText}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 4. Financial Summary (ملخص مالي بأسلوب الفواتير) */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "40px" }}>
+          <div style={{ width: "320px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #E5E7EB" }}>
+              <span style={{ fontSize: "14px", color: "#6B7280" }}>إجمالي الحجوزات:</span>
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "#111827" }}>{totalRevenue.toLocaleString()} ج.م</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #E5E7EB" }}>
+              <span style={{ fontSize: "14px", color: "#6B7280" }}>رسوم المنصة (5%):</span>
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "#DC2626" }}>- {platformFee.toLocaleString()} ج.م</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "16px", backgroundColor: "#4B2E83", color: "white" }}>
+              <span style={{ fontSize: "16px", fontWeight: "800" }}>صافي الإيرادات:</span>
+              <span style={{ fontSize: "18px", fontWeight: "900" }}>{netRevenue.toLocaleString()} ج.م</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Footer (التذييل الرسمي) */}
+        <div style={{ marginTop: "60px", paddingTop: "20px", borderTop: "2px dashed #D1D5DB", textAlign: "center" }}>
+          <p style={{ fontSize: "12px", color: "#6B7280", margin: "0 0 8px 0", fontWeight: "600" }}>
+            تم استخراج هذا التقرير آلياً من نظام Nooryi Studio وهو يعتبر وثيقة رسمية داخلياً.
+          </p>
+          <p style={{ fontSize: "11px", color: "#9CA3AF", margin: 0 }}>
+            للاستفسارات المالية: finance@nooryi.com | الدعم الفني: support@nooryi.com
+          </p>
+          
+          {/* توقيع إلكتروني وهمي للمظهر الرسمي */}
+          <div style={{ marginTop: "30px", display: "flex", justifyContent: "space-between", paddingLeft: "40px", paddingRight: "40px" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ width: "120px", height: "40px", borderBottom: "1px solid #9CA3AF", marginBottom: "8px" }}></div>
+              <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>توقيع مُعد التقرير</p>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ width: "120px", height: "40px", borderBottom: "1px solid #9CA3AF", marginBottom: "8px" }}></div>
+              <p style={{ fontSize: "12px", color: "#6B7280", margin: 0 }}>ختم المنصة</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Footer */}
-      <div style={{ textAlign: "center", paddingTop: "20px", borderTop: "2px solid #E5E7EB", color: "#6B7280", fontSize: "12px" }}>
-        <p style={{ margin: "0" }}>Nooryi Studio © 2026 - جميع الحقوق محفوظة</p>
-        <p style={{ margin: "4px 0 0 0" }}>هذا التقرير تم إنشاؤه تلقائياً من نظام إدارة المنصة</p>
+      {/* زر الطباعة العائم (يختفي عند الطباعة الفعلية) */}
+      <div className="no-print" style={{ position: "fixed", bottom: "30px", left: "30px", zIndex: 100 }}>
+        <button 
+          onClick={() => window.print()}
+          style={{
+            display: "flex", alignItems: "center", gap: "8px", padding: "14px 28px",
+            borderRadius: "50px", backgroundColor: "#4B2E83", color: "white",
+            fontSize: "16px", fontWeight: "700", border: "none", cursor: "pointer",
+            boxShadow: "0 10px 25px rgba(75, 46, 131, 0.4)",
+            transition: "transform 0.2s"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+        >
+          🖨️ طباعة التقرير / حفظ كـ PDF
+        </button>
       </div>
 
-      {/* Print Script */}
+      {/* تشغيل الطباعة تلقائياً عند فتح الصفحة */}
       <script dangerouslySetInnerHTML={{
         __html: `
           window.onload = function() {
-            window.print();
+            // window.print(); // يمكنك إلغاء تعليق هذا السطر إذا أردت فتح نافذة الطباعة فوراً
           }
         `
       }} />
