@@ -3,6 +3,8 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 
+// ✅ ضمان تشغيل الصفحة في بيئة Node.js لتجنب مشاكل Prisma في Edge Runtime
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export default async function PrintStatsPage({
@@ -24,31 +26,28 @@ export default async function PrintStatsPage({
     redirect("/admin")
   }
 
-  // ✅ الطريقة الآمنة والرسمية لقراءة searchParams في Next.js
+  // ✅ الطريقة الآمنة لقراءة searchParams في Next.js 15
   const params = await searchParams
   const dateFrom = params.from ? new Date(params.from) : null
   const dateTo = params.to ? new Date(params.to) : null
 
   let managerName = "الإدارة العامة"
-  if (isManager) {
-    try {
+  let bookings: any[] = []
+  let hasDbError = false
+
+  try {
+    if (isManager) {
       const managerUser = await prisma.user.findUnique({
         where: { email: session.user.email! },
         select: { name: true },
       })
       managerName = String(managerUser?.name || "مدير الأعمال")
-    } catch (e) {
-      console.error("Failed to fetch manager name", e)
     }
-  }
 
-  let bookings: any[] = []
-  let errorMessage: string | null = null
+    const where = isManager 
+      ? await getManagerWhereClause(session.user.email!) 
+      : {}
 
-  // ✅ منع انهيار الخادم (500 Error) باستخدام try-catch
-  try {
-    const where = isManager ? await getManagerWhereClause(session.user.email!) : {}
-    
     const fetchedBookings = await prisma.booking.findMany({
       where,
       orderBy: { date: "desc" },
@@ -66,17 +65,19 @@ export default async function PrintStatsPage({
       return true
     })
   } catch (error: any) {
-    console.error("❌ Print Page Database Error:", error.message)
-    errorMessage = "تعذر الاتصال بقاعدة البيانات. يرجى التحقق من إعدادات البيئة (Environment Variables) في Vercel."
+    console.error("❌ DATABASE ERROR IN PRINT PAGE:", error.message)
+    hasDbError = true
   }
 
-  // إذا كان هناك خطأ، اعرضه بشكل أنيق بدلاً من شاشة 500 البيضاء
-  if (errorMessage) {
+  // ✅ إذا فشل الاتصال، نعرض رسالة أنيقة بدلاً من شاشة 500 البيضاء
+  if (hasDbError) {
     return (
-      <div dir="rtl" style={{ padding: "40px", textAlign: "center", fontFamily: "Tajawal, sans-serif" }}>
-        <h1 style={{ color: "#DC2626" }}>⚠️ خطأ في الخادم</h1>
-        <p style={{ color: "#6B7280" }}>{errorMessage}</p>
-        <button onClick={() => window.history.back()} style={{ marginTop: "20px", padding: "10px 20px", backgroundColor: "#4B2E83", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}>
+      <div dir="rtl" style={{ padding: "40px", textAlign: "center", fontFamily: "Tajawal, sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <h1 style={{ color: "#DC2626", fontSize: "24px", marginBottom: "16px" }}>⚠️ تعذر تحميل التقرير</h1>
+        <p style={{ color: "#6B7280", marginBottom: "24px", maxWidth: "500px" }}>
+          هناك مشكلة في الاتصال بقاعدة البيانات. يرجى التأكد من إضافة متغير <code>DATABASE_URL</code> بشكل صحيح في إعدادات Vercel.
+        </p>
+        <button onClick={() => window.history.back()} style={{ padding: "12px 24px", backgroundColor: "#4B2E83", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}>
           العودة للخلف
         </button>
       </div>
@@ -86,12 +87,18 @@ export default async function PrintStatsPage({
   const totalRevenue = bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
   const platformFee = Math.round(totalRevenue * 0.05)
   const netRevenue = totalRevenue - platformFee
+  
+  // ✅ استخدام تاريخ ثابت لمنع خطأ Hydration #441
   const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
-  const reportId = `RPT-${Date.now().toString().slice(-6)}`
+  const reportId = `RPT-${dateFrom ? dateFrom.toISOString().split('T')[0] : 'ALL'}-${dateTo ? dateTo.toISOString().split('T')[0] : 'NOW'}`
   const userName = String(session.user.name || "المستخدم")
 
+  // رابط المشاركة الحالي
+  const currentUrl = typeof window !== "undefined" ? window.location.href : `https://nooryi-studio.vercel.app/admin/stats/print?from=${params.from || ''}&to=${params.to || ''}`
+  const whatsappMessage = encodeURIComponent(`مرحباً، إليك التقرير المالي من Nooryi Studio:\n${currentUrl}`)
+
   return (
-    <div dir="rtl" style={{ backgroundColor: "#f3f4f6", minHeight: "100vh", padding: "40px 20px", fontFamily: "'Tajawal', sans-serif" }}>
+    <div dir="rtl" suppressHydrationWarning style={{ backgroundColor: "#f3f4f6", minHeight: "100vh", padding: "40px 20px", fontFamily: "'Tajawal', sans-serif" }}>
       <div className="print-container" style={{ maxWidth: "210mm", margin: "0 auto", backgroundColor: "white", padding: "40px", borderRadius: "8px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb" }}>
         
         {/* Header */}
@@ -204,14 +211,22 @@ export default async function PrintStatsPage({
         </div>
       </div>
 
-      {/* Print Button */}
-      <div className="no-print" style={{ position: "fixed", bottom: "30px", left: "30px", zIndex: 100 }}>
+      {/* Action Buttons (تختفي عند الطباعة) */}
+      <div className="no-print" style={{ position: "fixed", bottom: "30px", left: "30px", zIndex: 100, display: "flex", gap: "12px" }}>
         <button 
           onClick={() => window.print()}
-          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 28px", borderRadius: "50px", backgroundColor: "#4B2E83", color: "white", fontSize: "16px", fontWeight: "700", border: "none", cursor: "pointer", boxShadow: "0 10px 25px rgba(75, 46, 131, 0.4)" }}
+          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 24px", borderRadius: "50px", backgroundColor: "#4B2E83", color: "white", fontSize: "15px", fontWeight: "700", border: "none", cursor: "pointer", boxShadow: "0 10px 25px rgba(75, 46, 131, 0.4)" }}
         >
-          🖨️ طباعة / حفظ كـ PDF
+          🖨️ حفظ كـ PDF
         </button>
+        <a 
+          href={`https://wa.me/?text=${whatsappMessage}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 24px", borderRadius: "50px", backgroundColor: "#25D366", color: "white", fontSize: "15px", fontWeight: "700", textDecoration: "none", boxShadow: "0 10px 25px rgba(37, 211, 102, 0.4)" }}
+        >
+          📱 مشاركة عبر واتساب
+        </a>
       </div>
     </div>
   )
