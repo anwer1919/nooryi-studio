@@ -2,404 +2,349 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Music, Upload, X, Check, Loader2, Image as ImageIcon, Palette, AlertCircle } from "lucide-react"
-import Link from "next/link"
-
-interface Artist {
-  id: string
-  name: string
-  slug: string
-  category: string | null
-  bio: string | null
-  profileImage: string | null
-  coverImage: string | null
-  accentColor: string
-  status: string
-  baseCommissionRate: number
-  commissionDiscountType: string
-  commissionDiscountVal: number
-}
+import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from "lucide-react"
 
 export default function EditArtistPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
-  
-  const [artist, setArtist] = useState<Artist | null>(null)
+
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [artist, setArtist] = useState<any>(null)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+
+  // Form state
+  const [name, setName] = useState("")
+  const [category, setCategory] = useState("")
+  const [newSlug, setNewSlug] = useState("")
+  const [description, setDescription] = useState("")
+  const [bio, setBio] = useState("")
+  const [profileImage, setProfileImage] = useState("")
+  const [gallery, setGallery] = useState<string[]>([])
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   useEffect(() => {
     fetchArtist()
   }, [slug])
 
   const fetchArtist = async () => {
-    setLoading(true)
     try {
       const res = await fetch(`/api/admin/artists/${slug}`)
-      if (!res.ok) {
-        throw new Error("Artist not found")
+      const result = await res.json()
+
+      if (result.success) {
+        setArtist(result.data)
+        setName(result.data.name || "")
+        setCategory(result.data.category || "")
+        setNewSlug(result.data.slug || "")
+        setDescription(result.data.description || "")
+        setBio(result.data.bio || "")
+        setProfileImage(result.data.profileImage || "")
+        setGallery(result.data.gallery || [])
+      } else {
+        setError("فشل في تحميل بيانات الفنان")
       }
-      const data = await res.json()
-      setArtist(data)
-      setLoading(false)
     } catch (err) {
-      console.error(err)
-      setError("الفنان غير موجود")
+      setError("حدث خطأ أثناء الاتصال بالخادم")
+    } finally {
       setLoading(false)
     }
   }
 
-  const handleUpload = async (file: File, type: "profile" | "cover") => {
-    setUploading(true)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
     setError("")
-    
+
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("type", "artist")
+
     try {
-      const maxSize = 5 * 1024 * 1024
-      if (file.size > maxSize) {
-        setError("حجم الصورة يجب أن يكون أقل من 5 ميجابايت")
-        setUploading(false)
-        return
-      }
-
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
-      if (!allowedTypes.includes(file.type)) {
-        setError("فقط صور JPEG, PNG, WebP مسموحة")
-        setUploading(false)
-        return
-      }
-
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("folder", "nooryi-studio/artists")
-
-      const res = await fetch("/api/upload-cloud", {
+      const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       })
+      const result = await res.json()
 
-      const data = await res.json()
-
-      if (res.ok) {
-        // تحديث الصورة في قاعدة البيانات مباشرة
-        const updateRes = await fetch(`/api/admin/artists/${slug}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            [type === "profile" ? "profileImage" : "coverImage"]: data.url
-          }),
-        })
-
-        if (updateRes.ok) {
-          const updated = await updateRes.json()
-          setArtist(updated)
-          setSuccess("تم رفع الصورة بنجاح!")
-          setTimeout(() => setSuccess(""), 3000)
-        }
+      if (result.success) {
+        return result.url
       } else {
-        setError(data.error || "فشل رفع الصورة")
+        setError("فشل في رفع الصورة")
+        return null
       }
     } catch (err) {
-      console.error("Upload error:", err)
       setError("حدث خطأ أثناء رفع الصورة")
+      return null
     } finally {
-      setUploading(false)
+      setUploadingImage(false)
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!artist) return
-    
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = await handleImageUpload(e)
+    if (url) setProfileImage(url)
+  }
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = await handleImageUpload(e)
+    if (url) setGallery([...gallery, url])
+  }
+
+  const removeGalleryImage = (index: number) => {
+    setGallery(gallery.filter((_, i) => i !== index))
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
     setError("")
     setSuccess("")
-    setSubmitting(true)
 
     try {
       const res = await fetch(`/api/admin/artists/${slug}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(artist),
+        body: JSON.stringify({
+          name,
+          category,
+          slug: newSlug,
+          description,
+          bio,
+          profileImage,
+          gallery,
+        }),
       })
 
-      const data = await res.json()
+      const result = await res.json()
 
-      if (res.ok) {
-        setSuccess("تم حفظ التعديلات بنجاح!")
+      if (result.success) {
+        setSuccess("تم حفظ التغييرات بنجاح!")
         setTimeout(() => {
-          router.push("/admin/artists")
+          router.push(`/admin/artists/${newSlug}`)
         }, 1500)
       } else {
-        setError(data.error || "فشل الحفظ")
+        setError(result.error || "فشل في حفظ التغييرات")
       }
     } catch (err) {
       setError("حدث خطأ أثناء الحفظ")
     } finally {
-      setSubmitting(false)
+      setSaving(false)
     }
   }
 
-  const categories = ["Singer", "DJ", "Band", "Comedian", "Magician", "Other"]
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-yellow-500" size={40} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-700 font-bold">جاري تحميل بيانات الفنان...</p>
+        </div>
       </div>
     )
   }
 
   if (!artist) {
     return (
-      <div className="text-center py-20">
-        <AlertCircle className="mx-auto text-red-400 mb-4" size={48} />
-        <p className="text-xl text-red-400 mb-4">{error || "الفنان غير موجود"}</p>
-        <Link href="/admin/artists" className="text-yellow-500 hover:text-yellow-400">
-          العودة للقائمة
-        </Link>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 font-bold mb-4">الفنان غير موجود</p>
+          <button onClick={() => router.push("/admin/artists")} className="px-6 py-3 bg-purple-700 text-white rounded-xl font-bold">
+            العودة للفنانين
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">تعديل: {artist.name}</h1>
-          <p className="text-neutral-400 mt-1">تعديل بيانات وصور الفنان</p>
-        </div>
-        <Link 
-          href="/admin/artists" 
-          className="text-neutral-400 hover:text-white transition"
+    <div className="max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-purple-700 hover:text-purple-800 font-semibold mb-4 transition"
         >
-          ← العودة للقائمة
-        </Link>
+          <ArrowLeft size={20} />
+          العودة
+        </button>
+        <h1 className="text-3xl font-black text-gray-900 mb-2">تعديل الفنان</h1>
+        <p className="text-gray-500">تعديل بيانات ومحتوى الفنان</p>
       </div>
 
+      {/* Messages */}
       {error && (
-        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
-          <AlertCircle size={20} />
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 font-semibold">
           {error}
         </div>
       )}
-
       {success && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm flex items-center gap-2">
-          <Check size={20} />
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 font-semibold">
           {success}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* الصور */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <ImageIcon size={24} className="text-yellow-500" />
-            صور الفنان
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* صورة البروفايل */}
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">صورة البروفايل</label>
-              <div className="relative">
-                {artist.profileImage ? (
-                  <div className="relative w-40 h-40 mx-auto">
-                    <img 
-                      src={artist.profileImage} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover rounded-full border-4 border-yellow-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setArtist({...artist, profileImage: null})}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : null}
-                
-                <label className={`block ${artist.profileImage ? 'mt-4' : ''} cursor-pointer`}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleUpload(file, "profile")
-                    }}
-                  />
-                  <div className={`rounded-lg border-2 border-dashed border-neutral-700 flex flex-col items-center justify-center hover:border-yellow-500 transition bg-neutral-800/50 ${
-                    artist.profileImage ? 'p-3' : 'w-40 h-40 mx-auto'
-                  }`}>
-                    {uploading ? (
-                      <Loader2 size={24} className="animate-spin text-yellow-500" />
-                    ) : (
-                      <>
-                        <Upload size={20} className="text-neutral-500" />
-                        <span className="text-xs text-neutral-500 mt-1">
-                          {artist.profileImage ? 'تغيير الصورة' : 'اضغط للرفع'}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </label>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Basic Info */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">المعلومات الأساسية</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                  placeholder="اسم الفنان"
+                />
               </div>
-            </div>
 
-            {/* صورة الغلاف */}
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">صورة الغلاف</label>
-              <div className="relative">
-                {artist.coverImage ? (
-                  <div className="relative">
-                    <img 
-                      src={artist.coverImage} 
-                      alt="Cover" 
-                      className="w-full h-40 object-cover rounded-lg border-2 border-neutral-700"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setArtist({...artist, coverImage: null})}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : null}
-                
-                <label className={`block ${artist.coverImage ? 'mt-4' : ''} cursor-pointer`}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleUpload(file, "cover")
-                    }}
-                  />
-                  <div className={`rounded-lg border-2 border-dashed border-neutral-700 flex flex-col items-center justify-center hover:border-yellow-500 transition bg-neutral-800/50 ${
-                    artist.coverImage ? 'p-3' : 'w-full h-40'
-                  }`}>
-                    {uploading ? (
-                      <Loader2 size={24} className="animate-spin text-yellow-500" />
-                    ) : (
-                      <>
-                        <Upload size={20} className="text-neutral-500" />
-                        <span className="text-xs text-neutral-500 mt-1">
-                          {artist.coverImage ? 'تغيير الصورة' : 'اضغط للرفع'}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </label>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">الفئة</label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                  placeholder="مثال: مطرب، عازف، فرقة"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Slug (الرابط)</label>
+                <input
+                  type="text"
+                  value={newSlug}
+                  onChange={(e) => setNewSlug(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono"
+                  placeholder="artist-slug"
+                />
+                <p className="text-xs text-gray-500 mt-1">سيكون الرابط: /artists/{newSlug}</p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* البيانات الأساسية */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-            <Music size={24} className="text-yellow-500" />
-            البيانات الأساسية
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">اسم الفنان *</label>
-              <input
-                type="text"
-                required
-                value={artist.name}
-                onChange={(e) => setArtist({...artist, name: e.target.value})}
-                className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">الفئة *</label>
-              <select
-                required
-                value={artist.category || ""}
-                onChange={(e) => setArtist({...artist, category: e.target.value})}
-                className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">الحالة *</label>
-              <select
-                required
-                value={artist.status}
-                onChange={(e) => setArtist({...artist, status: e.target.value})}
-                className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none"
-              >
-                <option value="ACTIVE">نشط</option>
-                <option value="INACTIVE">غير نشط</option>
-                <option value="PENDING">قيد المراجعة</option>
-                <option value="ARCHIVED">مؤرشف</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-neutral-300 mb-2">اللون المميز</label>
-              <input
-                type="color"
-                value={artist.accentColor}
-                onChange={(e) => setArtist({...artist, accentColor: e.target.value})}
-                className="w-full h-12 cursor-pointer bg-black border border-neutral-700 rounded-lg"
-              />
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm text-neutral-300 mb-2">نبذة عن الفنان</label>
+          {/* Description */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">الوصف المختصر</h2>
             <textarea
-              value={artist.bio || ""}
-              onChange={(e) => setArtist({...artist, bio: e.target.value})}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none resize-none"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none"
+              placeholder="وصف مختصر يظهر في بطاقات الفنانين..."
             />
           </div>
+
+          {/* Bio */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">السيرة الذاتية الكاملة</h2>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={10}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none"
+              placeholder="السيرة الذاتية التفصيلية للفنان..."
+            />
+          </div>
+
+          {/* Images */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">الصور</h2>
+
+            {/* Profile Image */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">الصورة الشخصية</label>
+              <div className="flex items-center gap-4">
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center">
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  </div>
+                )}
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfileImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <span className="px-4 py-2 bg-purple-700 text-white rounded-lg font-semibold hover:bg-purple-800 transition inline-block">
+                    {uploadingImage ? "جاري الرفع..." : "تغيير الصورة"}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Gallery */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">معرض الصور</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {gallery.map((img, index) => (
+                  <div key={index} className="relative group">
+                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-32 rounded-xl object-cover" />
+                    <button
+                      onClick={() => removeGalleryImage(index)}
+                      className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+                <label className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-purple-500 transition">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <div className="text-center p-4">
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500 font-semibold">إضافة صورة</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* أزرار الحفظ */}
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            disabled={submitting || uploading}
-            className="flex-1 flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-4 rounded-lg transition disabled:opacity-50"
-          >
-            {submitting ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                جاري الحفظ...
-              </>
-            ) : (
-              <>
-                <Check size={20} />
-                حفظ التعديلات
-              </>
-            )}
-          </button>
-          <Link
-            href="/admin/artists"
-            className="flex items-center justify-center gap-2 bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-4 px-8 rounded-lg transition"
-          >
-            <X size={20} />
-            إلغاء
-          </Link>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Save Button */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save size={20} />
+              {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
+            </button>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">معاينة سريعة</h3>
+            <div className="space-y-3">
+              {profileImage && (
+                <img src={profileImage} alt="Preview" className="w-full h-40 rounded-xl object-cover" />
+              )}
+              <h4 className="font-bold text-gray-900">{name || "اسم الفنان"}</h4>
+              <p className="text-sm text-purple-700">{category || "الفئة"}</p>
+              <p className="text-sm text-gray-600 line-clamp-3">{description || "الوصف المختصر..."}</p>
+            </div>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   )
 }

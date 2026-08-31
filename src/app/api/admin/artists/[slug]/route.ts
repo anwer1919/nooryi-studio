@@ -1,101 +1,72 @@
 ﻿import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+// GET - جلب بيانات الفنان
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = await params
-    
-    let decodedSlug = slug
-    try {
-      decodedSlug = decodeURIComponent(slug)
-    } catch (e) {
-      // استخدم الـ slug الأصلي لو فشل فك التشفير
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
-    
-    console.log(`🔍 Looking for artist: "${decodedSlug}"`)
 
-    const artist = await prisma.artist.findFirst({
-      where: {
-        status: "ACTIVE",
-        OR: [
-          { slug: { equals: decodedSlug, mode: "insensitive" } },
-          { slug: { equals: slug, mode: "insensitive" } },
-        ]
-      },
-      include: {
-        availability: {
-          where: {
-            date: {
-              gte: new Date(),
-              lte: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-            },
-          },
-          orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
-        },
-        reviews: {
-          where: {},
-          select: { rating: true }
-        },
-        pricing: {
-          orderBy: { governorate: "asc" }
-        }
-      }
+    const { slug } = params
+
+    const artist = await prisma.artist.findUnique({
+      where: { slug },
     })
 
     if (!artist) {
-      console.log(`❌ Artist not found: "${decodedSlug}"`)
-      
-      const allArtists = await prisma.artist.findMany({
-        where: { status: "ACTIVE" },
-        select: { slug: true, name: true }
-      })
-      
-      console.log("📋 Available active artists:")
-      allArtists.forEach(a => {
-        console.log(`   - "${a.name}" → slug: "${a.slug}"`)
-      })
-      
-      return NextResponse.json(
-        { 
-          error: "Artist not found",
-          searchedSlug: decodedSlug,
-          availableArtists: allArtists,
-        }, 
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
     }
 
-    console.log(`✅ Found artist: ${artist.name} (${artist.status})`)
-
-    const totalReviews = artist.reviews.length
-    const averageRating = totalReviews > 0
-      ? artist.reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-      : 0
-
-    const { reviews, availability, pricing, ...artistData } = artist
-    
-    return NextResponse.json({
-      ...artistData,
-      rating: Math.round(averageRating * 10) / 10,
-      reviewCount: totalReviews,
-      availability: availability.map(a => ({
-        id: a.id,
-        date: a.date.toISOString(),
-        timeSlot: a.timeSlot,
-        status: a.status,
-      })),
-      pricing: pricing.map(p => ({
-        id: p.id,
-        governorate: p.governorate,
-        basePrice: p.basePrice,
-        transportationFee: p.transportationFee,
-      })),
-    })
+    return NextResponse.json({ success: true, data: artist })
   } catch (error: any) {
-    console.error("❌ Artist API error:", error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("GET artist error:", error)
+    return NextResponse.json(
+      { error: error.message || "فشل في جلب البيانات" },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT - تحديث بيانات الفنان
+export async function PUT(
+  request: Request,
+  { params }: { params: { slug: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+    }
+
+    const { slug } = params
+    const body = await request.json()
+
+    const updated = await prisma.artist.update({
+      where: { slug },
+      data: {
+        name: body.name,
+        category: body.category,
+        slug: body.slug,
+        description: body.description,
+        bio: body.bio,
+        profileImage: body.profileImage,
+        gallery: body.gallery,
+      },
+    })
+
+    return NextResponse.json({ success: true, data: updated })
+  } catch (error: any) {
+    console.error("PUT artist error:", error)
+    return NextResponse.json(
+      { error: error.message || "فشل في الحفظ" },
+      { status: 500 }
+    )
   }
 }
