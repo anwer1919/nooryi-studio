@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import { SessionProvider } from "next-auth/react"
+import Providers from "@/components/Providers"
 import Navbar from "@/components/Navbar"
 
 export const metadata: Metadata = {
@@ -16,12 +16,15 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
-        <SessionProvider>
+        
+        {/* استخدام مكون Providers المعزول يمنع خطأ Context في Server Components */}
+        <Providers>
           <Navbar />
           <main className="min-h-screen">
             {children}
           </main>
-        </SessionProvider>
+        </Providers>
+        
       </body>
     </html>
   )
