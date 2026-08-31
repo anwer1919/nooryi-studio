@@ -4,24 +4,21 @@ import Providers from "@/components/Providers"
 import Navbar from "@/components/Navbar"
 import HydrationWarningFilter from "@/components/HydrationWarningFilter"
 
-// في body:
-<body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
-  <HydrationWarningFilter />
-  <Providers>
-    <Navbar />
-    <main className="min-h-screen">{children}</main>
-  </Providers>
-</body>
-
 export const metadata: Metadata = {
   title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
   description: "منصة احترافية لحجز الفنانين وإدارة الفعاليات",
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// ✅ هذا السطر مهم جداً: يجب أن يحتوي على { children }
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className="font-sans antialiased bg-gray-50 text-gray-900">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
+        <HydrationWarningFilter />
         <Providers>
           <Navbar />
           <main className="min-h-screen">{children}</main>
