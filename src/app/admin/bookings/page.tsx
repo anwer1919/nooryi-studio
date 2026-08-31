@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation"
+﻿import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -138,7 +138,7 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
                     
                     // ✅ الحل الهندسي: إضافة timeZone: "UTC" لمنع اختلاف اليوم بين الخادم والمتصفح
                     const eventDate = booking.date 
-                      ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) 
+                      ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" , timeZone: "UTC"})) 
                       : "غير محدد"
 
                     return (

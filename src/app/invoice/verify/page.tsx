@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma"
+﻿import { prisma } from "@/lib/prisma"
 import { CheckCircle2, XCircle, DollarSign, TrendingUp, Clock } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 
@@ -45,7 +45,7 @@ export default async function VerifyInvoicePage({
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  })
+  , timeZone: "UTC"}))
 
   // ====== محاولة 1: البحث في التقارير ======
   if (invoiceType === "report") {
@@ -311,8 +311,8 @@ export default async function VerifyInvoicePage({
   const clientName = booking.customer?.fullName || booking.clientName || "عميل"
   const clientEmail = booking.customer?.email || booking.clientEmail || null
   const clientPhone = booking.customer?.phone || booking.clientPhone || null
-  const invoiceDate = new Date(booking.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
-  const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+  const invoiceDate = new Date(booking.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" , timeZone: "UTC"}))
+  const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" , timeZone: "UTC"}))
   const timeSlotLabels: any = { MORNING: "صباحاً", AFTERNOON: "ظهراً", EVENING: "مساءً", NIGHT: "ليلاً" }
   const timeSlotLabel = timeSlotLabels[booking.timeSlot] || ""
 

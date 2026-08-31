@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
@@ -145,7 +145,7 @@ export default function NotificationBell() {
                             month: "short",
                             hour: "2-digit",
                             minute: "2-digit",
-                          })}
+                          , timeZone: "UTC"}))}
                         </p>
                       </div>
                     </div>

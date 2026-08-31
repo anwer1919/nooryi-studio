@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { Download, Calendar, DollarSign, TrendingUp, Clock, Filter, Printer } from "lucide-react"
@@ -377,7 +377,7 @@ export default function StatsClient({
                           {booking.clientName}
                         </td>
                         <td style={{ padding: "14px 20px", fontSize: "14px", color: "#111827" }}>
-                          {new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" , timeZone: "UTC"}))}
                         </td>
                         <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6B7280" }}>
                           {booking.venue?.name || "-"}

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { MessageCircle, Star } from "lucide-react"
@@ -117,7 +117,7 @@ export default function ReviewsList({ artistSlug }: { artistSlug: string }) {
                       year: "numeric",
                       month: "long",
                       day: "numeric"
-                    })}
+                    , timeZone: "UTC"}))}
                   </p>
                 </div>
               </div>
