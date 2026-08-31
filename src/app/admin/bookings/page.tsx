@@ -3,16 +3,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { Calendar, CheckCircle2, XCircle, Clock, Search, Filter } from "lucide-react"
-import BookingsTable from "./BookingsTable"
+import { Calendar, CheckCircle2, XCircle, Clock, Search, Filter, MapPin, Eye } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-export default async function BookingsListPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string; search?: string; page?: string }>
-}) {
+export default async function BookingsListPage({ searchParams }: { searchParams: Promise<{ status?: string; search?: string; page?: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/login")
 
@@ -25,75 +20,52 @@ export default async function BookingsListPage({
   const statusFilter = params.status || "ALL"
   const searchQuery = params.search || ""
   const currentPage = parseInt(params.page || "1")
-  const pageSize = 10
+  const pageSize = 20
 
   const whereClause: any = {}
   if (statusFilter !== "ALL") whereClause.status = statusFilter
 
   if (isManager) {
     try {
-      const managerUser = await prisma.user.findUnique({
-        where: { email: session.user.email! },
-        select: { artistId: true },
-      })
+      const managerUser = await prisma.user.findUnique({ where: { email: session.user.email! }, select: { artistId: true } })
       if (managerUser?.artistId) whereClause.artistId = managerUser.artistId
     } catch (e) {}
   }
 
-  if (searchQuery) {
-    whereClause.OR = [
-      { clientName: { contains: searchQuery, mode: "insensitive" } },
-      { clientEmail: { contains: searchQuery, mode: "insensitive" } },
-      { artist: { name: { contains: searchQuery, mode: "insensitive" } } },
-    ]
+  let bookings: any[] = []
+  let totalBookings = 0
+
+  try {
+    [bookings, totalBookings] = await Promise.all([
+      prisma.booking.findMany({
+        where: whereClause,
+        include: { artist: { select: { name: true, category: true, profileImage: true } }, venue: { select: { name: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.booking.count({ where: whereClause }),
+    ])
+  } catch (error: any) {
+    console.error("Error fetching bookings:", error.message)
   }
 
-  const [bookings, totalBookings] = await Promise.all([
-    prisma.booking.findMany({
-      where: whereClause,
-      include: {
-        artist: { select: { name: true, category: true, profileImage: true } },
-        venue: { select: { name: true } },
-        customer: { select: { fullName: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (currentPage - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.booking.count({ where: whereClause }),
-  ])
-
   const totalPages = Math.ceil(totalBookings / pageSize)
-
   const [pending, approved, completed, cancelled] = await Promise.all([
-    prisma.booking.count({ where: { ...whereClause, status: "PENDING_APPROVAL" } }),
-    prisma.booking.count({ where: { ...whereClause, status: "APPROVED" } }),
-    prisma.booking.count({ where: { ...whereClause, status: "COMPLETED" } }),
-    prisma.booking.count({ where: { ...whereClause, status: "CANCELLED" } }),
+    prisma.booking.count({ where: { status: "PENDING_APPROVAL" } }),
+    prisma.booking.count({ where: { status: "APPROVED" } }),
+    prisma.booking.count({ where: { status: "COMPLETED" } }),
+    prisma.booking.count({ where: { status: "CANCELLED" } }),
   ])
 
-  // ✅ الحل الاحترافي: تنسيق التواريخ والبيانات في الخادم فقط لضمان تطابق Hydration
-  const bookingsData = bookings.map((booking) => {
-    // تنسيق التاريخ مرة واحدة في الخادم
-    const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", {
-      year: "numeric", month: "short", day: "numeric"
-    })
-
-    return {
-      id: booking.id,
-      clientName: booking.customer?.fullName || booking.clientName || "غير محدد",
-      clientEmail: booking.customer?.email || booking.clientEmail || "-",
-      artistName: booking.artist?.name || "غير محدد",
-      artistCategory: booking.artist?.category || "",
-      artistImage: booking.artist?.profileImage || null,
-      venueName: booking.venue?.name || null,
-      grossAmount: Number(booking.grossAmount || 0),
-      depositAmount: Number(booking.depositAmount || 0),
-      remainingAmount: Number(booking.remainingAmount || 0),
-      status: booking.status || "PENDING_APPROVAL", // ضمان وجود قيمة افتراضية
-      eventDate: eventDate, // نمرر النص الجاهز، لا نمرر كائن Date
-    }
-  })
+  const statusConfig: any = {
+    PENDING_APPROVAL: { label: "قيد المراجعة", color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock },
+    APPROVED: { label: "تمت الموافقة", color: "bg-blue-100 text-blue-700 border-blue-300", icon: CheckCircle2 },
+    CONFIRMED: { label: "مؤكد", color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle2 },
+    COMPLETED: { label: "مكتمل", color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle2 },
+    CANCELLED: { label: "ملغي", color: "bg-red-100 text-red-700 border-red-300", icon: XCircle },
+    REJECTED: { label: "مرفوض", color: "bg-red-100 text-red-700 border-red-300", icon: XCircle },
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
@@ -103,40 +75,30 @@ export default async function BookingsListPage({
           <p className="text-gray-500">عرض وإدارة جميع حجوزات المنصة</p>
         </div>
 
-        {/* الإحصائيات */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center"><Clock className="w-5 h-5 text-yellow-600" /></div>
-              <div><p className="text-xs text-gray-500">قيد المراجعة</p><p className="text-xl font-black text-gray-900">{pending}</p></div>
-            </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center"><Clock className="w-5 h-5 text-yellow-600" /></div>
+            <div><p className="text-xs text-gray-500">قيد المراجعة</p><p className="text-xl font-black text-gray-900">{pending}</p></div>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-blue-600" /></div>
-              <div><p className="text-xs text-gray-500">موافق عليها</p><p className="text-xl font-black text-gray-900">{approved}</p></div>
-            </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-blue-600" /></div>
+            <div><p className="text-xs text-gray-500">موافق عليها</p><p className="text-xl font-black text-gray-900">{approved}</p></div>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
-              <div><p className="text-xs text-gray-500">مكتملة</p><p className="text-xl font-black text-gray-900">{completed}</p></div>
-            </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center"><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
+            <div><p className="text-xs text-gray-500">مكتملة</p><p className="text-xl font-black text-gray-900">{completed}</p></div>
           </div>
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center"><XCircle className="w-5 h-5 text-red-600" /></div>
-              <div><p className="text-xs text-gray-500">ملغية</p><p className="text-xl font-black text-gray-900">{cancelled}</p></div>
-            </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center"><XCircle className="w-5 h-5 text-red-600" /></div>
+            <div><p className="text-xs text-gray-500">ملغية</p><p className="text-xl font-black text-gray-900">{cancelled}</p></div>
           </div>
         </div>
 
-        {/* الفلاتر */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
           <form className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input type="text" name="search" defaultValue={searchQuery} placeholder="ابحث بالاسم، البريد، أو الفنان..." className="w-full pr-10 pl-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" />
+              <input type="text" name="search" defaultValue={searchQuery} placeholder="ابحث بالاسم أو الفنان..." className="w-full pr-10 pl-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" />
             </div>
             <div className="relative">
               <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -144,29 +106,82 @@ export default async function BookingsListPage({
                 <option value="ALL">جميع الحالات</option>
                 <option value="PENDING_APPROVAL">قيد المراجعة</option>
                 <option value="APPROVED">موافق عليه</option>
-                <option value="CONFIRMED">مؤكد</option>
                 <option value="COMPLETED">مكتمل</option>
                 <option value="CANCELLED">ملغي</option>
-                <option value="REJECTED">مرفوض</option>
               </select>
             </div>
             <button type="submit" className="px-6 py-3 bg-purple-700 text-white rounded-lg font-bold hover:bg-purple-800 transition">بحث</button>
           </form>
         </div>
 
-        {/* الجدول */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <BookingsTable bookings={bookingsData} />
+          {bookings.length === 0 ? (
+            <div className="p-12 text-center"><Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" /><h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد حجوزات</h3></div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">العميل</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الفنان</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">التاريخ</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">المبلغ</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الحالة</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {bookings.map((booking) => {
+                    const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
+                    const StatusIcon = status.icon
+                    const clientName = booking.clientName || "عميل"
+                    const eventDate = booking.date ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" }) : "غير محدد"
+
+                    return (
+                      <tr key={booking.id} className="hover:bg-gray-50 transition">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold">{clientName.charAt(0)}</div>
+                            <div><p className="font-bold text-gray-900 text-sm">{clientName}</p><p className="text-xs text-gray-500">{booking.clientEmail || "-"}</p></div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            {booking.artist?.profileImage ? <img src={booking.artist.profileImage} alt={booking.artist.name} className="w-8 h-8 rounded-lg object-cover" /> : <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold text-xs">{booking.artist?.name?.charAt(0) || "ف"}</div>}
+                            <div><p className="font-bold text-gray-900 text-sm">{booking.artist?.name || "-"}</p><p className="text-xs text-gray-500">{booking.artist?.category || ""}</p></div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2 text-sm"><Calendar size={14} className="text-gray-400" /><span className="text-gray-700">{eventDate}</span></div>
+                          {booking.venue?.name && <div className="flex items-center gap-2 text-xs text-gray-500 mt-1"><MapPin size={12} /><span>{booking.venue.name}</span></div>}
+                        </td>
+                        <td className="py-4 px-4"><p className="font-bold text-gray-900">{Number(booking.grossAmount || 0).toLocaleString("en-US")} ج.م</p></td>
+                        <td className="py-4 px-4">
+                          <div className={`${status.color} border px-3 py-1 rounded-lg inline-flex items-center gap-1 text-xs font-bold`}>
+                            <StatusIcon size={14} /><span>{status.label}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Link href={`/admin/bookings/${booking.id}`} className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg text-sm font-bold hover:bg-purple-800 transition">
+                            <Eye size={16} /> عرض التفاصيل
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* الترقيم */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-6">
-            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.max(1, currentPage - 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>السابق</Link>
+            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.max(1, currentPage - 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === 1 ? "bg-gray-100 text-gray-400" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>السابق</Link>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Link key={page} href={`?status=${statusFilter}&search=${searchQuery}&page=${page}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === page ? "bg-purple-700 text-white" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>{page}</Link>
             ))}
-            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.min(totalPages, currentPage + 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>التالي</Link>
+            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.min(totalPages, currentPage + 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === totalPages ? "bg-gray-100 text-gray-400" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>التالي</Link>
           </div>
         )}
       </div>
