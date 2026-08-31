@@ -112,7 +112,7 @@ export default function PrintReportContent() {
     )
   }
 
-  const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }))
+  const reportDate = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
   const totalRevenue = stats?.totalRevenue || 0
   const platformFee = stats?.platformFee || 0
   const netRevenue = stats?.netRevenue || 0
