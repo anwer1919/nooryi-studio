@@ -1,6 +1,7 @@
-import type { NextConfig } from "next"
+﻿import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  telemetry: false,
   // تعطيل TypeScript checking
   typescript: {
     ignoreBuildErrors: true,
