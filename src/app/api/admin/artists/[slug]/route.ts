@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// GET - جلب بيانات الفنان
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
@@ -15,10 +14,7 @@ export async function GET(
     }
 
     const { slug } = params
-
-    const artist = await prisma.artist.findUnique({
-      where: { slug },
-    })
+    const artist = await prisma.artist.findUnique({ where: { slug } })
 
     if (!artist) {
       return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
@@ -26,15 +22,10 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: artist })
   } catch (error: any) {
-    console.error("GET artist error:", error)
-    return NextResponse.json(
-      { error: error.message || "فشل في جلب البيانات" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || "فشل في جلب البيانات" }, { status: 500 })
   }
 }
 
-// PUT - تحديث بيانات الفنان
 export async function PUT(
   request: Request,
   { params }: { params: { slug: string } }
@@ -63,10 +54,6 @@ export async function PUT(
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error: any) {
-    console.error("PUT artist error:", error)
-    return NextResponse.json(
-      { error: error.message || "فشل في الحفظ" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || "فشل في الحفظ" }, { status: 500 })
   }
 }
