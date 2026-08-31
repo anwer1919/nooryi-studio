@@ -1,7 +1,11 @@
 import type { Metadata } from "next"
 import "./globals.css"
+import dynamic from "next/dynamic"
 import Providers from "@/components/Providers"
-import Navbar from "@/components/Navbar"
+
+// ✅ هذا السطر هو الحل السحري: يمنع الخادم من بناء الـ Navbar، ويتركها للمتصفح فقط
+// هذا يزيل تعارضات Hydration وأخطاء Context في صفحات النظام نهائياً
+const Navbar = dynamic(() => import("@/components/Navbar"), { ssr: false })
 
 export const metadata: Metadata = {
   title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
@@ -16,15 +20,12 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
-        
-        {/* استخدام مكون Providers المعزول يمنع خطأ Context في Server Components */}
         <Providers>
           <Navbar />
           <main className="min-h-screen">
             {children}
           </main>
         </Providers>
-        
       </body>
     </html>
   )
