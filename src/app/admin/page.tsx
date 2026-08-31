@@ -3,9 +3,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { 
-  Calendar, 
-  Music, 
+import {
+  Calendar,
+  Music,
   DollarSign,
   CheckCircle2,
   Clock,
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic"
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user) {
     redirect("/login")
   }
@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
     const [bookings, artists, managers, allBookings] = await Promise.all([
       prisma.booking.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy: { id: "desc" }, // ✅ تغيير من createdAt إلى id
         take: 5,
         include: { artist: { select: { name: true, profileImage: true } } },
       }),
@@ -68,16 +68,26 @@ export default async function AdminDashboardPage() {
     totalBookings = allBookings.length
     pendingBookings = allBookings.filter(b => b.status === "PENDING_APPROVAL").length
     completedBookings = allBookings.filter(b => b.status === "COMPLETED").length
-    revenue = allBookings.reduce((sum, b) => sum + (b.grossAmount || 0), 0)
+    revenue = allBookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0)
 
-  } catch (error) {
-    console.error("Error fetching admin data:", error)
+  } catch (error: any) {
+    console.error("Error fetching admin data:", error.message)
+  }
+
+  // ✅ دالة آمنة لتنسيق التاريخ
+  const safeFormatDate = (date: any) => {
+    if (!date) return "غير محدد"
+    try {
+      return new Date(date).toISOString().split('T')[0]
+    } catch {
+      return "غير محدد"
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8" suppressHydrationWarning>
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -167,7 +177,7 @@ export default async function AdminDashboardPage() {
           ) : (
             <div>
               {recentBookings.map((booking, index) => (
-                <Link 
+                <Link
                   key={booking.id}
                   href={`/admin/bookings/${booking.id}`}
                   className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 transition-colors hover:bg-gray-50 ${
@@ -176,9 +186,9 @@ export default async function AdminDashboardPage() {
                 >
                   <div className="flex items-center gap-4 mb-4 sm:mb-0">
                     {booking.artist?.profileImage ? (
-                      <img 
+                      <img
                         src={booking.artist.profileImage}
-                        alt={booking.artist.name}
+                        alt={booking.artist?.name || "فنان"}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
                     ) : (
@@ -187,17 +197,17 @@ export default async function AdminDashboardPage() {
                       </div>
                     )}
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">{booking.artist?.name}</p>
-                      <p className="text-xs text-gray-500">{booking.clientName}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{booking.artist?.name || "فنان"}</p>
+                      <p className="text-xs text-gray-500">{booking.clientName || "عميل"}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
                     <div className="text-left">
-                      <p className="font-bold text-gray-900 text-sm">{(booking.grossAmount || 0).toLocaleString()} ج.م</p>
-                      <p className="text-xs text-gray-400">{new Date(booking.date).toISOString().split('T')[0]}</p>
+                      <p className="font-bold text-gray-900 text-sm">{Number(booking.grossAmount || 0).toLocaleString()} ج.م</p>
+                      <p className="text-xs text-gray-400" suppressHydrationWarning>{safeFormatDate(booking.date)}</p>
                     </div>
-                    
+
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       booking.status === "COMPLETED" ? "bg-green-100 text-green-700" :
                       booking.status === "APPROVED" ? "bg-purple-100 text-purple-700" :
