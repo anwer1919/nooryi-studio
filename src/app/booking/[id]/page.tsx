@@ -3,303 +3,153 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { 
-  ArrowRight, Calendar, Clock, MapPin, Music,
-  CheckCircle2, XCircle, AlertCircle, CreditCard,
-  Phone, Mail, DollarSign, FileText
-} from "lucide-react"
+import { Calendar, MapPin, CheckCircle2, XCircle, Clock, Eye } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-function formatSafeDate(date: Date | string): string {
-  try {
-    const d = new Date(date)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  } catch {
-    return "تاريخ غير صالح"
-  }
-}
-
-export default async function BookingDetailsPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
-}) {
-  const { id } = await params
+export default async function BookingsPage() {
   const session = await getServerSession(authOptions)
   
-  if (!session?.user?.email) {
-    redirect(`/login?callbackUrl=/booking/${id}`)
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/bookings")
   }
 
-  let booking
+  const userRole = session.user.role || "USER"
+  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+  const isManager = userRole === "ARTIST_MANAGER"
+
+  let bookings: any[] = []
+
   try {
-    booking = await prisma.booking.findUnique({
-      where: { id },
-      include: {
-        artist: { select: { id: true, name: true, category: true, profileImage: true, slug: true } },
-        venue: { select: { id: true, name: true, address: true } },
-        payments: { orderBy: { createdAt: "desc" } },
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching booking:", error)
-    redirect("/my-bookings")
-  }
-
-  if (!booking) redirect("/my-bookings")
-
-  const isOwner = booking.clientEmail === session.user.email
-  const isAdmin = session.user.role === "SUPER_ADMIN" || session.user.role === "ADMIN"
-  
-  if (!isOwner && !isAdmin) redirect("/my-bookings")
-
-  const grossAmount = booking.grossAmount || 0
-  const paidAmount = booking.depositAmount || 0
-  const remainingAmount = booking.remainingAmount || (grossAmount - paidAmount)
-
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case "PENDING_APPROVAL":
-        return { 
-          icon: Clock, title: "في انتظار الموافقة", 
-          description: "تم استلام طلبك وجاري مراجعته من قبل الإدارة",
-          bg: "bg-orange-50 dark:bg-orange-500/10", border: "border-orange-200 dark:border-orange-500/20",
-          text: "text-orange-600 dark:text-orange-400"
-        }
-      case "APPROVED":
-        return { 
-          icon: CheckCircle2, title: "تمت الموافقة ✅", 
-          description: "تم تأكيد حجزك بنجاح، يمكنك إكمال الدفع",
-          bg: "bg-accent/10 dark:bg-accent-dark/20", border: "border-accent/30 dark:border-accent-dark/30",
-          text: "text-primary dark:text-accent"
-        }
-      case "COMPLETED":
-        return { 
-          icon: CheckCircle2, title: "مكتمل", 
-          description: "تمت الفعالية بنجاح",
-          bg: "bg-green-50 dark:bg-green-500/10", border: "border-green-200 dark:border-green-500/20",
-          text: "text-green-600 dark:text-green-400"
-        }
-      case "CANCELLED":
-        return { 
-          icon: XCircle, title: "ملغي", 
-          description: "تم إلغاء هذا الحجز",
-          bg: "bg-red-50 dark:bg-red-500/10", border: "border-red-200 dark:border-red-500/20",
-          text: "text-red-600 dark:text-red-400"
-        }
-      default:
-        return { 
-          icon: AlertCircle, title: status, description: "",
-          bg: "bg-gray-50 dark:bg-white/5", border: "border-gray-200 dark:border-dark-border",
-          text: "text-gray-600 dark:text-gray-400"
-        }
+    const whereClause: any = {}
+    
+    if (isManager) {
+      const managerUser = await prisma.user.findUnique({
+        where: { email: session.user.email! },
+        select: { artistId: true },
+      })
+      if (managerUser?.artistId) {
+        whereClause.artistId = managerUser.artistId
+      }
+    } else if (!isAdmin) {
+      whereClause.clientEmail = session.user.email
     }
+
+    bookings = await prisma.booking.findMany({
+      where: whereClause,
+      include: {
+        artist: { select: { name: true, category: true, profileImage: true } },
+        venue: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    })
+  } catch (error: any) {
+    console.error("Error fetching bookings:", error.message)
   }
 
-  const timeSlotMap: Record<string, string> = {
-    "MORNING": "صباحاً", "AFTERNOON": "ظهيرة", "EVENING": "مساءً", "NIGHT": "ليلاً",
+  const statusConfig: any = {
+    PENDING_APPROVAL: { label: "قيد المراجعة", color: "bg-yellow-100 text-yellow-700", icon: Clock },
+    APPROVED: { label: "تمت الموافقة", color: "bg-blue-100 text-blue-700", icon: CheckCircle2 },
+    CONFIRMED: { label: "مؤكد", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+    COMPLETED: { label: "مكتمل", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+    CANCELLED: { label: "ملغي", color: "bg-red-100 text-red-700", icon: XCircle },
+    REJECTED: { label: "مرفوض", color: "bg-red-100 text-red-700", icon: XCircle },
   }
-
-  const sc = getStatusConfig(booking.status)
-  const StatusIcon = sc.icon
 
   return (
-    <div className="min-h-screen bg-background dark:bg-dark-bg">
-      <div className="max-w-4xl mx-auto px-6 lg:px-8 py-12">
-        {/* Header */}
+    <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <Link 
-            href="/my-bookings" 
-            className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-accent mb-4 transition-colors"
-          >
-            <ArrowRight size={16} className="rotate-180" />
-            العودة لحجوزاتي
-          </Link>
-          <h1 className="text-4xl font-black text-primary dark:text-white mb-2">تفاصيل الحجز</h1>
-          <p className="text-gray-500 dark:text-gray-400 font-mono text-sm">
-            رقم الحجز: #{booking.id.slice(0, 8).toUpperCase()}
-          </p>
+          <h1 className="text-3xl font-black text-gray-900 mb-2">حجوزاتي</h1>
+          <p className="text-gray-500">عرض وإدارة جميع حجوزاتك</p>
         </div>
 
-        {/* Status Banner */}
-        <div className={`card-premium mb-8 border ${sc.border} ${sc.bg}`}>
-          <div className="flex items-start gap-4">
-            <div className={`w-16 h-16 rounded-2xl ${sc.bg} border ${sc.border} flex items-center justify-center flex-shrink-0`}>
-              <StatusIcon className={sc.text} size={32} />
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {bookings.length === 0 ? (
+            <div className="p-12 text-center">
+              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد حجوزات</h3>
+              <p className="text-gray-500 mb-6">لم تقم بأي حجز حتى الآن.</p>
+              <Link href="/artists" className="inline-block px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition">
+                تصفح الفنانين
+              </Link>
             </div>
-            <div className="flex-1">
-              <h2 className={`text-2xl font-black mb-2 ${sc.text}`}>{sc.title}</h2>
-              <p className="text-gray-600 dark:text-gray-300">{sc.description}</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الفنان</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">التاريخ</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">المبلغ</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الحالة</th>
+                    <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {bookings.map((booking) => {
+                    const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
+                    const StatusIcon = status.icon
+                    const eventDate = booking.date 
+                      ? new Date(booking.date).toLocaleDateString("ar-EG", { 
+                          year: "numeric", 
+                          month: "short", 
+                          day: "numeric",
+                          timeZone: "UTC" 
+                        }) 
+                      : "غير محدد"
+
+                    return (
+                      <tr key={booking.id} className="hover:bg-gray-50 transition">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            {booking.artist?.profileImage ? (
+                              <img src={booking.artist.profileImage} alt={booking.artist.name} className="w-10 h-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold">
+                                {booking.artist?.name?.charAt(0) || "ف"}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-gray-900">{booking.artist?.name || "-"}</p>
+                              <p className="text-xs text-gray-500">{booking.artist?.category || ""}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar size={14} className="text-gray-400" />
+                            <span suppressHydrationWarning className="text-gray-700">{eventDate}</span>
+                          </div>
+                          {booking.venue?.name && (
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              <MapPin size={12} />
+                              <span>{booking.venue.name}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="font-bold text-gray-900">{Number(booking.grossAmount || 0).toLocaleString("en-US")} ج.م</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className={`${status.color} px-3 py-1 rounded-lg inline-flex items-center gap-1 text-xs font-bold`}>
+                            <StatusIcon size={14} />
+                            <span>{status.label}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Link href={isAdmin ? `/admin/bookings/${booking.id}` : `/booking/${booking.id}/invoice/print`} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg text-sm font-bold hover:bg-purple-800 transition">
+                            <Eye size={16} /> عرض التفاصيل
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Artist Info */}
-            <div className="card-premium">
-              <h3 className="text-sm text-gray-400 uppercase mb-4 flex items-center gap-2">
-                <Music size={16} className="text-accent" />
-                الفنان
-              </h3>
-              <div className="flex items-center gap-4">
-                {booking.artist?.profileImage ? (
-                  <img 
-                    src={booking.artist.profileImage} 
-                    alt={booking.artist.name}
-                    className="w-20 h-20 rounded-2xl object-cover shadow-soft"
-                  />
-                ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center">
-                    <Music className="text-primary dark:text-accent" size={32} />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-primary dark:text-white mb-1">{booking.artist?.name}</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">{booking.artist?.category}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Event Details */}
-            <div className="card-premium">
-              <h3 className="text-sm text-gray-400 uppercase mb-4">تفاصيل الفعالية</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">التاريخ</p>
-                  <p className="font-semibold text-primary dark:text-white flex items-center gap-2">
-                    <Calendar size={14} className="text-accent" />
-                    <span suppressHydrationWarning>{formatSafeDate(booking.date)}</span>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">الوقت</p>
-                  <p className="font-semibold text-primary dark:text-white flex items-center gap-2">
-                    <Clock size={14} className="text-accent" />
-                    {timeSlotMap[booking.timeSlot] || booking.timeSlot}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-xs text-gray-400 mb-1">المكان</p>
-                  <p className="font-semibold text-primary dark:text-white flex items-center gap-2">
-                    <MapPin size={14} className="text-accent" />
-                    {booking.venue?.name || "غير محدد"}
-                  </p>
-                  {booking.venue?.address && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mr-6 mt-1">{booking.venue.address}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Status */}
-            <div className="card-premium">
-              <h3 className="text-sm text-gray-400 uppercase mb-4 flex items-center gap-2">
-                <DollarSign size={16} className="text-accent" />
-                حالة الدفع
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">المبلغ الإجمالي</span>
-                  <span className="font-bold text-lg text-primary dark:text-white">{grossAmount.toLocaleString()} ج.م</span>
-                </div>
-                <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 size={14} />
-                    المبلغ المدفوع
-                  </span>
-                  <span className="font-bold">{paidAmount.toLocaleString()} ج.م</span>
-                </div>
-                <div className="flex justify-between text-sm pt-3 border-t border-gray-100 dark:border-dark-border">
-                  <span className="text-gray-500 dark:text-gray-400">المتبقي</span>
-                  <span className="font-bold text-accent">{remainingAmount.toLocaleString()} ج.م</span>
-                </div>
-              </div>
-
-              {booking.status === "APPROVED" && remainingAmount > 0 && (
-                <div className="mt-6 pt-4 border-t border-gray-100 dark:border-dark-border">
-                  <Link 
-                    href={`/booking/${booking.id}/payment`}
-                    className="btn-primary block w-full text-center"
-                  >
-                    إكمال الدفع ({remainingAmount.toLocaleString()} ج.م)
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Payment History */}
-            {booking.payments && booking.payments.length > 0 && (
-              <div className="card-premium">
-                <h3 className="text-sm text-gray-400 uppercase mb-4 flex items-center gap-2">
-                  <CreditCard size={16} className="text-accent" />
-                  سجل المدفوعات
-                </h3>
-                <div className="space-y-2">
-                  {booking.payments.map((payment, index) => (
-                    <div 
-                      key={payment.id}
-                      className="flex items-center justify-between p-3 bg-background-subtle dark:bg-dark-surface rounded-xl border border-gray-100 dark:border-dark-border"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
-                          <CheckCircle2 size={14} className="text-green-600 dark:text-green-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-primary dark:text-white">{payment.notes || `دفعة ${index + 1}`}</p>
-                          <p className="text-xs text-gray-400">{payment.method}</p>
-                        </div>
-                      </div>
-                      <p className="font-bold text-green-600 dark:text-green-400" suppressHydrationWarning>
-                        {payment.amount.toLocaleString()} ج.م
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="card-premium">
-              <h3 className="text-sm text-gray-400 uppercase mb-4">إجراءات سريعة</h3>
-              <div className="space-y-2">
-                <Link 
-                  href={`/booking/${booking.id}/invoice`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-accent/10 dark:bg-accent-dark/20 hover:bg-accent/20 transition-colors"
-                >
-                  <FileText size={18} className="text-primary dark:text-accent" />
-                  <span className="text-sm font-semibold text-primary dark:text-white">عرض الفاتورة</span>
-                </Link>
-                <a 
-                  href={`mailto:support@nooryi.com?subject=استفسار عن حجز ${booking.id.slice(0, 8)}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-background-subtle dark:bg-dark-surface hover:bg-accent/10 transition-colors"
-                >
-                  <Mail size={18} className="text-primary dark:text-accent" />
-                  <span className="text-sm text-gray-600 dark:text-gray-300">تواصل مع الدعم</span>
-                </a>
-              </div>
-            </div>
-
-            <div className="card-premium">
-              <h3 className="text-sm text-gray-400 uppercase mb-4">معلومات التواصل</h3>
-              <div className="space-y-2">
-                <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <Phone size={14} className="text-accent" />
-                  {booking.clientPhone}
-                </p>
-                {booking.clientEmail && (
-                  <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                    <Mail size={14} className="text-accent" />
-                    {booking.clientEmail}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
