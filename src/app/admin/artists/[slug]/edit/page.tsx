@@ -15,7 +15,6 @@ export default function EditArtistPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  // Form state
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
   const [newSlug, setNewSlug] = useState("")
@@ -55,7 +54,7 @@ export default function EditArtistPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) return null
 
     setUploadingImage(true)
     setError("")
@@ -124,7 +123,7 @@ export default function EditArtistPage() {
       if (result.success) {
         setSuccess("تم حفظ التغييرات بنجاح!")
         setTimeout(() => {
-          router.push(`/admin/artists/${newSlug}`)
+          router.push(`/admin/artists`)
         }, 1500)
       } else {
         setError(result.error || "فشل في حفظ التغييرات")
@@ -162,7 +161,6 @@ export default function EditArtistPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <button
           onClick={() => router.back()}
@@ -175,7 +173,6 @@ export default function EditArtistPage() {
         <p className="text-gray-500">تعديل بيانات ومحتوى الفنان</p>
       </div>
 
-      {/* Messages */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 font-semibold">
           {error}
@@ -188,9 +185,7 @@ export default function EditArtistPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Form */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Basic Info */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">المعلومات الأساسية</h2>
             <div className="space-y-4">
@@ -230,7 +225,6 @@ export default function EditArtistPage() {
             </div>
           </div>
 
-          {/* Description */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">الوصف المختصر</h2>
             <textarea
@@ -242,7 +236,6 @@ export default function EditArtistPage() {
             />
           </div>
 
-          {/* Bio */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">السيرة الذاتية الكاملة</h2>
             <textarea
@@ -254,11 +247,9 @@ export default function EditArtistPage() {
             />
           </div>
 
-          {/* Images */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">الصور</h2>
 
-            {/* Profile Image */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">الصورة الشخصية</label>
               <div className="flex items-center gap-4">
@@ -284,7 +275,6 @@ export default function EditArtistPage() {
               </div>
             </div>
 
-            {/* Gallery */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">معرض الصور</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
@@ -317,9 +307,7 @@ export default function EditArtistPage() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Save Button */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
             <button
               onClick={handleSave}
@@ -331,7 +319,6 @@ export default function EditArtistPage() {
             </button>
           </div>
 
-          {/* Preview */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">معاينة سريعة</h3>
             <div className="space-y-3">
