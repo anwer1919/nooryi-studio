@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import Providers from "@/components/Providers"
+import Navbar from "@/components/Navbar"
 
 export const metadata: Metadata = {
-  title: "Nooryi Studio",
-  description: "منصة حجز الفنانين",
+  title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
+  description: "منصة احترافية لحجز الفنانين وإدارة الفعاليات",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ar" dir="rtl">
       <body className="font-sans antialiased bg-gray-50 text-gray-900">
         <Providers>
+          <Navbar />
           <main className="min-h-screen">{children}</main>
         </Providers>
       </body>
