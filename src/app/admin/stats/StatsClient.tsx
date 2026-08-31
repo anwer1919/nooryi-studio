@@ -377,7 +377,7 @@ export default function StatsClient({
                           {booking.clientName}
                         </td>
                         <td style={{ padding: "14px 20px", fontSize: "14px", color: "#111827" }}>
-                          {new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" , timeZone: "UTC"}))}
+                          {new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }))}
                         </td>
                         <td style={{ padding: "14px 20px", fontSize: "14px", color: "#6B7280" }}>
                           {booking.venue?.name || "-"}
