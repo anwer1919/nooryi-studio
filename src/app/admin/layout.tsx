@@ -1,30 +1,24 @@
-import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import AdminSidebar from "./AdminSidebar"
+import type { Metadata } from "next"
+import "./globals.css"
+import Providers from "@/components/Providers"
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user) {
-    redirect("/login")
-  }
+export const metadata: Metadata = {
+  title: "Nooryi Studio",
+  description: "منصة حجز الفنانين",
+}
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
-      <AdminSidebar 
-        userRole={session.user.role || "USER"}
-        userName={session.user.name || "المستخدم"}
-        userEmail={session.user.email || ""}
-      />
-      
-      <main className="lg:mr-72 min-h-screen p-4 lg:p-8 pt-20 lg:pt-8 transition-all duration-300">
-        {children}
-      </main>
-    </div>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
+        <Providers>
+          {/* سنقوم بتبسيط الـ Navbar مؤقتاً للتأكد من أنه ليس مصدر الخطأ */}
+          <header className="w-full h-16 bg-white border-b border-gray-200 flex items-center justify-center shadow-sm sticky top-0 z-50">
+            <span className="text-2xl font-black text-purple-700">Nooryi Studio</span>
+          </header>
+          <main className="min-h-screen">{children}</main>
+        </Providers>
+      </body>
+    </html>
   )
 }
