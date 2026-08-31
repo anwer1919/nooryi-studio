@@ -44,8 +44,7 @@ export default async function VerifyInvoicePage({
     month: "long",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit",
-  , timeZone: "UTC"}))
+    minute: "2-digit", timeZone: "UTC"}))
 
   // ====== محاولة 1: البحث في التقارير ======
   if (invoiceType === "report") {

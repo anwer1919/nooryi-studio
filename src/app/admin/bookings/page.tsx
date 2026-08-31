@@ -138,7 +138,7 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
                     
                     // ✅ الحل الهندسي: إضافة timeZone: "UTC" لمنع اختلاف اليوم بين الخادم والمتصفح
                     const eventDate = booking.date 
-                      ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" , timeZone: "UTC"})) 
+                      ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC"})) 
                       : "غير محدد"
 
                     return (
