@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import Providers from "@/components/Providers"
-
+import Navbar from "@/components/Navbar" // ✅ تم إضافة هذا السطر الناقص
 
 export const metadata: Metadata = {
   title: "Nooryi Studio",
