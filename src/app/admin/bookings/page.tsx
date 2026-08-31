@@ -68,7 +68,7 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
+    <div suppressHydrationWarning className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-black text-gray-900 mb-2">إدارة الحجوزات</h1>
@@ -135,7 +135,11 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
                     const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
                     const StatusIcon = status.icon
                     const clientName = booking.clientName || "عميل"
-                    const eventDate = booking.date ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" }) : "غير محدد"
+                    
+                    // ✅ الحل الهندسي: إضافة timeZone: "UTC" لمنع اختلاف اليوم بين الخادم والمتصفح
+                    const eventDate = booking.date 
+                      ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) 
+                      : "غير محدد"
 
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50 transition">
@@ -152,7 +156,11 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center gap-2 text-sm"><Calendar size={14} className="text-gray-400" /><span className="text-gray-700">{eventDate}</span></div>
+                          {/* ✅ suppressHydrationWarning مضاف هنا كخط دفاع أخير */}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar size={14} className="text-gray-400" />
+                            <span suppressHydrationWarning className="text-gray-700">{eventDate}</span>
+                          </div>
                           {booking.venue?.name && <div className="flex items-center gap-2 text-xs text-gray-500 mt-1"><MapPin size={12} /><span>{booking.venue.name}</span></div>}
                         </td>
                         <td className="py-4 px-4"><p className="font-bold text-gray-900">{Number(booking.grossAmount || 0).toLocaleString("en-US")} ج.م</p></td>
@@ -174,16 +182,6 @@ export default async function BookingsListPage({ searchParams }: { searchParams:
             </div>
           )}
         </div>
-
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
-            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.max(1, currentPage - 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === 1 ? "bg-gray-100 text-gray-400" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>السابق</Link>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <Link key={page} href={`?status=${statusFilter}&search=${searchQuery}&page=${page}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === page ? "bg-purple-700 text-white" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>{page}</Link>
-            ))}
-            <Link href={`?status=${statusFilter}&search=${searchQuery}&page=${Math.min(totalPages, currentPage + 1)}`} className={`px-4 py-2 rounded-lg font-bold transition ${currentPage === totalPages ? "bg-gray-100 text-gray-400" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}>التالي</Link>
-          </div>
-        )}
       </div>
     </div>
   )

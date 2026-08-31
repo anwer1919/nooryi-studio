@@ -445,7 +445,3 @@ html, body {
     size: A4 portrait; 
   }
 }
-  /* منع أي تعارضات في Hydration */
-  [data-hydrate-mismatch] {
-  display: none !important;
-} 
