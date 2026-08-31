@@ -4,12 +4,31 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { useState, useEffect } from "react"
-import { LogOut, X } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  Music,
+  Calendar,
+  FileText,
+  Settings,
+  LogOut,
+  X
+} from "lucide-react"
+
+// ✅ خريطة الأيقونات: اسم الأيقونة → مكون الأيقونة
+const iconMap: Record<string, any> = {
+  LayoutDashboard,
+  Users,
+  Music,
+  Calendar,
+  FileText,
+  Settings,
+}
 
 interface MenuItem {
   href: string
   label: string
-  icon: any
+  icon: string // ✅ الآن نص (string) بدلاً من دالة
 }
 
 export default function AdminSidebarClient({
@@ -24,7 +43,6 @@ export default function AdminSidebarClient({
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  // فتح/إغلاق القائمة الجانبية على الجوال
   useEffect(() => {
     const toggleBtn = document.getElementById("mobile-menu-toggle")
     const handler = () => setIsOpen((prev) => !prev)
@@ -32,14 +50,12 @@ export default function AdminSidebarClient({
     return () => toggleBtn?.removeEventListener("click", handler)
   }, [])
 
-  // إغلاق القائمة عند النقر على رابط
   const handleLinkClick = () => {
     setIsOpen(false)
   }
 
   return (
     <>
-      {/* Overlay للجوال */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -47,7 +63,6 @@ export default function AdminSidebarClient({
         />
       )}
 
-      {/* الشريط الجانبي */}
       <aside
         className={`
           fixed top-0 right-0 h-full w-64 bg-white border-l border-gray-200 z-50
@@ -56,7 +71,7 @@ export default function AdminSidebarClient({
         `}
       >
         <div className="flex flex-col h-full">
-          {/* الترويسة */}
+          {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -74,7 +89,7 @@ export default function AdminSidebarClient({
             </div>
           </div>
 
-          {/* معلومات المستخدم */}
+          {/* User Info */}
           <div className="p-4 bg-gradient-to-l from-purple-50 to-white border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold text-lg">
@@ -93,11 +108,13 @@ export default function AdminSidebarClient({
             </div>
           </div>
 
-          {/* القائمة */}
+          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-              const Icon = item.icon
+              
+              // ✅ جلب مكون الأيقونة من الخريطة
+              const IconComponent = iconMap[item.icon] || LayoutDashboard
 
               return (
                 <Link
@@ -113,14 +130,14 @@ export default function AdminSidebarClient({
                     }
                   `}
                 >
-                  <Icon size={20} />
+                  <IconComponent size={20} />
                   <span>{item.label}</span>
                 </Link>
               )
             })}
           </nav>
 
-          {/* زر الخروج */}
+          {/* Logout */}
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
