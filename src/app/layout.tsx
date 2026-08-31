@@ -2,6 +2,16 @@ import type { Metadata } from "next"
 import "./globals.css"
 import Providers from "@/components/Providers"
 import Navbar from "@/components/Navbar"
+import HydrationWarningFilter from "@/components/HydrationWarningFilter"
+
+// في body:
+<body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
+  <HydrationWarningFilter />
+  <Providers>
+    <Navbar />
+    <main className="min-h-screen">{children}</main>
+  </Providers>
+</body>
 
 export const metadata: Metadata = {
   title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
