@@ -10,35 +10,34 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  // هذا السطر يضمن أن الكود التالي يعمل فقط في المتصفح بعد التحميل الأولي
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // ✅ الحل الجذري: أثناء التحميل، نرسم هيكلًا ثابتًا يطابق ما يرسله الخادم تماماً.
-  // هذا يمنع React من اكتشاف أي اختلاف ويقتل خطأ #441 من جذوره.
+  // ✅ الحل الجذري: الخادم والمتصفح يرسمان هذا الهيكل الخارجي المطابق تماماً
   if (!isMounted || status === "loading") {
     return (
-      <nav className="w-full h-16 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50" suppressHydrationWarning>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-black text-purple-700">Nooryi</span>
-            <span className="text-xs text-gray-500 font-bold hidden sm:block">STUDIO</span>
-          </Link>
-          {/* هيكل عظمي ثابت يمنع تعارض Hydration */}
-          <div className="hidden md:flex items-center gap-4">
-            <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-            <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-          <div className="md:hidden">
-            <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+      <nav className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50" suppressHydrationWarning>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-2xl font-black text-purple-700">Nooryi</span>
+              <span className="text-xs text-gray-500 font-bold hidden sm:block">STUDIO</span>
+            </Link>
+            {/* هيكل عظمي يطابق مكان الأزرار تماماً لمنع إزاحة DOM */}
+            <div className="hidden md:flex items-center gap-4">
+              <div className="w-20 h-8 bg-gray-100 rounded animate-pulse"></div>
+              <div className="w-24 h-8 bg-gray-100 rounded animate-pulse"></div>
+            </div>
+            <div className="md:hidden">
+              <div className="w-8 h-8 bg-gray-100 rounded animate-pulse"></div>
+            </div>
           </div>
         </div>
       </nav>
     )
   }
 
-  // بعد التأكد من التحميل، نعرض الواجهة الحقيقية
   const isLoggedIn = status === "authenticated"
   const userName = session?.user?.name || "المستخدم"
   const userRole = session?.user?.role || "USER"
@@ -70,13 +69,11 @@ export default function Navbar() {
                     </span>
                   </div>
                 </div>
-
                 {isAdmin && (
                   <Link href="/admin" className="flex items-center gap-1 px-3 py-1.5 bg-purple-700 text-white text-sm font-bold rounded-lg hover:bg-purple-800 transition">
                     <LayoutDashboard size={16} /> لوحة التحكم
                   </Link>
                 )}
-
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 text-sm font-bold rounded-lg transition">
                   <LogOut size={16} /> خروج
                 </button>
