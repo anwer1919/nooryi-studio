@@ -21,6 +21,25 @@ import {
 
 export const dynamic = "force-dynamic"
 
+// دالة آمنة لتنسيق التواريخ وتمنع انهيار الخادم
+const safeFormatDate = (dateInput: any, includeTime = false) => {
+  if (!dateInput) return "غير محدد"
+  try {
+    const date = new Date(dateInput)
+    if (isNaN(date.getTime())) return "تاريخ غير صالح"
+    
+    return date.toLocaleDateString("ar-EG", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      ...(includeTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+    })
+  } catch (e) {
+    return "غير محدد"
+  }
+}
+
 export default async function BookingDetailsPage({
   params,
 }: {
@@ -45,6 +64,7 @@ export default async function BookingDetailsPage({
   let booking: any = null
   let errorMessage: string | null = null
 
+  // ✅ عزل جلب البيانات لمنع خطأ 500
   try {
     booking = await prisma.booking.findUnique({
       where: { id },
@@ -77,19 +97,18 @@ export default async function BookingDetailsPage({
       },
     })
   } catch (error: any) {
-    console.error("Error fetching booking:", error)
-    errorMessage = error.message
+    console.error("❌ Database Error in Booking Details:", error.message)
+    errorMessage = "حدث خطأ في الاتصال بقاعدة البيانات"
   }
 
-  if (!booking) {
+  // ✅ عرض رسالة خطأ أنيقة بدلاً من شاشة 500 البيضاء
+  if (!booking || errorMessage) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white p-12 rounded-2xl shadow-xl text-center max-w-md">
           <XCircle className="w-20 h-20 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">الحجز غير موجود</h2>
-          <p className="text-gray-600 mb-4">
-            {errorMessage || "لا يمكن العثور على هذا الحجز في النظام."}
-          </p>
+          <p className="text-gray-600 mb-4">{errorMessage || "لا يمكن العثور على هذا الحجز في النظام."}</p>
           <Link
             href="/admin/bookings"
             className="inline-block px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition"
@@ -101,51 +120,25 @@ export default async function BookingDetailsPage({
     )
   }
 
-  // حساب المبالغ بأمان
+  // ✅ حسابات آمنة تماماً مع قيم افتراضية
   const grossAmount = Number(booking.grossAmount || 0)
   const depositAmount = Number(booking.depositAmount || 0)
   const remainingAmount = Number(booking.remainingAmount || 0)
   const platformFee = Math.round(grossAmount * 0.05)
   const taxAmount = Math.round(grossAmount * 0.14)
 
-  // حالة الحجز
   const statusConfig: any = {
-    PENDING_APPROVAL: {
-      label: "قيد المراجعة",
-      color: "bg-yellow-100 text-yellow-700 border-yellow-300",
-      icon: Clock,
-    },
-    APPROVED: {
-      label: "تمت الموافقة",
-      color: "bg-blue-100 text-blue-700 border-blue-300",
-      icon: CheckCircle2,
-    },
-    CONFIRMED: {
-      label: "مؤكد",
-      color: "bg-green-100 text-green-700 border-green-300",
-      icon: CheckCircle2,
-    },
-    COMPLETED: {
-      label: "مكتمل",
-      color: "bg-green-100 text-green-700 border-green-300",
-      icon: CheckCircle2,
-    },
-    CANCELLED: {
-      label: "ملغي",
-      color: "bg-red-100 text-red-700 border-red-300",
-      icon: XCircle,
-    },
-    REJECTED: {
-      label: "مرفوض",
-      color: "bg-red-100 text-red-700 border-red-300",
-      icon: XCircle,
-    },
+    PENDING_APPROVAL: { label: "قيد المراجعة", color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock },
+    APPROVED: { label: "تمت الموافقة", color: "bg-blue-100 text-blue-700 border-blue-300", icon: CheckCircle2 },
+    CONFIRMED: { label: "مؤكد", color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle2 },
+    COMPLETED: { label: "مكتمل", color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle2 },
+    CANCELLED: { label: "ملغي", color: "bg-red-100 text-red-700 border-red-300", icon: XCircle },
+    REJECTED: { label: "مرفوض", color: "bg-red-100 text-red-700 border-red-300", icon: XCircle },
   }
 
   const status = statusConfig[booking.status] || statusConfig.PENDING_APPROVAL
   const StatusIcon = status.icon
 
-  // حالة الدفع
   const paymentStatus =
     remainingAmount === 0 && depositAmount > 0
       ? { label: "مدفوع بالكامل", color: "bg-green-100 text-green-700" }
@@ -153,45 +146,19 @@ export default async function BookingDetailsPage({
       ? { label: "مدفوع جزئياً", color: "bg-blue-100 text-blue-700" }
       : { label: "غير مدفوع", color: "bg-yellow-100 text-yellow-700" }
 
-  // التواريخ
-  const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
+  const eventDate = safeFormatDate(booking.date)
+  const createdAt = safeFormatDate(booking.createdAt, true)
 
-  const createdAt = new Date(booking.createdAt).toLocaleDateString("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const clientName = booking.customer?.fullName || booking.clientName || "غير محدد"
+  const clientEmail = booking.customer?.email || booking.clientEmail || null
+  const clientPhone = booking.customer?.phone || booking.clientPhone || null
 
-  // تحديد اسم العميل
-  const clientName =
-    booking.customer?.fullName ||
-    booking.clientName ||
-    "غير محدد"
-
-  const clientEmail =
-    booking.customer?.email || booking.clientEmail || null
-
-  const clientPhone =
-    booking.customer?.phone || booking.clientPhone || null
-
-  // وقت الحجز
-  const timeSlotLabels: any = {
-    MORNING: "صباحاً",
-    AFTERNOON: "ظهراً",
-    EVENING: "مساءً",
-    NIGHT: "ليلاً",
-  }
+  const timeSlotLabels: any = { MORNING: "صباحاً", AFTERNOON: "ظهراً", EVENING: "مساءً", NIGHT: "ليلاً" }
   const timeSlotLabel = timeSlotLabels[booking.timeSlot] || booking.timeSlot || "غير محدد"
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
+    // ✅ إضافة suppressHydrationWarning للحاوية الرئيسية لمنع أي تعارض
+    <div suppressHydrationWarning className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -205,20 +172,13 @@ export default async function BookingDetailsPage({
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-black text-gray-900 mb-2">
-                تفاصيل الحجز
-              </h1>
+              <h1 className="text-3xl font-black text-gray-900 mb-2">تفاصيل الحجز</h1>
               <p className="text-gray-500">
-                رقم الحجز:{" "}
-                <span className="font-mono font-bold text-purple-700">
-                  {booking.id.slice(0, 8).toUpperCase()}
-                </span>
+                رقم الحجز: <span className="font-mono font-bold text-purple-700">{booking.id.slice(0, 8).toUpperCase()}</span>
               </p>
             </div>
 
-            <div
-              className={`${status.color} border-2 px-6 py-3 rounded-xl font-bold flex items-center gap-2`}
-            >
+            <div className={`${status.color} border-2 px-6 py-3 rounded-xl font-bold flex items-center gap-2`}>
               <StatusIcon size={24} />
               <span className="text-lg">{status.label}</span>
             </div>
@@ -241,27 +201,17 @@ export default async function BookingDetailsPage({
               <>
                 <Link
                   href={`/admin/bookings/${booking.id}/approve`}
-                  onClick={(e) => {
-                    if (!confirm("هل أنت متأكد من الموافقة على هذا الحجز؟")) {
-                      e.preventDefault()
-                    }
-                  }}
+                  onClick={(e) => { if (!confirm("هل أنت متأكد من الموافقة على هذا الحجز؟")) e.preventDefault() }}
                   className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg"
                 >
-                  <CheckCircle2 size={20} />
-                  موافقة
+                  <CheckCircle2 size={20} /> موافقة
                 </Link>
                 <Link
                   href={`/admin/bookings/${booking.id}/reject`}
-                  onClick={(e) => {
-                    if (!confirm("هل أنت متأكد من رفض هذا الحجز؟")) {
-                      e.preventDefault()
-                    }
-                  }}
+                  onClick={(e) => { if (!confirm("هل أنت متأكد من رفض هذا الحجز؟")) e.preventDefault() }}
                   className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg"
                 >
-                  <XCircle size={20} />
-                  رفض
+                  <XCircle size={20} /> رفض
                 </Link>
               </>
             )}
@@ -269,30 +219,20 @@ export default async function BookingDetailsPage({
             {booking.status === "APPROVED" && remainingAmount > 0 && isAdmin && (
               <Link
                 href={`/admin/bookings/${booking.id}/confirm-payment`}
-                onClick={(e) => {
-                  if (!confirm("هل تريد تأكيد الدفع بالكامل لهذا الحجز؟")) {
-                    e.preventDefault()
-                  }
-                }}
+                onClick={(e) => { if (!confirm("هل تريد تأكيد الدفع بالكامل لهذا الحجز؟")) e.preventDefault() }}
                 className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg"
               >
-                <CreditCard size={20} />
-                تأكيد الدفع بالكامل
+                <CreditCard size={20} /> تأكيد الدفع بالكامل
               </Link>
             )}
 
             {booking.status === "APPROVED" && isAdmin && (
               <Link
                 href={`/admin/bookings/${booking.id}/complete`}
-                onClick={(e) => {
-                  if (!confirm("هل تريد تحديد هذا الحجز كمكتمل؟")) {
-                    e.preventDefault()
-                  }
-                }}
+                onClick={(e) => { if (!confirm("هل تريد تحديد هذا الحجز كمكتمل؟")) e.preventDefault() }}
                 className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition shadow-lg"
               >
-                <CheckCircle2 size={20} />
-                تحديد كمكتمل
+                <CheckCircle2 size={20} /> تحديد كمكتمل
               </Link>
             )}
           </div>
@@ -311,26 +251,21 @@ export default async function BookingDetailsPage({
                 <p className="text-xs text-gray-500">معلومات صاحب الحجز</p>
               </div>
             </div>
-
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-gray-500 font-semibold mb-1">الاسم</p>
                 <p className="font-bold text-gray-900">{clientName}</p>
               </div>
-
               {clientEmail && (
                 <div className="flex items-center gap-2">
                   <Mail size={16} className="text-gray-400 flex-shrink-0" />
                   <p className="text-sm text-gray-700 truncate">{clientEmail}</p>
                 </div>
               )}
-
               {clientPhone && (
                 <div className="flex items-center gap-2">
                   <Phone size={16} className="text-gray-400 flex-shrink-0" />
-                  <p className="text-sm text-gray-700" dir="ltr">
-                    {clientPhone}
-                  </p>
+                  <p className="text-sm text-gray-700" dir="ltr">{clientPhone}</p>
                 </div>
               )}
             </div>
@@ -347,30 +282,20 @@ export default async function BookingDetailsPage({
                 <p className="text-xs text-gray-500">معلومات الفنان المحجوز</p>
               </div>
             </div>
-
             {booking.artist ? (
               <div className="flex items-center gap-4">
                 {booking.artist.profileImage ? (
-                  <img
-                    src={booking.artist.profileImage}
-                    alt={booking.artist.name}
-                    className="w-16 h-16 rounded-xl object-cover"
-                  />
+                  <img src={booking.artist.profileImage} alt={booking.artist.name} className="w-16 h-16 rounded-xl object-cover" />
                 ) : (
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold text-2xl">
                     {booking.artist.name?.charAt(0) || "ف"}
                   </div>
                 )}
                 <div>
-                  <Link
-                    href={`/admin/artists/${booking.artist.slug}`}
-                    className="font-bold text-gray-900 text-lg hover:text-purple-700 transition"
-                  >
+                  <Link href={`/admin/artists/${booking.artist.slug}`} className="font-bold text-gray-900 text-lg hover:text-purple-700 transition">
                     {booking.artist.name}
                   </Link>
-                  <p className="text-sm text-purple-700">
-                    {booking.artist.category}
-                  </p>
+                  <p className="text-sm text-purple-700">{booking.artist.category}</p>
                 </div>
               </div>
             ) : (
@@ -389,30 +314,21 @@ export default async function BookingDetailsPage({
                 <p className="text-xs text-gray-500">تفاصيل الموقع</p>
               </div>
             </div>
-
             {booking.venue ? (
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">
-                    اسم المكان
-                  </p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">اسم المكان</p>
                   <p className="font-bold text-gray-900">{booking.venue.name}</p>
                 </div>
-
                 {booking.venue.address && (
                   <div>
-                    <p className="text-xs text-gray-500 font-semibold mb-1">
-                      العنوان
-                    </p>
+                    <p className="text-xs text-gray-500 font-semibold mb-1">العنوان</p>
                     <p className="text-sm text-gray-700">{booking.venue.address}</p>
                   </div>
                 )}
-
                 {booking.venue.city && (
                   <div>
-                    <p className="text-xs text-gray-500 font-semibold mb-1">
-                      المدينة
-                    </p>
+                    <p className="text-xs text-gray-500 font-semibold mb-1">المدينة</p>
                     <p className="text-sm text-gray-700">{booking.venue.city}</p>
                   </div>
                 )}
@@ -431,44 +347,27 @@ export default async function BookingDetailsPage({
               <Calendar size={24} className="text-purple-700" />
               تفاصيل الحجز
             </h3>
-
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">تاريخ الفعالية:</span>
-                <span suppressHydrationWarning className="font-bold text-gray-900 text-right">
-                  {eventDate}
-                </span>
+                <span className="font-bold text-gray-900 text-right">{eventDate}</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">وقت الحجز:</span>
                 <span className="font-bold text-gray-900">{timeSlotLabel}</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">تاريخ الإنشاء:</span>
-                <span suppressHydrationWarning className="font-bold text-gray-900 text-sm">
-                  {createdAt}
-                </span>
+                <span className="font-bold text-gray-900 text-sm">{createdAt}</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">حالة الدفع:</span>
-                <span
-                  className={`${paymentStatus.color} px-3 py-1 rounded-lg text-sm font-bold`}
-                >
-                  {paymentStatus.label}
-                </span>
+                <span className={`${paymentStatus.color} px-3 py-1 rounded-lg text-sm font-bold`}>{paymentStatus.label}</span>
               </div>
-
               {booking.adminNotes && (
                 <div>
-                  <p className="text-gray-600 font-medium mb-2">
-                    ملاحظات الإدارة:
-                  </p>
-                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                    {booking.adminNotes}
-                  </p>
+                  <p className="text-gray-600 font-medium mb-2">ملاحظات الإدارة:</p>
+                  <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{booking.adminNotes}</p>
                 </div>
               )}
             </div>
@@ -480,60 +379,34 @@ export default async function BookingDetailsPage({
               <DollarSign size={24} className="text-purple-700" />
               الملخص المالي
             </h3>
-
             <div className="space-y-3 mb-6">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">المبلغ الإجمالي:</span>
-                <span className="font-bold text-gray-900 text-lg">
-                  {grossAmount.toLocaleString()} ج.م
-                </span>
+                <span className="font-bold text-gray-900 text-lg">{grossAmount.toLocaleString("en-US")} ج.م</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">
-                  العربون المدفوع:
-                </span>
-                <span className="font-bold text-green-600 text-lg">
-                  {depositAmount.toLocaleString()} ج.م
-                </span>
+                <span className="text-gray-600 font-medium">العربون المدفوع:</span>
+                <span className="font-bold text-green-600 text-lg">{depositAmount.toLocaleString("en-US")} ج.م</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-gray-600 font-medium">المبلغ المتبقي:</span>
-                <span
-                  className={`font-bold text-lg ${
-                    remainingAmount > 0 ? "text-red-600" : "text-green-600"
-                  }`}
-                >
-                  {remainingAmount.toLocaleString()} ج.م
+                <span className={`font-bold text-lg ${remainingAmount > 0 ? "text-red-600" : "text-green-600"}`}>
+                  {remainingAmount.toLocaleString("en-US")} ج.م
                 </span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">
-                  رسوم المنصة (5%):
-                </span>
-                <span className="font-bold text-gray-700">
-                  {platformFee.toLocaleString()} ج.م
-                </span>
+                <span className="text-gray-600 font-medium">رسوم المنصة (5%):</span>
+                <span className="font-bold text-gray-700">{platformFee.toLocaleString("en-US")} ج.م</span>
               </div>
-
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">
-                  ضريبة القيمة المضافة (14%):
-                </span>
-                <span className="font-bold text-gray-700">
-                  {taxAmount.toLocaleString()} ج.م
-                </span>
+                <span className="text-gray-600 font-medium">ضريبة القيمة المضافة (14%):</span>
+                <span className="font-bold text-gray-700">{taxAmount.toLocaleString("en-US")} ج.م</span>
               </div>
             </div>
-
             <div className="bg-gradient-to-l from-purple-700 to-purple-900 text-white p-6 rounded-xl shadow-lg">
               <div className="flex justify-between items-center">
                 <span className="font-bold text-lg">الإجمالي النهائي:</span>
-                <span className="font-black text-3xl">
-                  {(grossAmount + taxAmount).toLocaleString()} ج.م
-                </span>
+                <span className="font-black text-3xl">{(grossAmount + taxAmount).toLocaleString("en-US")} ج.م</span>
               </div>
             </div>
           </div>
@@ -543,12 +416,8 @@ export default async function BookingDetailsPage({
         <div className="mt-8 bg-gradient-to-l from-purple-50 to-white p-6 rounded-2xl border-2 border-purple-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h3 className="font-bold text-gray-900 text-xl mb-2">
-                هل تحتاج فاتورة رسمية؟
-              </h3>
-              <p className="text-gray-600">
-                يمكنك عرض وطباعة الفاتورة الرسمية لهذا الحجز
-              </p>
+              <h3 className="font-bold text-gray-900 text-xl mb-2">هل تحتاج فاتورة رسمية؟</h3>
+              <p className="text-gray-600">يمكنك عرض وطباعة الفاتورة الرسمية لهذا الحجز</p>
             </div>
             <Link
               href={`/booking/${booking.id}/invoice/print`}
