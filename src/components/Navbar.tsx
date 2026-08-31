@@ -2,38 +2,35 @@
 
 import Link from "next/link"
 import { useSession, signIn, signOut } from "next-auth/react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react"
 
 export default function Navbar() {
   const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
 
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  // عرض هيكل مطابق للخادم أثناء التحميل الأولي لمنع خطأ Hydration
-  if (!isMounted) {
+  // ✅ الحل الاحترافي: إذا كانت الحالة "تحميل"، نرسم هيكلًا عظميًا ثابتًا.
+  // هذا يضمن أن الخادم والمتصفح يرسمان نفس الـ HTML تماماً في أول جزء من الثانية.
+  if (status === "loading") {
     return (
-      <nav className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50" suppressHydrationWarning>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-black text-purple-700">Nooryi</span>
-              <span className="text-xs text-gray-500 font-bold hidden sm:block">STUDIO</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-4">
-              <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-              <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-            </div>
+      <nav className="w-full h-16 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50" suppressHydrationWarning>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="hidden md:flex items-center gap-4">
+            <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="md:hidden">
+            <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
           </div>
         </div>
       </nav>
     )
   }
 
+  // بعد انتهاء التحميل، نعرض الواجهة الحقيقية
   const isLoggedIn = status === "authenticated"
   const userName = session?.user?.name || "المستخدم"
   const userRole = session?.user?.role || "USER"
