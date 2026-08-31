@@ -10,14 +10,14 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  // يتم تشغيل هذا فقط في المتصفح بعد التحميل الأولي
+  // هذا السطر يضمن أن الكود التالي يعمل فقط في المتصفح بعد التحميل الأولي
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // ✅ الحل الجذري: الخادم والمتصفح يرسمان هذا الهيكل العظمي أولاً.
-  // هذا يضمن تطابق HTML بنسبة 100% ويمنع خطأ Hydration #441 تماماً.
-  if (!isMounted) {
+  // ✅ الحل الجذري: أثناء التحميل، نرسم هيكلًا ثابتًا يطابق ما يرسله الخادم تماماً.
+  // هذا يمنع React من اكتشاف أي اختلاف ويقتل خطأ #441 من جذوره.
+  if (!isMounted || status === "loading") {
     return (
       <nav className="w-full h-16 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50" suppressHydrationWarning>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -25,6 +25,7 @@ export default function Navbar() {
             <span className="text-2xl font-black text-purple-700">Nooryi</span>
             <span className="text-xs text-gray-500 font-bold hidden sm:block">STUDIO</span>
           </Link>
+          {/* هيكل عظمي ثابت يمنع تعارض Hydration */}
           <div className="hidden md:flex items-center gap-4">
             <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
             <div className="w-24 h-8 bg-gray-200 rounded animate-pulse"></div>
