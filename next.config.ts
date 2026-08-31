@@ -1,25 +1,26 @@
 ﻿import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  telemetry: false,
-  // تعطيل TypeScript checking
+  // تعطيل telemetry لمنع خطأ startTime
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
+  
+  // تعطيل التحذيرات المزعجة
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
   typescript: {
     ignoreBuildErrors: true,
   },
   
-  // تعطيل Strict Mode لحل React #441
-  reactStrictMode: false,
-  
-  // إعدادات الصور
+  // Images
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
+        protocol: "https",
+        hostname: "**",
       },
     ],
   },

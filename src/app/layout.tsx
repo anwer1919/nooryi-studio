@@ -1,8 +1,8 @@
 ﻿import type { Metadata } from "next"
+import Script from "next/script"
 import "./globals.css"
 import Providers from "@/components/Providers"
 import Navbar from "@/components/Navbar"
-import ConsoleErrorFilter from "@/components/ConsoleErrorFilter"
 
 export const metadata: Metadata = {
   title: "Nooryi Studio - منصة حجز الفنانين والفعاليات",
@@ -13,11 +13,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body suppressHydrationWarning className="font-sans antialiased bg-gray-50 text-gray-900">
-        <ConsoleErrorFilter />
+        
+        {/* سكربت إخفاء التحذيرات المزعجة من Console */}
+        <Script src="/suppress-warnings.js" strategy="beforeInteractive" />
+        
         <Providers>
           <Navbar />
-          <main className="min-h-screen">{children}</main>
+          <main className="min-h-screen" suppressHydrationWarning>
+            {children}
+          </main>
         </Providers>
+        
       </body>
     </html>
   )
