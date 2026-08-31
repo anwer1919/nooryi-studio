@@ -209,9 +209,9 @@ export default function PrintReportContent() {
               <span className="text-gray-500">تاريخ الإصدار:</span>
               <span suppressHydrationWarning className="font-bold text-black">{reportDate}</span>
               <span className="text-gray-500">من تاريخ:</span>
-              <span className="font-bold text-black">{from ? new Date(from).toLocaleDateString("ar-EG", { timeZone: "UTC"})) : "البداية"}</span>
+              <span className="font-bold text-black">{from ? new Date(from).toLocaleDateString("ar-EG", { timeZone: "UTC" }) : "البداية"}</span>
               <span className="text-gray-500">إلى تاريخ:</span>
-              <span className="font-bold text-black">{to ? new Date(to).toLocaleDateString("ar-EG", { timeZone: "UTC"})) : "الآن"}</span>
+              <span className="font-bold text-black">{to ? new Date(to).toLocaleDateString("ar-EG", { timeZone: "UTC" }) : "الآن"}</span>
               <span className="text-gray-500">عدد الحجوزات:</span>
               <span className="font-bold text-black">{reportData.length}</span>
             </div>
