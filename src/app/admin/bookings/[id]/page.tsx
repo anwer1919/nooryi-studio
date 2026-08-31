@@ -21,6 +21,7 @@ import {
 
 export const dynamic = "force-dynamic"
 
+// دالة آمنة تماماً لتنسيق التواريخ وتمنع أي انهيار
 const safeFormatDate = (dateInput: any, includeTime = false) => {
   if (!dateInput) return "غير محدد"
   try {
@@ -62,7 +63,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
 
   if (!booking || errorMessage) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div suppressHydrationWarning className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white p-12 rounded-2xl shadow-xl text-center max-w-md">
           <XCircle className="w-20 h-20 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">الحجز غير موجود</h2>
@@ -99,6 +100,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
   const timeSlotLabel = timeSlotLabels[booking.timeSlot] || booking.timeSlot || "غير محدد"
 
   return (
+    // ✅ suppressHydrationWarning هنا يمنع أي تعارض في Hydration
     <div suppressHydrationWarning className="min-h-screen bg-gray-50 p-4 lg:p-8 pt-20 lg:pt-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
@@ -123,10 +125,10 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
             </Link>
             {booking.status === "PENDING_APPROVAL" && isAdmin && (
               <>
-                <Link href={`/admin/bookings/${booking.id}/approve`} onClick={(e) => { if (!confirm("هل أنت متأكد؟")) e.preventDefault() }} className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg">
+                <Link href={`/admin/bookings/${booking.id}/approve`} onClick={(e) => { if (!confirm("هل أنت متأكد من الموافقة؟")) e.preventDefault() }} className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition shadow-lg">
                   <CheckCircle2 size={20} /> موافقة
                 </Link>
-                <Link href={`/admin/bookings/${booking.id}/reject`} onClick={(e) => { if (!confirm("هل أنت متأكد؟")) e.preventDefault() }} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg">
+                <Link href={`/admin/bookings/${booking.id}/reject`} onClick={(e) => { if (!confirm("هل أنت متأكد من الرفض؟")) e.preventDefault() }} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition shadow-lg">
                   <XCircle size={20} /> رفض
                 </Link>
               </>
@@ -145,6 +147,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* بيانات العميل */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white"><User size={24} /></div>
@@ -152,27 +155,45 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
             </div>
             <div className="space-y-3">
               <div><p className="text-xs text-gray-500 font-semibold mb-1">الاسم</p><p className="font-bold text-gray-900">{clientName}</p></div>
-              {clientEmail && <div className="flex items-center gap-2"><Mail size={16} className="text-gray-400" /><p className="text-sm text-gray-700 truncate">{clientEmail}</p></div>}
-              {clientPhone && <div className="flex items-center gap-2"><Phone size={16} className="text-gray-400" /><p className="text-sm text-gray-700" dir="ltr">{clientPhone}</p></div>}
+              {clientEmail && <div className="flex items-center gap-2"><Mail size={16} className="text-gray-400 flex-shrink-0" /><p className="text-sm text-gray-700 truncate">{clientEmail}</p></div>}
+              {clientPhone && <div className="flex items-center gap-2"><Phone size={16} className="text-gray-400 flex-shrink-0" /><p className="text-sm text-gray-700" dir="ltr">{clientPhone}</p></div>}
             </div>
           </div>
 
+          {/* بيانات الفنان (محمية تماماً من الأخطاء) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white"><Music size={24} /></div>
               <div><h3 className="font-bold text-gray-900 text-lg">الفنان</h3><p className="text-xs text-gray-500">معلومات الفنان المحجوز</p></div>
             </div>
+            
+            {/* ✅ الفحص الآمن: إذا لم يكن الفنان موجوداً أو لم يكن له slug، نعرض نصاً بدلاً من رابط معطل */}
             {booking.artist ? (
               <div className="flex items-center gap-4">
-                {booking.artist.profileImage ? <img src={booking.artist.profileImage} alt={booking.artist.name} className="w-16 h-16 rounded-xl object-cover" /> : <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold text-2xl">{booking.artist.name?.charAt(0) || "ف"}</div>}
+                {booking.artist.profileImage ? (
+                  <img src={booking.artist.profileImage} alt={booking.artist.name || "فنان"} className="w-16 h-16 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold text-2xl">
+                    {booking.artist.name?.charAt(0) || "ف"}
+                  </div>
+                )}
                 <div>
-                  <Link href={`/admin/artists/${booking.artist.slug}`} className="font-bold text-gray-900 text-lg hover:text-purple-700 transition">{booking.artist.name}</Link>
-                  <p className="text-sm text-purple-700">{booking.artist.category}</p>
+                  {booking.artist.slug ? (
+                    <Link href={`/admin/artists/${booking.artist.slug}`} className="font-bold text-gray-900 text-lg hover:text-purple-700 transition block">
+                      {booking.artist.name}
+                    </Link>
+                  ) : (
+                    <span className="font-bold text-gray-900 text-lg block">{booking.artist.name}</span>
+                  )}
+                  <p className="text-sm text-purple-700">{booking.artist.category || "غير محدد"}</p>
                 </div>
               </div>
-            ) : <p className="text-gray-500 italic">لا توجد معلومات</p>}
+            ) : (
+              <p className="text-gray-500 italic flex items-center gap-2"><Music size={16} /> لا توجد معلومات عن الفنان</p>
+            )}
           </div>
 
+          {/* بيانات المكان (محمية تماماً) */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white"><MapPin size={24} /></div>
@@ -182,8 +203,11 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
               <div className="space-y-3">
                 <div><p className="text-xs text-gray-500 font-semibold mb-1">اسم المكان</p><p className="font-bold text-gray-900">{booking.venue.name}</p></div>
                 {booking.venue.address && <div><p className="text-xs text-gray-500 font-semibold mb-1">العنوان</p><p className="text-sm text-gray-700">{booking.venue.address}</p></div>}
+                {booking.venue.city && <div><p className="text-xs text-gray-500 font-semibold mb-1">المدينة</p><p className="text-sm text-gray-700">{booking.venue.city}</p></div>}
               </div>
-            ) : <p className="text-gray-500 italic">لا توجد معلومات</p>}
+            ) : (
+              <p className="text-gray-500 italic flex items-center gap-2"><MapPin size={16} /> لا توجد معلومات عن المكان</p>
+            )}
           </div>
         </div>
 
