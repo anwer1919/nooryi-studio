@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { Check, X, Award, Phone, Mail, MapPin, QrCode } from "lucide-react"
+import { Check, Award, Phone, Mail, MapPin, QrCode } from "lucide-react"
 
 const MONTHS_AR = [
   "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
@@ -20,7 +20,7 @@ const STUDIO_INFO = {
   licenseNumber: "NS-2026-001",
 }
 
-// ✅ هذه صفحة عامة للتحقق - لا تحتاج تسجيل دخول
+// ✅ صفحة عامة للتحقق - لا تحتاج تسجيل دخول
 export default async function VerifyCalendarPage({
   params,
 }: {
@@ -35,8 +35,9 @@ export default async function VerifyCalendarPage({
     notFound()
   }
 
-  // جلب بيانات الفنان
+  // جلب بيانات الفنان: البحث بالـ ID ثم بالـ slug
   let artist = await prisma.artist.findUnique({ where: { id: artistId } })
+  
   if (!artist) {
     artist = await prisma.artist.findUnique({ where: { slug: artistId } })
   }
@@ -157,7 +158,7 @@ export default async function VerifyCalendarPage({
 
           {/* معلومات الفنان */}
           <div className="bg-[#faf8f0] border-b-2 border-[#D4AF37]/30 px-6 md:px-8 py-4">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
                 <p className="text-sm md:text-base font-bold text-gray-900 truncate">{artist.name}</p>
