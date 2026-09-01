@@ -3,8 +3,9 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
-  ArrowLeft, Save, Printer, Download, Calendar,
-  ChevronRight, ChevronLeft, Check, X, Filter, Clock
+  ArrowLeft, Save, Printer, Calendar,
+  ChevronRight, ChevronLeft, Check, X, Filter, Clock,
+  Phone, Mail, MapPin, Award
 } from "lucide-react"
 
 const MONTHS_AR = [
@@ -15,6 +16,18 @@ const MONTHS_AR = [
 const DAYS_SHORT_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
 
 type FilterType = "all" | "available" | "unavailable"
+
+// ============ بيانات الاستوديو (عدّلها حسب حاجتك) ============
+const STUDIO_INFO = {
+  name: "Nooryi Studio",
+  nameAr: "استوديو نوري",
+  tagline: "منصة حجز الفنانين والفعاليات",
+  phone: "+20 100 000 0000",
+  email: "info@noorystudio.com",
+  address: "القاهرة، جمهورية مصر العربية",
+  website: "www.noorystudio.com",
+  licenseNumber: "NS-2026-001",
+}
 
 export default function ArtistAvailabilityPage() {
   const params = useParams()
@@ -38,12 +51,10 @@ export default function ArtistAvailabilityPage() {
 
   const fetchData = async () => {
     try {
-      // جلب بيانات الفنان
       const artistRes = await fetch(`/api/admin/artists/${slug}`)
       const artistResult = await artistRes.json()
       if (artistResult.success) setArtist(artistResult.data)
 
-      // جلب التوفر وتحويله لتواريخ
       const scheduleRes = await fetch(`/api/admin/artists/${slug}/availability`)
       const scheduleResult = await scheduleRes.json()
 
@@ -52,7 +63,6 @@ export default function ArtistAvailabilityPage() {
         const today = new Date()
         const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 3, 0)
 
-        // توليد تواريخ متاحة بناءً على أيام الأسبوع
         for (let d = new Date(today); d <= endOfNextMonth; d.setDate(d.getDate() + 1)) {
           const dayOfWeek = d.getDay()
           const hasSlot = scheduleResult.data.some(
@@ -78,11 +88,9 @@ export default function ArtistAvailabilityPage() {
     return `${y}-${m}-${d}`
   }
 
-  // توليد أيام الشهر مع الأيام الفارغة في البداية
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
-
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
@@ -90,12 +98,10 @@ export default function ArtistAvailabilityPage() {
 
     const days: Array<{ date: Date | null; key: string | null }> = []
 
-    // أيام فارغة قبل بداية الشهر
     for (let i = 0; i < startDayOfWeek; i++) {
       days.push({ date: null, key: null })
     }
 
-    // أيام الشهر الفعلية
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d)
       days.push({ date, key: formatDateKey(date) })
@@ -107,28 +113,16 @@ export default function ArtistAvailabilityPage() {
   const toggleDay = (dateKey: string) => {
     setAvailableDates(prev => {
       const newSet = new Set(prev)
-      if (newSet.has(dateKey)) {
-        newSet.delete(dateKey)
-      } else {
-        newSet.add(dateKey)
-      }
+      if (newSet.has(dateKey)) newSet.delete(dateKey)
+      else newSet.add(dateKey)
       return newSet
     })
   }
 
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
-  }
+  const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+  const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+  const goToToday = () => setCurrentDate(new Date())
 
-  const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
-  }
-
-  const goToToday = () => {
-    setCurrentDate(new Date())
-  }
-
-  // تحديد أيام الأسبوع بالكامل (من السبت للجمعة مثلاً)
   const selectWeekdaysOnly = () => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
@@ -140,12 +134,8 @@ export default function ArtistAvailabilityPage() {
         const date = new Date(year, month, d)
         const dow = date.getDay()
         const key = formatDateKey(date)
-        // الأحد-الخميس (0-4) متاح، الجمعة والسبت غير متاح
-        if (dow >= 0 && dow <= 4) {
-          newSet.add(key)
-        } else {
-          newSet.delete(key)
-        }
+        if (dow >= 0 && dow <= 4) newSet.add(key)
+        else newSet.delete(key)
       }
       return newSet
     })
@@ -166,9 +156,7 @@ export default function ArtistAvailabilityPage() {
     })
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
+  const handlePrint = () => window.print()
 
   const handleSave = async () => {
     setSaving(true)
@@ -176,7 +164,6 @@ export default function ArtistAvailabilityPage() {
     setSuccess("")
 
     try {
-      // تحويل التواريخ المتاحة إلى days of week
       const daysMap = new Map<number, boolean>()
       availableDates.forEach(dateKey => {
         const [y, m, d] = dateKey.split("-").map(Number)
@@ -184,7 +171,6 @@ export default function ArtistAvailabilityPage() {
         daysMap.set(date.getDay(), true)
       })
 
-      // إنشاء schedule
       const schedule = Array.from(daysMap.entries()).map(([dayOfWeek]) => ({
         dayOfWeek,
         startTime: "09:00",
@@ -199,12 +185,8 @@ export default function ArtistAvailabilityPage() {
       })
 
       const result = await res.json()
-
-      if (result.success) {
-        setSuccess("تم حفظ التقويم بنجاح!")
-      } else {
-        setError(result.error || "فشل في الحفظ")
-      }
+      if (result.success) setSuccess("تم حفظ التقويم بنجاح!")
+      else setError(result.error || "فشل في الحفظ")
     } catch (err) {
       setError("حدث خطأ أثناء الحفظ")
     } finally {
@@ -212,7 +194,6 @@ export default function ArtistAvailabilityPage() {
     }
   }
 
-  // الإحصائيات
   const stats = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
@@ -224,11 +205,8 @@ export default function ArtistAvailabilityPage() {
     for (let d = 1; d <= lastDay; d++) {
       const date = new Date(year, month, d)
       const key = formatDateKey(date)
-      if (availableDates.has(key)) {
-        available++
-      } else {
-        unavailable++
-      }
+      if (availableDates.has(key)) available++
+      else unavailable++
     }
 
     return { available, unavailable, total: lastDay }
@@ -249,10 +227,11 @@ export default function ArtistAvailabilityPage() {
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
+  const reportId = `CAL-${year}${String(month + 1).padStart(2, "0")}-${artist?.id?.slice(-6)?.toUpperCase() || "000000"}`
 
   return (
     <>
-      {/* CSS خاص بالطباعة */}
+      {/* ============ CSS الطباعة ============ */}
       <style jsx global>{`
         @media print {
           body * { visibility: hidden; }
@@ -262,21 +241,33 @@ export default function ArtistAvailabilityPage() {
             left: 0; 
             top: 0; 
             width: 100%;
-            padding: 20mm;
+            padding: 10mm;
             background: white !important;
           }
           .no-print { display: none !important; }
           @page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 10mm;
           }
+          .print-header, .print-footer {
+            break-inside: avoid;
+          }
+        }
+        
+        @keyframes stampRotate {
+          from { transform: rotate(-8deg) scale(0.8); opacity: 0; }
+          to { transform: rotate(-8deg) scale(1); opacity: 1; }
+        }
+        
+        .official-stamp {
+          animation: stampRotate 0.5s ease-out;
         }
       `}</style>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto">
-          
-          {/* Header - لا يطبع */}
+
+          {/* ============ Header Controls (لا يطبع) ============ */}
           <div className="mb-6 no-print">
             <button
               onClick={() => router.back()}
@@ -303,7 +294,7 @@ export default function ArtistAvailabilityPage() {
                   className="flex items-center gap-2 px-4 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
                 >
                   <Printer size={18} />
-                  طباعة
+                  طباعة التقرير
                 </button>
                 <button
                   onClick={handleSave}
@@ -329,13 +320,10 @@ export default function ArtistAvailabilityPage() {
             </div>
           )}
 
-          {/* Controls - لا يطبع */}
+          {/* ============ Controls (لا يطبع) ============ */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-4 no-print">
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={prevMonth}
-                className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition"
-              >
+              <button onClick={prevMonth} className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition">
                 <ChevronRight size={20} className="text-gray-700" />
               </button>
 
@@ -345,33 +333,21 @@ export default function ArtistAvailabilityPage() {
                 </h2>
               </div>
 
-              <button
-                onClick={nextMonth}
-                className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition"
-              >
+              <button onClick={nextMonth} className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition">
                 <ChevronLeft size={20} className="text-gray-700" />
               </button>
 
-              <button
-                onClick={goToToday}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold transition"
-              >
+              <button onClick={goToToday} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold transition">
                 اليوم
               </button>
 
               <div className="w-px h-8 bg-gray-200 mx-2 hidden md:block"></div>
 
-              <button
-                onClick={selectWeekdaysOnly}
-                className="px-4 py-2 bg-[#D4AF37] text-[#111] rounded-lg text-sm font-bold hover:bg-[#b8941f] transition"
-              >
+              <button onClick={selectWeekdaysOnly} className="px-4 py-2 bg-[#D4AF37] text-[#111] rounded-lg text-sm font-bold hover:bg-[#b8941f] transition">
                 أيام العمل فقط
               </button>
 
-              <button
-                onClick={clearMonth}
-                className="px-4 py-2 bg-gray-100 hover:bg-red-100 hover:text-red-700 rounded-lg text-sm font-semibold transition"
-              >
+              <button onClick={clearMonth} className="px-4 py-2 bg-gray-100 hover:bg-red-100 hover:text-red-700 rounded-lg text-sm font-semibold transition">
                 مسح الشهر
               </button>
             </div>
@@ -400,7 +376,7 @@ export default function ArtistAvailabilityPage() {
             </div>
           </div>
 
-          {/* Stats */}
+          {/* ============ Stats (لا يطبع) ============ */}
           <div className="grid grid-cols-3 gap-3 mb-4 no-print">
             <div className="bg-white p-4 rounded-xl border border-gray-200 text-center">
               <p className="text-xs text-gray-500 font-semibold mb-1">أيام الشهر</p>
@@ -416,53 +392,104 @@ export default function ArtistAvailabilityPage() {
             </div>
           </div>
 
-          {/* ============ التقويم (منطقة الطباعة) ============ */}
+          {/* ============ منطقة الطباعة ============ */}
           <div className="print-area bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
-            
-            {/* رأس التقرير المطبوع */}
-            <div className="bg-[#111] text-[#D4AF37] p-8 border-b-4 border-[#D4AF37]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-4xl font-black mb-2">تقرير التقويم الشهري</h1>
-                  <p className="text-xl opacity-90">{MONTHS_AR[month]} {year}</p>
-                </div>
-                <div className="text-left">
-                  <p className="text-xs opacity-70 mb-1">الفنان</p>
-                  <p className="text-2xl font-bold">{artist?.name}</p>
-                  <p className="text-sm opacity-70 mt-1">{artist?.category || ""}</p>
-                </div>
-              </div>
 
-              <div className="mt-6 pt-6 border-t border-[#D4AF37]/30 grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs opacity-70">إجمالي الأيام</p>
-                  <p className="text-2xl font-black">{stats.total}</p>
+            {/* ═══════════ الترويسة الاحترافية ═══════════ */}
+            <div className="print-header bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#D4AF37] relative overflow-hidden">
+              {/* زخرفة ذهبية علوية */}
+              <div className="h-2 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+              
+              <div className="p-8 relative">
+                {/* الشعار والعنوان */}
+                <div className="flex items-start justify-between gap-6">
+                  {/* الشعار */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl border-4 border-[#D4AF37]/50">
+                      <span className="text-[#111] text-3xl font-black">N</span>
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-black tracking-wide">{STUDIO_INFO.name}</h1>
+                      <p className="text-lg opacity-90 font-semibold">{STUDIO_INFO.nameAr}</p>
+                      <p className="text-sm opacity-70">{STUDIO_INFO.tagline}</p>
+                    </div>
+                  </div>
+
+                  {/* معلومات الاتصال */}
+                  <div className="text-left space-y-1 text-sm">
+                    <div className="flex items-center gap-2 justify-end">
+                      <span dir="ltr">{STUDIO_INFO.phone}</span>
+                      <Phone size={14} />
+                    </div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <span dir="ltr">{STUDIO_INFO.email}</span>
+                      <Mail size={14} />
+                    </div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <span>{STUDIO_INFO.address}</span>
+                      <MapPin size={14} />
+                    </div>
+                    <div className="flex items-center gap-2 justify-end opacity-70">
+                      <span dir="ltr">{STUDIO_INFO.website}</span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs opacity-70">أيام متاحة</p>
-                  <p className="text-2xl font-black">{stats.available}</p>
-                </div>
-                <div>
-                  <p className="text-xs opacity-70">أيام غير متاحة</p>
-                  <p className="text-2xl font-black">{stats.unavailable}</p>
+
+                {/* خط فاصل ذهبي */}
+                <div className="mt-6 pt-6 border-t-2 border-[#D4AF37]/30 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-black">تقرير التقويم الشهري</h2>
+                    <p className="text-lg opacity-90">{MONTHS_AR[month]} {year}</p>
+                  </div>
+
+                  <div className="text-left">
+                    <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/40 rounded-lg px-4 py-2 inline-block">
+                      <p className="text-xs opacity-70 mb-1">رقم التقرير</p>
+                      <p className="text-lg font-black font-mono" dir="ltr">{reportId}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* جدول التقويم */}
-            <div className="p-6">
-              <div className="grid grid-cols-7 gap-2">
-                {/* رؤوس الأيام */}
+            {/* ═══════════ معلومات الفنان ═══════════ */}
+            <div className="bg-[#faf8f0] border-b-2 border-[#D4AF37]/30 px-8 py-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
+                  <p className="font-bold text-gray-900">{artist?.name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">الفئة</p>
+                  <p className="font-bold text-gray-900">{artist?.category || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام متاحة</p>
+                  <p className="font-black text-[#D4AF37] text-lg">{stats.available} يوم</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام غير متاحة</p>
+                  <p className="font-black text-gray-900 text-lg">{stats.unavailable} يوم</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ═══════════ جدول التقويم ═══════════ */}
+            <div className="p-6 relative">
+              {/* علامة مائية */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
+                <span className="text-9xl font-black text-[#111] rotate-[-30deg]">
+                  {STUDIO_INFO.name}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-7 gap-2 relative z-10">
                 {DAYS_SHORT_AR.map((day) => (
-                  <div
-                    key={day}
-                    className="bg-[#111] text-[#D4AF37] text-center py-3 font-black text-sm rounded-lg"
-                  >
+                  <div key={day} className="bg-[#111] text-[#D4AF37] text-center py-3 font-black text-sm rounded-lg">
                     {day}
                   </div>
                 ))}
 
-                {/* أيام الشهر */}
                 {calendarDays.map((item, idx) => {
                   if (!item.date || !item.key) {
                     return <div key={`empty-${idx}`} className="aspect-square"></div>
@@ -472,7 +499,6 @@ export default function ArtistAvailabilityPage() {
                   const isToday = item.key === todayKey
                   const isPast = item.date < new Date(new Date().setHours(0, 0, 0, 0))
 
-                  // تطبيق الفلتر
                   const shouldHide =
                     (filter === "available" && !isAvailable) ||
                     (filter === "unavailable" && isAvailable)
@@ -486,7 +512,7 @@ export default function ArtistAvailabilityPage() {
                         aspect-square rounded-lg font-bold transition-all relative
                         flex flex-col items-center justify-center gap-1
                         ${shouldHide ? "opacity-20" : "opacity-100"}
-                        ${isPast ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:scale-105"}
+                        ${isPast ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:scale-105 no-print-hover"}
                         ${isToday ? "ring-4 ring-[#D4AF37]" : ""}
                         ${isAvailable
                           ? "bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] shadow-lg"
@@ -506,7 +532,7 @@ export default function ArtistAvailabilityPage() {
               </div>
 
               {/* مفتاح الألوان */}
-              <div className="mt-6 pt-6 border-t-2 border-[#D4AF37]/20 flex items-center justify-center gap-6 flex-wrap">
+              <div className="mt-6 pt-6 border-t-2 border-[#D4AF37]/20 flex items-center justify-center gap-6 flex-wrap relative z-10">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#D4AF37] to-[#b8941f]"></div>
                   <span className="text-sm font-bold text-gray-700">يوم متاح للحجز</span>
@@ -520,15 +546,82 @@ export default function ArtistAvailabilityPage() {
                   <span className="text-sm font-bold text-gray-700">اليوم الحالي</span>
                 </div>
               </div>
+
+              {/* ═══════════ الختم الرسمي المعتمد ═══════════ */}
+              <div className="mt-8 flex justify-end relative z-10">
+                <div className="official-stamp relative w-40 h-40" style={{ transform: "rotate(-8deg)" }}>
+                  {/* الختم الدائري الخارجي */}
+                  <div className="absolute inset-0 rounded-full border-4 border-[#D4AF37] flex items-center justify-center">
+                    <div className="absolute inset-2 rounded-full border-2 border-[#D4AF37]"></div>
+                    
+                    {/* محتوى الختم */}
+                    <div className="text-center px-4">
+                      <Award className="w-8 h-8 text-[#D4AF37] mx-auto mb-1" />
+                      <p className="text-[10px] font-black text-[#D4AF37] leading-tight">
+                        {STUDIO_INFO.name}
+                      </p>
+                      <p className="text-[9px] font-bold text-[#D4AF37] mt-1">
+                        استوديو معتمد رسمياً
+                      </p>
+                      <p className="text-[8px] font-semibold text-[#D4AF37] opacity-70 mt-1" dir="ltr">
+                        {STUDIO_INFO.licenseNumber}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* نجوم الزخرفة */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
+                </div>
+              </div>
             </div>
 
-            {/* تذييل التقرير */}
-            <div className="bg-[#111] text-[#D4AF37] px-8 py-4 border-t-4 border-[#D4AF37] text-center">
-              <p className="text-xs opacity-70">
-                تم إصدار هذا التقرير بتاريخ {new Date().toLocaleDateString("ar-EG", {
-                  year: "numeric", month: "long", day: "numeric"
-                })} • Nooryi Studio
-              </p>
+            {/* ═══════════ التذييل الاحترافي ═══════════ */}
+            <div className="print-footer bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#D4AF37]">
+              <div className="px-8 py-6">
+                {/* معلومات التوثيق */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 pb-4 border-b border-[#D4AF37]/30">
+                  <div>
+                    <p className="text-xs opacity-70 mb-1">تاريخ الإصدار</p>
+                    <p className="font-bold">
+                      {new Date().toLocaleDateString("ar-EG", {
+                        year: "numeric", month: "long", day: "numeric"
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs opacity-70 mb-1">رقم التقرير</p>
+                    <p className="font-bold font-mono" dir="ltr">{reportId}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs opacity-70 mb-1">الترخيص</p>
+                    <p className="font-bold" dir="ltr">{STUDIO_INFO.licenseNumber}</p>
+                  </div>
+                </div>
+
+                {/* حقوق النشر */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs opacity-70">
+                  <p>
+                    © {new Date().getFullYear()} {STUDIO_INFO.name} - جميع الحقوق محفوظة
+                  </p>
+                  <p className="flex items-center gap-1">
+                    <span dir="ltr">{STUDIO_INFO.website}</span>
+                    <span>•</span>
+                    <span dir="ltr">{STUDIO_INFO.phone}</span>
+                  </p>
+                </div>
+
+                {/* ملاحظة قانونية */}
+                <div className="mt-4 pt-4 border-t border-[#D4AF37]/20 text-center">
+                  <p className="text-[10px] opacity-50">
+                    هذا التقرير صادر إلكترونياً من نظام {STUDIO_INFO.name} وهو وثيقة معتمدة دون الحاجة لتوقيع أو ختم يدوي.
+                    للاستفسار يرجى التواصل عبر القنوات الرسمية المذكورة أعلاه.
+                  </p>
+                </div>
+              </div>
+
+              {/* خط ذهبي سفلي */}
+              <div className="h-2 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
             </div>
           </div>
 
@@ -536,7 +629,7 @@ export default function ArtistAvailabilityPage() {
           <div className="mt-6 p-4 bg-[#111] text-[#D4AF37] rounded-xl no-print">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Clock size={16} />
-              اضغط على أي يوم لتحديده كمتاح أو غير متاح • استخدم الفلتر للعرض السريع • اضغط "طباعة" للحصول على نسخة احترافية
+              اضغط على أي يوم لتحديده كمتاح أو غير متاح • استخدم الفلتر للعرض السريع • اضغط "طباعة التقرير" للحصول على نسخة احترافية مع الختم الرسمي
             </p>
           </div>
         </div>
