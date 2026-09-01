@@ -1,27 +1,20 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Save, Calendar, Check, X } from "lucide-react"
+import {
+  ArrowLeft, Save, Printer, Download, Calendar,
+  ChevronRight, ChevronLeft, Check, X, Filter, Clock
+} from "lucide-react"
 
-const DAYS = [
-  { value: 0, label: "الأحد", short: "أحد" },
-  { value: 1, label: "الإثنين", short: "إثنين" },
-  { value: 2, label: "الثلاثاء", short: "ثلاثاء" },
-  { value: 3, label: "الأربعاء", short: "أربعاء" },
-  { value: 4, label: "الخميس", short: "خميس" },
-  { value: 5, label: "الجمعة", short: "جمعة" },
-  { value: 6, label: "السبت", short: "سبت" },
+const MONTHS_AR = [
+  "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+  "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
 ]
 
-// الساعات من 8 صباحاً إلى 12 منتصف الليل
-const HOURS = Array.from({ length: 16 }, (_, i) => {
-  const hour = i + 8
-  return {
-    value: hour,
-    label: hour < 12 ? `${hour} ص` : hour === 12 ? "12 ظ" : `${hour - 12} م`,
-  }
-})
+const DAYS_SHORT_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
+
+type FilterType = "all" | "available" | "unavailable"
 
 export default function ArtistAvailabilityPage() {
   const params = useParams()
@@ -31,14 +24,13 @@ export default function ArtistAvailabilityPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [artist, setArtist] = useState<any>(null)
+
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [availableDates, setAvailableDates] = useState<Set<string>>(new Set())
+  const [filter, setFilter] = useState<FilterType>("all")
+
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  
-  // التقويم: كائن يحتوي على الأوقات المتاحة
-  // المفتاح: "dayOfWeek-hour" مثال: "0-9" يعني الأحد الساعة 9
-  const [availableSlots, setAvailableSlots] = useState<Set<string>>(new Set())
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragMode, setDragMode] = useState<"add" | "remove">("add")
 
   useEffect(() => {
     fetchData()
@@ -46,94 +38,136 @@ export default function ArtistAvailabilityPage() {
 
   const fetchData = async () => {
     try {
+      // جلب بيانات الفنان
       const artistRes = await fetch(`/api/admin/artists/${slug}`)
       const artistResult = await artistRes.json()
       if (artistResult.success) setArtist(artistResult.data)
 
+      // جلب التوفر وتحويله لتواريخ
       const scheduleRes = await fetch(`/api/admin/artists/${slug}/availability`)
       const scheduleResult = await scheduleRes.json()
 
       if (scheduleResult.success && scheduleResult.data) {
-        const slots = new Set<string>()
-        scheduleResult.data.forEach((item: any) => {
-          if (item.isAvailable) {
-            const startHour = parseInt(item.startTime.split(":")[0])
-            const endHour = parseInt(item.endTime.split(":")[0])
-            for (let h = startHour; h < endHour; h++) {
-              slots.add(`${item.dayOfWeek}-${h}`)
-            }
+        const dates = new Set<string>()
+        const today = new Date()
+        const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 3, 0)
+
+        // توليد تواريخ متاحة بناءً على أيام الأسبوع
+        for (let d = new Date(today); d <= endOfNextMonth; d.setDate(d.getDate() + 1)) {
+          const dayOfWeek = d.getDay()
+          const hasSlot = scheduleResult.data.some(
+            (s: any) => s.dayOfWeek === dayOfWeek && s.isAvailable
+          )
+          if (hasSlot) {
+            dates.add(formatDateKey(d))
           }
-        })
-        setAvailableSlots(slots)
-      } else {
-        // جدول افتراضي: كل يوم من 9 صباحاً إلى 6 مساءً
-        const defaultSlots = new Set<string>()
-        DAYS.forEach(day => {
-          for (let h = 9; h < 18; h++) {
-            defaultSlots.add(`${day.value}-${h}`)
-          }
-        })
-        setAvailableSlots(defaultSlots)
+        }
+        setAvailableDates(dates)
       }
     } catch (err) {
-      setError("حدث خطأ أثناء تحميل البيانات")
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
-  const toggleSlot = useCallback((dayOfWeek: number, hour: number) => {
-    const key = `${dayOfWeek}-${hour}`
-    setAvailableSlots(prev => {
-      const newSlots = new Set(prev)
-      if (dragMode === "add") {
-        newSlots.add(key)
-      } else {
-        newSlots.delete(key)
-      }
-      return newSlots
-    })
-  }, [dragMode])
-
-  const handleMouseDown = (dayOfWeek: number, hour: number) => {
-    const key = `${dayOfWeek}-${hour}`
-    const isCurrentlyAvailable = availableSlots.has(key)
-    setDragMode(isCurrentlyAvailable ? "remove" : "add")
-    setIsDragging(true)
-    toggleSlot(dayOfWeek, hour)
+  const formatDateKey = (date: Date): string => {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, "0")
+    const d = String(date.getDate()).padStart(2, "0")
+    return `${y}-${m}-${d}`
   }
 
-  const handleMouseEnter = (dayOfWeek: number, hour: number) => {
-    if (isDragging) {
-      toggleSlot(dayOfWeek, hour)
+  // توليد أيام الشهر مع الأيام الفارغة في البداية
+  const calendarDays = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+
+    const firstDay = new Date(year, month, 1)
+    const lastDay = new Date(year, month + 1, 0)
+    const daysInMonth = lastDay.getDate()
+    const startDayOfWeek = firstDay.getDay()
+
+    const days: Array<{ date: Date | null; key: string | null }> = []
+
+    // أيام فارغة قبل بداية الشهر
+    for (let i = 0; i < startDayOfWeek; i++) {
+      days.push({ date: null, key: null })
     }
-  }
 
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
+    // أيام الشهر الفعلية
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d)
+      days.push({ date, key: formatDateKey(date) })
+    }
 
-  useEffect(() => {
-    window.addEventListener("mouseup", handleMouseUp)
-    return () => window.removeEventListener("mouseup", handleMouseUp)
-  }, [])
+    return days
+  }, [currentDate])
 
-  // تحديد كل ساعات يوم معين
-  const selectWholeDay = (dayOfWeek: number) => {
-    setAvailableSlots(prev => {
-      const newSlots = new Set(prev)
-      const dayHours = HOURS.map(h => `${dayOfWeek}-${h.value}`)
-      const allSelected = dayHours.every(key => newSlots.has(key))
-      
-      dayHours.forEach(key => {
-        if (allSelected) {
-          newSlots.delete(key)
-        } else {
-          newSlots.add(key)
-        }
-      })
-      return newSlots
+  const toggleDay = (dateKey: string) => {
+    setAvailableDates(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(dateKey)) {
+        newSet.delete(dateKey)
+      } else {
+        newSet.add(dateKey)
+      }
+      return newSet
     })
+  }
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
+  }
+
+  const prevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
+  }
+
+  const goToToday = () => {
+    setCurrentDate(new Date())
+  }
+
+  // تحديد أيام الأسبوع بالكامل (من السبت للجمعة مثلاً)
+  const selectWeekdaysOnly = () => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const lastDay = new Date(year, month + 1, 0).getDate()
+
+    setAvailableDates(prev => {
+      const newSet = new Set(prev)
+      for (let d = 1; d <= lastDay; d++) {
+        const date = new Date(year, month, d)
+        const dow = date.getDay()
+        const key = formatDateKey(date)
+        // الأحد-الخميس (0-4) متاح، الجمعة والسبت غير متاح
+        if (dow >= 0 && dow <= 4) {
+          newSet.add(key)
+        } else {
+          newSet.delete(key)
+        }
+      }
+      return newSet
+    })
+  }
+
+  const clearMonth = () => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const lastDay = new Date(year, month + 1, 0).getDate()
+
+    setAvailableDates(prev => {
+      const newSet = new Set(prev)
+      for (let d = 1; d <= lastDay; d++) {
+        const date = new Date(year, month, d)
+        newSet.delete(formatDateKey(date))
+      }
+      return newSet
+    })
+  }
+
+  const handlePrint = () => {
+    window.print()
   }
 
   const handleSave = async () => {
@@ -142,43 +176,21 @@ export default function ArtistAvailabilityPage() {
     setSuccess("")
 
     try {
-      // تحويل الأوقات المتاحة إلى فترات زمنية
-      const schedule: any[] = []
-      
-      DAYS.forEach(day => {
-        const daySlots = HOURS
-          .filter(h => availableSlots.has(`${day.value}-${h.value}`))
-          .map(h => h.value)
-          .sort((a, b) => a - b)
-
-        if (daySlots.length === 0) return
-
-        // تجميع الساعات المتتالية في فترات
-        let start = daySlots[0]
-        let end = daySlots[0] + 1
-
-        for (let i = 1; i < daySlots.length; i++) {
-          if (daySlots[i] === end) {
-            end = daySlots[i] + 1
-          } else {
-            schedule.push({
-              dayOfWeek: day.value,
-              startTime: `${String(start).padStart(2, "0")}:00`,
-              endTime: `${String(end).padStart(2, "0")}:00`,
-              isAvailable: true,
-            })
-            start = daySlots[i]
-            end = daySlots[i] + 1
-          }
-        }
-        
-        schedule.push({
-          dayOfWeek: day.value,
-          startTime: `${String(start).padStart(2, "0")}:00`,
-          endTime: `${String(end).padStart(2, "0")}:00`,
-          isAvailable: true,
-        })
+      // تحويل التواريخ المتاحة إلى days of week
+      const daysMap = new Map<number, boolean>()
+      availableDates.forEach(dateKey => {
+        const [y, m, d] = dateKey.split("-").map(Number)
+        const date = new Date(y, m - 1, d)
+        daysMap.set(date.getDay(), true)
       })
+
+      // إنشاء schedule
+      const schedule = Array.from(daysMap.entries()).map(([dayOfWeek]) => ({
+        dayOfWeek,
+        startTime: "09:00",
+        endTime: "23:00",
+        isAvailable: true,
+      }))
 
       const res = await fetch(`/api/admin/artists/${slug}/availability`, {
         method: "POST",
@@ -200,160 +212,335 @@ export default function ArtistAvailabilityPage() {
     }
   }
 
+  // الإحصائيات
+  const stats = useMemo(() => {
+    const year = currentDate.getFullYear()
+    const month = currentDate.getMonth()
+    const lastDay = new Date(year, month + 1, 0).getDate()
+
+    let available = 0
+    let unavailable = 0
+
+    for (let d = 1; d <= lastDay; d++) {
+      const date = new Date(year, month, d)
+      const key = formatDateKey(date)
+      if (availableDates.has(key)) {
+        available++
+      } else {
+        unavailable++
+      }
+    }
+
+    return { available, unavailable, total: lastDay }
+  }, [currentDate, availableDates])
+
+  const todayKey = formatDateKey(new Date())
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-[#111]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-700 font-bold">جاري تحميل التقويم...</p>
+          <div className="w-16 h-16 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white font-bold">جاري تحميل التقويم...</p>
         </div>
       </div>
     )
   }
 
-  const totalAvailable = availableSlots.size
-  const totalHours = DAYS.length * HOURS.length
-  const availabilityPercentage = Math.round((totalAvailable / totalHours) * 100)
+  const year = currentDate.getFullYear()
+  const month = currentDate.getMonth()
 
   return (
-    <div className="max-w-7xl mx-auto" onMouseLeave={() => setIsDragging(false)}>
-      {/* Header */}
-      <div className="mb-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-purple-700 hover:text-purple-800 font-semibold mb-4 transition"
-        >
-          <ArrowLeft size={20} /> العودة
-        </button>
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-gray-900 mb-2 flex items-center gap-3">
-              <Calendar size={32} className="text-purple-700" />
-              تقويم التوفر
-            </h1>
-            <p className="text-gray-500">
-              حدد الأوقات المتاحة للحجز للفنان <span className="font-bold text-purple-700">{artist?.name}</span>
+    <>
+      {/* CSS خاص بالطباعة */}
+      <style jsx global>{`
+        @media print {
+          body * { visibility: hidden; }
+          .print-area, .print-area * { visibility: visible; }
+          .print-area { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%;
+            padding: 20mm;
+            background: white !important;
+          }
+          .no-print { display: none !important; }
+          @page {
+            size: A4 portrait;
+            margin: 15mm;
+          }
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8">
+        <div className="max-w-6xl mx-auto">
+          
+          {/* Header - لا يطبع */}
+          <div className="mb-6 no-print">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-[#D4AF37] hover:text-[#b8941f] font-semibold mb-4 transition"
+            >
+              <ArrowLeft size={20} /> العودة
+            </button>
+
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-black text-gray-900 mb-2 flex items-center gap-3">
+                  <Calendar size={32} className="text-[#D4AF37]" />
+                  تقويم التوفر الشهري
+                </h1>
+                <p className="text-gray-500">
+                  إدارة أيام العمل للفنان{" "}
+                  <span className="font-bold text-[#D4AF37]">{artist?.name}</span>
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 px-4 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
+                >
+                  <Printer size={18} />
+                  طباعة
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-3 bg-[#D4AF37] text-[#111] rounded-xl font-bold hover:bg-[#b8941f] transition disabled:opacity-50"
+                >
+                  <Save size={18} />
+                  {saving ? "جاري الحفظ..." : "حفظ"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Messages */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 font-semibold no-print">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 font-semibold no-print">
+              {success}
+            </div>
+          )}
+
+          {/* Controls - لا يطبع */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-4 no-print">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={prevMonth}
+                className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              >
+                <ChevronRight size={20} className="text-gray-700" />
+              </button>
+
+              <div className="flex-1 text-center">
+                <h2 className="text-xl font-black text-gray-900">
+                  {MONTHS_AR[month]} {year}
+                </h2>
+              </div>
+
+              <button
+                onClick={nextMonth}
+                className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              >
+                <ChevronLeft size={20} className="text-gray-700" />
+              </button>
+
+              <button
+                onClick={goToToday}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-semibold transition"
+              >
+                اليوم
+              </button>
+
+              <div className="w-px h-8 bg-gray-200 mx-2 hidden md:block"></div>
+
+              <button
+                onClick={selectWeekdaysOnly}
+                className="px-4 py-2 bg-[#D4AF37] text-[#111] rounded-lg text-sm font-bold hover:bg-[#b8941f] transition"
+              >
+                أيام العمل فقط
+              </button>
+
+              <button
+                onClick={clearMonth}
+                className="px-4 py-2 bg-gray-100 hover:bg-red-100 hover:text-red-700 rounded-lg text-sm font-semibold transition"
+              >
+                مسح الشهر
+              </button>
+            </div>
+
+            {/* Filter */}
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+              <Filter size={16} className="text-gray-500" />
+              <span className="text-sm text-gray-600 font-semibold ml-1">فلتر:</span>
+              {[
+                { value: "all", label: "الكل" },
+                { value: "available", label: "المتاح فقط" },
+                { value: "unavailable", label: "غير المتاح فقط" },
+              ].map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setFilter(f.value as FilterType)}
+                  className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                    filter === f.value
+                      ? "bg-[#111] text-[#D4AF37]"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-4 no-print">
+            <div className="bg-white p-4 rounded-xl border border-gray-200 text-center">
+              <p className="text-xs text-gray-500 font-semibold mb-1">أيام الشهر</p>
+              <p className="text-2xl font-black text-gray-900">{stats.total}</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#D4AF37] to-[#b8941f] p-4 rounded-xl text-center">
+              <p className="text-xs text-[#111] font-semibold mb-1 opacity-70">متاح</p>
+              <p className="text-2xl font-black text-[#111]">{stats.available}</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#111] to-[#333] p-4 rounded-xl text-center">
+              <p className="text-xs text-[#D4AF37] font-semibold mb-1 opacity-70">غير متاح</p>
+              <p className="text-2xl font-black text-white">{stats.unavailable}</p>
+            </div>
+          </div>
+
+          {/* ============ التقويم (منطقة الطباعة) ============ */}
+          <div className="print-area bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
+            
+            {/* رأس التقرير المطبوع */}
+            <div className="bg-[#111] text-[#D4AF37] p-8 border-b-4 border-[#D4AF37]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-4xl font-black mb-2">تقرير التقويم الشهري</h1>
+                  <p className="text-xl opacity-90">{MONTHS_AR[month]} {year}</p>
+                </div>
+                <div className="text-left">
+                  <p className="text-xs opacity-70 mb-1">الفنان</p>
+                  <p className="text-2xl font-bold">{artist?.name}</p>
+                  <p className="text-sm opacity-70 mt-1">{artist?.category || ""}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-[#D4AF37]/30 grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs opacity-70">إجمالي الأيام</p>
+                  <p className="text-2xl font-black">{stats.total}</p>
+                </div>
+                <div>
+                  <p className="text-xs opacity-70">أيام متاحة</p>
+                  <p className="text-2xl font-black">{stats.available}</p>
+                </div>
+                <div>
+                  <p className="text-xs opacity-70">أيام غير متاحة</p>
+                  <p className="text-2xl font-black">{stats.unavailable}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* جدول التقويم */}
+            <div className="p-6">
+              <div className="grid grid-cols-7 gap-2">
+                {/* رؤوس الأيام */}
+                {DAYS_SHORT_AR.map((day) => (
+                  <div
+                    key={day}
+                    className="bg-[#111] text-[#D4AF37] text-center py-3 font-black text-sm rounded-lg"
+                  >
+                    {day}
+                  </div>
+                ))}
+
+                {/* أيام الشهر */}
+                {calendarDays.map((item, idx) => {
+                  if (!item.date || !item.key) {
+                    return <div key={`empty-${idx}`} className="aspect-square"></div>
+                  }
+
+                  const isAvailable = availableDates.has(item.key)
+                  const isToday = item.key === todayKey
+                  const isPast = item.date < new Date(new Date().setHours(0, 0, 0, 0))
+
+                  // تطبيق الفلتر
+                  const shouldHide =
+                    (filter === "available" && !isAvailable) ||
+                    (filter === "unavailable" && isAvailable)
+
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => toggleDay(item.key)}
+                      disabled={isPast}
+                      className={`
+                        aspect-square rounded-lg font-bold transition-all relative
+                        flex flex-col items-center justify-center gap-1
+                        ${shouldHide ? "opacity-20" : "opacity-100"}
+                        ${isPast ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:scale-105"}
+                        ${isToday ? "ring-4 ring-[#D4AF37]" : ""}
+                        ${isAvailable
+                          ? "bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] shadow-lg"
+                          : "bg-gradient-to-br from-[#111] to-[#333] text-white"
+                        }
+                      `}
+                    >
+                      <span className="text-xl font-black">{item.date.getDate()}</span>
+                      {isAvailable ? (
+                        <Check size={14} className="opacity-80" />
+                      ) : (
+                        <X size={14} className="opacity-50" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* مفتاح الألوان */}
+              <div className="mt-6 pt-6 border-t-2 border-[#D4AF37]/20 flex items-center justify-center gap-6 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#D4AF37] to-[#b8941f]"></div>
+                  <span className="text-sm font-bold text-gray-700">يوم متاح للحجز</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#111] to-[#333]"></div>
+                  <span className="text-sm font-bold text-gray-700">يوم غير متاح</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md border-4 border-[#D4AF37]"></div>
+                  <span className="text-sm font-bold text-gray-700">اليوم الحالي</span>
+                </div>
+              </div>
+            </div>
+
+            {/* تذييل التقرير */}
+            <div className="bg-[#111] text-[#D4AF37] px-8 py-4 border-t-4 border-[#D4AF37] text-center">
+              <p className="text-xs opacity-70">
+                تم إصدار هذا التقرير بتاريخ {new Date().toLocaleDateString("ar-EG", {
+                  year: "numeric", month: "long", day: "numeric"
+                })} • Nooryi Studio
+              </p>
+            </div>
+          </div>
+
+          {/* تعليمات */}
+          <div className="mt-6 p-4 bg-[#111] text-[#D4AF37] rounded-xl no-print">
+            <p className="text-sm font-semibold flex items-center gap-2">
+              <Clock size={16} />
+              اضغط على أي يوم لتحديده كمتاح أو غير متاح • استخدم الفلتر للعرض السريع • اضغط "طباعة" للحصول على نسخة احترافية
             </p>
           </div>
-          <div className="bg-gradient-to-r from-purple-700 to-purple-900 text-white px-6 py-3 rounded-xl">
-            <p className="text-sm opacity-80">نسبة التوفر</p>
-            <p className="text-2xl font-black">{availabilityPercentage}%</p>
-          </div>
         </div>
       </div>
-
-      {/* Messages */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 font-semibold flex items-center gap-2">
-          <X size={20} /> {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 font-semibold flex items-center gap-2">
-          <Check size={20} /> {success}
-        </div>
-      )}
-
-      {/* Instructions */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-        <p className="text-blue-800 text-sm font-semibold">
-          💡 <span className="font-bold">كيفية الاستخدام:</span> اضغط واسحب على الخلايا لتحديد أو إلغاء الأوقات المتاحة. 
-          اضغط على اسم اليوم لتحديد اليوم بالكامل.
-        </p>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse select-none">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="p-3 text-sm font-bold text-gray-500 w-20 border-l border-gray-200">
-                  الوقت
-                </th>
-                {DAYS.map((day) => (
-                  <th
-                    key={day.value}
-                    onClick={() => selectWholeDay(day.value)}
-                    className="p-3 text-sm font-bold text-gray-900 cursor-pointer hover:bg-purple-50 transition border-l border-gray-200 last:border-l-0"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-base">{day.label}</span>
-                      <span className="text-xs text-gray-400 font-normal">اضغط للتحديد</span>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {HOURS.map((hour) => (
-                <tr key={hour.value} className="border-b border-gray-100 last:border-b-0">
-                  <td className="p-2 text-sm font-semibold text-gray-600 text-center bg-gray-50 border-l border-gray-200">
-                    {hour.label}
-                  </td>
-                  {DAYS.map((day) => {
-                    const key = `${day.value}-${hour.value}`
-                    const isAvailable = availableSlots.has(key)
-                    return (
-                      <td
-                        key={key}
-                        onMouseDown={() => handleMouseDown(day.value, hour.value)}
-                        onMouseEnter={() => handleMouseEnter(day.value, hour.value)}
-                        className={`
-                          p-0 h-12 cursor-pointer transition-all duration-150 border-l border-gray-100 last:border-l-0
-                          ${isAvailable 
-                            ? "bg-green-100 hover:bg-green-200" 
-                            : "bg-gray-100 hover:bg-gray-200"
-                          }
-                        `}
-                      >
-                        <div className="w-full h-full flex items-center justify-center">
-                          {isAvailable && (
-                            <Check size={16} className="text-green-600" />
-                          )}
-                        </div>
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-6 mb-6 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-green-100 border border-green-300 rounded"></div>
-          <span className="text-sm text-gray-600 font-medium">متاح للحجز</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-gray-100 border border-gray-300 rounded"></div>
-          <span className="text-sm text-gray-600 font-medium">غير متاح</span>
-        </div>
-        <div className="mr-auto text-sm text-gray-500">
-          إجمالي الساعات المتاحة: <span className="font-bold text-purple-700">{totalAvailable}</span> ساعة أسبوعياً
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => router.back()}
-          className="flex-1 px-6 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition"
-        >
-          إلغاء
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Save size={20} />
-          {saving ? "جاري الحفظ..." : "حفظ التقويم"}
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
