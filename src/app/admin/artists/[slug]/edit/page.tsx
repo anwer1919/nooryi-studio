@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Save, Upload, X, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Save, Image as ImageIcon, Calendar, MapPin } from "lucide-react"
+import Link from "next/link"
 
 export default function EditArtistPage() {
   const params = useParams()
@@ -18,10 +19,11 @@ export default function EditArtistPage() {
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
   const [newSlug, setNewSlug] = useState("")
-  const [description, setDescription] = useState("")
   const [bio, setBio] = useState("")
   const [profileImage, setProfileImage] = useState("")
-  const [gallery, setGallery] = useState<string[]>([])
+  const [coverImage, setCoverImage] = useState("")
+  const [accentColor, setAccentColor] = useState("#EAB308")
+  const [status, setStatus] = useState("PENDING")
   const [uploadingImage, setUploadingImage] = useState(false)
 
   useEffect(() => {
@@ -38,12 +40,13 @@ export default function EditArtistPage() {
         setName(result.data.name || "")
         setCategory(result.data.category || "")
         setNewSlug(result.data.slug || "")
-        setDescription(result.data.description || "")
         setBio(result.data.bio || "")
         setProfileImage(result.data.profileImage || "")
-        setGallery(result.data.gallery || [])
+        setCoverImage(result.data.coverImage || "")
+        setAccentColor(result.data.accentColor || "#EAB308")
+        setStatus(result.data.status || "PENDING")
       } else {
-        setError("فشل في تحميل بيانات الفنان")
+        setError(result.error || "فشل في تحميل بيانات الفنان")
       }
     } catch (err) {
       setError("حدث خطأ أثناء الاتصال بالخادم")
@@ -52,11 +55,13 @@ export default function EditArtistPage() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
     const file = e.target.files?.[0]
-    if (!file) return null
+    if (!file) return
 
     setUploadingImage(true)
+    setError("")
+
     const formData = new FormData()
     formData.append("file", file)
     formData.append("type", "artist")
@@ -64,29 +69,17 @@ export default function EditArtistPage() {
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData })
       const result = await res.json()
-      if (result.success) return result.url
-      setError("فشل في رفع الصورة")
-      return null
+      if (result.success) {
+        if (type === "profile") setProfileImage(result.url)
+        if (type === "cover") setCoverImage(result.url)
+      } else {
+        setError("فشل في رفع الصورة")
+      }
     } catch (err) {
       setError("حدث خطأ أثناء رفع الصورة")
-      return null
     } finally {
       setUploadingImage(false)
     }
-  }
-
-  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = await handleImageUpload(e)
-    if (url) setProfileImage(url)
-  }
-
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = await handleImageUpload(e)
-    if (url) setGallery([...gallery, url])
-  }
-
-  const removeGalleryImage = (index: number) => {
-    setGallery(gallery.filter((_, i) => i !== index))
   }
 
   const handleSave = async () => {
@@ -98,7 +91,10 @@ export default function EditArtistPage() {
       const res = await fetch(`/api/admin/artists/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, category, slug: newSlug, description, bio, profileImage, gallery }),
+        body: JSON.stringify({
+          name, category, slug: newSlug, bio,
+          profileImage, coverImage, accentColor, status,
+        }),
       })
       const result = await res.json()
 
@@ -146,7 +142,7 @@ export default function EditArtistPage() {
           <ArrowLeft size={20} /> العودة
         </button>
         <h1 className="text-3xl font-black text-gray-900 mb-2">تعديل الفنان</h1>
-        <p className="text-gray-500">تعديل بيانات ومحتوى الفنان</p>
+        <p className="text-gray-500">تعديل بيانات ومحتوى الفنان {artist.name}</p>
       </div>
 
       {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 font-semibold">{error}</div>}
@@ -173,23 +169,37 @@ export default function EditArtistPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono" placeholder="artist-slug" />
                 <p className="text-xs text-gray-500 mt-1">سيكون الرابط: /artists/{newSlug}</p>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">الحالة</label>
+                <select value={status} onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500">
+                  <option value="PENDING">قيد المراجعة</option>
+                  <option value="ACTIVE">نشط</option>
+                  <option value="INACTIVE">غير نشط</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">اللون المميز</label>
+                <div className="flex items-center gap-3">
+                  <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)}
+                    className="w-12 h-12 rounded-lg cursor-pointer border-0" />
+                  <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)}
+                    className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono" />
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">الوصف المختصر</h2>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none" placeholder="وصف مختصر يظهر في بطاقات الفنانين..." />
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">السيرة الذاتية الكاملة</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">السيرة الذاتية</h2>
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={10}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none" placeholder="السيرة الذاتية التفصيلية للفنان..." />
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 resize-none"
+              placeholder="السيرة الذاتية التفصيلية للفنان..." />
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">الصور</h2>
+
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">الصورة الشخصية</label>
               <div className="flex items-center gap-4">
@@ -201,7 +211,7 @@ export default function EditArtistPage() {
                   </div>
                 )}
                 <label className="cursor-pointer">
-                  <input type="file" accept="image/*" onChange={handleProfileImageUpload} className="hidden" disabled={uploadingImage} />
+                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, "profile")} className="hidden" disabled={uploadingImage} />
                   <span className="px-4 py-2 bg-purple-700 text-white rounded-lg font-semibold hover:bg-purple-800 transition inline-block">
                     {uploadingImage ? "جاري الرفع..." : "تغيير الصورة"}
                   </span>
@@ -210,23 +220,20 @@ export default function EditArtistPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">معرض الصور</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                {gallery.map((img, index) => (
-                  <div key={index} className="relative group">
-                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-32 rounded-xl object-cover" />
-                    <button onClick={() => removeGalleryImage(index)}
-                      className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                      <X size={16} />
-                    </button>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">صورة الغلاف</label>
+              <div className="flex items-center gap-4">
+                {coverImage ? (
+                  <img src={coverImage} alt="Cover" className="w-40 h-24 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-40 h-24 rounded-xl bg-gray-100 flex items-center justify-center">
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
                   </div>
-                ))}
-                <label className="cursor-pointer border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-purple-500 transition">
-                  <input type="file" accept="image/*" onChange={handleGalleryUpload} className="hidden" disabled={uploadingImage} />
-                  <div className="text-center p-4">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500 font-semibold">إضافة صورة</p>
-                  </div>
+                )}
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, "cover")} className="hidden" disabled={uploadingImage} />
+                  <span className="px-4 py-2 bg-purple-700 text-white rounded-lg font-semibold hover:bg-purple-800 transition inline-block">
+                    {uploadingImage ? "جاري الرفع..." : "تغيير الغلاف"}
+                  </span>
                 </label>
               </div>
             </div>
@@ -234,6 +241,27 @@ export default function EditArtistPage() {
         </div>
 
         <div className="space-y-6">
+          {/* أزرار التقويم والتسعير - جديدة */}
+          <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl shadow-sm border border-purple-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">إدارة متقدمة</h3>
+            <div className="space-y-3">
+              <Link
+                href={`/admin/artists/${slug}/availability`}
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-purple-300 text-purple-700 rounded-xl font-bold hover:bg-purple-700 hover:text-white hover:border-purple-700 transition"
+              >
+                <Calendar size={20} />
+                إدارة التقويم
+              </Link>
+              <Link
+                href={`/admin/artists/${slug}/pricing`}
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-blue-300 text-blue-700 rounded-xl font-bold hover:bg-blue-700 hover:text-white hover:border-blue-700 transition"
+              >
+                <MapPin size={20} />
+                إدارة التسعير
+              </Link>
+            </div>
+          </div>
+
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
             <button onClick={handleSave} disabled={saving}
               className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
@@ -248,7 +276,18 @@ export default function EditArtistPage() {
               {profileImage && <img src={profileImage} alt="Preview" className="w-full h-40 rounded-xl object-cover" />}
               <h4 className="font-bold text-gray-900">{name || "اسم الفنان"}</h4>
               <p className="text-sm text-purple-700">{category || "الفئة"}</p>
-              <p className="text-sm text-gray-600 line-clamp-3">{description || "الوصف المختصر..."}</p>
+              <p className="text-sm text-gray-600 line-clamp-3">{bio || "السيرة الذاتية..."}</p>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: accentColor }}></div>
+                <span className="text-xs text-gray-500 font-mono">{accentColor}</span>
+              </div>
+              <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold ${
+                status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                status === "INACTIVE" ? "bg-red-100 text-red-700" :
+                "bg-yellow-100 text-yellow-700"
+              }`}>
+                {status === "ACTIVE" ? "نشط" : status === "INACTIVE" ? "غير نشط" : "قيد المراجعة"}
+              </span>
             </div>
           </div>
         </div>
