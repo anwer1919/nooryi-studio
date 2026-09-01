@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Music, Upload, X, Check, Loader2, Image as ImageIcon, Palette, FileText, AlertCircle } from "lucide-react"
