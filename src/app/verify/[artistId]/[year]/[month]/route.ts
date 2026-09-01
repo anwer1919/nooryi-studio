@@ -9,8 +9,11 @@ const MONTHS_AR = [
   "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
 ]
 
-function dateKey(year: number, monthIndex: number, day: number) {
-  return `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+function dateKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
 }
 
 export async function GET(
@@ -38,25 +41,16 @@ export async function GET(
       )
     }
 
+    // ✅ جلب الفنان بالـ id أو slug
     let artist = await prisma.artist.findUnique({
       where: { id: artistId },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        category: true,
-      },
+      select: { id: true, name: true, slug: true, category: true },
     })
 
     if (!artist) {
       artist = await prisma.artist.findUnique({
         where: { slug: artistId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          category: true,
-        },
+        select: { id: true, name: true, slug: true, category: true },
       })
     }
 
@@ -67,26 +61,34 @@ export async function GET(
       )
     }
 
-    const availability = await prisma.availability.findMany({
+    // ✅ حساب بداية ونهاية الشهر
+    const startOfMonth = new Date(year, monthIndex, 1, 0, 0, 0, 0)
+    const endOfMonth = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999)
+
+    // ✅ جلب جميع الـ availabilities للفنان في هذا الشهر
+    const allSlots = await prisma.availability.findMany({
       where: {
         artistId: artist.id,
-        isAvailable: true,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
       },
       select: {
-        dayOfWeek: true,
-        startTime: true,
-        endTime: true,
-        isAvailable: true,
+        date: true,
+        isBooked: true,
       },
     })
 
-    const availableWeekDays = new Set<number>()
-    availability.forEach((item) => {
-      if (item.isAvailable) {
-        availableWeekDays.add(item.dayOfWeek)
+    // ✅ بناء خريطة الأيام المحجوزة (isBooked === true)
+    const bookedDates = new Set<string>()
+    allSlots.forEach((slot) => {
+      if (slot.isBooked) {
+        bookedDates.add(dateKey(slot.date))
       }
     })
 
+    // ✅ بناء التقويم
     const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
     const firstDayOfWeek = new Date(year, monthIndex, 1).getDay()
 
@@ -96,30 +98,25 @@ export async function GET(
       isAvailable: boolean
     }> = []
 
+    // خلايا فارغة في بداية الشهر
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push({
-        day: null,
-        key: null,
-        isAvailable: false,
-      })
+      days.push({ day: null, key: null, isAvailable: false })
     }
 
+    // أيام الشهر الفعلية
     let availableCount = 0
     let unavailableCount = 0
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, monthIndex, day)
-      const dow = date.getDay()
-      const isAvailable = availableWeekDays.has(dow)
+      const key = dateKey(date)
+      const isBooked = bookedDates.has(key)
+      const isAvailable = !isBooked
 
       if (isAvailable) availableCount++
       else unavailableCount++
 
-      days.push({
-        day,
-        key: dateKey(year, monthIndex, day),
-        isAvailable,
-      })
+      days.push({ day, key, isAvailable })
     }
 
     const reportId = `CAL-${year}${String(monthNumber).padStart(2, "0")}-${artist.id.slice(-6).toUpperCase()}`

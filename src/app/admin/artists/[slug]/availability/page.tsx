@@ -18,6 +18,7 @@ const DAYS_SHORT_AR = ["الأحد", "الإثنين", "الثلاثاء", "ال
 
 type FilterType = "all" | "available" | "unavailable"
 
+// ============ بيانات الاستوديو (عدّلها حسب حاجتك) ============
 const STUDIO_INFO = {
   name: "Nooryi Studio",
   nameAr: "استوديو نوري",
@@ -27,6 +28,14 @@ const STUDIO_INFO = {
   address: "القاهرة، جمهورية مصر العربية",
   website: "https://nooryi-studio.vercel.app",
   licenseNumber: "NS-2026-001",
+}
+
+// دالة مساعدة لتحويل التاريخ إلى مفتاح
+function formatDateKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, "0")
+  const d = String(date.getDate()).padStart(2, "0")
+  return `${y}-${m}-${d}`
 }
 
 export default function ArtistAvailabilityPage() {
@@ -40,6 +49,7 @@ export default function ArtistAvailabilityPage() {
 
   const [currentDate, setCurrentDate] = useState(new Date())
   const [availableDates, setAvailableDates] = useState<Set<string>>(new Set())
+  const [bookedDates, setBookedDates] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<FilterType>("all")
 
   const [error, setError] = useState("")
@@ -47,45 +57,49 @@ export default function ArtistAvailabilityPage() {
 
   useEffect(() => {
     fetchData()
-  }, [slug])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, currentDate])
 
   const fetchData = async () => {
+    setLoading(true)
     try {
+      // جلب بيانات الفنان
       const artistRes = await fetch(`/api/admin/artists/${slug}`)
       const artistResult = await artistRes.json()
       if (artistResult.success) setArtist(artistResult.data)
 
-      const scheduleRes = await fetch(`/api/admin/artists/${slug}/availability`)
-      const scheduleResult = await scheduleRes.json()
+      // ✅ جلب الأيام من جدول Availability الفعلي
+      const year = currentDate.getFullYear()
+      const monthIndex = currentDate.getMonth()
 
-      if (scheduleResult.success && scheduleResult.data) {
-        const dates = new Set<string>()
-        const today = new Date()
-        const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 3, 0)
+      const slotsRes = await fetch(
+        `/api/admin/artists/${slug}/availability?year=${year}&month=${monthIndex + 1}`
+      )
+      const slotsResult = await slotsRes.json()
 
-        for (let d = new Date(today); d <= endOfNextMonth; d.setDate(d.getDate() + 1)) {
-          const dayOfWeek = d.getDay()
-          const hasSlot = scheduleResult.data.some(
-            (s: any) => s.dayOfWeek === dayOfWeek && s.isAvailable
-          )
-          if (hasSlot) {
-            dates.add(formatDateKey(d))
+      const booked = new Set<string>()
+      const available = new Set<string>()
+
+      if (slotsResult.success && slotsResult.data) {
+        slotsResult.data.forEach((slot: any) => {
+          const d = new Date(slot.date)
+          const key = formatDateKey(d)
+          if (slot.isBooked) {
+            booked.add(key)
+          } else {
+            available.add(key)
           }
-        }
-        setAvailableDates(dates)
+        })
       }
+
+      setBookedDates(booked)
+      setAvailableDates(available)
     } catch (err) {
       console.error(err)
+      setError("حدث خطأ أثناء تحميل البيانات")
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatDateKey = (date: Date): string => {
-    const y = date.getFullYear()
-    const m = String(date.getMonth() + 1).padStart(2, "0")
-    const d = String(date.getDate()).padStart(2, "0")
-    return `${y}-${m}-${d}`
   }
 
   const calendarDays = useMemo(() => {
@@ -111,6 +125,9 @@ export default function ArtistAvailabilityPage() {
   }, [currentDate])
 
   const toggleDay = (dateKey: string) => {
+    // لا يمكن تعديل الأيام المحجوزة فعلياً
+    if (bookedDates.has(dateKey)) return
+
     setAvailableDates(prev => {
       const newSet = new Set(prev)
       if (newSet.has(dateKey)) newSet.delete(dateKey)
@@ -134,6 +151,8 @@ export default function ArtistAvailabilityPage() {
         const date = new Date(year, month, d)
         const dow = date.getDay()
         const key = formatDateKey(date)
+        // لا نعدل الأيام المحجوزة
+        if (bookedDates.has(key)) continue
         if (dow >= 0 && dow <= 4) newSet.add(key)
         else newSet.delete(key)
       }
@@ -150,7 +169,10 @@ export default function ArtistAvailabilityPage() {
       const newSet = new Set(prev)
       for (let d = 1; d <= lastDay; d++) {
         const date = new Date(year, month, d)
-        newSet.delete(formatDateKey(date))
+        const key = formatDateKey(date)
+        // لا نمسح الأيام المحجوزة
+        if (bookedDates.has(key)) continue
+        newSet.delete(key)
       }
       return newSet
     })
@@ -164,29 +186,26 @@ export default function ArtistAvailabilityPage() {
     setSuccess("")
 
     try {
-      const daysMap = new Map<number, boolean>()
-      availableDates.forEach(dateKey => {
-        const [y, m, d] = dateKey.split("-").map(Number)
-        const date = new Date(y, m - 1, d)
-        daysMap.set(date.getDay(), true)
-      })
-
-      const schedule = Array.from(daysMap.entries()).map(([dayOfWeek]) => ({
-        dayOfWeek,
-        startTime: "09:00",
-        endTime: "23:00",
-        isAvailable: true,
-      }))
+      const year = currentDate.getFullYear()
+      const monthIndex = currentDate.getMonth()
 
       const res = await fetch(`/api/admin/artists/${slug}/availability`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ schedule }),
+        body: JSON.stringify({
+          year,
+          month: monthIndex + 1,
+          availableDates: Array.from(availableDates),
+          bookedDates: Array.from(bookedDates),
+        }),
       })
 
       const result = await res.json()
-      if (result.success) setSuccess("تم حفظ التقويم بنجاح!")
-      else setError(result.error || "فشل في الحفظ")
+      if (result.success) {
+        setSuccess("تم حفظ التقويم بنجاح!")
+      } else {
+        setError(result.error || "فشل في الحفظ")
+      }
     } catch (err) {
       setError("حدث خطأ أثناء الحفظ")
     } finally {
@@ -201,26 +220,33 @@ export default function ArtistAvailabilityPage() {
 
     let available = 0
     let unavailable = 0
+    let booked = 0
 
     for (let d = 1; d <= lastDay; d++) {
       const date = new Date(year, month, d)
       const key = formatDateKey(date)
-      if (availableDates.has(key)) available++
-      else unavailable++
+      if (bookedDates.has(key)) {
+        booked++
+        unavailable++
+      } else if (availableDates.has(key)) {
+        available++
+      } else {
+        unavailable++
+      }
     }
 
-    return { available, unavailable, total: lastDay }
-  }, [currentDate, availableDates])
+    return { available, unavailable, booked, total: lastDay }
+  }, [currentDate, availableDates, bookedDates])
 
   const todayKey = formatDateKey(new Date())
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
   const reportId = `CAL-${year}${String(month + 1).padStart(2, "0")}-${artist?.id?.slice(-6)?.toUpperCase() || "000000"}`
 
-  // ✅ رابط التحقق الجديد: يوجه لصفحة عرض التقويم
+  // ✅ رابط التحقق: يوجه لصفحة عرض التقويم
   const qrValue = artist?.id
-  ? `${STUDIO_INFO.website}/verify/${artist.id}/${year}/${month + 1}`
-  : `${STUDIO_INFO.website}/verify/${slug}/${year}/${month + 1}`
+    ? `${STUDIO_INFO.website}/verify/${artist.id}/${year}/${month + 1}`
+    : `${STUDIO_INFO.website}/verify/${slug}/${year}/${month + 1}`
 
   if (loading) {
     return (
@@ -259,7 +285,6 @@ export default function ArtistAvailabilityPage() {
           .print-header, .print-footer, .stamp-section {
             break-inside: avoid;
           }
-          /* حجم مناسب لـ A4 */
           .calendar-cell {
             height: 13mm !important;
             min-height: 13mm !important;
@@ -414,7 +439,7 @@ export default function ArtistAvailabilityPage() {
           </div>
 
           {/* ============ Stats (لا يطبع) ============ */}
-          <div className="grid grid-cols-3 gap-3 mb-4 no-print">
+          <div className="grid grid-cols-4 gap-3 mb-4 no-print">
             <div className="bg-white p-4 rounded-xl border border-gray-200 text-center">
               <p className="text-xs text-gray-500 font-semibold mb-1">أيام الشهر</p>
               <p className="text-2xl font-black text-gray-900">{stats.total}</p>
@@ -422,6 +447,10 @@ export default function ArtistAvailabilityPage() {
             <div className="bg-gradient-to-br from-[#D4AF37] to-[#b8941f] p-4 rounded-xl text-center">
               <p className="text-xs text-[#111] font-semibold mb-1 opacity-70">متاح</p>
               <p className="text-2xl font-black text-[#111]">{stats.available}</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-500 to-red-700 p-4 rounded-xl text-center">
+              <p className="text-xs text-white font-semibold mb-1 opacity-70">محجوز</p>
+              <p className="text-2xl font-black text-white">{stats.booked}</p>
             </div>
             <div className="bg-gradient-to-br from-[#111] to-[#333] p-4 rounded-xl text-center">
               <p className="text-xs text-[#D4AF37] font-semibold mb-1 opacity-70">غير متاح</p>
@@ -497,8 +526,8 @@ export default function ArtistAvailabilityPage() {
                   <p className="text-lg md:text-xl font-black text-[#D4AF37]">{stats.available} يوم</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام غير متاحة</p>
-                  <p className="text-lg md:text-xl font-black text-gray-900">{stats.unavailable} يوم</p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام محجوزة</p>
+                  <p className="text-lg md:text-xl font-black text-red-600">{stats.booked} يوم</p>
                 </div>
               </div>
             </div>
@@ -526,28 +555,31 @@ export default function ArtistAvailabilityPage() {
                     return <div key={`empty-${idx}`} className="calendar-cell aspect-square md:aspect-auto md:h-16"></div>
                   }
 
-                  const isAvailable = availableDates.has(item.key)
+                  const isBooked = bookedDates.has(item.key)
+                  const isAvailable = availableDates.has(item.key) && !isBooked
                   const isToday = item.key === todayKey
                   const isPast = item.date < new Date(new Date().setHours(0, 0, 0, 0))
 
                   const shouldHide =
                     (filter === "available" && !isAvailable) ||
-                    (filter === "unavailable" && isAvailable)
+                    (filter === "unavailable" && (isAvailable || isBooked))
 
                   return (
                     <button
                       key={item.key}
                       onClick={() => toggleDay(item.key)}
-                      disabled={isPast}
+                      disabled={isPast || isBooked}
                       className={`
                         calendar-cell aspect-square md:aspect-auto md:h-16 rounded-lg font-bold transition-all relative
                         flex items-center justify-center
                         ${shouldHide ? "opacity-20" : "opacity-100"}
-                        ${isPast ? "cursor-not-allowed opacity-40" : "cursor-pointer hover:scale-105"}
+                        ${isPast || isBooked ? "cursor-not-allowed" : "cursor-pointer hover:scale-105"}
                         ${isToday ? "ring-2 ring-[#D4AF37]" : ""}
-                        ${isAvailable
-                          ? "bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] shadow-md"
-                          : "bg-gradient-to-br from-[#111] to-[#333] text-white"
+                        ${isBooked
+                          ? "bg-gradient-to-br from-red-500 to-red-700 text-white shadow-md"
+                          : isAvailable
+                            ? "bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] shadow-md"
+                            : "bg-gradient-to-br from-[#111] to-[#333] text-white"
                         }
                       `}
                     >
@@ -561,6 +593,10 @@ export default function ArtistAvailabilityPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded bg-gradient-to-br from-[#D4AF37] to-[#b8941f]"></div>
                   <span className="text-sm font-bold text-gray-700">يوم متاح للحجز</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded bg-gradient-to-br from-red-500 to-red-700"></div>
+                  <span className="text-sm font-bold text-gray-700">يوم محجوز</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded bg-gradient-to-br from-[#111] to-[#333]"></div>
@@ -630,7 +666,7 @@ export default function ArtistAvailabilityPage() {
                 <div className="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-[#D4AF37]/30">
                   <div>
                     <p className="text-xs opacity-70 mb-1">تاريخ الإصدار</p>
-                    <p className="text-sm font-bold">
+                    <p className="text-sm font-bold" suppressHydrationWarning>
                       {new Date().toLocaleDateString("ar-EG", {
                         year: "numeric", month: "long", day: "numeric"
                       })}
@@ -647,7 +683,7 @@ export default function ArtistAvailabilityPage() {
                 </div>
 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs opacity-70">
-                  <p>
+                  <p suppressHydrationWarning>
                     © {new Date().getFullYear()} {STUDIO_INFO.name} - جميع الحقوق محفوظة
                   </p>
                   <p className="flex items-center gap-2">
@@ -673,7 +709,7 @@ export default function ArtistAvailabilityPage() {
           <div className="mt-6 p-4 bg-[#111] text-[#D4AF37] rounded-xl no-print">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Clock size={16} />
-              اضغط على أي يوم لتحديده كمتاح أو غير متاح • استخدم الفلتر للعرض السريع • اضغط "طباعة التقرير" للحصول على نسخة احترافية بحجم A4 مع الختم الرسمي ورمز QR
+              اضغط على أي يوم لتحديده كمتاح أو غير متاح • الأيام الحمراء محجوزة ولا يمكن تعديلها • اضغط "طباعة التقرير" للحصول على نسخة احترافية بحجم A4
             </p>
           </div>
         </div>
