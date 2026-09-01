@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
+import QRCode from "react-qr-code"
 import {
   ArrowLeft, Save, Printer, Calendar,
   ChevronRight, ChevronLeft, Check, X, Filter, Clock,
@@ -217,11 +218,8 @@ export default function ArtistAvailabilityPage() {
   const month = currentDate.getMonth()
   const reportId = `CAL-${year}${String(month + 1).padStart(2, "0")}-${artist?.id?.slice(-6)?.toUpperCase() || "000000"}`
 
-  // ============ توليد QR Code للتحقق ============
-  const qrData = encodeURIComponent(
-    `${STUDIO_INFO.website}/verify/${reportId} | ${artist?.name || "فنان"} | ${MONTHS_AR[month]} ${year}`
-  )
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}&color=111111&bgcolor=ffffff&margin=5`
+  // ============ بيانات رمز QR للتحقق ============
+  const qrValue = `${STUDIO_INFO.website}/verify/${reportId}`
 
   if (loading) {
     return (
@@ -282,11 +280,11 @@ export default function ArtistAvailabilityPage() {
             width: 85px !important;
             height: 85px !important;
           }
-          .qr-container {
-            width: 70px !important;
-            height: 70px !important;
+          .qr-box {
+            width: 80px !important;
+            height: 80px !important;
           }
-          .qr-container img {
+          .qr-box svg {
             width: 70px !important;
             height: 70px !important;
           }
@@ -587,14 +585,15 @@ export default function ArtistAvailabilityPage() {
             <div className="stamp-section bg-[#faf8f0] border-t-2 border-[#D4AF37]/30 px-4 md:px-6 py-4">
               <div className="flex items-center justify-between gap-4">
                 
-                {/* ══ QR Code (يسار) ══ */}
+                {/* ══ QR Code (يسار) - مكتبة محلية تعمل دائماً ══ */}
                 <div className="flex items-center gap-3">
-                  <div className="qr-container bg-white p-2 rounded-lg border-2 border-[#111] shadow-md">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={qrUrl}
-                      alt="QR Code للتحقق"
-                      className="w-20 h-20 md:w-24 md:h-24"
+                  <div className="qr-box bg-white p-2 rounded-lg border-2 border-[#111] shadow-md">
+                    <QRCode
+                      value={qrValue}
+                      size={90}
+                      bgColor="#ffffff"
+                      fgColor="#111111"
+                      level="M"
                     />
                   </div>
                   <div className="text-[9px] md:text-[10px] text-gray-600 leading-relaxed">
@@ -604,7 +603,7 @@ export default function ArtistAvailabilityPage() {
                     </p>
                     <p>امسح رمز QR للتحقق</p>
                     <p>من صحة هذا التقرير</p>
-                    <p className="font-mono text-[8px] md:text-[9px] mt-1" dir="ltr">{reportId}</p>
+                    <p className="font-mono text-[8px] md:text-[9px] mt-1 text-[#D4AF37] font-bold" dir="ltr">{reportId}</p>
                   </div>
                 </div>
 
