@@ -199,7 +199,6 @@ export default function EditArtistPage() {
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
             <h2 className="text-xl font-bold text-gray-900 mb-4">الصور</h2>
-
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">الصورة الشخصية</label>
               <div className="flex items-center gap-4">
@@ -241,7 +240,7 @@ export default function EditArtistPage() {
         </div>
 
         <div className="space-y-6">
-          {/* أزرار التقويم والتسعير - جديدة */}
+          {/* أزرار التقويم والتسعير */}
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl shadow-sm border border-purple-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">إدارة متقدمة</h3>
             <div className="space-y-3">
@@ -277,17 +276,6 @@ export default function EditArtistPage() {
               <h4 className="font-bold text-gray-900">{name || "اسم الفنان"}</h4>
               <p className="text-sm text-purple-700">{category || "الفئة"}</p>
               <p className="text-sm text-gray-600 line-clamp-3">{bio || "السيرة الذاتية..."}</p>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: accentColor }}></div>
-                <span className="text-xs text-gray-500 font-mono">{accentColor}</span>
-              </div>
-              <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold ${
-                status === "ACTIVE" ? "bg-green-100 text-green-700" :
-                status === "INACTIVE" ? "bg-red-100 text-red-700" :
-                "bg-yellow-100 text-yellow-700"
-              }`}>
-                {status === "ACTIVE" ? "نشط" : status === "INACTIVE" ? "غير نشط" : "قيد المراجعة"}
-              </span>
             </div>
           </div>
         </div>

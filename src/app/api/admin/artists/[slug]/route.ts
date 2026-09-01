@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+// GET - جلب بيانات فنان
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -13,14 +14,13 @@ export async function GET(
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    // ✅ Next.js 15+: params هي Promise ويجب استخدام await
     const { slug } = await params
-    
-    if (!slug) {
-      return NextResponse.json({ error: "المعرف غير صحيح" }, { status: 400 })
-    }
 
-    const artist = await prisma.artist.findUnique({ where: { slug } })
+    // البحث بالـ slug أولاً، ثم بالـ ID
+    let artist = await prisma.artist.findUnique({ where: { slug } })
+    if (!artist) {
+      artist = await prisma.artist.findUnique({ where: { id: slug } })
+    }
 
     if (!artist) {
       return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
@@ -28,10 +28,11 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: artist })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "فشل في جلب البيانات" }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
+// PUT - تحديث بيانات فنان
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -42,30 +43,36 @@ export async function PUT(
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    // ✅ Next.js 15+: params هي Promise ويجب استخدام await
     const { slug } = await params
-    
-    if (!slug) {
-      return NextResponse.json({ error: "المعرف غير صحيح" }, { status: 400 })
+
+    // البحث بالـ slug أو الـ ID
+    let artist = await prisma.artist.findUnique({ where: { slug } })
+    if (!artist) {
+      artist = await prisma.artist.findUnique({ where: { id: slug } })
+    }
+
+    if (!artist) {
+      return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
     }
 
     const body = await request.json()
 
     const updated = await prisma.artist.update({
-      where: { slug },
+      where: { id: artist.id },
       data: {
         name: body.name,
         category: body.category,
         slug: body.slug,
-        description: body.description,
         bio: body.bio,
         profileImage: body.profileImage,
-        gallery: body.gallery,
+        coverImage: body.coverImage,
+        accentColor: body.accentColor,
+        status: body.status,
       },
     })
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "فشل في الحفظ" }, { status: 500 })
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
