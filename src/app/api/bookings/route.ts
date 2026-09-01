@@ -144,19 +144,29 @@ export async function POST(request: Request) {
     try {
       booking = await prisma.booking.create({
         data: {
-          artistId,
-          customerId: customer?.id || null,
-          userId: userId,
-          venueId: venue.id,
-          clientName,
-          clientPhone,
-          clientEmail: clientEmail || null,
-          date: new Date(date),
-          timeSlot,
-          status: "PENDING_APPROVAL",
-          grossAmount,
-          depositAmount,
-          remainingAmount,
+          // في الـ POST endpoint، أضف الحقول الجديدة إلى data
+const booking = await prisma.booking.create({
+  data: {
+    // الحقول الموجودة...
+    artistId: body.artistId,
+    venueId: body.venueId,
+    clientName: body.clientName,
+    clientPhone: body.clientPhone, // الرقم الكامل الدولي
+    clientEmail: body.clientEmail,
+    date: new Date(body.date),
+    timeSlot: body.timeSlot,
+    grossAmount: body.grossAmount,
+    depositAmount: body.depositAmount,
+    
+    // ✅ الحقول الجديدة
+    countryCode: body.countryCode || "+20",
+    phoneNumber: body.phoneNumber || "",
+    region: body.region || "",
+    travelFee: body.travelFee || 0,
+    
+    // ... باقي الحقول
+  },
+})
         },
         include: {
           artist: true,
