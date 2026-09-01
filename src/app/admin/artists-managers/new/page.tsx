@@ -170,5 +170,5 @@ export default function NewManagerPage() {
         </form>
       </div>
     </div>
-  )
+  
 }

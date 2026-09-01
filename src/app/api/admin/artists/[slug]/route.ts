@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -13,7 +13,13 @@ export async function GET(
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const { slug } = params
+    // ✅ Next.js 15+: params هي Promise ويجب استخدام await
+    const { slug } = await params
+    
+    if (!slug) {
+      return NextResponse.json({ error: "المعرف غير صحيح" }, { status: 400 })
+    }
+
     const artist = await prisma.artist.findUnique({ where: { slug } })
 
     if (!artist) {
@@ -28,7 +34,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -36,7 +42,13 @@ export async function PUT(
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const { slug } = params
+    // ✅ Next.js 15+: params هي Promise ويجب استخدام await
+    const { slug } = await params
+    
+    if (!slug) {
+      return NextResponse.json({ error: "المعرف غير صحيح" }, { status: 400 })
+    }
+
     const body = await request.json()
 
     const updated = await prisma.artist.update({

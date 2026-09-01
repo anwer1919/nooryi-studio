@@ -25,7 +25,7 @@ const safeFormatDate = (dateInput: any, includeTime = false) => {
   }
 }
 
-export default async function BookingDetailsPage({ params }: { params: { id: string } }) {
+export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/login")
 
@@ -34,7 +34,7 @@ export default async function BookingDetailsPage({ params }: { params: { id: str
   const isManager = userRole === "ARTIST_MANAGER"
   if (!isAdmin && !isManager) redirect("/")
 
-  const { id } = params
+  const { id } = await params
   let booking: any = null
 
   try {
