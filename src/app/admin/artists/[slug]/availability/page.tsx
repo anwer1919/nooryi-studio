@@ -218,7 +218,9 @@ export default function ArtistAvailabilityPage() {
   const reportId = `CAL-${year}${String(month + 1).padStart(2, "0")}-${artist?.id?.slice(-6)?.toUpperCase() || "000000"}`
 
   // ✅ رابط التحقق الجديد: يوجه لصفحة عرض التقويم
-  const qrValue = `${STUDIO_INFO.website}/verify/${artist?.id}/${year}/${month + 1}`
+  const qrValue = artist?.id
+  ? `${STUDIO_INFO.website}/verify/${artist.id}/${year}/${month + 1}`
+  : `${STUDIO_INFO.website}/verify/${slug}/${year}/${month + 1}`
 
   if (loading) {
     return (
