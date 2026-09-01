@@ -245,8 +245,8 @@ export default function ArtistAvailabilityPage() {
 
   // ✅ رابط التحقق: يوجه لصفحة عرض التقويم
   const qrValue = artist?.id
-    ? `${STUDIO_INFO.website}/verify/${artist.id}/${year}/${month + 1}`
-    : `${STUDIO_INFO.website}/verify/${slug}/${year}/${month + 1}`
+  ? `${STUDIO_INFO.website}/verify/${artist.id}/${year}/${month + 1}`
+  : `${STUDIO_INFO.website}/verify/${slug}/${year}/${month + 1}`
 
   if (loading) {
     return (
