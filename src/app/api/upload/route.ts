@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
 
 export async function POST(request: Request) {
   try {
@@ -19,31 +16,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "لم يتم اختيار ملف" }, { status: 400 })
     }
 
-    const type = (formData.get("type") as string) || "general"
-
-    // إنشاء مجلد الرفع إذا لم يكن موجوداً
-    const uploadDir = join(process.cwd(), "public", "uploads")
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
+    // التحقق من الحجم (2 ميجا كحد أقصى لـ Base64)
+    const maxSize = 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: "حجم الصورة يجب أن يكون أقل من 2 ميجابايت" },
+        { status: 400 }
+      )
     }
 
-    // قراءة الملف
+    // التحقق من النوع
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json(
+        { error: "فقط صور JPEG, PNG, WebP مسموحة" },
+        { status: 400 }
+      )
+    }
+
+    // تحويل الصورة إلى Base64
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const base64 = buffer.toString("base64")
+    
+    // تنسيق Base64 كـ Data URL (يعمل مباشرة في <img src="...">)
+    const dataUrl = `data:${file.type};base64,${base64}`
 
-    // إنشاء اسم فريد للملف
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9)
-    const originalName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "")
-    const filename = `${type}-${uniqueSuffix}-${originalName}`
-    const filepath = join(uploadDir, filename)
-
-    // حفظ الملف
-    await writeFile(filepath, buffer)
-
-    // إرجاع الرابط العام
-    const url = `/uploads/${filename}`
-
-    return NextResponse.json({ success: true, url })
+    return NextResponse.json({ 
+      success: true, 
+      url: dataUrl  // هذا الرابط يُحفظ في قاعدة البيانات ويعمل مباشرة
+    })
   } catch (error: any) {
     console.error("Upload error:", error)
     return NextResponse.json(

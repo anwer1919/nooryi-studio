@@ -32,25 +32,24 @@ model Artist {
   name                  String
   slug                  String    @unique
   category              String?
-  bio                   String?
-  profileImage          String?
-  coverImage            String?
+  bio                   String?   @db.Text
+  profileImage          String?   @db.Text
+  coverImage            String?   @db.Text
   accentColor           String?   @default("#EAB308")
-  status                String    @default("PENDING") // PENDING, ACTIVE, INACTIVE
+  status                String    @default("PENDING")
   commissionRate        Float     @default(15)
   commissionDiscountVal Float     @default(0)
   adminUserId           String?
   userId                String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  
-  // العلاقات
+
   bookings              Booking[]
   reviews               Review[]
   pricing               Pricing[]
   availability          Availability[]
   managers              User[]    @relation("ArtistManagerRelation")
-  
+
   @@map("artists")
 }
 
