@@ -107,7 +107,8 @@ model Booking {
   customer        Customer? @relation(fields: [customerId], references: [id])
   venue           Venue     @relation(fields: [venueId], references: [id])
   payments        Payment[]
-  
+  countryCode     String?   @default("+20")  // رمز الدولة: +20, +966, +971, إلخ
+  phoneNumber     String?   // الرقم بدون رمز الدولة
   @@map("bookings")
 }
 
