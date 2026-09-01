@@ -49,7 +49,8 @@ model Artist {
   pricing               Pricing[]
   availability          Availability[]
   managers              User[]    @relation("ArtistManagerRelation")
-
+  pricingRegions    PricingRegion[]
+  
   @@map("artists")
 }
 
@@ -159,21 +160,6 @@ model Pricing {
   @@map("pricings")
 }
 
-model Availability {
-  id          String    @id @default(cuid())
-  artistId    String
-  bookingId   String?
-  date        DateTime
-  timeSlot    String
-  isBooked    Boolean   @default(false)
-  price       Float?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  artist      Artist    @relation(fields: [artistId], references: [id])
-  
-  @@map("availabilities")
-}
 
 model Notification {
   id        String    @id @default(cuid())
@@ -205,4 +191,48 @@ model GeneratedReport {
   data          Json
   status        String   @default("ACTIVE")
   createdAt     DateTime @default(now())
+}
+// نموذج التوفر/التقويم للفنان
+model Availability {
+  id          String   @id @default(cuid())
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  // يوم الأسبوع (0 = الأحد، 1 = الإثنين، ... 6 = السبت)
+  dayOfWeek   Int      // 0-6
+  
+  // وقت البداية والنهاية
+  startTime   String   // مثال: "09:00"
+  endTime     String   // مثال: "18:00"
+  
+  // هل متاح للحجز؟
+  isAvailable Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([artistId, dayOfWeek, startTime])
+  @@map("availabilities")
+}
+
+// نموذج التسعير حسب المنطقة
+model PricingRegion {
+  id          String   @id @default(cuid())
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  
+  // اسم المنطقة
+  regionName  String   // مثال: "القاهرة"، "الإسكندرية"
+  
+  // السعر الأساسي
+  basePrice   Float
+  
+  // رسوم إضافية (اختياري)
+  travelFee   Float    @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([artistId, regionName])
+  @@map("pricing_regions")
 }
