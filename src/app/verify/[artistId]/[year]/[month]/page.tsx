@@ -20,7 +20,6 @@ const STUDIO_INFO = {
   licenseNumber: "NS-2026-001",
 }
 
-// ✅ صفحة عامة للتحقق - لا تحتاج تسجيل دخول
 export default async function VerifyCalendarPage({
   params,
 }: {
@@ -35,23 +34,18 @@ export default async function VerifyCalendarPage({
     notFound()
   }
 
-  // جلب بيانات الفنان: البحث بالـ ID ثم بالـ slug
   let artist = await prisma.artist.findUnique({ where: { id: artistId } })
-  
   if (!artist) {
     artist = await prisma.artist.findUnique({ where: { slug: artistId } })
   }
-
   if (!artist) {
     notFound()
   }
 
-  // جلب جدول التوفر
   const availability = await prisma.availability.findMany({
     where: { artistId: artist.id, isAvailable: true },
   })
 
-  // توليد الأيام المتاحة لهذا الشهر
   const availableDates = new Set<string>()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const firstDayOfWeek = new Date(year, month, 1).getDay()
@@ -66,7 +60,6 @@ export default async function VerifyCalendarPage({
     }
   }
 
-  // حساب الإحصائيات
   let availableCount = 0
   let unavailableCount = 0
   for (let d = 1; d <= daysInMonth; d++) {
@@ -76,9 +69,10 @@ export default async function VerifyCalendarPage({
   }
 
   const reportId = `CAL-${year}${String(month + 1).padStart(2, "0")}-${artist.id.slice(-6).toUpperCase()}`
-  const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
 
-  // توليد أيام التقويم
+  // ✅ إزالة todayKey - السبب الرئيسي لخطأ Hydration
+  // const todayKey = ... ← حُذف
+
   const calendarDays: Array<{ date: Date | null; key: string | null }> = []
   for (let i = 0; i < firstDayOfWeek; i++) {
     calendarDays.push({ date: null, key: null })
@@ -89,11 +83,13 @@ export default async function VerifyCalendarPage({
     calendarDays.push({ date, key })
   }
 
+  // ✅ استخدام suppressHydrationWarning للتواريخ
+  const currentYear = new Date().getFullYear()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
       <div className="max-w-5xl mx-auto">
         
-        {/* رسالة التحقق */}
         <div className="mb-6 bg-green-50 border-2 border-green-200 rounded-2xl p-4 flex items-center gap-3">
           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
             <Check size={24} className="text-white" />
@@ -104,10 +100,8 @@ export default async function VerifyCalendarPage({
           </div>
         </div>
 
-        {/* التقرير */}
         <div className="bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
           
-          {/* الترويسة */}
           <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#D4AF37] relative overflow-hidden">
             <div className="h-2 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
             
@@ -156,7 +150,6 @@ export default async function VerifyCalendarPage({
             </div>
           </div>
 
-          {/* معلومات الفنان */}
           <div className="bg-[#faf8f0] border-b-2 border-[#D4AF37]/30 px-6 md:px-8 py-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
@@ -178,7 +171,6 @@ export default async function VerifyCalendarPage({
             </div>
           </div>
 
-          {/* جدول التقويم */}
           <div className="p-4 md:p-6 relative">
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
               <span className="text-8xl font-black text-[#111] rotate-[-30deg]">
@@ -199,7 +191,6 @@ export default async function VerifyCalendarPage({
                 }
 
                 const isAvailable = availableDates.has(item.key)
-                const isToday = item.key === todayKey
 
                 return (
                   <div
@@ -207,7 +198,6 @@ export default async function VerifyCalendarPage({
                     className={`
                       aspect-square md:aspect-auto md:h-16 rounded-lg font-bold relative
                       flex items-center justify-center
-                      ${isToday ? "ring-2 ring-[#D4AF37]" : ""}
                       ${isAvailable
                         ? "bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] shadow-md"
                         : "bg-gradient-to-br from-[#111] to-[#333] text-white"
@@ -229,14 +219,9 @@ export default async function VerifyCalendarPage({
                 <div className="w-5 h-5 rounded bg-gradient-to-br from-[#111] to-[#333]"></div>
                 <span className="text-sm font-bold text-gray-700">يوم غير متاح</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded border-2 border-[#D4AF37]"></div>
-                <span className="text-sm font-bold text-gray-700">اليوم الحالي</span>
-              </div>
             </div>
           </div>
 
-          {/* قسم التوثيق */}
           <div className="bg-[#faf8f0] border-t-2 border-[#D4AF37]/30 px-6 md:px-8 py-5">
             <div className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-4">
@@ -275,13 +260,13 @@ export default async function VerifyCalendarPage({
             </div>
           </div>
 
-          {/* التذييل */}
           <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#D4AF37]">
             <div className="px-6 py-4 md:px-8 md:py-5">
               <div className="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-[#D4AF37]/30">
                 <div>
                   <p className="text-xs opacity-70 mb-1">تاريخ الإصدار</p>
-                  <p className="text-sm font-bold">
+                  {/* ✅ suppressHydrationWarning للتواريخ */}
+                  <p className="text-sm font-bold" suppressHydrationWarning>
                     {new Date().toLocaleDateString("ar-EG", {
                       year: "numeric", month: "long", day: "numeric"
                     })}
@@ -298,7 +283,7 @@ export default async function VerifyCalendarPage({
               </div>
 
               <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs opacity-70">
-                <p>© {new Date().getFullYear()} {STUDIO_INFO.name} - جميع الحقوق محفوظة</p>
+                <p suppressHydrationWarning>© {currentYear} {STUDIO_INFO.name} - جميع الحقوق محفوظة</p>
                 <p className="flex items-center gap-2">
                   <span dir="ltr">{STUDIO_INFO.website.replace("https://", "")}</span>
                   <span>•</span>
