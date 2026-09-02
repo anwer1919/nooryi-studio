@@ -27,16 +27,25 @@ export default function AdminPricingPage() {
     }
   }, [selectedArtist])
 
+  // ✅ التعامل الآمن مع استجابة API الفنانين
   const fetchArtists = async () => {
     try {
       const res = await fetch("/api/admin/artists")
+      if (!res.ok) throw new Error("Failed to fetch artists")
       const data = await res.json()
-      setArtists(data)
+      
+      const artistsArray = Array.isArray(data) 
+        ? data 
+        : (data.artists || data.data || [])
+      
+      setArtists(artistsArray)
     } catch (err) {
       console.error("Error fetching artists:", err)
+      setArtists([])
     }
   }
 
+  // ✅ التعامل الآمن مع استجابة API التسعير
   const fetchRegions = async () => {
     setLoading(true)
     try {
@@ -44,10 +53,17 @@ export default function AdminPricingPage() {
       if (!artist) return
 
       const res = await fetch(`/api/admin/artists/${artist.slug}/pricing-regions`)
-      const result = await res.json()
-      setRegions(result.data || result || [])
+      if (!res.ok) throw new Error("Failed to fetch regions")
+      const data = await res.json()
+      
+      const regionsArray = Array.isArray(data)
+        ? data
+        : (data.data || data.regions || [])
+      
+      setRegions(regionsArray)
     } catch (err) {
       console.error("Error fetching regions:", err)
+      setRegions([])
     } finally {
       setLoading(false)
     }
@@ -207,7 +223,7 @@ export default function AdminPricingPage() {
                       setFormData({ ...formData, regionName: e.target.value })
                     }
                     placeholder="مثال: القاهرة"
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
                   />
                 </div>
 
@@ -223,7 +239,7 @@ export default function AdminPricingPage() {
                     }
                     placeholder="5000"
                     min="0"
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
                   />
                 </div>
 
@@ -239,7 +255,7 @@ export default function AdminPricingPage() {
                     }
                     placeholder="0"
                     min="0"
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
                   />
                 </div>
               </div>

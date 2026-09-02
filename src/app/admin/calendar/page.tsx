@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, Loader2, Save, AlertCircle, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, Loader2, AlertCircle, Check, ChevronLeft, ChevronRight } from "lucide-react"
 
 const DAYS_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
 
@@ -28,16 +28,25 @@ export default function AdminCalendarPage() {
     }
   }, [selectedArtist, year, month])
 
+  // ✅ التعامل الآمن مع استجابة API الفنانين
   const fetchArtists = async () => {
     try {
       const res = await fetch("/api/admin/artists")
+      if (!res.ok) throw new Error("Failed to fetch artists")
       const data = await res.json()
-      setArtists(data)
+      
+      const artistsArray = Array.isArray(data) 
+        ? data 
+        : (data.artists || data.data || [])
+      
+      setArtists(artistsArray)
     } catch (err) {
       console.error("Error fetching artists:", err)
+      setArtists([])
     }
   }
 
+  // ✅ التعامل الآمن مع استجابة API التقويم
   const fetchAvailability = async () => {
     setLoading(true)
     try {
@@ -45,10 +54,17 @@ export default function AdminCalendarPage() {
       if (!artist) return
 
       const res = await fetch(`/api/admin/artists/${artist.slug}/availability?year=${year}&month=${month + 1}`)
+      if (!res.ok) throw new Error("Failed to fetch availability")
       const data = await res.json()
-      setAvailability(data.availability || [])
+      
+      const availabilityArray = Array.isArray(data)
+        ? data
+        : (data.availability || data.data || [])
+      
+      setAvailability(availabilityArray)
     } catch (err) {
       console.error("Error fetching availability:", err)
+      setAvailability([])
     } finally {
       setLoading(false)
     }
@@ -126,7 +142,7 @@ export default function AdminCalendarPage() {
 
       {message && (
         <div className={`p-4 rounded-xl flex items-center gap-2 ${
-          message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+          message.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
         }`}>
           {message.type === "success" ? <Check size={20} /> : <AlertCircle size={20} />}
           {message.text}
@@ -157,7 +173,7 @@ export default function AdminCalendarPage() {
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={prevMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
               >
                 <ChevronRight size={24} />
               </button>
@@ -166,7 +182,7 @@ export default function AdminCalendarPage() {
               </h2>
               <button
                 onClick={nextMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
               >
                 <ChevronLeft size={24} />
               </button>
@@ -181,7 +197,7 @@ export default function AdminCalendarPage() {
                 {DAYS_AR.map((day) => (
                   <div
                     key={day}
-                    className="text-center font-bold text-gray-700 py-2 bg-gray-50 rounded-lg"
+                    className="text-center font-bold text-gray-700 py-2 bg-gray-50 rounded-lg text-sm"
                   >
                     {day}
                   </div>

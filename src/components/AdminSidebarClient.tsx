@@ -68,8 +68,10 @@ export default function AdminSidebarClient({
       <aside
         className={`
           fixed top-0 right-0 h-full w-64 bg-white border-l border-gray-200 z-50
-          transform transition-transform duration-300 ease-in-out
-          ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
+          transition-transform duration-300 ease-in-out
+          max-lg:translate-x-full
+          ${isOpen ? "max-lg:translate-x-0" : ""}
+          lg:translate-x-0
         `}
       >
         <div className="flex flex-col h-full">
