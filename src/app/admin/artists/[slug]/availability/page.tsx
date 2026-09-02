@@ -7,7 +7,7 @@ import {
   ArrowLeft, Save, Printer, Calendar,
   ChevronRight, ChevronLeft, Check, X, Filter, Clock,
   Phone, Mail, MapPin, Award
-} from "lucide-react"
+, Shield } from "lucide-react"
 
 const MONTHS_AR = [
   "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
