@@ -63,28 +63,31 @@ export default async function VerifyInvoicePage({
       })
     : "غير محدد"
 
+  // ✅ CSS للطباعة باستخدام dangerouslySetInnerHTML (يعمل في Server Components)
+  const printStyles = `
+    @media print {
+      body * { visibility: hidden; }
+      .print-invoice, .print-invoice * { visibility: visible; }
+      .print-invoice {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        background: white !important;
+      }
+      .no-print { display: none !important; }
+      @page {
+        size: A4;
+        margin: 8mm;
+      }
+    }
+  `
+
   return (
     <>
-      {/* CSS للطباعة */}
-      <style jsx global>{`
-        @media print {
-          body * { visibility: hidden; }
-          .print-invoice, .print-invoice * { visibility: visible; }
-          .print-invoice {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0;
-            background: white !important;
-          }
-          .no-print { display: none !important; }
-          @page {
-            size: A4;
-            margin: 8mm;
-          }
-        }
-      `}</style>
+      {/* ✅ CSS للطباعة - متوافق مع Server Components */}
+      <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
         <div className="max-w-4xl mx-auto">
@@ -108,7 +111,7 @@ export default async function VerifyInvoicePage({
                 رقم الفاتورة: <span className="font-mono font-bold" dir="ltr">#{invoiceNumber}</span>
               </div>
               <button
-                onClick={() => window.print()}
+                onClick={() => typeof window !== 'undefined' && window.print()}
                 className="flex items-center gap-2 px-6 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
               >
                 <Printer size={20} />
@@ -202,7 +205,7 @@ export default async function VerifyInvoicePage({
                     <Calendar size={18} className="text-gray-400 mt-1 flex-shrink-0" />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold mb-1">التاريخ</p>
-                      <p className="font-bold text-gray-900">{eventDate}</p>
+                      <p className="font-bold text-gray-900" suppressHydrationWarning>{eventDate}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
