@@ -1,6 +1,9 @@
-﻿import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation"
-import { Check, Award, Phone, Mail, MapPin, QrCode, Printer, Calendar, Clock, Music } from "lucide-react"
+﻿"use client"
+
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import QRCode from "react-qr-code"
+import { Check, Award, Phone, Mail, MapPin, Printer, Calendar, Clock, Music, Loader2, AlertTriangle } from "lucide-react"
 
 const STUDIO_INFO = {
   name: "Nooryi Studio",
@@ -29,23 +32,66 @@ const statusMap: Record<string, { label: string; color: string }> = {
   REJECTED: { label: "مرفوض", color: "bg-red-600" },
 }
 
-export default async function VerifyInvoicePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
+export default function VerifyInvoicePage() {
+  const params = useParams()
+  const id = params.id as string
 
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      artist: { select: { name: true, profileImage: true, category: true } },
-      venue: { select: { name: true, address: true } },
-    },
-  })
+  const [booking, setBooking] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [isMounted, setIsMounted] = useState(false)
 
-  if (!booking) {
-    notFound()
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!id) return
+
+    const fetchBooking = async () => {
+      try {
+        const res = await fetch(`/api/bookings/${id}`)
+        if (!res.ok) {
+          throw new Error("الفاتورة غير موجودة")
+        }
+        const data = await res.json()
+        setBooking(data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBooking()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#111] flex items-center justify-center" dir="rtl">
+        <div className="text-center">
+          <Loader2 className="w-14 h-14 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <p className="text-white font-bold text-lg">جاري التحقق من الفاتورة...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !booking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4" dir="rtl">
+        <div className="max-w-lg w-full bg-white border-2 border-red-200 rounded-2xl p-8 text-center shadow-xl">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 mb-3">تعذر التحقق من الفاتورة</h1>
+          <p className="text-red-600 font-semibold mb-4">{error}</p>
+          <p className="text-sm text-gray-500">
+            تأكد أن رابط QR صحيح وأن الفاتورة صادرة من النظام.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   const grossAmount = booking.grossAmount || 0
@@ -63,7 +109,9 @@ export default async function VerifyInvoicePage({
       })
     : "غير محدد"
 
-  // ✅ CSS للطباعة باستخدام dangerouslySetInnerHTML (يعمل في Server Components)
+  // ✅ رابط التحقق (الصفحة نفسها)
+  const verifyUrl = `${STUDIO_INFO.website}/invoice/verify/${booking.id}`
+
   const printStyles = `
     @media print {
       body * { visibility: hidden; }
@@ -86,13 +134,12 @@ export default async function VerifyInvoicePage({
 
   return (
     <>
-      {/* ✅ CSS للطباعة - متوافق مع Server Components */}
       <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
         <div className="max-w-4xl mx-auto">
 
-          {/* شريط الإجراءات - لا يطبع */}
+          {/* شريط الإجراءات */}
           <div className="mb-6 no-print">
             <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -111,7 +158,7 @@ export default async function VerifyInvoicePage({
                 رقم الفاتورة: <span className="font-mono font-bold" dir="ltr">#{invoiceNumber}</span>
               </div>
               <button
-                onClick={() => typeof window !== 'undefined' && window.print()}
+                onClick={() => window.print()}
                 className="flex items-center gap-2 px-6 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
               >
                 <Printer size={20} />
@@ -120,7 +167,7 @@ export default async function VerifyInvoicePage({
             </div>
           </div>
 
-          {/* الفاتورة - يطبع */}
+          {/* الفاتورة */}
           <div className="print-invoice bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
             
             {/* الترويسة */}
@@ -162,10 +209,8 @@ export default async function VerifyInvoicePage({
                     <p className="text-lg md:text-xl opacity-90">رقم: <span className="font-mono" dir="ltr">#{invoiceNumber}</span></p>
                   </div>
 
-                  <div className="text-left">
-                    <div className={`${status.color} text-white rounded-lg px-4 py-2 inline-block`}>
-                      <p className="text-sm font-bold">{status.label}</p>
-                    </div>
+                  <div className={`${status.color} text-white rounded-lg px-4 py-2 inline-block`}>
+                    <p className="text-sm font-bold">{status.label}</p>
                   </div>
                 </div>
               </div>
@@ -273,19 +318,27 @@ export default async function VerifyInvoicePage({
               </div>
             </div>
 
-            {/* التوثيق */}
+            {/* التوثيق - QR حقيقي قابل للمسح */}
             <div className="bg-[#faf8f0] border-t-2 border-[#D4AF37]/30 px-6 md:px-8 py-5">
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
-                    <QrCode size={80} className="text-[#111]" />
-                  </div>
+                  {isMounted && (
+                    <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
+                      <QRCode
+                        value={verifyUrl}
+                        size={100}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                      />
+                    </div>
+                  )}
                   <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
-                      <QrCode size={16} className="text-[#D4AF37]" />
-                      رمز التحقق
+                      ✓ رمز التحقق
                     </p>
-                    <p>هذه الفاتورة معتمدة رسمياً</p>
+                    <p>امسح رمز QR للتحقق</p>
+                    <p>من صحة هذه الفاتورة</p>
                     <p className="font-mono text-xs mt-2 text-[#D4AF37] font-bold" dir="ltr">#{invoiceNumber}</p>
                   </div>
                 </div>
@@ -326,7 +379,7 @@ export default async function VerifyInvoicePage({
                   </div>
                 </div>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-2 text-xs opacity-70">
-                  <p>© {STUDIO_INFO.name} - جميع الحقوق محفوظة</p>
+                  <p suppressHydrationWarning>© {new Date().getFullYear()} {STUDIO_INFO.name} - جميع الحقوق محفوظة</p>
                   <p className="flex items-center gap-2">
                     <span dir="ltr">{STUDIO_INFO.phone}</span>
                   </p>
