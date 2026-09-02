@@ -12,7 +12,8 @@ import {
   FileText,
   Settings,
   LogOut,
-  X
+  X,
+  Banknote,
 } from "lucide-react"
 
 // ✅ خريطة الأيقونات: اسم الأيقونة → مكون الأيقونة
@@ -23,12 +24,13 @@ const iconMap: Record<string, any> = {
   Calendar,
   FileText,
   Settings,
+  Banknote, // ✅ جديد: للتسعير
 }
 
 interface MenuItem {
   href: string
   label: string
-  icon: string // ✅ الآن نص (string) بدلاً من دالة
+  icon: string
 }
 
 export default function AdminSidebarClient({
@@ -96,7 +98,9 @@ export default function AdminSidebarClient({
                 {userName.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-900 text-sm truncate">{userName}</p>
+                <p className="font-bold text-gray-900 text-sm truncate">
+                  {userName}
+                </p>
                 <p className="text-xs text-purple-700 font-semibold">
                   {userRole === "SUPER_ADMIN"
                     ? "مدير عام"
@@ -111,11 +115,11 @@ export default function AdminSidebarClient({
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-              
-              // ✅ جلب مكون الأيقونة من الخريطة
-              const IconComponent = iconMap[item.icon] || LayoutDashboard
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/admin" && pathname.startsWith(item.href))
 
+              const IconComponent = iconMap[item.icon] || LayoutDashboard
               return (
                 <Link
                   key={item.href}
