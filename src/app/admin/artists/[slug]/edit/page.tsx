@@ -100,7 +100,6 @@ export default function EditArtistPage() {
 
       if (result.success) {
         setSuccess("تم حفظ التعديلات بنجاح!")
-        // تحديث slug في URL إذا تم تغييره
         if (newSlug !== slug) {
           router.replace(`/admin/artists/${newSlug}/edit`)
         }
