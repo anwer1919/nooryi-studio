@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Check, Award, Phone, Mail, MapPin, Shield, Loader2, AlertTriangle, Printer, RefreshCw } from "lucide-react"
+import QRCode from "react-qr-code"
+import { Check, Award, Phone, Mail, MapPin, Loader2, AlertTriangle, Printer, RefreshCw, Shield } from "lucide-react"
 
 const DAYS_SHORT_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
 
@@ -20,21 +21,22 @@ const STUDIO_INFO = {
 export default function VerifyCalendarPage() {
   const params = useParams()
 
-  const artistId = params?.artistId as string
-  const year = params?.year as string
-  const month = params?.month as string
+  const artistId = params.artistId as string
+  const year = params.year as string
+  const month = params.month as string
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [errorDetails, setErrorDetails] = useState("")
   const [data, setData] = useState<any>(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     if (artistId && year && month) {
       fetchVerifyData()
-    } else {
-      setError("بيانات الرابط غير مكتملة")
-      setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artistId, year, month])
@@ -42,128 +44,60 @@ export default function VerifyCalendarPage() {
   const fetchVerifyData = async () => {
     setLoading(true)
     setError("")
-    setErrorDetails("")
 
     try {
-      const apiUrl = `/api/verify/${artistId}/${year}/${month}`
-      
-      const res = await fetch(apiUrl, {
-        method: "GET",
+      const res = await fetch(`/api/verify/${artistId}/${year}/${month}`, {
         cache: "no-store",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
       })
 
-      // ✅ التحقق من نوع المحتوى المستلم
-      const contentType = res.headers.get("content-type") || ""
+      const contentType = res.headers.get("content-type")
       
-      if (!contentType.includes("application/json")) {
-        const textResponse = await res.text()
-        const preview = textResponse.substring(0, 300)
-        
-        console.error("❌ استجابة غير JSON:", preview)
-        
-        // تحديد نوع الخطأ
-        if (textResponse.includes("login") || textResponse.includes("signin")) {
-          setError("يبدو أن المسار محمي ويتطلب تسجيل دخول")
-          setErrorDetails("يجب استثناء /api/verify من حماية الـ Middleware")
-        } else if (textResponse.includes("404") || textResponse.includes("Not Found")) {
-          setError("مسار API غير موجود")
-          setErrorDetails("تأكد من وجود ملف: src/app/api/verify/[artistId]/[year]/[month]/route.ts")
-        } else if (textResponse.includes("500") || textResponse.includes("Error")) {
-          setError("خطأ في الخادم")
-          setErrorDetails("تحقق من Vercel Logs لمعرفة التفاصيل")
-        } else {
-          setError("استجابة غير متوقعة من الخادم")
-          setErrorDetails(`Status: ${res.status} - ${preview.substring(0, 100)}`)
-        }
+      if (!contentType || !contentType.includes("application/json")) {
+        setError("الخادم أرجع استجابة غير صحيحة")
         return
       }
 
       const result = await res.json()
 
-      if (!res.ok) {
-        setError(result.error || `فشل الطلب (رمز: ${res.status})`)
-        setErrorDetails(result.details || "")
-        return
-      }
-
-      if (!result.success) {
+      if (!res.ok || !result.success) {
         setError(result.error || "فشل في التحقق من التقرير")
-        return
-      }
-
-      if (!result.data) {
-        setError("لا توجد بيانات في الاستجابة")
         return
       }
 
       setData(result.data)
     } catch (err: any) {
-      console.error("❌ Fetch error:", err)
-      setError("حدث خطأ أثناء الاتصال بالخادم")
-      setErrorDetails(err?.message || "خطأ غير معروف")
+      setError(err?.message || "حدث خطأ أثناء الاتصال بالخادم")
     } finally {
       setLoading(false)
     }
   }
 
-  // ═══════════ شاشة التحميل ═══════════
   if (loading) {
     return (
       <div className="min-h-screen bg-[#111] flex items-center justify-center" dir="rtl">
         <div className="text-center">
-          <Loader2 className="w-16 h-16 text-[#D4AF37] animate-spin mx-auto mb-4" />
-          <p className="text-white font-bold text-lg mb-2">جاري التحقق من التقرير...</p>
-          <p className="text-[#D4AF37]/60 text-sm">يرجى الانتظار لحظة</p>
+          <Loader2 className="w-14 h-14 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <p className="text-white font-bold text-lg">جاري التحقق من التقرير...</p>
         </div>
       </div>
     )
   }
 
-  // ═══════════ شاشة الخطأ ═══════════
   if (error || !data) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4" dir="rtl">
         <div className="max-w-lg w-full bg-white border-2 border-red-200 rounded-2xl p-8 text-center shadow-xl">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-10 h-10 text-red-600" />
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
           </div>
           <h1 className="text-2xl font-black text-gray-900 mb-3">تعذر التحقق من التقرير</h1>
-          <p className="text-red-600 font-semibold mb-2">{error}</p>
-          
-          {errorDetails && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-              <p className="text-sm text-red-700 font-mono break-words">{errorDetails}</p>
-            </div>
-          )}
-
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 text-right">
-            <p className="text-sm text-gray-600 font-semibold mb-2">💡 خطوات الحل:</p>
-            <ul className="text-sm text-gray-600 space-y-1 list-disc pr-4">
-              <li>تأكد من وجود ملف API في المسار الصحيح</li>
-              <li>تحقق من أن الـ Middleware لا يحمي مسار /api/verify</li>
-              <li>راجع Vercel Logs لمعرفة تفاصيل الخطأ</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-[#111] rounded-xl font-bold hover:bg-[#b8941f] transition"
-            >
-              <RefreshCw size={18} />
-              إعادة المحاولة
-            </button>
-            <button
-              onClick={() => window.history.back()}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition"
-            >
-              العودة
-            </button>
-          </div>
+          <p className="text-red-600 font-semibold mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-[#D4AF37] text-[#111] rounded-xl font-bold hover:bg-[#b8941f] transition"
+          >
+            إعادة المحاولة
+          </button>
         </div>
       </div>
     )
@@ -171,57 +105,57 @@ export default function VerifyCalendarPage() {
 
   const artist = data.artist
   const reportId = data.reportId
+  const verifyUrl = `${STUDIO_INFO.website}/verify/${artistId}/${year}/${month}`
 
-  // ═══════════ شاشة النجاح - التقرير الكامل ═══════════
+  const printStyles = `
+    @media print {
+      body * { visibility: hidden; }
+      .print-verify, .print-verify * { visibility: visible; }
+      .print-verify { 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+        width: 100%;
+        padding: 0;
+        background: white !important;
+      }
+      .no-print { display: none !important; }
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+      .calendar-cell {
+        height: 13mm !important;
+        min-height: 13mm !important;
+      }
+      .calendar-cell .day-number {
+        font-size: 11px !important;
+      }
+      .calendar-grid {
+        gap: 2px !important;
+      }
+      .calendar-header-cell {
+        padding: 6px 3px !important;
+        font-size: 11px !important;
+      }
+      .stamp-container {
+        width: 100px !important;
+        height: 100px !important;
+      }
+    }
+  `
+
   return (
     <>
-      {/* CSS للطباعة */}
-      <style jsx global>{`
-        @media print {
-          body * { visibility: hidden; }
-          .print-verify, .print-verify * { visibility: visible; }
-          .print-verify { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%;
-            padding: 0;
-            background: white !important;
-            transform: none;
-          }
-          .no-print { display: none !important; }
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
-          }
-          .calendar-cell {
-            height: 13mm !important;
-            min-height: 13mm !important;
-          }
-          .calendar-cell .day-number {
-            font-size: 11px !important;
-          }
-          .calendar-grid {
-            gap: 2px !important;
-          }
-          .calendar-header-cell {
-            padding: 6px 3px !important;
-            font-size: 11px !important;
-          }
-          .stamp-container {
-            width: 100px !important;
-            height: 100px !important;
-          }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
         <div className="max-w-5xl mx-auto">
 
           {/* أزرار التحكم - لا تطبع */}
-          <div className="mb-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 no-print">
+          <div className="mb-6 flex items-center justify-between gap-4 no-print">
             <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 flex items-center gap-3 flex-1">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                 <Check size={24} className="text-white" />
               </div>
               <div>
@@ -233,7 +167,7 @@ export default function VerifyCalendarPage() {
             </div>
             <button
               onClick={() => window.print()}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-6 py-3 bg-[#111] text-[#D4AF37] rounded-xl font-bold hover:bg-[#222] transition"
             >
               <Printer size={20} />
               طباعة PDF
@@ -302,13 +236,13 @@ export default function VerifyCalendarPage() {
                 <div>
                   <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
-                    {artist?.name || "-"}
+                    {artist.name}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-semibold mb-1">الفئة</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
-                    {artist?.category || "-"}
+                    {artist.category || "-"}
                   </p>
                 </div>
                 <div>
@@ -387,19 +321,28 @@ export default function VerifyCalendarPage() {
               </div>
             </div>
 
-            {/* التوثيق */}
+            {/* التوثيق - QR حقيقي قابل للمسح */}
             <div className="bg-[#faf8f0] border-t-2 border-[#D4AF37]/30 px-6 md:px-8 py-5">
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
-                    <Shield size={80} className="text-[#111]" />
-                  </div>
+                  {isMounted && (
+                    <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
+                      <QRCode
+                        value={verifyUrl}
+                        size={100}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                      />
+                    </div>
+                  )}
                   <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
                       <Shield size={16} className="text-[#D4AF37]" />
                       رمز التحقق
                     </p>
-                    <p>هذا التقرير معتمد رسمياً</p>
+                    <p>امسح رمز QR للتحقق</p>
+                    <p>من صحة هذا التقرير</p>
                     <p className="font-mono text-xs mt-2 text-[#D4AF37] font-bold" dir="ltr">
                       {reportId}
                     </p>
