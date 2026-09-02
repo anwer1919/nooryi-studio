@@ -90,21 +90,29 @@ export default function BookingForm({
     timeSlot: "EVENING",
   })
 
+  // ✅ استخدام API عام (بدون مصادقة)
   useEffect(() => {
     const fetchPricing = async () => {
+      setPricingLoading(true)
       try {
-        const res = await fetch(`/api/admin/artists/${artistSlug}/pricing-regions`)
+        const res = await fetch(`/api/artists/${artistSlug}/pricing-regions`)
+        if (!res.ok) throw new Error("Failed to fetch pricing")
         const result = await res.json()
-        if (result.success && result.data) {
-          setPricingRegions(result.data)
-        }
+        
+        const regionsArray = Array.isArray(result) 
+          ? result 
+          : (result.data || result.regions || [])
+        
+        console.log("✅ تم جلب المناطق:", regionsArray.length)
+        setPricingRegions(regionsArray)
       } catch (err) {
         console.error("Error fetching pricing:", err)
+        setPricingRegions([])
       } finally {
         setPricingLoading(false)
       }
     }
-    fetchPricing()
+    if (artistSlug) fetchPricing()
   }, [artistSlug])
 
   useEffect(() => {
@@ -121,6 +129,7 @@ export default function BookingForm({
     })
   }, [userName, userEmail, venues])
 
+  // ✅ حساب السعر تلقائياً عند تغيير المنطقة
   const currentPricing = useMemo(() => {
     if (!formData.region) return null
     return pricingRegions.find((r) => r.regionName === formData.region)
@@ -130,6 +139,17 @@ export default function BookingForm({
   const travelFee = currentPricing?.travelFee || 0
   const totalPrice = basePrice + travelFee
   const depositAmount = Math.round(totalPrice * 0.2)
+
+  // ✅ Debug: طباعة السعر عند تغييره
+  useEffect(() => {
+    if (currentPricing) {
+      console.log(`💰 تم اختيار المنطقة: ${currentPricing.regionName}`)
+      console.log(`   السعر الأساسي: ${basePrice}`)
+      console.log(`   رسوم السفر: ${travelFee}`)
+      console.log(`   الإجمالي: ${totalPrice}`)
+      console.log(`   العربون: ${depositAmount}`)
+    }
+  }, [currentPricing, basePrice, travelFee, totalPrice, depositAmount])
 
   useEffect(() => {
     if (!formData.date) {
@@ -175,12 +195,10 @@ export default function BookingForm({
     setError("")
     setErrorDetails("")
 
-    console.log("🚀 بدء عملية الحجز...")
-
     if (!userEmail) {
       setError("يجب تسجيل الدخول أولاً")
       setLoading(false)
-      router.push(`/login?callbackUrl=/artists/${artistId}`)
+      router.push(`/login?callbackUrl=/artists/${artistSlug}`)
       return
     }
 
@@ -220,8 +238,6 @@ export default function BookingForm({
       travelFee: travelFee,
     }
 
-    console.log("📤 إرسال البيانات:", bookingData)
-
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
@@ -229,21 +245,14 @@ export default function BookingForm({
         body: JSON.stringify(bookingData),
       })
 
-      console.log("📥 الاستجابة:", {
-        status: response.status,
-        ok: response.ok,
-        contentType: response.headers.get("content-type"),
-      })
-
       const contentType = response.headers.get("content-type")
       let data: any = null
 
       if (contentType && contentType.includes("application/json")) {
         data = await response.json()
-        console.log("📦 البيانات المستلمة:", data)
       } else {
         const text = await response.text()
-        console.error("❌ استجابة غير JSON:", text.substring(0, 200))
+        console.error("استجابة غير JSON:", text.substring(0, 200))
         throw new Error("الخادم أرجع استجابة غير صحيحة")
       }
 
@@ -255,21 +264,14 @@ export default function BookingForm({
         throw new Error("لم يتم إنشاء الحجز بشكل صحيح")
       }
 
-      console.log("✅ تم الحجز بنجاح:", data.booking.id)
-
       setSuccess(true)
       setSuccessBookingId(data.booking.id)
 
-      // ✅ إعادة التوجيه بعد 2 ثانية باستخدام window.location لضمان التحميل الكامل
       setTimeout(() => {
-        console.log("🔄 إعادة التوجيه إلى:", `/booking/${data.booking.id}`)
         window.location.href = `/booking/${data.booking.id}`
       }, 2000)
     } catch (err: any) {
-      console.error("❌ خطأ في الحجز:", err)
       setError(err.message || "حدث خطأ في الحجز")
-      
-      // عرض تفاصيل إضافية إذا كانت متاحة
       if (err.message?.includes("Foreign key constraint")) {
         setErrorDetails("خطأ في قاعدة البيانات - تحقق من وجود الفنان والمكان")
       } else if (err.message?.includes("Unique constraint")) {
@@ -451,9 +453,14 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* Region */}
+      {/* Region - اختيار المنطقة */}
       {pricingLoading ? (
-        <div className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse" />
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+            المنطقة / المدينة *
+          </label>
+          <div className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse" />
+        </div>
       ) : pricingRegions.length > 0 ? (
         <div>
           <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
@@ -467,16 +474,29 @@ export default function BookingForm({
               required
               className="input-modern pr-10 appearance-none"
             >
-              <option value="">اختر المنطقة</option>
-              {pricingRegions.map((region) => (
-                <option key={region.id} value={region.regionName} className="bg-white dark:bg-dark-surface">
-                  {region.regionName} - {(region.basePrice + (region.travelFee || 0)).toLocaleString()} ج.م
-                </option>
-              ))}
+              <option value="">-- اختر المنطقة --</option>
+              {pricingRegions.map((region) => {
+                const regionTotal = region.basePrice + (region.travelFee || 0)
+                return (
+                  <option
+                    key={region.id}
+                    value={region.regionName}
+                    className="bg-white dark:bg-dark-surface"
+                  >
+                    {region.regionName} - {regionTotal.toLocaleString()} ج.م
+                  </option>
+                )
+              })}
             </select>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-xl p-3 text-center">
+          <p className="text-xs text-yellow-700 dark:text-yellow-400">
+            لا توجد مناطق مسعرة لهذا الفنان
+          </p>
+        </div>
+      )}
 
       {/* Date */}
       <div>
@@ -545,30 +565,43 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* Price Summary */}
+      {/* Price Summary - يتحدث تلقائياً عند تغيير المنطقة */}
       <div className="bg-gradient-to-br from-accent/10 to-primary/5 dark:from-accent-dark/20 dark:to-primary/10 rounded-2xl p-4 border border-accent/20 dark:border-accent-dark/30">
         <div className="flex items-center gap-2 mb-3">
           <DollarSign className="text-accent" size={18} />
-          <p className="text-sm font-bold text-primary dark:text-white">ملخص السعر</p>
+          <p className="text-sm font-bold text-primary dark:text-white">
+            ملخص السعر
+            {currentPricing && (
+              <span className="text-xs text-accent mr-2">- {currentPricing.regionName}</span>
+            )}
+          </p>
         </div>
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 dark:text-gray-400">السعر الأساسي</span>
-            <span className="font-bold text-primary dark:text-white">{basePrice.toLocaleString()} ج.م</span>
+            <span className="font-bold text-primary dark:text-white">
+              {basePrice.toLocaleString()} ج.م
+            </span>
           </div>
           {travelFee > 0 && (
             <div className="flex items-center justify-between">
               <span className="text-gray-600 dark:text-gray-400">رسوم السفر</span>
-              <span className="font-bold text-primary dark:text-white">{travelFee.toLocaleString()} ج.م</span>
+              <span className="font-bold text-primary dark:text-white">
+                +{travelFee.toLocaleString()} ج.م
+              </span>
             </div>
           )}
           <div className="pt-2 mt-2 border-t border-accent/20 dark:border-accent-dark/30 flex items-center justify-between">
             <span className="font-bold text-primary dark:text-white">الإجمالي</span>
-            <span className="text-lg font-black text-accent">{totalPrice.toLocaleString()} ج.م</span>
+            <span className="text-lg font-black text-accent">
+              {totalPrice.toLocaleString()} ج.م
+            </span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-gray-500 dark:text-gray-400">العربون (20%)</span>
-            <span className="font-bold text-accent">{depositAmount.toLocaleString()} ج.م</span>
+            <span className="font-bold text-accent">
+              {depositAmount.toLocaleString()} ج.م
+            </span>
           </div>
         </div>
       </div>
