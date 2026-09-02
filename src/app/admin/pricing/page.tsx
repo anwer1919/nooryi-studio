@@ -43,8 +43,7 @@ export default function AdminPricingPage() {
       setArtist(selected || null)
       fetchRegions()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedArtist])
+  }, [selectedArtist, artists])
 
   const fetchArtists = async () => {
     try {
@@ -52,6 +51,7 @@ export default function AdminPricingPage() {
       if (!res.ok) throw new Error("Failed to fetch artists")
       const data = await res.json()
       const artistsArray = Array.isArray(data) ? data : (data.artists || data.data || [])
+      console.log("✅ Artists fetched:", artistsArray.length)
       setArtists(artistsArray)
     } catch (err) {
       console.error("Error fetching artists:", err)
@@ -63,15 +63,29 @@ export default function AdminPricingPage() {
     setLoading(true)
     try {
       const selected = artists.find((a) => a.id === selectedArtist)
-      if (!selected) return
+      if (!selected) {
+        console.log("❌ No artist selected")
+        setRegions([])
+        setLoading(false)
+        return
+      }
 
-      const res = await fetch(`/api/admin/artists/${selected.slug}/pricing-regions`)
+      console.log("🔍 Fetching regions for:", selected.slug)
+      const res = await fetch(`/api/artists/${selected.slug}/pricing-regions`)
+      
       if (!res.ok) throw new Error("Failed to fetch regions")
+      
       const data = await res.json()
-      const regionsArray = Array.isArray(data) ? data : (data.data || data.regions || [])
+      console.log("📦 Regions response:", data)
+      
+      const regionsArray = Array.isArray(data) 
+        ? data 
+        : (data.data || data.regions || [])
+      
+      console.log("✅ Regions array:", regionsArray.length, regionsArray)
       setRegions(regionsArray)
     } catch (err) {
-      console.error("Error fetching regions:", err)
+      console.error("❌ Error fetching regions:", err)
       setRegions([])
     } finally {
       setLoading(false)
@@ -92,8 +106,10 @@ export default function AdminPricingPage() {
     try {
       const method = editingId ? "PUT" : "POST"
       const url = editingId
-        ? `/api/admin/artists/${selected.slug}/pricing-regions/${editingId}`
-        : `/api/admin/artists/${selected.slug}/pricing-regions`
+        ? `/api/artists/${selected.slug}/pricing-regions/${editingId}`
+        : `/api/artists/${selected.slug}/pricing-regions`
+
+      console.log(`📝 ${method} to:`, url)
 
       const res = await fetch(url, {
         method,
@@ -105,9 +121,11 @@ export default function AdminPricingPage() {
         }),
       })
 
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || "فشل الحفظ")
+      const result = await res.json()
+      console.log("📦 Response:", result)
+
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "فشل الحفظ")
       }
 
       setMessage({
@@ -116,9 +134,13 @@ export default function AdminPricingPage() {
       })
       setFormData({ regionName: "", basePrice: "", travelFee: "0" })
       setEditingId(null)
+      
+      // ✅ إعادة جلب المناطق فوراً
       await fetchRegions()
+      
       setTimeout(() => setMessage(null), 3000)
     } catch (err: any) {
+      console.error("❌ Error saving region:", err)
       setMessage({ type: "error", text: err.message || "فشل الحفظ" })
     } finally {
       setSaving(false)
@@ -141,14 +163,21 @@ export default function AdminPricingPage() {
     if (!selected) return
 
     try {
-      await fetch(`/api/admin/artists/${selected.slug}/pricing-regions/${id}`, {
+      const res = await fetch(`/api/artists/${selected.slug}/pricing-regions/${id}`, {
         method: "DELETE",
       })
+      
+      const result = await res.json()
+      
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "فشل الحذف")
+      }
+
       setMessage({ type: "success", text: "تم الحذف بنجاح" })
       await fetchRegions()
       setTimeout(() => setMessage(null), 3000)
-    } catch (err) {
-      setMessage({ type: "error", text: "فشل الحذف" })
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "فشل الحذف" })
     }
   }
 
@@ -157,7 +186,10 @@ export default function AdminPricingPage() {
     setFormData({ regionName: "", basePrice: "", travelFee: "0" })
   }
 
-  const handlePrint = () => window.print()
+  const handlePrint = () => {
+    console.log("🖨️ Printing. Regions count:", regions.length)
+    window.print()
+  }
 
   const totalRegions = regions.length
   const avgPrice = totalRegions > 0
@@ -168,18 +200,19 @@ export default function AdminPricingPage() {
 
   const printStyles = `
     @media print {
-      body * { visibility: hidden; }
-      .print-area, .print-area * { visibility: visible; }
+      body * { visibility: hidden !important; }
+      .print-area, .print-area * { visibility: visible !important; }
       .print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 0;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
         background: white !important;
-        transform: none;
-        box-shadow: none;
-        border-radius: 0;
+        transform: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
       }
       .no-print { display: none !important; }
       @page {
@@ -188,10 +221,12 @@ export default function AdminPricingPage() {
       }
       .print-header, .print-footer, .stamp-section {
         break-inside: avoid;
+        page-break-inside: avoid;
       }
       .region-card {
         break-inside: avoid;
         page-break-inside: avoid;
+        margin-bottom: 8px;
       }
       .stamp-container {
         width: 100px !important;
@@ -205,15 +240,6 @@ export default function AdminPricingPage() {
         height: 90px !important;
       }
     }
-
-    @keyframes stampRotate {
-      from { transform: rotate(-8deg) scale(0.8); opacity: 0; }
-      to { transform: rotate(-8deg) scale(1); opacity: 1; }
-    }
-
-    .official-stamp {
-      animation: stampRotate 0.5s ease-out;
-    }
   `
 
   return (
@@ -223,7 +249,7 @@ export default function AdminPricingPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
         <div className="max-w-6xl mx-auto">
 
-          {/* ═══════════ HEADER مع زر الطباعة واضح ═══════════ */}
+          {/* Header */}
           <div className="mb-6 no-print">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
@@ -234,14 +260,13 @@ export default function AdminPricingPage() {
                 <p className="text-gray-500">إدارة الأسعار حسب المنطقة للفنانين</p>
               </div>
 
-              {/* ✅ زر الطباعة - واضح وبارز */}
               <button
                 onClick={handlePrint}
-                disabled={!selectedArtist}
+                disabled={!selectedArtist || regions.length === 0}
                 className="flex items-center gap-2 px-6 py-4 bg-[#111] text-[#D4AF37] rounded-xl font-black text-lg hover:bg-[#222] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 <Printer size={22} />
-                طباعة الأسعار
+                طباعة الأسعار ({regions.length})
               </button>
             </div>
           </div>
@@ -379,7 +404,7 @@ export default function AdminPricingPage() {
                 </div>
               </div>
 
-              {/* ═══════════ منطقة الطباعة - التصميم الذهبي/الأسود ═══════════ */}
+              {/* ✅ منطقة الطباعة - تظهر البيانات دائماً */}
               <div className="print-area bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
 
                 {/* الترويسة */}
@@ -418,7 +443,7 @@ export default function AdminPricingPage() {
                     <div className="mt-4 pt-4 border-t-2 border-[#D4AF37]/30 flex items-center justify-between">
                       <div>
                         <h2 className="report-title text-xl md:text-2xl font-black">قائمة الأسعار</h2>
-                        <p className="text-lg md:text-xl opacity-90">{artist?.name}</p>
+                        <p className="text-lg md:text-xl opacity-90">{artist?.name || "فنان"}</p>
                       </div>
 
                       <div className="text-left">
@@ -449,8 +474,8 @@ export default function AdminPricingPage() {
                   </div>
                 </div>
 
-                {/* قائمة الأسعار */}
-                <div className="p-4 md:p-6 relative">
+                {/* ✅ قائمة الأسعار - تظهر دائماً حتى لو فارغة */}
+                <div className="p-4 md:p-6 relative min-h-[400px]">
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
                     <span className="text-8xl font-black text-[#111] rotate-[-30deg]">
                       {STUDIO_INFO.name}
@@ -460,11 +485,13 @@ export default function AdminPricingPage() {
                   {loading ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="animate-spin text-[#D4AF37]" size={32} />
+                      <span className="mr-3 text-gray-600">جاري تحميل المناطق...</span>
                     </div>
                   ) : regions.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-xl">
                       <Banknote className="mx-auto text-gray-300 mb-3" size={48} />
-                      <p className="text-gray-500 font-semibold">لا توجد مناطق مسعرة بعد</p>
+                      <p className="text-gray-500 font-semibold mb-2">لا توجد مناطق مسعرة بعد</p>
+                      <p className="text-sm text-gray-400">أضف منطقة جديدة باستخدام النموذج أعلاه</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
@@ -475,7 +502,7 @@ export default function AdminPricingPage() {
                         return (
                           <div
                             key={region.id}
-                            className="region-card p-5 bg-white border-2 border-[#D4AF37]/30 rounded-xl hover:border-[#D4AF37] transition"
+                            className="region-card p-5 bg-white border-2 border-[#D4AF37]/30 rounded-xl"
                           >
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
@@ -540,7 +567,6 @@ export default function AdminPricingPage() {
                 {/* التوثيق */}
                 <div className="stamp-section bg-[#faf8f0] border-t-2 border-[#D4AF37]/30 px-6 md:px-8 py-5">
                   <div className="flex items-center justify-between gap-6">
-
                     <div className="flex items-center gap-4">
                       <div className="qr-box bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
                         <QRCode
@@ -564,7 +590,6 @@ export default function AdminPricingPage() {
                     <div className="official-stamp stamp-container relative w-28 h-28 md:w-36 md:h-36" style={{ transform: "rotate(-8deg)" }}>
                       <div className="absolute inset-0 rounded-full border-4 border-[#D4AF37] flex items-center justify-center">
                         <div className="absolute inset-2 rounded-full border-2 border-[#D4AF37]"></div>
-
                         <div className="text-center px-3">
                           <Award className="w-7 h-7 text-[#D4AF37] mx-auto mb-1" />
                           <p className="text-[10px] font-black text-[#D4AF37] leading-tight">
@@ -578,9 +603,6 @@ export default function AdminPricingPage() {
                           </p>
                         </div>
                       </div>
-
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
                     </div>
                   </div>
                 </div>
@@ -617,14 +639,7 @@ export default function AdminPricingPage() {
                         <span dir="ltr">{STUDIO_INFO.phone}</span>
                       </p>
                     </div>
-
-                    <div className="mt-3 pt-3 border-t border-[#D4AF37]/20 text-center">
-                      <p className="text-[10px] opacity-50">
-                        هذه القائمة صادرة إلكترونياً من نظام {STUDIO_INFO.name} وهي وثيقة معتمدة.
-                      </p>
-                    </div>
                   </div>
-
                   <div className="h-2 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
                 </div>
               </div>

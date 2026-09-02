@@ -13,19 +13,18 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
     }
 
     const { id } = await params
     const body = await request.json()
     const { regionName, basePrice, travelFee } = body
 
-    const region = await prisma.pricingRegion.findUnique({
-      where: { id },
-    })
+    console.log("📝 Updating pricing region:", { id, regionName, basePrice, travelFee })
 
+    const region = await prisma.pricingRegion.findUnique({ where: { id } })
     if (!region) {
-      return NextResponse.json({ error: "المنطقة غير موجودة" }, { status: 404 })
+      return NextResponse.json({ success: false, error: "المنطقة غير موجودة" }, { status: 404 })
     }
 
     const updated = await prisma.pricingRegion.update({
@@ -37,8 +36,10 @@ export async function PUT(
       },
     })
 
+    console.log("✅ Region updated:", updated)
     return NextResponse.json({ success: true, data: updated })
   } catch (error: any) {
+    console.error("❌ Error updating pricing region:", error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -51,25 +52,24 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
+      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
     }
 
     const { id } = await params
 
-    const region = await prisma.pricingRegion.findUnique({
-      where: { id },
-    })
+    console.log("🗑️ Deleting pricing region:", id)
 
+    const region = await prisma.pricingRegion.findUnique({ where: { id } })
     if (!region) {
-      return NextResponse.json({ error: "المنطقة غير موجودة" }, { status: 404 })
+      return NextResponse.json({ success: false, error: "المنطقة غير موجودة" }, { status: 404 })
     }
 
-    await prisma.pricingRegion.delete({
-      where: { id },
-    })
+    await prisma.pricingRegion.delete({ where: { id } })
 
+    console.log("✅ Region deleted:", id)
     return NextResponse.json({ success: true, message: "تم الحذف بنجاح" })
   } catch (error: any) {
+    console.error("❌ Error deleting pricing region:", error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
