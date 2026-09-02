@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     console.log("=== بدء عملية الحجز ===")
     console.log("Session:", session?.user?.email || "غير مسجل")
 
@@ -41,10 +41,15 @@ export async function POST(request: Request) {
       venueId,
       clientName,
       clientPhone,
+      countryCode,
+      phoneNumber,
+      region,
       clientEmail,
       date,
       timeSlot,
       grossAmount = 5000,
+      depositAmount,
+      travelFee = 0,
     } = body
 
     // 3. التحقق من الحقول المطلوبة
@@ -95,7 +100,7 @@ export async function POST(request: Request) {
           where: { email: clientEmail },
         })
       }
-      
+
       if (!customer && clientPhone) {
         customer = await prisma.customer.findFirst({
           where: { phone: clientPhone },
@@ -120,10 +125,19 @@ export async function POST(request: Request) {
     }
 
     // 7. حساب المبالغ
-    const depositAmount = Math.round(grossAmount * 0.2)
-    const remainingAmount = grossAmount - depositAmount
+    const finalGrossAmount = grossAmount || 5000
+    const finalDepositAmount = depositAmount || Math.round(finalGrossAmount * 0.2)
+    const remainingAmount = finalGrossAmount - finalDepositAmount
+    const finalTravelFee = travelFee || 0
 
-    console.log("💰 المبالغ:", { grossAmount, depositAmount, remainingAmount })
+    console.log("💰 المبالغ:", { 
+      grossAmount: finalGrossAmount, 
+      depositAmount: finalDepositAmount, 
+      remainingAmount,
+      travelFee: finalTravelFee,
+      countryCode: countryCode || "+20",
+      region: region || "غير محدد"
+    })
 
     // 8. البحث عن userId
     let userId = null
@@ -144,29 +158,22 @@ export async function POST(request: Request) {
     try {
       booking = await prisma.booking.create({
         data: {
-          // في الـ POST endpoint، أضف الحقول الجديدة إلى data
-const booking = await prisma.booking.create({
-  data: {
-    // الحقول الموجودة...
-    artistId: body.artistId,
-    venueId: body.venueId,
-    clientName: body.clientName,
-    clientPhone: body.clientPhone, // الرقم الكامل الدولي
-    clientEmail: body.clientEmail,
-    date: new Date(body.date),
-    timeSlot: body.timeSlot,
-    grossAmount: body.grossAmount,
-    depositAmount: body.depositAmount,
-    
-    // ✅ الحقول الجديدة
-    countryCode: body.countryCode || "+20",
-    phoneNumber: body.phoneNumber || "",
-    region: body.region || "",
-    travelFee: body.travelFee || 0,
-    
-    // ... باقي الحقول
-  },
-})
+          artistId,
+          venueId,
+          clientName,
+          clientPhone,
+          clientEmail,
+          date: new Date(date),
+          timeSlot,
+          grossAmount: finalGrossAmount,
+          depositAmount: finalDepositAmount,
+          // ✅ الحقول الجديدة للأرقام الدولية والتسعير حسب المنطقة
+          countryCode: countryCode || "+20",
+          phoneNumber: phoneNumber || "",
+          region: region || "",
+          travelFee: finalTravelFee,
+          customerId: customer?.id || null,
+          userId: userId,
         },
         include: {
           artist: true,
@@ -200,7 +207,7 @@ const booking = await prisma.booking.create({
           data: {
             userId: admin.id,
             title: "حجز جديد! 🎵",
-            message: `حجز جديد للفنان ${artist.name} من ${clientName} بقيمة ${grossAmount} ج.م`,
+            message: `حجز جديد للفنان ${artist.name} من ${clientName} بقيمة ${finalGrossAmount.toLocaleString()} ج.م${region ? ` في ${region}` : ""}`,
             type: "new_booking",
             link: `/admin/bookings/${booking.id}`,
           },
@@ -223,6 +230,8 @@ const booking = await prisma.booking.create({
         status: booking.status,
         grossAmount: booking.grossAmount,
         depositAmount: booking.depositAmount,
+        region: booking.region,
+        countryCode: booking.countryCode,
       },
     })
   } catch (error: any) {
@@ -239,7 +248,7 @@ const booking = await prisma.booking.create({
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
