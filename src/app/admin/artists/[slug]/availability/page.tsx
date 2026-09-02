@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -6,7 +6,7 @@ import QRCode from "react-qr-code"
 import {
   ArrowLeft, Save, Printer, Calendar,
   ChevronRight, ChevronLeft, Check, X, Filter, Clock,
-  Phone, Mail, MapPin, Award, QrCode
+  Phone, Mail, MapPin, Award
 } from "lucide-react"
 
 const MONTHS_AR = [
@@ -616,7 +616,7 @@ export default function ArtistAvailabilityPage() {
                 {/* ══ QR Code (يسار) ══ */}
                 <div className="flex items-center gap-4">
                   <div className="qr-box bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
-                    <QRCode
+                    <Shield 
                       value={qrValue}
                       size={100}
                       bgColor="#ffffff"
@@ -626,7 +626,7 @@ export default function ArtistAvailabilityPage() {
                   </div>
                   <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
-                      <QrCode size={16} className="text-[#D4AF37]" />
+                      <Shield size={16} className="text-[#D4AF37]" />
                       امسح للتحقق
                     </p>
                     <p>امسح رمز QR للتحقق</p>

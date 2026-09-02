@@ -1,8 +1,8 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import { Check, Award, Phone, Mail, MapPin, QrCode, Loader2, AlertTriangle, Printer, RefreshCw } from "lucide-react"
+import { Check, Award, Phone, Mail, MapPin, Shield, Loader2, AlertTriangle, Printer, RefreshCw } from "lucide-react"
 
 const DAYS_SHORT_AR = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
 
@@ -392,11 +392,11 @@ export default function VerifyCalendarPage() {
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                   <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
-                    <QrCode size={80} className="text-[#111]" />
+                    <Shield size={80} className="text-[#111]" />
                   </div>
                   <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
-                      <QrCode size={16} className="text-[#D4AF37]" />
+                      <Shield size={16} className="text-[#D4AF37]" />
                       رمز التحقق
                     </p>
                     <p>هذا التقرير معتمد رسمياً</p>

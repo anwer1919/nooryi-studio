@@ -1,10 +1,10 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import QRCode from "react-qr-code"
-import { Check, Award, Phone, Mail, MapPin, Calendar, Clock, Music, Printer, Share2 } from "lucide-react"
+import { Check, Award, Phone, Mail, MapPin, Calendar, Clock, Music, Printer, Share2, Shield, FileCheck } from "lucide-react"
 
 const STUDIO_INFO = {
   name: "Nooryi Studio",
@@ -359,7 +359,7 @@ Nooryi Studio - منصة حجز الفنانين`
               <div className="flex items-center gap-4">
                 {isMounted && (
                   <div className="bg-white p-3 rounded-xl border-2 border-[#111] shadow-lg">
-                    <QRCode
+                    <Shield 
                       value={verifyUrl}
                       size={100}
                       bgColor="#ffffff"
@@ -370,7 +370,7 @@ Nooryi Studio - منصة حجز الفنانين`
                 )}
                 <div className="text-sm text-gray-600 leading-relaxed">
                   <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
-                    <QrCode size={16} className="text-[#D4AF37]" />
+                    <Shield size={16} className="text-[#D4AF37]" />
                     امسح للتحقق
                   </p>
                   <p className="text-xs">امسح رمز QR للتحقق</p>
