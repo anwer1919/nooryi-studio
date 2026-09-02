@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import BookingForm from "./BookingForm"
+import ReviewsList from "@/components/ReviewsList"
 import {
   ArrowRight,
   Star,
@@ -19,17 +20,6 @@ import {
 
 export const dynamic = "force-dynamic"
 
-function formatSafeDate(date: Date | string): string {
-  try {
-    const d = new Date(date)
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-      d.getDate()
-    ).padStart(2, "0")}`
-  } catch {
-    return "تاريخ غير صالح"
-  }
-}
-
 export default async function ArtistDetailsPage({
   params,
 }: {
@@ -40,15 +30,11 @@ export default async function ArtistDetailsPage({
 
   let artist = null
   
-  // ✅ جلب البيانات بطريقة آمنة (تجنب أي خطأ يكسر الصفحة)
+  // ✅ جلب البيانات الأساسية للفنان
   try {
     artist = await prisma.artist.findUnique({
       where: { slug },
       include: {
-        reviews: {
-          take: 5,
-          orderBy: { createdAt: "desc" },
-        },
         _count: {
           select: { bookings: true, reviews: true },
         },
@@ -62,7 +48,7 @@ export default async function ArtistDetailsPage({
     redirect("/artists")
   }
 
-  // ✅ جلب الأسعار حسب المنطقة (بشكل منفصل لتجنب الخطأ)
+  // ✅ جلب الأسعار حسب المنطقة (بشكل منفصل)
   let pricingRegions: any[] = []
   try {
     pricingRegions = await prisma.pricingRegion.findMany({
@@ -73,7 +59,7 @@ export default async function ArtistDetailsPage({
     console.error("Error fetching pricing regions:", error)
   }
 
-  // ✅ التحقق من التوفر
+  // ✅ التحقق من التوفر (بشكل منفصل)
   let isArtistAvailable = false
   try {
     const availabilityCount = await prisma.availability.count({
@@ -87,6 +73,7 @@ export default async function ArtistDetailsPage({
     console.error("Error checking availability:", error)
   }
 
+  // ✅ جلب الأماكن
   let venues: any[] = []
   try {
     venues = await prisma.venue.findMany({
@@ -108,13 +95,7 @@ export default async function ArtistDetailsPage({
     }
   }
 
-  const ratings = artist.reviews?.map((r: any) => r.rating) || []
-  const avgRating =
-    ratings.length > 0
-      ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
-      : 0
-
-  // حساب الأسعار
+  // حساب نطاق الأسعار
   const minPrice = pricingRegions.length > 0
     ? Math.min(...pricingRegions.map((r: any) => r.basePrice + (r.travelFee || 0)))
     : 5000
@@ -146,6 +127,7 @@ export default async function ArtistDetailsPage({
           العودة
         </Link>
 
+        {/* شارة التوفر */}
         {isArtistAvailable && (
           <div className="absolute top-6 left-6 bg-green-500/90 backdrop-blur-sm text-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg">
             <CheckCircle2 size={16} />
@@ -176,19 +158,16 @@ export default async function ArtistDetailsPage({
                     {artist.category || "فنان"}
                   </p>
                   <div className="flex items-center gap-4 text-sm flex-wrap">
-                    <div className="flex items-center gap-1 bg-accent/10 dark:bg-accent-dark/20 px-3 py-1.5 rounded-lg">
-                      <Star className="text-accent fill-accent" size={16} />
-                      <span className="font-bold text-primary dark:text-white">
-                        {avgRating > 0 ? avgRating.toFixed(1) : "جديد"}
-                      </span>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        ({artist._count?.reviews || 0} تقييم)
-                      </span>
-                    </div>
                     <div className="flex items-center gap-1 bg-primary/10 dark:bg-accent/20 px-3 py-1.5 rounded-lg">
                       <Calendar className="text-primary dark:text-accent" size={16} />
                       <span className="font-semibold text-primary dark:text-white">
                         {artist._count?.bookings || 0} حجز ناجح
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-accent/10 dark:bg-accent-dark/20 px-3 py-1.5 rounded-lg">
+                      <Star className="text-accent" size={16} />
+                      <span className="font-semibold text-primary dark:text-white">
+                        {artist._count?.reviews || 0} تقييم
                       </span>
                     </div>
                   </div>
@@ -206,16 +185,6 @@ export default async function ArtistDetailsPage({
 
             {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="card-premium text-center">
-                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mx-auto mb-3">
-                  <Star className="text-accent" size={24} />
-                </div>
-                <p className="text-2xl font-black text-primary dark:text-white">
-                  {avgRating > 0 ? avgRating.toFixed(1) : "-"}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">التقييم العام</p>
-              </div>
-
               <div className="card-premium text-center">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center mx-auto mb-3">
                   <Users className="text-primary dark:text-accent" size={24} />
@@ -235,9 +204,19 @@ export default async function ArtistDetailsPage({
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">تقييم عملاء</p>
               </div>
+
+              <div className="card-premium text-center">
+                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mx-auto mb-3">
+                  <Star className="text-accent" size={24} />
+                </div>
+                <p className="text-2xl font-black text-primary dark:text-white">
+                  {artist._count?.reviews || 0 > 0 ? "متاح" : "-"}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">التقييم العام</p>
+              </div>
             </div>
 
-            {/* Pricing Regions */}
+            {/* Pricing Regions - عرض الأسعار حسب المنطقة */}
             {pricingRegions.length > 0 && (
               <div className="card-premium">
                 <h3 className="text-xl font-bold text-primary dark:text-white mb-6 flex items-center gap-2">
@@ -266,7 +245,9 @@ export default async function ArtistDetailsPage({
 
                         <div className="space-y-1.5 text-sm">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">السعر الأساسي</span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                              السعر الأساسي
+                            </span>
                             <span className="font-bold text-primary dark:text-white">
                               {region.basePrice.toLocaleString()} ج.م
                             </span>
@@ -274,7 +255,9 @@ export default async function ArtistDetailsPage({
 
                           {region.travelFee > 0 && (
                             <div className="flex items-center justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">رسوم السفر</span>
+                              <span className="text-gray-600 dark:text-gray-400">
+                                رسوم السفر
+                              </span>
                               <span className="font-bold text-primary dark:text-white">
                                 +{region.travelFee.toLocaleString()} ج.م
                               </span>
@@ -283,7 +266,9 @@ export default async function ArtistDetailsPage({
 
                           <div className="pt-2 mt-2 border-t border-accent/20 dark:border-accent-dark/30">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-primary dark:text-white">الإجمالي</span>
+                              <span className="font-bold text-primary dark:text-white">
+                                الإجمالي
+                              </span>
                               <span className="text-lg font-black text-accent">
                                 {totalPrice.toLocaleString()} ج.م
                               </span>
@@ -297,47 +282,22 @@ export default async function ArtistDetailsPage({
                     )
                   })}
                 </div>
+
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 flex items-center gap-1">
+                  <DollarSign size={12} />
+                  الأسعار قابلة للتغيير بناءً على متطلبات الفعالية
+                </p>
               </div>
             )}
 
-            {/* Reviews */}
-            {artist.reviews && artist.reviews.length > 0 && (
-              <div className="card-premium">
-                <h3 className="text-xl font-bold text-primary dark:text-white mb-6 flex items-center gap-2">
-                  <Star className="text-accent fill-accent" size={20} />
-                  التقييمات ({artist.reviews.length})
-                </h3>
-                <div className="space-y-4">
-                  {artist.reviews.map((review: any, i: number) => (
-                    <div
-                      key={i}
-                      className="p-5 bg-background-subtle dark:bg-dark-bg rounded-2xl border border-gray-100 dark:border-dark-border"
-                    >
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(5)].map((_, idx) => (
-                          <Star
-                            key={idx}
-                            size={16}
-                            className={
-                              idx < review.rating
-                                ? "text-accent fill-accent"
-                                : "text-gray-200 dark:text-gray-700"
-                            }
-                          />
-                        ))}
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {review.comment || "تقييم ممتاز"}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-3 flex items-center gap-1">
-                        <Clock size={12} />
-                        <span suppressHydrationWarning>{formatSafeDate(review.createdAt)}</span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* ✅ Reviews - استخدام مكون ReviewsList الأصلي */}
+            <div className="card-premium">
+              <h3 className="text-xl font-bold text-primary dark:text-white mb-6 flex items-center gap-2">
+                <Star className="text-accent fill-accent" size={20} />
+                تقييمات العملاء
+              </h3>
+              <ReviewsList artistSlug={artist.slug} />
+            </div>
           </div>
 
           {/* Booking Form Sidebar */}
@@ -348,6 +308,7 @@ export default async function ArtistDetailsPage({
                 احجز الآن
               </h3>
 
+              {/* Price Preview */}
               <div className="bg-gradient-to-br from-accent/10 to-primary/5 dark:from-accent-dark/20 dark:to-primary/10 rounded-2xl p-5 mb-6 border border-accent/20 dark:border-accent-dark/30">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                   {hasMultiplePrices ? "نطاق السعر" : "السعر التقديري"}
@@ -372,6 +333,13 @@ export default async function ArtistDetailsPage({
                   <CheckCircle2 size={12} className="text-accent" />
                   العربون: {Math.round(minPrice * 0.2).toLocaleString()} ج.م (20%)
                 </p>
+
+                {pricingRegions.length > 0 && (
+                  <p className="text-xs text-accent mt-2 flex items-center gap-1">
+                    <MapPin size={12} />
+                    اختر المنطقة لحساب السعر الدقيق
+                  </p>
+                )}
               </div>
 
               <BookingForm
