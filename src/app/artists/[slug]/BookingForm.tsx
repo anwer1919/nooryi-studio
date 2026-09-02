@@ -25,7 +25,6 @@ interface BookingFormProps {
   userName: string
 }
 
-// قائمة أكواد الدول (جاهزة لـ OTP)
 const COUNTRY_CODES = [
   { code: "+20", name: "مصر", flag: "🇪🇬" },
   { code: "+966", name: "السعودية", flag: "🇸🇦" },
@@ -71,28 +70,26 @@ export default function BookingForm({
   const [loading, setLoading] = useState(false)
   const [checkingAvailability, setCheckingAvailability] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [successBookingId, setSuccessBookingId] = useState<string | null>(null)
   const [error, setError] = useState("")
+  const [errorDetails, setErrorDetails] = useState("")
 
-  // حالة الأسعار من قاعدة البيانات
   const [pricingRegions, setPricingRegions] = useState<any[]>([])
   const [pricingLoading, setPricingLoading] = useState(true)
-
-  // حالة التحقق من التوفر
   const [dateAvailable, setDateAvailable] = useState<boolean | null>(null)
   const [availabilityMessage, setAvailabilityMessage] = useState("")
 
   const [formData, setFormData] = useState({
     clientName: "",
-    countryCode: "+20", // افتراضي: مصر
+    countryCode: "+20",
     phoneNumber: "",
     clientEmail: "",
     venueId: "",
-    region: "", // المنطقة المختارة (اسم المنطقة)
+    region: "",
     date: "",
     timeSlot: "EVENING",
   })
 
-  // جلب أسعار المناطق للفنان
   useEffect(() => {
     const fetchPricing = async () => {
       try {
@@ -124,7 +121,6 @@ export default function BookingForm({
     })
   }, [userName, userEmail, venues])
 
-  // حساب السعر الحالي
   const currentPricing = useMemo(() => {
     if (!formData.region) return null
     return pricingRegions.find((r) => r.regionName === formData.region)
@@ -135,7 +131,6 @@ export default function BookingForm({
   const totalPrice = basePrice + travelFee
   const depositAmount = Math.round(totalPrice * 0.2)
 
-  // التحقق من توفر التاريخ
   useEffect(() => {
     if (!formData.date) {
       setDateAvailable(null)
@@ -178,6 +173,9 @@ export default function BookingForm({
 
     setLoading(true)
     setError("")
+    setErrorDetails("")
+
+    console.log("🚀 بدء عملية الحجز...")
 
     if (!userEmail) {
       setError("يجب تسجيل الدخول أولاً")
@@ -204,48 +202,79 @@ export default function BookingForm({
       return
     }
 
-    // بناء الرقم الكامل بالصيغة الدولية (جاهز لـ OTP)
     const fullPhoneNumber = `${formData.countryCode}${formData.phoneNumber.replace(/^0+/, "")}`
+
+    const bookingData = {
+      artistId,
+      venueId: formData.venueId,
+      clientName: formData.clientName,
+      clientPhone: fullPhoneNumber,
+      countryCode: formData.countryCode,
+      phoneNumber: formData.phoneNumber,
+      region: formData.region,
+      clientEmail: formData.clientEmail,
+      date: formData.date,
+      timeSlot: formData.timeSlot,
+      grossAmount: totalPrice,
+      depositAmount: depositAmount,
+      travelFee: travelFee,
+    }
+
+    console.log("📤 إرسال البيانات:", bookingData)
 
     try {
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          artistId,
-          venueId: formData.venueId,
-          clientName: formData.clientName,
-          clientPhone: fullPhoneNumber,
-          countryCode: formData.countryCode,
-          phoneNumber: formData.phoneNumber,
-          region: formData.region,
-          clientEmail: formData.clientEmail,
-          date: formData.date,
-          timeSlot: formData.timeSlot,
-          grossAmount: totalPrice,
-          depositAmount: depositAmount,
-          travelFee: travelFee,
-        }),
+        body: JSON.stringify(bookingData),
+      })
+
+      console.log("📥 الاستجابة:", {
+        status: response.status,
+        ok: response.ok,
+        contentType: response.headers.get("content-type"),
       })
 
       const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("الـ API لا يعمل بشكل صحيح")
-      }
+      let data: any = null
 
-      const data = await response.json()
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+        console.log("📦 البيانات المستلمة:", data)
+      } else {
+        const text = await response.text()
+        console.error("❌ استجابة غير JSON:", text.substring(0, 200))
+        throw new Error("الخادم أرجع استجابة غير صحيحة")
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || "حدث خطأ في الحجز")
+        throw new Error(data?.error || `خطأ في الخادم (${response.status})`)
       }
 
+      if (!data.success || !data.booking?.id) {
+        throw new Error("لم يتم إنشاء الحجز بشكل صحيح")
+      }
+
+      console.log("✅ تم الحجز بنجاح:", data.booking.id)
+
       setSuccess(true)
+      setSuccessBookingId(data.booking.id)
+
+      // ✅ إعادة التوجيه بعد 2 ثانية باستخدام window.location لضمان التحميل الكامل
       setTimeout(() => {
-        router.push(`/booking/${data.booking.id}`)
-      }, 3000)
+        console.log("🔄 إعادة التوجيه إلى:", `/booking/${data.booking.id}`)
+        window.location.href = `/booking/${data.booking.id}`
+      }, 2000)
     } catch (err: any) {
-      console.error("Booking error:", err)
+      console.error("❌ خطأ في الحجز:", err)
       setError(err.message || "حدث خطأ في الحجز")
+      
+      // عرض تفاصيل إضافية إذا كانت متاحة
+      if (err.message?.includes("Foreign key constraint")) {
+        setErrorDetails("خطأ في قاعدة البيانات - تحقق من وجود الفنان والمكان")
+      } else if (err.message?.includes("Unique constraint")) {
+        setErrorDetails("هذا الحجز موجود بالفعل")
+      }
     } finally {
       setLoading(false)
     }
@@ -257,26 +286,35 @@ export default function BookingForm({
     return (
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse"
-          />
+          <div key={i} className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse" />
         ))}
       </div>
     )
   }
 
-  if (success) {
+  if (success && successBookingId) {
     return (
       <div className="text-center py-8">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 dark:bg-accent-dark/20 mb-4">
           <CheckCircle2 className="text-accent" size={32} />
         </div>
         <h3 className="text-xl font-bold mb-2 text-accent">تم إرسال الحجز بنجاح!</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+          رقم الحجز: <span className="font-mono font-bold">#{successBookingId.slice(0, 8).toUpperCase()}</span>
+        </p>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
           سيتم مراجعة طلبك من قبل الإدارة
         </p>
-        <p className="text-xs text-gray-400">جاري تحويلك لصفحة تفاصيل الحجز...</p>
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+          <Loader2 size={16} className="animate-spin" />
+          جاري تحويلك لصفحة تفاصيل الحجز...
+        </div>
+        <button
+          onClick={() => window.location.href = `/booking/${successBookingId}`}
+          className="mt-4 text-xs text-accent font-bold underline"
+        >
+          إذا لم يتم التحويل تلقائياً، اضغط هنا
+        </button>
       </div>
     )
   }
@@ -286,7 +324,12 @@ export default function BookingForm({
       {error && (
         <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-3 flex items-start gap-2">
           <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
-          <p className="text-sm text-red-600 dark:text-red-400 font-semibold">{error}</p>
+          <div>
+            <p className="text-sm text-red-600 dark:text-red-400 font-semibold">{error}</p>
+            {errorDetails && (
+              <p className="text-xs text-red-500 mt-1">{errorDetails}</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -311,16 +354,11 @@ export default function BookingForm({
           الاسم الكامل *
         </label>
         <div className="relative">
-          <User
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={16}
-          />
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
             type="text"
             value={formData.clientName}
-            onChange={(e) =>
-              setFormData({ ...formData, clientName: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
             placeholder="أدخل اسمك"
             required
             className="input-modern pr-10"
@@ -328,70 +366,46 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* Phone - International */}
+      {/* Phone */}
       <div>
         <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
           رقم الهاتف * <span className="text-xs text-gray-500">(دولي)</span>
         </label>
         <div className="flex gap-2">
-          {/* اختيار الدولة */}
           <div className="relative w-32 flex-shrink-0">
-            <Globe
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-              size={14}
-            />
+            <Globe className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
             <select
               value={formData.countryCode}
-              onChange={(e) =>
-                setFormData({ ...formData, countryCode: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
               className="input-modern pr-8 pl-2 text-xs font-bold"
               dir="ltr"
             >
               {COUNTRY_CODES.map((country) => (
-                <option
-                  key={country.code}
-                  value={country.code}
-                  className="bg-white dark:bg-dark-surface"
-                >
+                <option key={country.code} value={country.code} className="bg-white dark:bg-dark-surface">
                   {country.flag} {country.code}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* رقم الهاتف */}
           <div className="relative flex-1">
-            <Phone
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={16}
-            />
+            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  phoneNumber: e.target.value.replace(/[^\d]/g, ""),
-                })
+                setFormData({ ...formData, phoneNumber: e.target.value.replace(/[^\d]/g, "") })
               }
-              placeholder={
-                formData.countryCode === "+20"
-                  ? "1xxxxxxxxx"
-                  : "رقم الهاتف بدون الصفر"
-              }
+              placeholder={formData.countryCode === "+20" ? "1xxxxxxxxx" : "رقم الهاتف بدون الصفر"}
               required
               className="input-modern pr-10"
               dir="ltr"
             />
           </div>
         </div>
-
         {selectedCountry && formData.phoneNumber && (
           <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1" dir="ltr">
             <Info size={12} />
-            الرقم الكامل: {formData.countryCode}
-            {formData.phoneNumber.replace(/^0+/, "")}
+            الرقم الكامل: {formData.countryCode}{formData.phoneNumber.replace(/^0+/, "")}
           </p>
         )}
       </div>
@@ -402,16 +416,11 @@ export default function BookingForm({
           البريد الإلكتروني
         </label>
         <div className="relative">
-          <Mail
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={16}
-          />
+          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
             type="email"
             value={formData.clientEmail}
-            onChange={(e) =>
-              setFormData({ ...formData, clientEmail: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
             placeholder="example@email.com"
             className="input-modern pr-10"
             dir="ltr"
@@ -425,25 +434,16 @@ export default function BookingForm({
           المكان *
         </label>
         <div className="relative">
-          <MapPin
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={16}
-          />
+          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <select
             value={formData.venueId}
-            onChange={(e) =>
-              setFormData({ ...formData, venueId: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
             required
             className="input-modern pr-10 appearance-none"
           >
             <option value="">اختر المكان</option>
             {venues.map((venue) => (
-              <option
-                key={venue.id}
-                value={venue.id}
-                className="bg-white dark:bg-dark-surface"
-              >
+              <option key={venue.id} value={venue.id} className="bg-white dark:bg-dark-surface">
                 {venue.name}
               </option>
             ))}
@@ -451,34 +451,25 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* Region Selection (if pricing regions exist) */}
+      {/* Region */}
       {pricingLoading ? (
         <div className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse" />
       ) : pricingRegions.length > 0 ? (
         <div>
           <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
-            المنطقة / المدينة * <span className="text-xs text-gray-500">(لحساب السعر)</span>
+            المنطقة / المدينة *
           </label>
           <div className="relative">
-            <MapPin
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={16}
-            />
+            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <select
               value={formData.region}
-              onChange={(e) =>
-                setFormData({ ...formData, region: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
               required
               className="input-modern pr-10 appearance-none"
             >
               <option value="">اختر المنطقة</option>
               {pricingRegions.map((region) => (
-                <option
-                  key={region.id}
-                  value={region.regionName}
-                  className="bg-white dark:bg-dark-surface"
-                >
+                <option key={region.id} value={region.regionName} className="bg-white dark:bg-dark-surface">
                   {region.regionName} - {(region.basePrice + (region.travelFee || 0)).toLocaleString()} ج.م
                 </option>
               ))}
@@ -493,23 +484,16 @@ export default function BookingForm({
           تاريخ الفعالية *
         </label>
         <div className="relative">
-          <Calendar
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={16}
-          />
+          <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
             type="date"
             value={formData.date}
-            onChange={(e) =>
-              setFormData({ ...formData, date: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             required
             min={new Date().toISOString().split("T")[0]}
             className="input-modern pr-10"
           />
         </div>
-
-        {/* حالة التوفر */}
         {formData.date && (
           <div className="mt-2">
             {checkingAvailability ? (
@@ -525,11 +509,7 @@ export default function BookingForm({
                     : "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400"
                 }`}
               >
-                {dateAvailable ? (
-                  <CheckCircle2 size={14} />
-                ) : (
-                  <AlertCircle size={14} />
-                )}
+                {dateAvailable ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
                 {availabilityMessage}
               </div>
             ) : null}
@@ -571,43 +551,29 @@ export default function BookingForm({
           <DollarSign className="text-accent" size={18} />
           <p className="text-sm font-bold text-primary dark:text-white">ملخص السعر</p>
         </div>
-
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between">
             <span className="text-gray-600 dark:text-gray-400">السعر الأساسي</span>
-            <span className="font-bold text-primary dark:text-white">
-              {basePrice.toLocaleString()} ج.م
-            </span>
+            <span className="font-bold text-primary dark:text-white">{basePrice.toLocaleString()} ج.م</span>
           </div>
-
           {travelFee > 0 && (
             <div className="flex items-center justify-between">
               <span className="text-gray-600 dark:text-gray-400">رسوم السفر</span>
-              <span className="font-bold text-primary dark:text-white">
-                {travelFee.toLocaleString()} ج.م
-              </span>
+              <span className="font-bold text-primary dark:text-white">{travelFee.toLocaleString()} ج.م</span>
             </div>
           )}
-
           <div className="pt-2 mt-2 border-t border-accent/20 dark:border-accent-dark/30 flex items-center justify-between">
             <span className="font-bold text-primary dark:text-white">الإجمالي</span>
-            <span className="text-lg font-black text-accent">
-              {totalPrice.toLocaleString()} ج.م
-            </span>
+            <span className="text-lg font-black text-accent">{totalPrice.toLocaleString()} ج.م</span>
           </div>
-
           <div className="flex items-center justify-between pt-1">
-            <span className="text-gray-500 dark:text-gray-400">
-              العربون (20%)
-            </span>
-            <span className="font-bold text-accent">
-              {depositAmount.toLocaleString()} ج.م
-            </span>
+            <span className="text-gray-500 dark:text-gray-400">العربون (20%)</span>
+            <span className="font-bold text-accent">{depositAmount.toLocaleString()} ج.م</span>
           </div>
         </div>
       </div>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <button
         type="submit"
         disabled={loading || !userEmail || dateAvailable === false}

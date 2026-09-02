@@ -60,6 +60,18 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
     }
   }, [isMobileMenuOpen])
 
+  // إغلاق بـ ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false)
+        setIsDesktopMenuOpen(false)
+      }
+    }
+    document.addEventListener("keydown", handleEsc)
+    return () => document.removeEventListener("keydown", handleEsc)
+  }, [])
+
   // Skeleton أثناء التحميل الأول (منع Hydration mismatch)
   if (!isMounted) {
     if (mode === "mobile") {
@@ -105,9 +117,21 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
                   ? "مدير عام"
                   : user.role === "ADMIN"
                   ? "إدارة"
+                  : user.role === "ARTIST_MANAGER"
+                  ? "مدير فنان"
                   : "عميل"}
               </span>
             </div>
+
+            {/* ✅ رابط حسابي - يوجه لـ my-bookings بدلاً من /profile */}
+            <Link
+              href="/my-bookings"
+              onClick={() => setIsDesktopMenuOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+            >
+              <UserIcon size={16} className="text-purple-700" />
+              <span className="text-sm font-semibold text-gray-700">حسابي</span>
+            </Link>
 
             <Link
               href="/my-bookings"
@@ -137,6 +161,19 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
                 <span className="text-sm font-semibold text-gray-700">لوحة التحكم</span>
               </Link>
             )}
+
+            {user.role === "ARTIST_MANAGER" && (
+              <Link
+                href="/admin/artists-managers"
+                onClick={() => setIsDesktopMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+              >
+                <LayoutDashboard size={16} className="text-purple-700" />
+                <span className="text-sm font-semibold text-gray-700">إدارة الفنانين</span>
+              </Link>
+            )}
+
+            <div className="h-px bg-gray-100 my-1" />
 
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
@@ -204,6 +241,8 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
                   ? "مدير عام"
                   : user.role === "ADMIN"
                   ? "إدارة"
+                  : user.role === "ARTIST_MANAGER"
+                  ? "مدير فنان"
                   : "عميل"}
               </span>
             </div>
@@ -230,6 +269,16 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
             <span className="font-semibold text-gray-700">الفنانين</span>
           </Link>
 
+          {/* ✅ رابط حسابي - يوجه لـ my-bookings */}
+          <Link
+            href="/my-bookings"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
+          >
+            <UserIcon size={20} className="text-purple-700" />
+            <span className="font-semibold text-gray-700">حسابي</span>
+          </Link>
+
           <Link
             href="/my-bookings"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -237,15 +286,6 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
           >
             <Calendar size={20} className="text-purple-700" />
             <span className="font-semibold text-gray-700">حجوزاتي</span>
-          </Link>
-
-          <Link
-            href="/profile"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
-          >
-            <UserIcon size={20} className="text-purple-700" />
-            <span className="font-semibold text-gray-700">حسابي</span>
           </Link>
 
           {user.isAdmin && (
@@ -258,6 +298,20 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
               >
                 <LayoutDashboard size={20} className="text-purple-700" />
                 <span className="font-bold text-purple-700">لوحة التحكم</span>
+              </Link>
+            </>
+          )}
+
+          {user.role === "ARTIST_MANAGER" && (
+            <>
+              <div className="h-px bg-gray-200 my-2" />
+              <Link
+                href="/admin/artists-managers"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-50 border border-purple-200"
+              >
+                <LayoutDashboard size={20} className="text-purple-700" />
+                <span className="font-bold text-purple-700">إدارة الفنانين</span>
               </Link>
             </>
           )}
