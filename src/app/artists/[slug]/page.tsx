@@ -11,8 +11,15 @@ export const dynamic = "force-dynamic";
 
 export default async function ArtistDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const artist = await prisma.artist.findUnique({
-    where: { slug },
+  const decodedSlug = decodeURIComponent(slug);
+  const artist = await prisma.artist.findFirst({
+    where: {
+      OR: [
+        { slug: decodedSlug },
+        { slug },
+        { name: decodedSlug },
+      ],
+    } as any,
     include: {
       _count: { select: { bookings: true, reviews: true } },
       reviews: {

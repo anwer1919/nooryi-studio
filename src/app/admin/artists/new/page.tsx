@@ -1,5 +1,41 @@
 "use client"
 
+// ═══════════ دالة توليد slug لاتيني آمن ═══════════
+function generateLatinSlug(name: string): string {
+  const arabicToLatin: Record<string, string> = {
+    "ا": "a", "أ": "a", "إ": "i", "آ": "a", "ب": "b", "ت": "t", "ث": "th",
+    "ج": "j", "ح": "h", "خ": "kh", "د": "d", "ذ": "dh", "ر": "r", "ز": "z",
+    "س": "s", "ش": "sh", "ص": "s", "ض": "d", "ط": "t", "ظ": "z",
+    "ع": "a", "غ": "gh", "ف": "f", "ق": "q", "ك": "k", "ل": "l", "م": "m",
+    "ن": "n", "ه": "h", "و": "w", "ي": "y", "ى": "a", "ة": "a", "ئ": "e", "ء": "e",
+    " ": "-", "-": "-", "_": "-"
+  };
+  
+  let latin = "";
+  for (const char of name) {
+    if (arabicToLatin[char]) {
+      latin += arabicToLatin[char];
+    } else if (/[a-zA-Z0-9]/.test(char)) {
+      latin += char;
+    } else if (char === " " || char === "-" || char === "_") {
+      latin += "-";
+    }
+  }
+  
+  // تنظيف وتنسيق
+  const cleaned = latin
+    .toLowerCase()
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  
+  // إذا كان فارغاً، استخدم اسم مؤقت
+  if (!cleaned) {
+    return "artist-" + Date.now().toString(36);
+  }
+  
+  return cleaned;
+}
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Music, Upload, X, Check, Loader2, Image as ImageIcon, Palette, FileText, AlertCircle } from "lucide-react"
