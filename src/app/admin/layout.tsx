@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import AdminSidebarClient from "@/components/AdminSidebarClient"
+import MobileMenuToggle from "@/components/MobileMenuToggle"
 
 export default async function AdminLayout({
   children,
@@ -24,13 +25,12 @@ export default async function AdminLayout({
 
   const userName = session.user.name || "المستخدم"
 
-  // ✅ قائمة الأدمن مع التقويم والتسعير
   const menuItems = [
     { href: "/admin", label: "لوحة التحكم", icon: "LayoutDashboard" },
     { href: "/admin/artists", label: "الفنانين", icon: "Music" },
     { href: "/admin/bookings", label: "الحجوزات", icon: "Calendar" },
-    { href: "/admin/calendar", label: "التقويم", icon: "Calendar" }, // ✅ جديد
-    { href: "/admin/pricing", label: "التسعير", icon: "Banknote" }, // ✅ جديد
+    { href: "/admin/calendar", label: "التقويم", icon: "Calendar" },
+    { href: "/admin/pricing", label: "التسعير", icon: "Banknote" },
     ...(isAdmin
       ? [{ href: "/admin/stats", label: "التقارير المالية", icon: "FileText" }]
       : []),
@@ -51,15 +51,11 @@ export default async function AdminLayout({
       />
 
       <main className="lg:pr-64">
+        {/* ✅ Header الجوال مع زر القائمة الجديد */}
         <div className="lg:hidden h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40">
-          <button
-            id="mobile-menu-toggle"
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <span className="text-2xl">☰</span>
-          </button>
+          <MobileMenuToggle />
           <span className="text-xl font-black text-purple-700">لوحة التحكم</span>
-          <div className="w-8"></div>
+          <div className="w-10"></div>
         </div>
 
         <div className="p-4 lg:p-8">{children}</div>

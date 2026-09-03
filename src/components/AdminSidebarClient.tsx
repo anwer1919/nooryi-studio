@@ -16,7 +16,6 @@ import {
   Banknote,
 } from "lucide-react"
 
-// ✅ خريطة الأيقونات: اسم الأيقونة → مكون الأيقونة
 const iconMap: Record<string, any> = {
   LayoutDashboard,
   Users,
@@ -24,7 +23,7 @@ const iconMap: Record<string, any> = {
   Calendar,
   FileText,
   Settings,
-  Banknote, // ✅ جديد: للتسعير
+  Banknote,
 }
 
 interface MenuItem {
@@ -45,12 +44,22 @@ export default function AdminSidebarClient({
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
+  // ✅ الاستماع لحدث فتح/إغلاق القائمة (يعمل دائماً)
   useEffect(() => {
-    const toggleBtn = document.getElementById("mobile-menu-toggle")
-    const handler = () => setIsOpen((prev) => !prev)
-    toggleBtn?.addEventListener("click", handler)
-    return () => toggleBtn?.removeEventListener("click", handler)
+    const handleToggle = () => {
+      setIsOpen((prev) => !prev)
+    }
+
+    window.addEventListener("toggle-admin-menu", handleToggle)
+    return () => {
+      window.removeEventListener("toggle-admin-menu", handleToggle)
+    }
   }, [])
+
+  // ✅ إغلاق القائمة عند تغيير الصفحة
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
 
   const handleLinkClick = () => {
     setIsOpen(false)
@@ -58,6 +67,7 @@ export default function AdminSidebarClient({
 
   return (
     <>
+      {/* الخلفية المعتمة عند فتح القائمة */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -86,7 +96,8 @@ export default function AdminSidebarClient({
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition"
+                aria-label="إغلاق القائمة"
               >
                 <X size={20} />
               </button>
