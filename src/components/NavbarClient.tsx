@@ -90,29 +90,29 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
       <div className="relative" ref={desktopMenuRef}>
         <button
           onClick={() => setIsDesktopMenuOpen(!isDesktopMenuOpen)}
-          className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-all"
+          className="flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all"
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center">
             <span className="text-sm font-black text-white">{userInitial}</span>
           </div>
-          <span className="text-sm font-semibold text-gray-900 hidden sm:block">
+          <span className="text-sm font-semibold text-white hidden sm:block">
             {user.name}
           </span>
           <ChevronDown
             size={14}
-            className={`text-gray-600 transition-transform ${
+            className={`text-white/60 transition-transform ${
               isDesktopMenuOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
         {isDesktopMenuOpen && (
-          <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-200 p-2 z-50">
+          <div className="absolute left-0 mt-2 w-64 bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#d4af37]/20 p-2 z-50">
             {/* معلومات المستخدم */}
-            <div className="px-3 py-2 border-b border-gray-100 mb-1">
-              <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
-              <p className="text-xs text-gray-500 truncate">{user.email}</p>
-              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+            <div className="px-3 py-2 border-b border-white/10 mb-1">
+              <p className="text-sm font-bold text-white truncate">{user.name}</p>
+              <p className="text-xs text-white/60 truncate">{user.email}</p>
+              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#d4af37]/20 text-[#d4af37]">
                 {user.role === "SUPER_ADMIN"
                   ? "مدير عام"
                   : user.role === "ADMIN"
@@ -127,38 +127,38 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
             <Link
               href="/my-bookings"
               onClick={() => setIsDesktopMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
             >
-              <UserIcon size={16} className="text-purple-700" />
-              <span className="text-sm font-semibold text-gray-700">حسابي</span>
+              <UserIcon size={16} className="text-[#d4af37]" />
+              <span className="text-sm font-semibold text-white/80">حسابي</span>
             </Link>
 
             <Link
               href="/my-bookings"
               onClick={() => setIsDesktopMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
             >
-              <Calendar size={16} className="text-purple-700" />
-              <span className="text-sm font-semibold text-gray-700">حجوزاتي</span>
+              <Calendar size={16} className="text-[#d4af37]" />
+              <span className="text-sm font-semibold text-white/80">حجوزاتي</span>
             </Link>
 
             <Link
               href="/artists"
               onClick={() => setIsDesktopMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
             >
-              <Music size={16} className="text-purple-700" />
-              <span className="text-sm font-semibold text-gray-700">تصفح الفنانين</span>
+              <Music size={16} className="text-[#d4af37]" />
+              <span className="text-sm font-semibold text-white/80">تصفح الفنانين</span>
             </Link>
 
             {user.isAdmin && (
               <Link
                 href="/admin"
                 onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
               >
-                <LayoutDashboard size={16} className="text-purple-700" />
-                <span className="text-sm font-semibold text-gray-700">لوحة التحكم</span>
+                <LayoutDashboard size={16} className="text-[#d4af37]" />
+                <span className="text-sm font-semibold text-white/80">لوحة التحكم</span>
               </Link>
             )}
 
@@ -166,18 +166,18 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
               <Link
                 href="/admin/artists-managers"
                 onClick={() => setIsDesktopMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
               >
-                <LayoutDashboard size={16} className="text-purple-700" />
-                <span className="text-sm font-semibold text-gray-700">إدارة الفنانين</span>
+                <LayoutDashboard size={16} className="text-[#d4af37]" />
+                <span className="text-sm font-semibold text-white/80">إدارة الفنانين</span>
               </Link>
             )}
 
-            <div className="h-px bg-gray-100 my-1" />
+            <div className="h-px bg-white/10 my-1" />
 
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 transition-colors text-red-600"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors text-red-600"
             >
               <LogOut size={16} />
               <span className="text-sm font-semibold">تسجيل الخروج</span>
@@ -194,7 +194,7 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
       {/* زر الهمبرغر */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+        className="p-2 text-white/70 hover:bg-white/10 rounded-lg transition"
         aria-label="فتح القائمة"
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -211,13 +211,13 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
       {/* القائمة المنزلقة */}
       <div
         className={`
-          fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50
+          fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-[#0a0a0a] shadow-2xl z-50
           transform transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}
         `}
       >
         {/* رأس القائمة */}
-        <div className="bg-gradient-to-l from-purple-700 to-purple-900 text-white p-6">
+        <div className="bg-gradient-to-l from-[#0a0a0a] to-[#1a1a1a] text-white p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-black">القائمة</h2>
             <button
@@ -230,7 +230,7 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-2 border-white/30">
+            <div className="w-14 h-14 rounded-full bg-[#d4af37]/20 backdrop-blur-sm flex items-center justify-center border-2 border-[#d4af37]/40">
               <span className="text-xl font-black">{userInitial}</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -254,74 +254,74 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
           >
-            <Home size={20} className="text-purple-700" />
-            <span className="font-semibold text-gray-700">الرئيسية</span>
+            <Home size={20} className="text-[#d4af37]" />
+            <span className="font-semibold text-white/80">الرئيسية</span>
           </Link>
 
           <Link
             href="/artists"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
           >
-            <Music size={20} className="text-purple-700" />
-            <span className="font-semibold text-gray-700">الفنانين</span>
+            <Music size={20} className="text-[#d4af37]" />
+            <span className="font-semibold text-white/80">الفنانين</span>
           </Link>
 
           {/* ✅ رابط حسابي - يوجه لـ my-bookings */}
           <Link
             href="/my-bookings"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
           >
-            <UserIcon size={20} className="text-purple-700" />
-            <span className="font-semibold text-gray-700">حسابي</span>
+            <UserIcon size={20} className="text-[#d4af37]" />
+            <span className="font-semibold text-white/80">حسابي</span>
           </Link>
 
           <Link
             href="/my-bookings"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[#d4af37]/10 transition-colors"
           >
-            <Calendar size={20} className="text-purple-700" />
-            <span className="font-semibold text-gray-700">حجوزاتي</span>
+            <Calendar size={20} className="text-[#d4af37]" />
+            <span className="font-semibold text-white/80">حجوزاتي</span>
           </Link>
 
           {user.isAdmin && (
             <>
-              <div className="h-px bg-gray-200 my-2" />
+              <div className="h-px bg-white/10 my-2" />
               <Link
                 href="/admin"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-50 border border-purple-200"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/30"
               >
-                <LayoutDashboard size={20} className="text-purple-700" />
-                <span className="font-bold text-purple-700">لوحة التحكم</span>
+                <LayoutDashboard size={20} className="text-[#d4af37]" />
+                <span className="font-bold text-[#d4af37]">لوحة التحكم</span>
               </Link>
             </>
           )}
 
           {user.role === "ARTIST_MANAGER" && (
             <>
-              <div className="h-px bg-gray-200 my-2" />
+              <div className="h-px bg-white/10 my-2" />
               <Link
                 href="/admin/artists-managers"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-50 border border-purple-200"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/30"
               >
-                <LayoutDashboard size={20} className="text-purple-700" />
-                <span className="font-bold text-purple-700">إدارة الفنانين</span>
+                <LayoutDashboard size={20} className="text-[#d4af37]" />
+                <span className="font-bold text-[#d4af37]">إدارة الفنانين</span>
               </Link>
             </>
           )}
         </div>
 
         {/* زر تسجيل الخروج */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a0a0a]">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl font-bold transition-colors"
           >
             <LogOut size={18} />
             تسجيل الخروج

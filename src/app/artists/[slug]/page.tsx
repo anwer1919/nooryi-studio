@@ -2,16 +2,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import {
-  Music, Star, Calendar, MapPin, Award,
-  CheckCircle2, Heart, Share2, Sparkles,
-  ArrowRight, Play, Clock, TrendingUp, Users
+  Music, Star, Calendar, MapPin, DollarSign, Clock, Award,
+  Users, ChevronRight, CheckCircle2, Play, Heart, Share2,
+  ArrowRight, Sparkles, Phone, Mail, MessageCircle,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArtistDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
   const artist = await prisma.artist.findUnique({
     where: { slug },
     include: {
@@ -19,15 +18,18 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
       reviews: {
         take: 5,
         orderBy: { createdAt: "desc" },
-        include: { user: { select: { name: true } } },
+
       },
       availability: {
-        where: { date: { gte: new Date() } },
+        where: { isAvailable: true },
         take: 10,
-        orderBy: { date: "asc" },
+        orderBy: [
+          { dayOfWeek: "asc" },
+          { startTime: "asc" },
+        ],
       },
     },
-  }).catch(() => null);
+  });
 
   if (!artist) notFound();
 
@@ -36,47 +38,44 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
     ? (ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length).toFixed(1)
     : "0";
 
-  const genres = Array.isArray((artist as any).genres) ? (artist as any).genres : [];
-  const basePrice = (artist as any).basePrice || (artist as any).minPrice || 1000;
-
   return (
     <div className="min-h-screen bg-white" dir="rtl">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#e8e4d9] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
-          <Link href="/artists" className="flex items-center gap-2 text-gray-700 hover:text-[#b8941f] transition">
-            <ArrowRight size={18} />
-            <span className="font-bold">العودة للفنانين</span>
-          </Link>
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center">
-              <span className="text-[#d4af37] text-lg font-black">N</span>
-            </div>
-          </Link>
-        </div>
-      </header>
-
       {/* Hero */}
-      <div className="relative h-[500px] lg:h-[600px] overflow-hidden pt-20">
-        {(artist as any).coverImage || (artist as any).profileImage ? (
+      <div className="relative h-[500px] lg:h-[600px] overflow-hidden">
+        {artist.coverImage || artist.profileImage ? (
           <img
-            src={(artist as any).coverImage || (artist as any).profileImage}
+            src={artist.coverImage || artist.profileImage}
             alt={artist.name}
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center">
-            <Music size={120} className="text-[#d4af37]/30" />
-          </div>
+          <div className="w-full h-full bg-gradient-to-br from-[#111] to-[#232323]"></div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20"></div>
 
+        {/* Header */}
+        <header className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <span className="text-[#d4af37] text-lg font-black">N</span>
+              </div>
+              <span className="text-white font-black">Nooryi</span>
+            </Link>
+            <Link href="/artists" className="btn-outline text-white border-white/30 hover:bg-white/10 text-sm py-2">
+              <ArrowRight size={14} />
+              العودة
+            </Link>
+          </div>
+        </header>
+
+        {/* معلومات الفنان */}
         <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 z-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
-              <div className="px-3 py-1 bg-[#d4af37]/20 border border-[#d4af37]/40 rounded-full text-[#d4af37] text-xs font-bold">
-                <Sparkles size={12} className="inline ml-1" />
-                {(artist as any).category || "فنان"}
+              <div className="badge-gold" style={{ background: "rgba(212, 175, 55, 0.2)", borderColor: "rgba(212, 175, 55, 0.4)" }}>
+                <Sparkles size={12} className="text-[#d4af37]" />
+                <span className="text-[#d4af37]">{artist.category || "فنان"}</span>
               </div>
               {artist._count.bookings > 0 && (
                 <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs font-bold text-white">
@@ -86,7 +85,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
             </div>
             <h1 className="text-4xl lg:text-6xl font-black text-white mb-4">{artist.name}</h1>
             <p className="text-white/70 text-lg max-w-2xl leading-relaxed mb-6">
-              {(artist as any).bio || "فنان محترف يقدم أداءً استثنائياً في جميع الفعاليات"}
+              {artist.bio || "فنان محترف يقدم أداءً استثنائياً في جميع الفعاليات"}
             </p>
 
             <div className="flex flex-wrap items-center gap-6">
@@ -112,6 +111,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
 
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
         <div className="grid lg:grid-cols-3 gap-8">
+          {/* المحتوى الرئيسي */}
           <div className="lg:col-span-2 space-y-10">
             {/* نبذة */}
             <section className="card-pro p-8">
@@ -120,13 +120,14 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                 نبذة عن الفنان
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {(artist as any).bio || "فنان محترف بخبرة واسعة في مجال الموسيقى والأداء الفني."}
+                {artist.bio || "فنان محترف بخبرة واسعة في مجال الموسيقى والأداء الفني. يقدم عروضاً استثنائية تتناسب مع جميع أنواع الفعاليات."}
               </p>
-              {genres.length > 0 && (
+
+              {artist.genres && artist.genres.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-[#e8e4d9]">
                   <p className="text-sm font-bold text-gray-500 mb-3">التخصصات:</p>
                   <div className="flex flex-wrap gap-2">
-                    {genres.map((g: string, i: number) => (
+                    {artist.genres.map((g: string, i: number) => (
                       <span key={i} className="px-4 py-2 bg-[#faf8f0] border border-[#e8e4d9] rounded-full text-sm font-bold text-gray-700">
                         {g}
                       </span>
@@ -147,16 +148,14 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                   {artist.availability.map((slot: any) => (
                     <Link
                       key={slot.id}
-                      href={`/booking/${slug}?date=${slot.id}`}
+                      href={`/booking/${artist.slug}?date=${slot.id}`}
                       className="p-4 bg-[#faf8f0] border-2 border-[#e8e4d9] rounded-2xl hover:border-[#d4af37] hover:bg-white transition group"
                     >
-                      <p className="text-xs text-gray-500 mb-1">
-                        {new Date(slot.date).toLocaleDateString("ar-EG", { weekday: "long" })}
+                      <p className="text-xs text-gray-500 mb-1">موعد متاح</p>
+                      <p className="font-black text-gray-900 mb-2">{formatAvailability(slot)}</p>
+                      <p className="text-xs text-[#b8941f] font-bold group-hover:font-black">
+                        احجز هذا التاريخ ←
                       </p>
-                      <p className="font-black text-gray-900 mb-2">
-                        {new Date(slot.date).toLocaleDateString("ar-EG")}
-                      </p>
-                      <p className="text-xs text-[#b8941f] font-bold">احجز هذا التاريخ ←</p>
                     </Link>
                   ))}
                 </div>
@@ -187,7 +186,11 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                         </div>
                         <div className="flex items-center gap-1">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={14} className={i < r.rating ? "text-[#d4af37] fill-[#d4af37]" : "text-gray-300"} />
+                            <Star
+                              key={i}
+                              size={14}
+                              className={i < r.rating ? "text-[#d4af37] fill-[#d4af37]" : "text-gray-300"}
+                            />
                           ))}
                         </div>
                       </div>
@@ -201,31 +204,41 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
             </section>
           </div>
 
-          {/* بطاقة الحجز */}
+          {/* بطاقة الحجز الثابتة */}
           <aside className="lg:col-span-1">
             <div className="sticky top-24 card-pro p-6 space-y-6">
               <div className="text-center pb-6 border-b border-[#e8e4d9]">
                 <p className="text-sm text-gray-500 mb-2">السعر يبدأ من</p>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-4xl font-black gold-text">{basePrice.toLocaleString()}</span>
+                  <span className="text-4xl font-black gold-text">
+                    {(artist.basePrice || 1000).toLocaleString()}
+                  </span>
                   <span className="text-gray-500 text-sm">ج.م / ساعة</span>
                 </div>
               </div>
 
               <div className="space-y-3 text-sm">
-                {[
-                  "دفع آمن 100%",
-                  "ضمان استرداد",
-                  "تأكيد فوري",
-                ].map((t, i) => (
-                  <div key={i} className="flex items-center gap-2 py-2">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-600 flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-[#b8941f]" />
-                    <span className="text-gray-600">{t}</span>
-                  </div>
-                ))}
+                    دفع آمن 100%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-600 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-[#b8941f]" />
+                    ضمان استرداد
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-gray-600 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-[#b8941f]" />
+                    تأكيد فوري
+                  </span>
+                </div>
               </div>
 
-              <Link href={`/booking/${slug}`} className="btn-gold w-full py-4 text-base">
+              <Link href={`/booking/${artist.slug}`} className="btn-gold w-full py-4 text-base">
                 <Calendar size={18} />
                 احجز الآن
               </Link>
@@ -233,17 +246,45 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
               <div className="grid grid-cols-2 gap-2">
                 <button className="btn-outline text-sm py-3">
                   <Heart size={14} />
-                  المفضلة
+                  إضافة للمفضلة
                 </button>
                 <button className="btn-outline text-sm py-3">
                   <Share2 size={14} />
                   مشاركة
                 </button>
               </div>
+
+              <div className="pt-6 border-t border-[#e8e4d9] space-y-3">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">تواصل معنا</p>
+                <a href="tel:+201000000000" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#b8941f] transition">
+                  <Phone size={14} />
+                  <span dir="ltr">+20 100 000 0000</span>
+                </a>
+                <a href="mailto:info@noorystudio.com" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#b8941f] transition">
+                  <Mail size={14} />
+                  <span dir="ltr">info@noorystudio.com</span>
+                </a>
+              </div>
             </div>
           </aside>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-br from-[#0a0a0a] to-[#232323] text-white py-12 px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center">
+              <span className="text-[#0a0a0a] text-lg font-black">N</span>
+            </div>
+            <div>
+              <p className="text-lg font-black">Nooryi</p>
+              <p className="text-[9px] text-[#d4af37] font-bold tracking-[0.25em] uppercase">Studio</p>
+            </div>
+          </div>
+          <p className="text-xs text-white/50">© 2026 Nooryi Studio. جميع الحقوق محفوظة.</p>
+        </div>
+      </footer>
     </div>
   );
 }

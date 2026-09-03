@@ -12,8 +12,7 @@ export default async function AdminBookingsPage() {
       include: {
         artist: { select: { name: true, slug: true } },
         venue: { select: { name: true, city: true } },
-        customer: { select: { name: true, email: true, phone: true } },
-        user: { select: { name: true, email: true, phone: true } },
+        customer: { select: { fullName: true, email: true, phone: true } },
         payments: { select: { amount: true, status: true } },
       },
     });
@@ -32,9 +31,9 @@ export default async function AdminBookingsPage() {
 
   const getAmount = (b: any): number => b.grossAmount ?? b.totalAmount ?? b.amount ?? 0;
 
-  const getClient = (b: any) => b.customer?.name || b.user?.name || b.clientName || "عميل";
-  const getClientEmail = (b: any) => b.customer?.email || b.user?.email || b.clientEmail || "—";
-  const getClientPhone = (b: any) => b.customer?.phone || b.user?.phone || b.clientPhone || b.phoneNumber || "—";
+  const getClient = (b: any) => b.customer?.fullName || b.clientName || "عميل";
+  const getClientEmail = (b: any) => b.customer?.email || b.clientEmail || "—";
+  const getClientPhone = (b: any) => b.customer?.phone || b.clientPhone || b.phoneNumber || "—";
 
   const stats = {
     total: bookings.length,

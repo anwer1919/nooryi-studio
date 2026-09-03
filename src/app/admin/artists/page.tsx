@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Music, Plus, Edit3, Trash2, Eye, Star, Calendar } from "lucide-react";
+import { Music, Plus, Edit3, Eye, Star, Calendar } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -39,78 +39,83 @@ export default async function AdminArtistsPage() {
         </div>
       ) : (
         <div className="card-pro overflow-hidden">
-          <table className="table-pro">
-            <thead>
-              <tr>
-                <th>الفنان</th>
-                <th>الفئة</th>
-                <th>التقييم</th>
-                <th>الحجوزات</th>
-                <th>الحالة</th>
-                <th className="text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {artists.map((artist: any) => {
-                const ratings = artist.reviews?.map((r: any) => r.rating) || [];
-                const avg = ratings.length > 0
-                  ? (ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length).toFixed(1)
-                  : "—";
+          <div className="overflow-x-auto touch-pan-x">
+            <table className="table-pro min-w-[800px]">
+              <thead>
+                <tr>
+                  <th>الفنان</th>
+                  <th>الفئة</th>
+                  <th>التقييم</th>
+                  <th>الحجوزات</th>
+                  <th>الحالة</th>
+                  <th className="text-center">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {artists.map((artist: any) => {
+                  const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+                  const avg = ratings.length > 0
+                    ? (ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length).toFixed(1)
+                    : "—";
 
-                return (
-                  <tr key={artist.id}>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="icon-circle dark">
-                          <Music size={18} />
+                  const getStatus = (s: string) => {
+                    const u = (s || "").toUpperCase();
+                    if (["APPROVED", "ACTIVE"].includes(u)) return { label: "معتمد", class: "status-confirmed" };
+                    if (["PENDING", "PENDING_APPROVAL"].includes(u)) return { label: "قيد المراجعة", class: "status-pending" };
+                    if (u === "REJECTED") return { label: "مرفوض", class: "status-rejected" };
+                    return { label: s, class: "status-pending" };
+                  };
+                  const status = getStatus(artist.status);
+
+                  return (
+                    <tr key={artist.id}>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="icon-circle dark">
+                            <Music size={18} />
+                          </div>
+                          <div>
+                            <p className="font-black text-gray-900">{artist.name}</p>
+                            <p className="text-xs text-gray-500">@{artist.slug}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-black text-gray-900">{artist.name}</p>
-                          <p className="text-xs text-gray-500">@{artist.slug}</p>
+                      </td>
+                      <td>
+                        <span className="text-sm font-semibold text-gray-700">
+                          {artist.category || "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1">
+                          <Star size={14} className="text-[#d4af37] fill-[#d4af37]" />
+                          <span className="font-bold text-gray-900">{avg}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="text-sm font-semibold text-gray-700">
-                        {artist.category || "—"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-1">
-                        <Star size={14} className="text-[#d4af37] fill-[#d4af37]" />
-                        <span className="font-bold text-gray-900">{avg}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Calendar size={14} className="text-gray-400" />
-                        <span className="font-bold">{artist._count.bookings}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`status-chip ${
-                        artist.status === "APPROVED" ? "status-confirmed" :
-                        artist.status === "PENDING" ? "status-pending" : "status-rejected"
-                      }`}>
-                        {artist.status === "APPROVED" ? "معتمد" :
-                         artist.status === "PENDING" ? "قيد المراجعة" : "مرفوض"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex items-center justify-center gap-1">
-                        <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
-                          <Eye size={16} />
-                        </Link>
-                        <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
-                          <Edit3 size={16} />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1 text-sm">
+                          <Calendar size={14} className="text-gray-400" />
+                          <span className="font-bold">{artist._count.bookings}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`status-chip ${status.class}`}>{status.label}</span>
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-1">
+                          <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                            <Eye size={16} />
+                          </Link>
+                          <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                            <Edit3 size={16} />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

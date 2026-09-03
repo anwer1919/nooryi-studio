@@ -11,16 +11,15 @@ export default async function MyBookingsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login?callbackUrl=/my-bookings");
 
+  const userEmail = (session.user as any)?.email || "";
+
   let bookings: any[] = [];
   try {
-    // البحث عن حجوزات مرتبطة بالـ user أو بالـ customer المرتبط به
     bookings = await prisma.booking.findMany({
       where: {
         OR: [
-          { userId: session.user.id },
-          { user: { email: session.user.email || "" } },
-          { customer: { email: session.user.email || "" } },
-          { clientEmail: session.user.email || "" },
+          { clientEmail: userEmail },
+          { customer: { email: userEmail } },
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -43,39 +42,14 @@ export default async function MyBookingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white" dir="rtl">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#e8e4d9] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center">
-              <span className="text-[#d4af37] text-2xl font-black">N</span>
-            </div>
-            <div>
-              <p className="text-xl font-black text-gray-900">Nooryi</p>
-              <p className="text-[10px] text-[#b8941f] font-bold tracking-[0.25em] uppercase">Studio</p>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">الرئيسية</Link>
-            <Link href="/artists" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">الفنانين</Link>
-            <Link href="/my-bookings" className="text-sm font-black text-[#b8941f]">حجوزاتي</Link>
-          </nav>
-
-          <Link href="/admin" className="btn-outline text-sm py-2.5">
-            لوحة التحكم
-          </Link>
-        </div>
-      </header>
-
-      <main className="pt-28 pb-20 px-4 lg:px-8 max-w-6xl mx-auto">
+    <div className="min-h-screen bg-white pt-20" dir="rtl">
+      <main className="pb-20 px-4 lg:px-8 max-w-6xl mx-auto">
         <div className="mb-10">
           <div className="badge-gold mb-3">حسابي</div>
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">
             حجوزاتي <span className="gold-text">الخاصة</span>
           </h1>
-          <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك في مكان واحد</p>
+          <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك — {bookings.length} حجز</p>
         </div>
 
         {bookings.length === 0 ? (
@@ -94,7 +68,6 @@ export default async function MyBookingsPage() {
               const status = getStatusInfo(b.status);
               return (
                 <div key={b.id} className="card-pro overflow-hidden">
-                  {/* بطاقة الفنان */}
                   <div className="relative h-48 bg-gradient-to-br from-[#111] to-[#232323] overflow-hidden">
                     {b.artist?.profileImage ? (
                       <img src={b.artist.profileImage} alt={b.artist.name} className="w-full h-full object-cover" />
@@ -108,12 +81,11 @@ export default async function MyBookingsPage() {
                       <span className={`status-chip ${status.class}`}>{status.icon} {status.label}</span>
                     </div>
                     <div className="absolute bottom-4 right-4 left-4">
-                      <p className="text-[#d4af37] text-xs font-bold mb-1">{b.artist?.category}</p>
+                      <p className="text-[#d4af37] text-xs font-bold mb-1">{b.artist?.category || "فنان"}</p>
                       <h3 className="text-2xl font-black text-white">{b.artist?.name}</h3>
                     </div>
                   </div>
 
-                  {/* التفاصيل */}
                   <div className="p-5 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-start gap-2">
@@ -162,7 +134,7 @@ export default async function MyBookingsPage() {
 
                     <div className="flex gap-2 pt-3 border-t border-[#e8e4d9]">
                       <Link
-                        href={`/my-bookings/${b.id}`}
+                        href={`/booking/${b.artist?.slug || "artist"}/invoice?id=${b.id}`}
                         className="btn-gold flex-1 text-sm py-2.5"
                       >
                         <FileText size={14} />

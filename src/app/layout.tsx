@@ -1,5 +1,7 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "Nooryi Studio — منصة حجز الفنانين",
@@ -13,7 +15,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }
