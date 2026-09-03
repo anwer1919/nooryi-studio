@@ -12,7 +12,6 @@ export default async function AdminLayout({
 }) {
   const session = await getServerSession(authOptions)
 
-  // إعادة التوجيه إذا لم يكن مسجل دخول
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin")
   }
@@ -22,7 +21,6 @@ export default async function AdminLayout({
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const isManager = userRole === "ARTIST_MANAGER"
 
-  // منع المستخدمين العاديين من الدخول
   if (!isAdmin && !isManager) {
     redirect("/")
   }
@@ -55,6 +53,7 @@ export default async function AdminLayout({
       />
 
       <main className="lg:pr-64">
+        {/* Header الجوال */}
         <div className="lg:hidden h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40">
           <MobileMenuToggle />
           <span className="text-xl font-black text-purple-700">لوحة التحكم</span>

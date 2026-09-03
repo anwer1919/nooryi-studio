@@ -92,7 +92,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.phone = user.phone
-        token.permissions = user.permissions
+        token.permissions = user.permissions || []
         token.artistId = user.artistId
       }
       return token
@@ -103,7 +103,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.phone = token.phone as string
-        session.user.permissions = token.permissions as string[]
+        session.user.permissions = (token.permissions as string[]) || []
         session.user.artistId = token.artistId as string
       }
       return session
