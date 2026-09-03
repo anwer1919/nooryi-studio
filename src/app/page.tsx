@@ -2,20 +2,20 @@
 import { KageLandingPage } from "@/shaders/landing-pages/LandingPages"
 
 export const metadata: Metadata = {
-  title: "Nooryi Studio — منصة حجز الفنانين والفعاليات",
-  description:
-    "منصة احترافية لحجز أفضل الفنانين والموسيقيين للفعاليات والمناسبات",
+  title: "Nooryi Studio — منصة حجز الفنانين",
+  description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين",
 }
 
 export default function HomePage() {
   return (
-    <div
-      className="shader-frame"
+    <main
       style={{
         position: "relative",
         width: "100%",
         height: "100dvh",
+        minHeight: "100vh",
         background: "#080808",
+        overflow: "hidden",
       }}
     >
       <KageLandingPage
@@ -28,6 +28,6 @@ export default function HomePage() {
         bodySize={17}
         headingLetterSpacing={-0.012}
       />
-    </div>
+    </main>
   )
 }
