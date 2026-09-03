@@ -1,184 +1,118 @@
-﻿import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import Link from "next/link"
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { Music, Plus, Edit3, Trash2, Eye, Star, Calendar } from "lucide-react";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 export default async function AdminArtistsPage() {
-  const session = await getServerSession(authOptions)
-  
-  if (!session?.user || session.user.role !== "SUPER_ADMIN") {
-    redirect("/admin")
-  }
-
   const artists = await prisma.artist.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { bookings: true, reviews: true } },
+      reviews: { select: { rating: true } },
     },
-  })
+  }).catch(() => []);
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", flexWrap: "wrap", gap: "16px" }}>
+    <div dir="rtl" className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 style={{ fontSize: "36px", fontWeight: "900", marginBottom: "8px", color: "#4B2E83" }}>
-            إدارة الفنانين
-          </h1>
-          <p style={{ color: "#6B7280" }}>إجمالي الفنانين: {artists.length}</p>
+          <div className="badge-gold mb-3">إدارة الفنانين</div>
+          <h1 className="text-4xl font-black text-gray-900">الفنانين</h1>
+          <p className="text-gray-500 mt-1">إجمالي {artists.length} فنان مسجل</p>
         </div>
-        <Link
-          href="/admin/artists/new"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "12px 24px",
-            borderRadius: "12px",
-            backgroundColor: "#4B2E83",
-            color: "#FFFFFF",
-            fontSize: "14px",
-            fontWeight: "700",
-            textDecoration: "none",
-            transition: "all 0.3s"
-          }}
-        >
-          ➕ إضافة فنان جديد
+        <Link href="/admin/artists/new" className="btn-gold">
+          <Plus size={18} />
+          إضافة فنان جديد
         </Link>
       </div>
 
       {artists.length === 0 ? (
-        <div style={{
-          backgroundColor: "#FFFFFF",
-          border: "1px solid #E5E7EB",
-          borderRadius: "16px",
-          padding: "64px 24px",
-          textAlign: "center"
-        }}>
-          <p style={{ fontSize: "64px", marginBottom: "16px" }}>🎵</p>
-          <h3 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "8px", color: "#4B2E83" }}>
-            لا يوجد فنانون
-          </h3>
-          <p style={{ color: "#6B7280", marginBottom: "24px" }}>
-            أضف فنانين جدد لبدء استقبال الحجوزات
-          </p>
-          <Link
-            href="/admin/artists/new"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "12px 24px",
-              borderRadius: "12px",
-              backgroundColor: "#4B2E83",
-              color: "#FFFFFF",
-              fontSize: "14px",
-              fontWeight: "700",
-              textDecoration: "none"
-            }}
-          >
-            ➕ إضافة أول فنان
+        <div className="card-pro text-center py-20">
+          <Music className="mx-auto text-gray-300 mb-4" size={56} />
+          <h3 className="text-xl font-black text-gray-900 mb-2">لا يوجد فنانين</h3>
+          <p className="text-gray-500 mb-6">ابدأ بإضافة أول فنان إلى منصتك</p>
+          <Link href="/admin/artists/new" className="btn-gold inline-flex">
+            <Plus size={18} />
+            إضافة فنان
           </Link>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-          {artists.map((artist) => (
-            <div 
-              key={artist.id}
-              style={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: "16px",
-                padding: "24px",
-                boxShadow: "0 4px 20px rgba(75, 46, 131, 0.06)",
-                transition: "all 0.3s"
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
-                {artist.profileImage ? (
-                  <img 
-                    src={artist.profileImage}
-                    alt={artist.name}
-                    style={{ width: "64px", height: "64px", borderRadius: "12px", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "12px",
-                    backgroundColor: "#A8D5BA40",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "24px"
-                  }}>
-                    🎵
-                  </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "4px", color: "#4B2E83" }}>
-                    {artist.name}
-                  </h3>
-                  <p style={{ fontSize: "14px", color: "#6B7280" }}>{artist.category}</p>
-                </div>
-              </div>
+        <div className="card-pro overflow-hidden">
+          <table className="table-pro">
+            <thead>
+              <tr>
+                <th>الفنان</th>
+                <th>الفئة</th>
+                <th>التقييم</th>
+                <th>الحجوزات</th>
+                <th>الحالة</th>
+                <th className="text-center">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {artists.map((artist: any) => {
+                const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+                const avg = ratings.length > 0
+                  ? (ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length).toFixed(1)
+                  : "—";
 
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", fontSize: "14px" }}>
-                <div>
-                  <p style={{ color: "#6B7280", marginBottom: "4px" }}>الحجوزات</p>
-                  <p style={{ fontWeight: "700", color: "#4B2E83" }}>{artist._count.bookings}</p>
-                </div>
-                <div>
-                  <p style={{ color: "#6B7280", marginBottom: "4px" }}>التقييمات</p>
-                  <p style={{ fontWeight: "700", color: "#4B2E83" }}>{artist._count.reviews}</p>
-                </div>
-                <div>
-                  <p style={{ color: "#6B7280", marginBottom: "4px" }}>العمولة</p>
-                  <p style={{ fontWeight: "700", color: "#A8D5BA" }}>{artist.commissionRate}%</p>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: "8px" }}>
-                <Link
-                  href={`/admin/artists/${artist.id}/edit`}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "12px",
-                    backgroundColor: "#A8D5BA",
-                    color: "#4B2E83",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    textDecoration: "none",
-                    textAlign: "center"
-                  }}
-                >
-                  ✏️ تعديل
-                </Link>
-                <Link
-                  href={`/artists/${artist.slug}`}
-                  target="_blank"
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "12px",
-                    backgroundColor: "#F8F9FC",
-                    color: "#4B2E83",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    textDecoration: "none",
-                    textAlign: "center"
-                  }}
-                >
-                  👁️ عرض
-                </Link>
-              </div>
-            </div>
-          ))}
+                return (
+                  <tr key={artist.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="icon-circle dark">
+                          <Music size={18} />
+                        </div>
+                        <div>
+                          <p className="font-black text-gray-900">{artist.name}</p>
+                          <p className="text-xs text-gray-500">@{artist.slug}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {artist.category || "—"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-1">
+                        <Star size={14} className="text-[#d4af37] fill-[#d4af37]" />
+                        <span className="font-bold text-gray-900">{avg}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Calendar size={14} className="text-gray-400" />
+                        <span className="font-bold">{artist._count.bookings}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-chip ${
+                        artist.status === "APPROVED" ? "status-confirmed" :
+                        artist.status === "PENDING" ? "status-pending" : "status-rejected"
+                      }`}>
+                        {artist.status === "APPROVED" ? "معتمد" :
+                         artist.status === "PENDING" ? "قيد المراجعة" : "مرفوض"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-center gap-1">
+                        <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                          <Eye size={16} />
+                        </Link>
+                        <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                          <Edit3 size={16} />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
-  )
+  );
 }

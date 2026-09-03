@@ -125,3 +125,101 @@ body {
   height: 2px; border: 0;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
+/* ═══════════ إضافات للوحة التحكم ═══════════ */
+
+/* جداول */
+.table-pro {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+.table-pro thead th {
+  background: linear-gradient(135deg, var(--ink), var(--ink-2));
+  color: var(--gold);
+  padding: 1rem 1.2rem;
+  font-weight: 800;
+  font-size: .85rem;
+  text-align: right;
+  letter-spacing: .02em;
+}
+.table-pro tbody td {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--line);
+  font-size: .9rem;
+}
+.table-pro tbody tr:last-child td { border-bottom: 0; }
+.table-pro tbody tr:hover { background: var(--cream); }
+
+/* بطاقات إحصائية */
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+  transition: transform .25s, box-shadow .25s;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-deep));
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px -20px rgb(10 10 10 / .18);
+}
+.stat-card.dark {
+  background: linear-gradient(135deg, var(--ink), var(--ink-2));
+  border-color: var(--ink-3);
+}
+.stat-card.dark .stat-label { color: rgba(212, 175, 55, .7); }
+.stat-card.dark .stat-value { color: var(--gold); }
+
+.stat-label {
+  font-size: .75rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: .5rem;
+}
+.stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+
+/* شارات الحالات */
+.status-chip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 800;
+}
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-confirmed { background: #dcfce7; color: #166534; }
+.status-completed { background: #dbeafe; color: #1e40af; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+
+/* أيقونة محاطة بدائرة */
+.icon-circle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: rgb(212 175 55 / .12);
+  color: var(--gold-deep);
+  flex-shrink: 0;
+}
+.icon-circle.dark {
+  background: var(--ink);
+  color: var(--gold);
+}
