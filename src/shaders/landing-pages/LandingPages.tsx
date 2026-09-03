@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   splitTypographyProps,
@@ -7,7 +7,7 @@ import {
 } from "./pageTypography";
 import { LandingPageFrame, type LandingPageProps } from "./LandingPageFrame";
 import { KAGE_TYPOGRAPHY } from "./pageRecipes";
-import "./threeui.css";
+import "../threeui.css";
 
 export { LandingPageFrame, applyBackgroundPresentation } from "./LandingPageFrame";
 export type { LandingPageFrameProps, LandingPageProps } from "./LandingPageFrame";
