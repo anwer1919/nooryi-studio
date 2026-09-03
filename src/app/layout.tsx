@@ -1,68 +1,21 @@
-﻿import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import AdminSidebarClient from "@/components/AdminSidebarClient"
-import MobileMenuToggle from "@/components/MobileMenuToggle"
-import { canAccessPage } from "@/lib/permissions"
+﻿import type { Metadata } from "next"
+import "./globals.css"
 
-export default async function AdminLayout({
+export const metadata: Metadata = {
+  title: "Nooryi Studio - منصة حجز الفنانين",
+  description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين للفعاليات",
+}
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
-
-  if (!session?.user) {
-    redirect("/login?callbackUrl=/admin")
-  }
-
-  const userRole = session.user.role || "USER"
-  const userPermissions = session.user.permissions || []
-  const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
-  const isManager = userRole === "ARTIST_MANAGER"
-
-  if (!isAdmin && !isManager) {
-    redirect("/")
-  }
-
-  const userName = session.user.name || "المستخدم"
-
-  // ✅ جميع عناصر القائمة المحتملة
-  const allMenuItems = [
-    { href: "/admin", label: "لوحة التحكم", icon: "LayoutDashboard" },
-    { href: "/admin/artists", label: "الفنانين", icon: "Music" },
-    { href: "/admin/bookings", label: "الحجوزات", icon: "Calendar" },
-    { href: "/admin/calendar", label: "التقويم", icon: "Calendar" },
-    { href: "/admin/pricing", label: "التسعير", icon: "Banknote" },
-    { href: "/admin/stats", label: "التقارير المالية", icon: "FileText" },
-    { href: "/admin/users", label: "المستخدمين", icon: "Users" },
-    { href: "/admin/admins", label: "مديرو الأعمال", icon: "Users" },
-    { href: "/admin/permissions", label: "الصلاحيات", icon: "Settings" },
-    { href: "/admin/settings", label: "الإعدادات", icon: "Settings" },
-  ]
-
-  // ✅ فلترة القائمة حسب الصلاحيات
-  const menuItems = allMenuItems.filter((item) =>
-    canAccessPage(userRole, userPermissions, item.href)
-  )
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminSidebarClient
-        menuItems={menuItems}
-        userName={userName}
-        userRole={userRole}
-      />
-
-      <main className="lg:pr-64">
-        <div className="lg:hidden h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-40">
-          <MobileMenuToggle />
-          <span className="text-xl font-black text-purple-700">لوحة التحكم</span>
-          <div className="w-10"></div>
-        </div>
-
-        <div className="p-4 lg:p-8">{children}</div>
-      </main>
-    </div>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body className="font-sans antialiased">
+        {children}
+      </body>
+    </html>
   )
 }

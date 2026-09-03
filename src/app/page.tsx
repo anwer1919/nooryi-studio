@@ -1,603 +1,128 @@
 import Link from "next/link"
-import { prisma } from "@/lib/prisma"
-import { 
-  Music, 
-  Star, 
-  Calendar, 
-  ArrowRight, 
-  Sparkles, 
-  Users, 
-  Shield,
-  CheckCircle2,
-  TrendingUp
-} from "lucide-react"
+import { Music, Star, Users, Calendar, Shield, CreditCard, Zap } from "lucide-react"
 
-export const dynamic = "force-dynamic"
-
-export default async function HomePage() {
-  const artists = await prisma.artist.findMany({
-    where: { status: "ACTIVE" },
-    take: 6,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      category: true,
-      profileImage: true,
-      _count: { select: { reviews: true, bookings: true } },
-      reviews: { select: { rating: true } },
-    },
-  }).catch(() => [])
-
+export default function HomePage() {
   return (
-    <div style={{ 
-      minHeight: "100vh",
-      backgroundColor: "var(--color-background)"
-    }}>
-      {/* Hero Section */}
-      <section className="section" style={{
-        position: "relative",
-        overflow: "hidden",
-        paddingTop: "var(--space-20)",
-        paddingBottom: "var(--space-20)"
-      }}>
-        {/* Background Decorations */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(135deg, var(--color-accent-50) 0%, var(--color-background) 50%, var(--color-primary-50) 100%)",
-          zIndex: 0
-        }} />
-        <div style={{
-          position: "absolute",
-          top: "10%",
-          right: "5%",
-          width: "400px",
-          height: "400px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, var(--color-accent) 0%, transparent 70%)",
-          opacity: 0.15,
-          filter: "blur(80px)",
-          zIndex: 0
-        }} />
-        <div style={{
-          position: "absolute",
-          bottom: "10%",
-          left: "5%",
-          width: "400px",
-          height: "400px",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, var(--color-primary) 0%, transparent 70%)",
-          opacity: 0.1,
-          filter: "blur(80px)",
-          zIndex: 0
-        }} />
-        
-        <div className="container-custom" style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ maxWidth: "720px" }}>
-            {/* Badge */}
-            <div className="badge badge-accent" style={{
-              marginBottom: "var(--space-6)",
-              padding: "var(--space-2) var(--space-4)",
-              fontSize: "var(--text-sm)"
-            }}>
-              <Sparkles size={16} />
-              <span>منصة حجز الفنانين الأولى</span>
-            </div>
-            
-            {/* Heading */}
-            <h1 style={{
-              fontSize: "clamp(2.5rem, 5vw, 4rem)",
-              fontWeight: "900",
-              color: "var(--color-text-primary)",
-              lineHeight: 1.1,
-              marginBottom: "var(--space-6)",
-              letterSpacing: "-0.02em"
-            }}>
-              احجز أفضل الفنانين
-              <br />
-              <span style={{
-                background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-dark) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text"
-              }}>
-                لفعالياتك المميزة
-              </span>
-            </h1>
-            
-            {/* Description */}
-            <p style={{
-              fontSize: "var(--text-lg)",
-              color: "var(--color-text-secondary)",
-              lineHeight: 1.7,
-              marginBottom: "var(--space-10)",
-              maxWidth: "600px"
-            }}>
-              منصة احترافية تجمع بين أفضل الفنانين والموسيقيين في مكان واحد. 
-              احجز بسهولة، ادفع بأمان، واستمتع بتجربة لا تُنسى.
-            </p>
-            
-            {/* CTA Buttons */}
-            <div style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "var(--space-4)",
-              marginBottom: "var(--space-16)"
-            }}>
-              <Link href="/artists" className="btn-primary" style={{
-                padding: "var(--space-4) var(--space-8)",
-                fontSize: "var(--text-base)"
-              }}>
-                <Music size={20} />
-                تصفح الفنانين
-              </Link>
-              <Link href="/register" className="btn-secondary" style={{
-                padding: "var(--space-4) var(--space-8)",
-                fontSize: "var(--text-base)"
-              }}>
-                <Sparkles size={20} />
-                ابدأ الآن مجاناً
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "var(--space-8)",
-              paddingTop: "var(--space-10)",
-              borderTop: "1px solid var(--color-border)"
-            }}>
-              <div>
-                <p style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: "900",
-                  color: "var(--color-primary)",
-                  marginBottom: "var(--space-1)"
-                }}>
-                  +150
-                </p>
-                <p style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-secondary)"
-                }}>
-                  فنان محترف
-                </p>
-              </div>
-              <div>
-                <p style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: "900",
-                  color: "var(--color-primary)",
-                  marginBottom: "var(--space-1)"
-                }}>
-                  +500
-                </p>
-                <p style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-secondary)"
-                }}>
-                  فعالية ناجحة
-                </p>
-              </div>
-              <div>
-                <p style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: "900",
-                  color: "var(--color-primary)",
-                  marginBottom: "var(--space-1)"
-                }}>
-                  4.9★
-                </p>
-                <p style={{
-                  fontSize: "var(--text-sm)",
-                  color: "var(--color-text-secondary)"
-                }}>
-                  تقييم العملاء
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50" dir="rtl">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black text-purple-700">Nooryi</h1>
+            <p className="text-xs text-gray-500">STUDIO</p>
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="section" style={{
-        backgroundColor: "var(--color-background-subtle)"
-      }}>
-        <div className="container-custom">
-          <div style={{ textAlign: "center", marginBottom: "var(--space-16)" }}>
-            <h2 style={{
-              fontSize: "clamp(2rem, 4vw, 2.5rem)",
-              fontWeight: "900",
-              color: "var(--color-text-primary)",
-              marginBottom: "var(--space-4)"
-            }}>
-              لماذا تختار <span style={{ color: "var(--color-accent-dark)" }}>Nooryi</span>؟
-            </h2>
-            <p style={{
-              fontSize: "var(--text-lg)",
-              color: "var(--color-text-secondary)"
-            }}>
-              نوفر لك تجربة حجز استثنائية بأعلى معايير الجودة
-            </p>
-          </div>
-
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "var(--space-8)"
-          }}>
-            {/* Feature 1 */}
-            <div className="card card-hover" style={{ textAlign: "center" }}>
-              <div style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "var(--radius-xl)",
-                backgroundColor: "var(--color-primary-50)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto var(--space-6)"
-              }}>
-                <Users size={32} style={{ color: "var(--color-primary)" }} />
-              </div>
-              <h3 style={{
-                fontSize: "var(--text-xl)",
-                fontWeight: "700",
-                color: "var(--color-text-primary)",
-                marginBottom: "var(--space-3)"
-              }}>
-                فنانين معتمدين
-              </h3>
-              <p style={{
-                fontSize: "var(--text-base)",
-                color: "var(--color-text-secondary)",
-                lineHeight: 1.6
-              }}>
-                جميع الفنانين يخضعون لعملية تحقق صارمة لضمان أعلى مستوى من الاحترافية
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="card card-hover" style={{ textAlign: "center" }}>
-              <div style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "var(--radius-xl)",
-                backgroundColor: "var(--color-accent-50)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto var(--space-6)"
-              }}>
-                <Shield size={32} style={{ color: "var(--color-primary)" }} />
-              </div>
-              <h3 style={{
-                fontSize: "var(--text-xl)",
-                fontWeight: "700",
-                color: "var(--color-text-primary)",
-                marginBottom: "var(--space-3)"
-              }}>
-                دفع آمن 100%
-              </h3>
-              <p style={{
-                fontSize: "var(--text-base)",
-                color: "var(--color-text-secondary)",
-                lineHeight: 1.6
-              }}>
-                نظام دفع مشفر وآمن مع ضمان استرداد كامل في حالة الإلغاء
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="card card-hover" style={{ textAlign: "center" }}>
-              <div style={{
-                width: "64px",
-                height: "64px",
-                borderRadius: "var(--radius-xl)",
-                backgroundColor: "var(--color-primary-50)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto var(--space-6)"
-              }}>
-                <Calendar size={32} style={{ color: "var(--color-primary)" }} />
-              </div>
-              <h3 style={{
-                fontSize: "var(--text-xl)",
-                fontWeight: "700",
-                color: "var(--color-text-primary)",
-                marginBottom: "var(--space-3)"
-              }}>
-                حجز سهل وسريع
-              </h3>
-              <p style={{
-                fontSize: "var(--text-base)",
-                color: "var(--color-text-secondary)",
-                lineHeight: 1.6
-              }}>
-                احجز فنانك المفضل في دقائق مع تأكيد فوري ومتابعة مستمرة
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Artists */}
-      <section className="section">
-        <div className="container-custom">
-          <div style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginBottom: "var(--space-12)",
-            flexWrap: "wrap",
-            gap: "var(--space-4)"
-          }}>
-            <div>
-              <h2 style={{
-                fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                fontWeight: "900",
-                color: "var(--color-text-primary)",
-                marginBottom: "var(--space-3)"
-              }}>
-                فنانون مميزون
-              </h2>
-              <p style={{
-                fontSize: "var(--text-lg)",
-                color: "var(--color-text-secondary)"
-              }}>
-                اختر من بين نخبة من أفضل الفنانين
-              </p>
-            </div>
-            <Link 
-              href="/artists"
-              className="btn-ghost"
-              style={{
-                color: "var(--color-primary)",
-                fontWeight: "600"
-              }}
+          <div className="flex gap-3">
+            <Link
+              href="/login"
+              className="px-4 py-2 text-purple-700 font-bold hover:bg-purple-50 rounded-lg transition"
             >
-              عرض الكل
-              <ArrowRight size={18} />
+              تسجيل الدخول
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 py-2 bg-purple-700 text-white rounded-lg font-bold hover:bg-purple-800 transition"
+            >
+              إنشاء حساب
             </Link>
           </div>
-
-          {artists.length === 0 ? (
-            <div className="card" style={{
-              textAlign: "center",
-              padding: "var(--space-16)"
-            }}>
-              <Music 
-                size={48} 
-                style={{ 
-                  color: "var(--color-text-tertiary)",
-                  margin: "0 auto var(--space-4)",
-                  opacity: 0.5
-                }} 
-              />
-              <p style={{ color: "var(--color-text-secondary)" }}>
-                لا يوجد فنانون حالياً
-              </p>
-            </div>
-          ) : (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: "var(--space-6)"
-            }}>
-              {artists.map((artist) => {
-                const ratings = artist.reviews?.map((r) => r.rating) || []
-                const avgRating = ratings.length > 0
-                  ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-                  : 0
-
-                return (
-                  <Link 
-                    key={artist.id}
-                    href={`/artists/${artist.slug}`}
-                    className="card card-hover"
-                    style={{
-                      padding: 0,
-                      overflow: "hidden",
-                      textDecoration: "none"
-                    }}
-                  >
-                    {/* Image */}
-                    <div style={{
-                      position: "relative",
-                      height: "240px",
-                      overflow: "hidden"
-                    }}>
-                      {artist.profileImage ? (
-                        <img 
-                          src={artist.profileImage}
-                          alt={artist.name}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            transition: "transform 0.5s"
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: "100%",
-                          height: "100%",
-                          background: "linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-accent-50) 100%)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center"
-                        }}>
-                          <Music size={48} style={{ color: "var(--color-primary)" }} />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div style={{ padding: "var(--space-6)" }}>
-                      <h3 style={{
-                        fontSize: "var(--text-xl)",
-                        fontWeight: "700",
-                        color: "var(--color-text-primary)",
-                        marginBottom: "var(--space-1)"
-                      }}>
-                        {artist.name}
-                      </h3>
-                      <p style={{
-                        fontSize: "var(--text-sm)",
-                        color: "var(--color-text-secondary)",
-                        marginBottom: "var(--space-4)"
-                      }}>
-                        {artist.category}
-                      </p>
-                      
-                      <div style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        paddingTop: "var(--space-4)",
-                        borderTop: "1px solid var(--color-border-light)"
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
-                          <Star 
-                            size={16} 
-                            style={{ 
-                              color: "var(--color-warning)",
-                              fill: "var(--color-warning)"
-                            }} 
-                          />
-                          <span style={{
-                            fontWeight: "700",
-                            color: "var(--color-text-primary)"
-                          }}>
-                            {avgRating > 0 ? avgRating.toFixed(1) : "جديد"}
-                          </span>
-                          <span style={{
-                            fontSize: "var(--text-xs)",
-                            color: "var(--color-text-tertiary)"
-                          }}>
-                            ({artist._count.reviews})
-                          </span>
-                        </div>
-                        <span style={{
-                          fontSize: "var(--text-xs)",
-                          color: "var(--color-text-secondary)"
-                        }}>
-                          {artist._count.bookings} حجز
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
         </div>
-      </section>
+      </header>
 
-      {/* CTA Section */}
-      <section style={{
-        padding: "var(--space-20) 0",
-        background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)"
-      }}>
-        <div className="container-custom" style={{ textAlign: "center" }}>
-          <h2 style={{
-            fontSize: "clamp(2rem, 4vw, 2.5rem)",
-            fontWeight: "900",
-            color: "#FFFFFF",
-            marginBottom: "var(--space-4)"
-          }}>
-            جاهز لبدء رحلتك؟
+      {/* Hero */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-purple-700 font-bold mb-4">منصة حجز الفنانين الأولى</p>
+          <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6">
+            احجز أفضل الفنانين
+            <br />
+            <span className="text-purple-700">لفعالياتك المميزة</span>
           </h2>
-          <p style={{
-            fontSize: "var(--text-lg)",
-            color: "rgba(255, 255, 255, 0.8)",
-            marginBottom: "var(--space-8)"
-          }}>
-            انضم إلى آلاف العملاء الذين يثقون بنا في تنظيم فعاليات لا تُنسى
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+            منصة احترافية تجمع بين أفضل الفنانين والموسيقيين في مكان واحد.
+            احجز بسهولة، ادفع بأمان، واستمتع بتجربة لا تُنسى.
           </p>
-          <div style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "var(--space-4)"
-          }}>
-            <Link href="/register" className="btn-secondary" style={{
-              padding: "var(--space-4) var(--space-8)",
-              fontSize: "var(--text-base)"
-            }}>
-              <Sparkles size={20} />
-              إنشاء حساب مجاني
-            </Link>
-            <Link 
-              href="/contact"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "var(--space-2)",
-                padding: "var(--space-4) var(--space-8)",
-                borderRadius: "var(--radius-lg)",
-                fontSize: "var(--text-base)",
-                fontWeight: "700",
-                color: "#FFFFFF",
-                border: "2px solid rgba(255, 255, 255, 0.3)",
-                textDecoration: "none",
-                transition: "all var(--transition-base)"
-              }}
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link
+              href="/artists"
+              className="px-8 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg"
             >
-              تواصل معنا
+              تصفح الفنانين
             </Link>
+            <Link
+              href="/register"
+              className="px-8 py-4 bg-white text-purple-700 border-2 border-purple-700 rounded-xl font-bold hover:bg-purple-50 transition"
+            >
+              ابدأ الآن مجاناً
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="py-12 bg-white">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-3 gap-8 text-center">
+          <div>
+            <p className="text-4xl font-black text-purple-700">+150</p>
+            <p className="text-gray-600 mt-2">فنان محترف</p>
+          </div>
+          <div>
+            <p className="text-4xl font-black text-purple-700">+500</p>
+            <p className="text-gray-600 mt-2">فعالية ناجحة</p>
+          </div>
+          <div>
+            <p className="text-4xl font-black text-purple-700">4.9★</p>
+            <p className="text-gray-600 mt-2">تقييم العملاء</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-black text-center text-gray-900 mb-4">
+            لماذا تختار Nooryi؟
+          </h2>
+          <p className="text-center text-gray-600 mb-12">
+            نوفر لك تجربة حجز استثنائية بأعلى معايير الجودة
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Shield,
+                title: "فنانين معتمدين",
+                desc: "جميع الفنانين يخضعون لعملية تحقق صارمة",
+              },
+              {
+                icon: CreditCard,
+                title: "دفع آمن 100%",
+                desc: "نظام دفع مشفر مع ضمان استرداد كامل",
+              },
+              {
+                icon: Zap,
+                title: "حجز سهل وسريع",
+                desc: "احجز فنانك المفضل في دقائق",
+              },
+            ].map((f, i) => (
+              <div
+                key={i}
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition"
+              >
+                <f.icon className="text-purple-700 mb-4" size={40} />
+                <h3 className="text-xl font-black text-gray-900 mb-2">{f.title}</h3>
+                <p className="text-gray-600">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        backgroundColor: "var(--color-dark-bg)",
-        color: "#FFFFFF",
-        padding: "var(--space-12) 0"
-      }}>
-        <div className="container-custom">
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "var(--space-6)",
-            textAlign: "center"
-          }}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "var(--space-3)"
-            }}>
-              <div style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "var(--radius-lg)",
-                backgroundColor: "var(--color-accent)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}>
-                <Music size={20} style={{ color: "var(--color-primary)" }} />
-              </div>
-              <span style={{
-                fontSize: "var(--text-xl)",
-                fontWeight: "900"
-              }}>
-                Nooryi<span style={{ color: "var(--color-accent)" }}>.</span>
-              </span>
-            </div>
-            <p style={{
-              fontSize: "var(--text-sm)",
-              color: "rgba(255, 255, 255, 0.6)"
-            }}>
-              © 2026 Nooryi Studio. جميع الحقوق محفوظة.
-            </p>
-          </div>
+      <footer className="bg-gray-900 text-white py-8 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-2xl font-black text-purple-400 mb-2">Nooryi.</p>
+          <p className="text-gray-400 text-sm">
+            © 2026 Nooryi Studio. جميع الحقوق محفوظة.
+          </p>
         </div>
       </footer>
     </div>

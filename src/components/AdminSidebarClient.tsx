@@ -14,6 +14,7 @@ import {
   LogOut,
   X,
   Banknote,
+  Shield,
 } from "lucide-react"
 
 const iconMap: Record<string, any> = {
@@ -24,7 +25,7 @@ const iconMap: Record<string, any> = {
   FileText,
   Settings,
   Banknote,
-  Users,
+  Shield,
 }
 
 interface MenuItem {
@@ -45,7 +46,6 @@ export default function AdminSidebarClient({
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  // ✅ الاستماع لحدث فتح/إغلاق القائمة (يعمل دائماً)
   useEffect(() => {
     const handleToggle = () => {
       setIsOpen((prev) => !prev)
@@ -57,7 +57,6 @@ export default function AdminSidebarClient({
     }
   }, [])
 
-  // ✅ إغلاق القائمة عند تغيير الصفحة
   useEffect(() => {
     setIsOpen(false)
   }, [pathname])
@@ -68,7 +67,6 @@ export default function AdminSidebarClient({
 
   return (
     <>
-      {/* الخلفية المعتمة عند فتح القائمة */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -86,7 +84,6 @@ export default function AdminSidebarClient({
         `}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -105,7 +102,6 @@ export default function AdminSidebarClient({
             </div>
           </div>
 
-          {/* User Info */}
           <div className="p-4 bg-gradient-to-l from-purple-50 to-white border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold text-lg">
@@ -126,7 +122,6 @@ export default function AdminSidebarClient({
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => {
               const isActive =
@@ -155,7 +150,6 @@ export default function AdminSidebarClient({
             })}
           </nav>
 
-          {/* Logout */}
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
