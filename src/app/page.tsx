@@ -5,13 +5,14 @@ import {
   ArrowLeft, Sparkles, ChevronRight
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import ArtistCarousel from "@/components/ArtistCarousel";
 
 export const dynamic = "force-dynamic";
 
 async function getFeaturedArtists() {
   try {
     const artists = await prisma.artist.findMany({
-      where: { status: "APPROVED" },
+      where: { status: "ACTIVE" },
       orderBy: { createdAt: "desc" },
       take: 6,
     });
@@ -71,143 +72,49 @@ export default async function HomePage() {
       </header>
 
       {/* ═══════════ Hero Section ═══════════ */}
-      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-gradient-to-br from-gray-50 via-white to-gray-50 overflow-hidden">
-        <div className="absolute top-10 left-10 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
-
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37]/10 to-[#F4E5B8]/10 border border-[#D4AF37]/20 rounded-full mb-8">
-              <Sparkles size={14} className="text-[#D4AF37]" />
-              <span className="text-sm font-bold text-gray-900">منصة حجز الفنانين الأولى</span>
-            </div>
-
-            <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-6 leading-[1.1] tracking-tight">
-              احجز أفضل{" "}
-              <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] bg-clip-text text-transparent">الفنانين</span>
-                <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 200 12" fill="none">
-                  <path d="M2 8C50 2 150 2 198 8" stroke="#D4AF37" strokeWidth="4" strokeLinecap="round"/>
-                </svg>
-              </span>
-              <br />
-              لفعالياتك المميزة
-            </h1>
-
-            <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-              منصة احترافية تجمع بين أفضل الفنانين والموسيقيين. 
-              احجز بسهولة، ادفع بأمان، واستمتع بتجربة لا تُنسى.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Link
-                href="/artists"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#111] to-[#333] text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all"
-              >
-                <Music size={22} />
-                تصفح الفنانين
-                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/register"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#111] rounded-2xl font-black text-lg hover:shadow-2xl hover:scale-105 transition-all"
-              >
-                <Sparkles size={20} />
-                ابدأ الآن مجاناً
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] bg-clip-text text-transparent mb-2">+150</div>
-                <div className="text-sm text-gray-600 font-semibold">فنان محترف</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] bg-clip-text text-transparent mb-2">+500</div>
-                <div className="text-sm text-gray-600 font-semibold">فعالية ناجحة</div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] bg-clip-text text-transparent mb-2">4.9★</div>
-                <div className="text-sm text-gray-600 font-semibold">تقييم العملاء</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════ فنانون مميزون ═══════════ */}
-      <section className="py-20 bg-white">
+            {/* ═══════════ نخبة الفنانين (Carousel) ═══════════ */}
+      <section className="py-20 lg:py-28 bg-gradient-to-br from-gray-50 via-white to-gray-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <span className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-bold mb-3">فنانون مميزون</span>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900">اختر من نخبة الفنانين</h2>
+          {/* عنوان القسم */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37]/10 to-[#F4E5B8]/10 border border-[#D4AF37]/20 rounded-full mb-6">
+              <Sparkles size={14} className="text-[#D4AF37]" />
+              <span className="text-sm font-bold text-gray-900">نخبة الفنانين</span>
             </div>
-            <Link
-              href="/artists"
-              className="hidden md:flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-[#D4AF37] transition"
-            >
-              عرض الكل
-              <ChevronRight size={16} />
-            </Link>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+              اختر من{" "}
+              <span className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] bg-clip-text text-transparent">
+                نخبة الفنانين
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              تصفح أفضل الفنانين المعتمدين لدينا واحجز من يناسب فعاليتك
+            </p>
           </div>
 
+          {/* Carousel */}
           {featuredArtists.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredArtists.map((artist) => (
-                <Link
-                  key={artist.id}
-                  href={`/artists/${artist.slug}`}
-                  className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-[#111] to-[#333]">
-                    {artist.coverImage ? (
-                      <img
-                        src={artist.coverImage}
-                        alt={artist.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Music size={64} className="text-[#D4AF37]/50" />
-                      </div>
-                    )}
-                    
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-
-                    <div className="absolute top-4 right-4">
-                      <div className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold text-gray-900">
-                        {artist.category || "فنان"}
-                      </div>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-2xl font-black text-white mb-2">{artist.name}</h3>
-                      <div className="flex items-center gap-4 text-sm text-white/80">
-                        <div className="flex items-center gap-1">
-                          <Star size={14} className="text-[#D4AF37] fill-[#D4AF37]" />
-                          <span>4.9</span>
-                        </div>
-                        <span>•</span>
-                        <span>متاح للحجز</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 flex items-center justify-between">
-                    <span className="text-sm text-gray-500">عرض الملف الشخصي</span>
-                    <ArrowLeft size={18} className="text-[#D4AF37] group-hover:-translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              ))}
+            <div className="relative px-12 lg:px-20">
+              <ArtistCarousel artists={featuredArtists} />
             </div>
           ) : (
-            <div className="text-center py-20 bg-gray-50 rounded-3xl">
+            <div className="text-center py-16">
               <Music className="mx-auto text-gray-300 mb-4" size={64} />
-              <p className="text-gray-500 font-semibold mb-2">لا يوجد فنانين معتمدين بعد</p>
-              <p className="text-sm text-gray-400">انضم كفنان وابدأ رحلتك معنا</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">لا يوجد فنانين بعد</h3>
+              <p className="text-gray-500 mb-6">سيتم إضافة فنانين قريباً</p>
             </div>
           )}
+
+          {/* زر عرض الكل */}
+          <div className="text-center mt-12">
+            <Link
+              href="/artists"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-2xl hover:shadow-xl hover:shadow-[#D4AF37]/30 hover:scale-105 transition-all duration-300"
+            >
+              عرض جميع الفنانين
+              <ChevronRight size={20} />
+            </Link>
+          </div>
         </div>
       </section>
 
