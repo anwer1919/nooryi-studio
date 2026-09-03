@@ -2,14 +2,29 @@
 
 import { useState } from "react"
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Music, Mail, Lock, Loader2, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react"
+import {
+  Music,
+  Mail,
+  Lock,
+  Loader2,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Sparkles,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") || ""
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
@@ -21,195 +36,288 @@ export default function LoginPage() {
     setLoading(true)
     setError("")
 
+    // التحقق من الحقول
+    if (!formData.email || !formData.password) {
+      setError("يرجى ملء جميع الحقول")
+      setLoading(false)
+      return
+    }
+
     try {
       const result = await signIn("credentials", {
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
         redirect: false,
       })
 
       if (result?.error) {
+        console.error("❌ Login error:", result.error)
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
         setLoading(false)
         return
       }
 
-      router.push("/")
-      router.refresh()
+      // جلب الجلسة بعد تسجيل الدخول
+      const sessionRes = await fetch("/api/auth/session", {
+        cache: "no-store",
+      })
+      const session = await sessionRes.json()
+      const role = session?.user?.role
+
+      console.log("✅ Login successful. Role:", role)
+
+      setSuccess(true)
+
+      // إعادة التوجيه حسب الدور
+      setTimeout(() => {
+        if (callbackUrl) {
+          window.location.href = callbackUrl
+          return
+        }
+
+        if (
+          role === "SUPER_ADMIN" ||
+          role === "ADMIN" ||
+          role === "ARTIST_MANAGER"
+        ) {
+          window.location.href = "/admin"
+        } else {
+          window.location.href = "/"
+        }
+      }, 1000)
     } catch (err) {
-      setError("حدث خطأ أثناء تسجيل الدخول")
+      console.error("❌ Login submit error:", err)
+      setError("حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.")
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background dark:bg-dark-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+    <div className="min-h-screen bg-white relative overflow-hidden" dir="rtl">
+      {/* ═══════════ الخلفية ═══════════ */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#FEFCE8] via-white to-[#FEF9C3]" />
 
-      <div className="relative w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Branding */}
-        <div className="hidden lg:block">
-          <div className="mb-8">
-            <Link href="/" className="flex items-center gap-3 mb-8">
-              <div className="relative">
-                <div className="absolute inset-0 bg-accent blur-xl opacity-50" />
-                <div className="relative bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
-                  <Music className="text-primary" size={24} />
-                </div>
-              </div>
-              <span className="text-3xl font-black text-primary dark:text-white">
-                Nooryi<span className="text-accent">.</span>
-              </span>
-            </Link>
+      {/* دوائر زخرفية */}
+      <div className="absolute top-20 left-10 w-64 h-64 bg-[#D9FF3F]/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#EAFF75]/20 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-[#D9FF3F]/10 rounded-full blur-2xl" />
 
-            <h1 className="text-5xl font-black text-primary dark:text-white mb-4 leading-tight">
-              مرحباً بعودتك
-              <br />
-              <span className="bg-gradient-to-r from-primary to-accent dark:from-accent dark:to-accent-light bg-clip-text text-transparent">
-                إلى عالم الإبداع
+      {/* ═══════════ Header ═══════════ */}
+      <header className="relative z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D9FF3F] to-[#EAFF75] flex items-center justify-center shadow-lg border-2 border-[#D9FF3F] group-hover:scale-110 transition-transform">
+              <span className="text-gray-900 text-xl font-black">N</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-gray-900">Nooryi</h1>
+              <p className="text-[10px] text-gray-500 font-bold tracking-widest">
+                STUDIO
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold transition"
+          >
+            <ArrowRight size={16} />
+            العودة للرئيسية
+          </Link>
+        </div>
+      </header>
+
+      {/* ═══════════ Main Content ═══════════ */}
+      <main className="relative z-10 flex items-center justify-center px-4 py-12 min-h-[calc(100vh-80px)]">
+        <div className="w-full max-w-md">
+          {/* العنوان */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-[#D9FF3F]/20 border border-[#D9FF3F]/40 rounded-full px-4 py-1.5 mb-4">
+              <Sparkles size={14} className="text-gray-700" />
+              <span className="text-gray-700 font-bold text-xs">
+                مرحباً بعودتك
               </span>
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-              سجل دخولك للوصول إلى لوحة التحكم الخاصة بك، وإدارة حجوزاتك، ومتابعة فعالياتك بكل سهولة.
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
+              تسجيل الدخول
+            </h2>
+            <p className="text-gray-600 text-sm">
+              ادخل بياناتك للوصول إلى حسابك
             </p>
           </div>
 
-          {/* Features */}
-          <div className="space-y-4 mt-12">
-            {[
-              { icon: "🎵", title: "إدارة الحجوزات", desc: "تابع جميع حجوزاتك في مكان واحد" },
-              { icon: "💳", title: "دفع آمن", desc: "نظام دفع مشفر ومحمي 100%" },
-              { icon: "📊", title: "تقارير شاملة", desc: "إحصائيات مفصلة عن أداء حسابك" },
-            ].map((feature, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/50 dark:bg-dark-surface/50 backdrop-blur-sm border border-gray-100 dark:border-dark-border">
-                <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center text-2xl flex-shrink-0">
-                  {feature.icon}
-                </div>
-                <div>
-                  <p className="font-bold text-primary dark:text-white">{feature.title}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{feature.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* ═══════════ نموذج تسجيل الدخول ═══════════ */}
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-gray-100 p-8 relative overflow-hidden">
+            {/* زخرفة علوية */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#D9FF3F] via-[#EAFF75] to-[#D9FF3F]" />
 
-        {/* Right Side - Login Form */}
-        <div className="card-premium p-8 lg:p-10">
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 text-center">
-            <Link href="/" className="inline-flex items-center gap-3 mb-6">
-              <div className="bg-accent w-12 h-12 rounded-xl flex items-center justify-center shadow-glow">
-                <Music className="text-primary" size={24} />
-              </div>
-              <span className="text-3xl font-black text-primary dark:text-white">
-                Nooryi<span className="text-accent">.</span>
-              </span>
-            </Link>
-            <h1 className="text-3xl font-black text-primary dark:text-white mb-2">تسجيل الدخول</h1>
-            <p className="text-gray-500 dark:text-gray-400">مرحباً بعودتك! أدخل بياناتك للمتابعة</p>
-          </div>
-
-          {/* Desktop Header */}
-          <div className="hidden lg:block mb-8">
-            <h2 className="text-3xl font-black text-primary dark:text-white mb-2">تسجيل الدخول</h2>
-            <p className="text-gray-500 dark:text-gray-400">أدخل بياناتك للوصول إلى حسابك</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* رسائل الخطأ والنجاح */}
             {error && (
-              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 font-semibold">
-                {error}
+              <div className="mb-5 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3 animate-shake">
+                <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-red-700 font-bold">
+                    فشل تسجيل الدخول
+                  </p>
+                  <p className="text-xs text-red-600 mt-0.5">{error}</p>
+                </div>
               </div>
             )}
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                البريد الإلكتروني
-              </label>
-              <div className="relative">
-                <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="example@email.com"
-                  className="input-modern pr-12"
-                  dir="ltr"
-                />
+            {success && (
+              <div className="mb-5 p-4 bg-green-50 border-2 border-green-200 rounded-xl flex items-center gap-3">
+                <CheckCircle2 size={20} className="text-green-500" />
+                <p className="text-sm text-green-700 font-bold">
+                  تم تسجيل الدخول بنجاح! جاري التحويل...
+                </p>
               </div>
-            </div>
+            )}
 
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-semibold text-primary dark:text-white mb-2">
-                كلمة المرور
-              </label>
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="input-modern pr-12 pl-12"
-                  dir="ltr"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary dark:hover:text-accent transition-colors"
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* البريد الإلكتروني */}
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  البريد الإلكتروني
+                </label>
+                <div className="relative">
+                  <Mail
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="example@email.com"
+                    dir="ltr"
+                    className="w-full pr-12 pl-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#D9FF3F] focus:bg-white focus:outline-none transition-all text-gray-900"
+                    disabled={loading || success}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* كلمة المرور */}
+              <div>
+                <label className="block text-sm font-bold text-gray-900 mb-2">
+                  كلمة المرور
+                </label>
+                <div className="relative">
+                  <Lock
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    placeholder="••••••••"
+                    dir="ltr"
+                    className="w-full pr-12 pl-12 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-[#D9FF3F] focus:bg-white focus:outline-none transition-all text-gray-900"
+                    disabled={loading || success}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition"
+                    disabled={loading || success}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* زر تسجيل الدخول */}
+              <button
+                type="submit"
+                disabled={loading || success}
+                className="w-full py-4 bg-gradient-to-r from-[#D9FF3F] to-[#EAFF75] text-gray-900 rounded-xl font-black text-lg hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    جاري تسجيل الدخول...
+                  </>
+                ) : success ? (
+                  <>
+                    <CheckCircle2 size={20} />
+                    تم بنجاح!
+                  </>
+                ) : (
+                  <>
+                    <Music size={20} />
+                    تسجيل الدخول
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* روابط إضافية */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <span className="text-gray-500">ليس لديك حساب؟</span>
+                <Link
+                  href="/register"
+                  className="font-bold text-gray-900 hover:text-[#D9FF3F] transition relative group"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                  إنشاء حساب جديد
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#D9FF3F] group-hover:w-full transition-all" />
+                </Link>
               </div>
             </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 py-4"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" />
-                  جاري تسجيل الدخول...
-                </>
-              ) : (
-                <>
-                  تسجيل الدخول
-                  <ArrowRight size={20} className="rotate-180" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
-            <span className="text-xs text-gray-400 font-semibold">أو</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-dark-border" />
           </div>
 
-          {/* Sign Up Link */}
-          <p className="text-center text-gray-600 dark:text-gray-400">
-            ليس لديك حساب؟{" "}
-            <Link 
-              href="/register" 
-              className="text-primary dark:text-accent font-bold hover:underline inline-flex items-center gap-1"
-            >
-              <Sparkles size={14} />
-              أنشئ حساباً جديداً
-            </Link>
-          </p>
+          {/* معلومات للمساعدة */}
+          <div className="mt-6 p-4 bg-white/60 backdrop-blur-sm border border-gray-100 rounded-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#D9FF3F]/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={18} className="text-gray-700" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900 mb-1">
+                  هل نسيت كلمة المرور؟
+                </p>
+                <p className="text-xs text-gray-600">
+                  تواصل مع الإدارة لإعادة تعيين كلمة المرور الخاصة بك.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* تنبيه callbackUrl */}
+          {callbackUrl && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <p className="text-xs text-blue-700 text-center">
+                💡 سيتم توجيهك إلى الصفحة المطلوبة بعد تسجيل الدخول
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
+
+      {/* ═══════════ Footer ═══════════ */}
+      <footer className="relative z-10 py-6 text-center">
+        <p className="text-xs text-gray-500">
+          © 2026 Nooryi Studio. جميع الحقوق محفوظة.
+        </p>
+      </footer>
+
+      {/* CSS للأنيميشن */}
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+      `}</style>
     </div>
   )
 }

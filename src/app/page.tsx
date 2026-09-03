@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import Image from "next/image"
 import { 
   Music, Star, Users, Calendar, Shield, CreditCard, Zap,
@@ -27,36 +27,36 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white" dir="rtl">
       {/* ═══════════ الترويسة ═══════════ */}
-      <header className="bg-gradient-to-l from-[#4C1D95] via-[#3B1578] to-[#111] shadow-xl sticky top-0 z-50">
+      <header className="bg-gradient-to-l from-[#2D124F] via-[#2D124F] to-[#111] shadow-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-lg border-2 border-[#D4AF37]/50 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D9FF3F] to-[#EAFF75] flex items-center justify-center shadow-lg border-2 border-[#D9FF3F]/50 group-hover:scale-110 transition-transform">
               <span className="text-[#111] text-2xl font-black">N</span>
             </div>
             <div>
-              <h1 className="text-2xl font-black text-[#D4AF37] tracking-wide">Nooryi</h1>
+              <h1 className="text-2xl font-black text-[#D9FF3F] tracking-wide">Nooryi</h1>
               <p className="text-xs text-white/70 font-bold tracking-widest">STUDIO</p>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-white hover:text-[#D4AF37] font-bold transition">الرئيسية</Link>
-            <Link href="/artists" className="text-white hover:text-[#D4AF37] font-bold transition">الفنانين</Link>
-            <Link href="/#about" className="text-white hover:text-[#D4AF37] font-bold transition">من نحن</Link>
-            <Link href="/#services" className="text-white hover:text-[#D4AF37] font-bold transition">خدماتنا</Link>
-            <Link href="/#contact" className="text-white hover:text-[#D4AF37] font-bold transition">تواصل معنا</Link>
+            <Link href="/" className="text-white hover:text-[#D9FF3F] font-bold transition">الرئيسية</Link>
+            <Link href="/artists" className="text-white hover:text-[#D9FF3F] font-bold transition">الفنانين</Link>
+            <Link href="/#about" className="text-white hover:text-[#D9FF3F] font-bold transition">من نحن</Link>
+            <Link href="/#services" className="text-white hover:text-[#D9FF3F] font-bold transition">خدماتنا</Link>
+            <Link href="/#contact" className="text-white hover:text-[#D9FF3F] font-bold transition">تواصل معنا</Link>
           </nav>
 
           <div className="flex gap-3">
             <Link
               href="/login"
-              className="px-4 py-2 text-[#D4AF37] border-2 border-[#D4AF37] rounded-xl font-bold hover:bg-[#D4AF37] hover:text-[#111] transition"
+              className="px-4 py-2 text-[#D9FF3F] border-2 border-[#D9FF3F] rounded-xl font-bold hover:bg-[#D9FF3F] hover:text-[#111] transition"
             >
               تسجيل الدخول
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 bg-[#D4AF37] text-[#111] rounded-xl font-bold hover:bg-[#b8941f] transition shadow-lg"
+              className="px-4 py-2 bg-[#D9FF3F] text-[#111] rounded-xl font-bold hover:bg-[#EAFF75] transition shadow-lg"
             >
               إنشاء حساب
             </Link>
@@ -65,21 +65,21 @@ export default async function HomePage() {
       </header>
 
       {/* ═══════════ Hero Section ═══════════ */}
-      <section className="bg-gradient-to-br from-[#4C1D95] via-[#3B1578] to-[#111] text-white py-24 px-4 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-[#2D124F] via-[#2D124F] to-[#111] text-white py-24 px-4 relative overflow-hidden">
         {/* دوائر زخرفية */}
-        <div className="absolute top-10 left-10 w-64 h-64 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-10 left-10 w-64 h-64 bg-[#D9FF3F]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-[#D9FF3F]/10 rounded-full blur-3xl"></div>
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 rounded-full px-6 py-2 mb-6">
-            <Star className="text-[#D4AF37]" size={16} />
-            <span className="text-[#D4AF37] font-bold text-sm">منصة حجز الفنانين الأولى</span>
+          <div className="inline-flex items-center gap-2 bg-[#D9FF3F]/20 border border-[#D9FF3F]/40 rounded-full px-6 py-2 mb-6">
+            <Star className="text-[#D9FF3F]" size={16} />
+            <span className="text-[#D9FF3F] font-bold text-sm">منصة حجز الفنانين الأولى</span>
           </div>
 
           <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
-            احجز أفضل <span className="text-[#D4AF37]">الفنانين</span>
+            احجز أفضل <span className="text-[#D9FF3F]">الفنانين</span>
             <br />
-            لفعالياتك <span className="text-[#D4AF37]">المميزة</span>
+            لفعالياتك <span className="text-[#D9FF3F]">المميزة</span>
           </h2>
 
           <p className="text-lg md:text-xl text-white/80 mb-10 max-w-3xl mx-auto leading-relaxed">
@@ -90,7 +90,7 @@ export default async function HomePage() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/artists"
-              className="flex items-center gap-2 px-8 py-4 bg-[#D4AF37] text-[#111] rounded-xl font-black text-lg hover:bg-[#b8941f] transition shadow-2xl hover:scale-105"
+              className="flex items-center gap-2 px-8 py-4 bg-[#D9FF3F] text-[#111] rounded-xl font-black text-lg hover:bg-[#EAFF75] transition shadow-2xl hover:scale-105"
             >
               <Music size={22} />
               تصفح الفنانين
@@ -98,7 +98,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/register"
-              className="flex items-center gap-2 px-8 py-4 bg-white/10 border-2 border-[#D4AF37] text-[#D4AF37] rounded-xl font-black text-lg hover:bg-[#D4AF37] hover:text-[#111] transition"
+              className="flex items-center gap-2 px-8 py-4 bg-white/10 border-2 border-[#D9FF3F] text-[#D9FF3F] rounded-xl font-black text-lg hover:bg-[#D9FF3F] hover:text-[#111] transition"
             >
               ابدأ الآن مجاناً
             </Link>
@@ -107,15 +107,15 @@ export default async function HomePage() {
           {/* إحصائيات */}
           <div className="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <p className="text-3xl md:text-4xl font-black text-[#D4AF37]">+150</p>
+              <p className="text-3xl md:text-4xl font-black text-[#D9FF3F]">+150</p>
               <p className="text-white/80 mt-2 text-sm">فنان محترف</p>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <p className="text-3xl md:text-4xl font-black text-[#D4AF37]">+500</p>
+              <p className="text-3xl md:text-4xl font-black text-[#D9FF3F]">+500</p>
               <p className="text-white/80 mt-2 text-sm">فعالية ناجحة</p>
             </div>
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <p className="text-3xl md:text-4xl font-black text-[#D4AF37]">4.9★</p>
+              <p className="text-3xl md:text-4xl font-black text-[#D9FF3F]">4.9★</p>
               <p className="text-white/80 mt-2 text-sm">تقييم العملاء</p>
             </div>
           </div>
@@ -126,11 +126,11 @@ export default async function HomePage() {
       <section id="about" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-sm font-bold mb-4">
+            <span className="inline-block px-4 py-1 bg-[#D9FF3F]/10 text-[#D9FF3F] rounded-full text-sm font-bold mb-4">
               نبذة عنا
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-              من <span className="text-[#4C1D95]">نحن؟</span>
+              من <span className="text-[#2D124F]">نحن؟</span>
             </h2>
           </div>
 
@@ -156,7 +156,7 @@ export default async function HomePage() {
                   "ضمان استرداد كامل في حالة الإلغاء",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#D4AF37] flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-full bg-[#D9FF3F] flex items-center justify-center flex-shrink-0">
                       <CheckCircle2 size={14} className="text-[#111]" />
                     </div>
                     <span className="text-gray-700 font-semibold">{item}</span>
@@ -166,10 +166,10 @@ export default async function HomePage() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-[#4C1D95] to-[#111] rounded-3xl p-8 shadow-2xl">
+              <div className="bg-gradient-to-br from-[#2D124F] to-[#111] rounded-3xl p-8 shadow-2xl">
                 <div className="bg-white rounded-2xl p-6">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#D9FF3F] to-[#EAFF75] flex items-center justify-center">
                       <span className="text-[#111] text-3xl font-black">N</span>
                     </div>
                     <div>
@@ -187,7 +187,7 @@ export default async function HomePage() {
                     ].map((stat, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                         <span className="text-gray-600 font-semibold">{stat.label}</span>
-                        <span className="text-[#4C1D95] font-black text-xl">{stat.value}</span>
+                        <span className="text-[#2D124F] font-black text-xl">{stat.value}</span>
                       </div>
                     ))}
                   </div>
@@ -195,8 +195,8 @@ export default async function HomePage() {
               </div>
 
               {/* عنصر زخرفي */}
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-[#D4AF37]/20 rounded-full blur-xl"></div>
-              <div className="absolute -top-4 -left-4 w-24 h-24 bg-[#4C1D95]/20 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-[#D9FF3F]/20 rounded-full blur-xl"></div>
+              <div className="absolute -top-4 -left-4 w-24 h-24 bg-[#2D124F]/20 rounded-full blur-xl"></div>
             </div>
           </div>
         </div>
@@ -206,11 +206,11 @@ export default async function HomePage() {
       <section id="services" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-[#faf8f0]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-sm font-bold mb-4">
+            <span className="inline-block px-4 py-1 bg-[#D9FF3F]/10 text-[#D9FF3F] rounded-full text-sm font-bold mb-4">
               خدماتنا
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-              لماذا تختار <span className="text-[#4C1D95]">Nooryi؟</span>
+              لماذا تختار <span className="text-[#2D124F]">Nooryi؟</span>
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               نوفر لك تجربة حجز استثنائية بأعلى معايير الجودة
@@ -223,13 +223,13 @@ export default async function HomePage() {
                 icon: Shield,
                 title: "فنانين معتمدين",
                 desc: "جميع الفنانين يخضعون لعملية تحقق صارمة لضمان أعلى مستوى من الاحترافية",
-                color: "from-[#4C1D95] to-[#3B1578]",
+                color: "from-[#2D124F] to-[#2D124F]",
               },
               {
                 icon: CreditCard,
                 title: "دفع آمن 100%",
                 desc: "نظام دفع مشفر وآمن مع ضمان استرداد كامل في حالة الإلغاء",
-                color: "from-[#D4AF37] to-[#b8941f]",
+                color: "from-[#D9FF3F] to-[#EAFF75]",
               },
               {
                 icon: Zap,
@@ -240,7 +240,7 @@ export default async function HomePage() {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-transparent hover:border-[#D4AF37]"
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-transparent hover:border-[#D9FF3F]"
               >
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg`}>
                   <feature.icon size={32} className="text-white" />
@@ -257,11 +257,11 @@ export default async function HomePage() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-sm font-bold mb-4">
+            <span className="inline-block px-4 py-1 bg-[#D9FF3F]/10 text-[#D9FF3F] rounded-full text-sm font-bold mb-4">
               مواهبنا
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-              فنانون <span className="text-[#4C1D95]">مميزون</span>
+              فنانون <span className="text-[#2D124F]">مميزون</span>
             </h2>
             <p className="text-gray-600">اختر من بين نخبة من أفضل الفنانين</p>
           </div>
@@ -272,9 +272,9 @@ export default async function HomePage() {
                 <Link
                   key={artist.id}
                   href={`/artists/${artist.slug}`}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-transparent hover:border-[#D4AF37]"
+                  className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all hover:-translate-y-2 border-2 border-transparent hover:border-[#D9FF3F]"
                 >
-                  <div className="relative h-56 bg-gradient-to-br from-[#4C1D95] to-[#111] overflow-hidden">
+                  <div className="relative h-56 bg-gradient-to-br from-[#2D124F] to-[#111] overflow-hidden">
                     {artist.coverImage ? (
                       <img
                         src={artist.coverImage}
@@ -283,19 +283,19 @@ export default async function HomePage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Music size={64} className="text-[#D4AF37]/50" />
+                        <Music size={64} className="text-[#D9FF3F]/50" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                     <div className="absolute bottom-4 right-4 left-4">
                       <h3 className="text-white font-black text-xl">{artist.name}</h3>
-                      <p className="text-[#D4AF37] text-sm font-bold">{artist.category}</p>
+                      <p className="text-[#D9FF3F] text-sm font-bold">{artist.category}</p>
                     </div>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-sm">عرض الملف</span>
-                      <ArrowLeft size={18} className="text-[#4C1D95] group-hover:-translate-x-1 transition-transform" />
+                      <ArrowLeft size={18} className="text-[#2D124F] group-hover:-translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </Link>
@@ -311,7 +311,7 @@ export default async function HomePage() {
           <div className="text-center mt-8">
             <Link
               href="/artists"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-[#4C1D95] text-white rounded-xl font-bold hover:bg-[#3B1578] transition shadow-lg"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-[#2D124F] text-white rounded-xl font-bold hover:bg-[#2D124F] transition shadow-lg"
             >
               عرض الكل
               <ArrowLeft size={18} />
@@ -321,10 +321,10 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════ CTA Section ═══════════ */}
-      <section className="py-20 px-4 bg-gradient-to-br from-[#4C1D95] via-[#3B1578] to-[#111] text-white">
+      <section className="py-20 px-4 bg-gradient-to-br from-[#2D124F] via-[#2D124F] to-[#111] text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-black mb-6">
-            جاهز لبدء <span className="text-[#D4AF37]">رحلتك؟</span>
+            جاهز لبدء <span className="text-[#D9FF3F]">رحلتك؟</span>
           </h2>
           <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">
             انضم إلى آلاف العملاء الذين يثقون بنا في تنظيم فعاليات لا تُنسى
@@ -332,7 +332,7 @@ export default async function HomePage() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Link
               href="/register"
-              className="px-8 py-4 bg-[#D4AF37] text-[#111] rounded-xl font-black text-lg hover:bg-[#b8941f] transition shadow-2xl"
+              className="px-8 py-4 bg-[#D9FF3F] text-[#111] rounded-xl font-black text-lg hover:bg-[#EAFF75] transition shadow-2xl"
             >
               إنشاء حساب مجاني
             </Link>
@@ -350,32 +350,32 @@ export default async function HomePage() {
       <section id="contact" className="py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-sm font-bold mb-4">
+            <span className="inline-block px-4 py-1 bg-[#D9FF3F]/10 text-[#D9FF3F] rounded-full text-sm font-bold mb-4">
               تواصل معنا
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
-              نحن هنا <span className="text-[#4C1D95]">لمساعدتك</span>
+              نحن هنا <span className="text-[#2D124F]">لمساعدتك</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#4C1D95] flex items-center justify-center mb-4">
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D9FF3F] transition">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#2D124F] flex items-center justify-center mb-4">
                 <Phone size={28} className="text-white" />
               </div>
               <h3 className="text-lg font-black text-gray-900 mb-2">اتصل بنا</h3>
               <p className="text-gray-600" dir="ltr">+20 100 000 0000</p>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#D4AF37] flex items-center justify-center mb-4">
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D9FF3F] transition">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#D9FF3F] flex items-center justify-center mb-4">
                 <Mail size={28} className="text-[#111]" />
               </div>
               <h3 className="text-lg font-black text-gray-900 mb-2">راسلنا</h3>
               <p className="text-gray-600" dir="ltr">info@noorystudio.com</p>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D9FF3F] transition">
               <div className="w-16 h-16 mx-auto rounded-2xl bg-[#111] flex items-center justify-center mb-4">
                 <MapPin size={28} className="text-white" />
               </div>
@@ -388,18 +388,18 @@ export default async function HomePage() {
 
       {/* ═══════════ التذييل ═══════════ */}
       <footer className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-white">
-        <div className="h-1 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+        <div className="h-1 bg-gradient-to-l from-[#D9FF3F] via-[#f4e5b8] to-[#D9FF3F]"></div>
 
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* عن الاستوديو */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D9FF3F] to-[#EAFF75] flex items-center justify-center">
                   <span className="text-[#111] text-2xl font-black">N</span>
                 </div>
                 <div>
-                  <p className="text-xl font-black text-[#D4AF37]">Nooryi</p>
+                  <p className="text-xl font-black text-[#D9FF3F]">Nooryi</p>
                   <p className="text-xs text-gray-400 tracking-widest">STUDIO</p>
                 </div>
               </div>
@@ -411,22 +411,22 @@ export default async function HomePage() {
 
             {/* روابط سريعة */}
             <div>
-              <h4 className="text-[#D4AF37] font-black mb-4">روابط سريعة</h4>
+              <h4 className="text-[#D9FF3F] font-black mb-4">روابط سريعة</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/" className="text-gray-400 hover:text-[#D4AF37] transition">الرئيسية</Link></li>
-                <li><Link href="/artists" className="text-gray-400 hover:text-[#D4AF37] transition">الفنانين</Link></li>
-                <li><Link href="/#about" className="text-gray-400 hover:text-[#D4AF37] transition">من نحن</Link></li>
-                <li><Link href="/#services" className="text-gray-400 hover:text-[#D4AF37] transition">خدماتنا</Link></li>
+                <li><Link href="/" className="text-gray-400 hover:text-[#D9FF3F] transition">الرئيسية</Link></li>
+                <li><Link href="/artists" className="text-gray-400 hover:text-[#D9FF3F] transition">الفنانين</Link></li>
+                <li><Link href="/#about" className="text-gray-400 hover:text-[#D9FF3F] transition">من نحن</Link></li>
+                <li><Link href="/#services" className="text-gray-400 hover:text-[#D9FF3F] transition">خدماتنا</Link></li>
               </ul>
             </div>
 
             {/* حسابات */}
             <div>
-              <h4 className="text-[#D4AF37] font-black mb-4">حسابك</h4>
+              <h4 className="text-[#D9FF3F] font-black mb-4">حسابك</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/login" className="text-gray-400 hover:text-[#D4AF37] transition">تسجيل الدخول</Link></li>
-                <li><Link href="/register" className="text-gray-400 hover:text-[#D4AF37] transition">إنشاء حساب</Link></li>
-                <li><Link href="/my-bookings" className="text-gray-400 hover:text-[#D4AF37] transition">حجوزاتي</Link></li>
+                <li><Link href="/login" className="text-gray-400 hover:text-[#D9FF3F] transition">تسجيل الدخول</Link></li>
+                <li><Link href="/register" className="text-gray-400 hover:text-[#D9FF3F] transition">إنشاء حساب</Link></li>
+                <li><Link href="/my-bookings" className="text-gray-400 hover:text-[#D9FF3F] transition">حجوزاتي</Link></li>
               </ul>
             </div>
           </div>
@@ -435,14 +435,14 @@ export default async function HomePage() {
             <p className="text-gray-400 text-sm">
               © 2026 Nooryi Studio. جميع الحقوق محفوظة.
             </p>
-            <div className="flex items-center gap-2 text-[#D4AF37]">
+            <div className="flex items-center gap-2 text-[#D9FF3F]">
               <Award size={16} />
               <span className="text-xs font-bold">منصة معتمدة رسمياً</span>
             </div>
           </div>
         </div>
 
-        <div className="h-1 bg-gradient-to-l from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+        <div className="h-1 bg-gradient-to-l from-[#D9FF3F] via-[#f4e5b8] to-[#D9FF3F]"></div>
       </footer>
     </div>
   )

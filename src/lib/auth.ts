@@ -8,7 +8,7 @@ declare module "next-auth" {
     id: string
     role: string
     phone?: string | null
-    permissions: string[]
+    permissions?: string[]
     artistId?: string | null
   }
 
@@ -28,15 +28,25 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: string
-    role: string
+    id?: string
+    role?: string
     phone?: string | null
-    permissions: string[]
+    permissions?: string[]
     artistId?: string | null
   }
 }
 
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+
+  pages: {
+    signIn: "/login",
+  },
+
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -44,29 +54,38 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("البريد الإلكتروني وكلمة السر مطلوبان")
         }
 
+        const email = credentials.email.trim().toLowerCase()
+        const password = credentials.password
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
         })
 
         if (!user) {
           throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
         }
 
-        const isHashed = user.password.startsWith('$2a$') ||
-                         user.password.startsWith('$2b$') ||
-                         user.password.startsWith('$2y$')
+        if (!user.password) {
+          throw new Error("هذا الحساب لا يحتوي على كلمة مرور")
+        }
+
+        const isHashed =
+          user.password.startsWith("$2a$") ||
+          user.password.startsWith("$2b$") ||
+          user.password.startsWith("$2y$")
 
         let isPasswordValid = false
 
         if (isHashed) {
-          isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          isPasswordValid = await bcrypt.compare(password, user.password)
         } else {
-          isPasswordValid = credentials.password === user.password
+          isPasswordValid = password === user.password
         }
 
         if (!isPasswordValid) {
@@ -77,7 +96,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role || "USER",
           phone: user.phone,
           permissions: user.permissions || [],
           artistId: user.artistId,
@@ -91,32 +110,24 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
-        token.phone = user.phone
+        token.phone = user.phone || null
         token.permissions = user.permissions || []
-        token.artistId = user.artistId
+        token.artistId = user.artistId || null
       }
+
       return token
     },
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.phone = token.phone as string
-        session.user.permissions = (token.permissions as string[]) || []
-        session.user.artistId = token.artistId as string
+        session.user.id = token.id || ""
+        session.user.role = token.role || "USER"
+        session.user.phone = token.phone || null
+        session.user.permissions = token.permissions || []
+        session.user.artistId = token.artistId || null
       }
+
       return session
     },
   },
-
-  pages: {
-    signIn: "/login",
-  },
-
-  session: {
-    strategy: "jwt",
-  },
-
-  secret: process.env.NEXTAUTH_SECRET,
 }
