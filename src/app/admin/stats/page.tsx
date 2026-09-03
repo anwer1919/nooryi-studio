@@ -1,18 +1,24 @@
 import { prisma } from "@/lib/prisma";
-import { TrendingUp, DollarSign, Calendar, Users, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, DollarSign, Calendar, Users, UserPlus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminStatsPage() {
-  const [totalBookings, confirmedBookings, totalRevenue, totalArtists, totalUsers] = await Promise.all([
+  const [totalBookings, confirmedBookings, totalRevenue, totalArtists, totalUsers, totalCustomers] = await Promise.all([
     prisma.booking.count().catch(() => 0),
-    prisma.booking.count({ where: { status: "CONFIRMED" } }).catch(() => 0),
-    prisma.booking.aggregate({ _sum: { totalAmount: true }, where: { status: "CONFIRMED" } }).catch(() => ({ _sum: { totalAmount: 0 } })),
+    prisma.booking.count({
+      where: { status: { in: ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"] } },
+    }).catch(() => 0),
+    prisma.booking.aggregate({
+      _sum: { grossAmount: true },
+      where: { status: { in: ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"] } },
+    }).catch(() => ({ _sum: { grossAmount: 0 } })),
     prisma.artist.count().catch(() => 0),
     prisma.user.count({ where: { role: "USER" } }).catch(() => 0),
+    prisma.customer.count().catch(() => 0),
   ]);
 
-  const revenue = totalRevenue._sum.totalAmount || 0;
+  const revenue = totalRevenue._sum.grossAmount || 0;
   const avgBooking = confirmedBookings > 0 ? Math.round(revenue / confirmedBookings) : 0;
   const conversionRate = totalBookings > 0 ? Math.round((confirmedBookings / totalBookings) * 100) : 0;
 
@@ -44,7 +50,7 @@ export default async function AdminStatsPage() {
         <div className="stat-card">
           <div className="flex items-center justify-between mb-3">
             <span className="stat-label">معدل التحويل</span>
-            <ArrowUpRight size={20} className="text-green-600" />
+            <TrendingUp size={20} className="text-green-600" />
           </div>
           <div className="stat-value">{conversionRate}%</div>
           <p className="text-xs text-gray-500 mt-2">من الحجوزات المؤكدة</p>
@@ -71,16 +77,16 @@ export default async function AdminStatsPage() {
               <span className="font-black text-2xl gold-text">{totalArtists}</span>
             </div>
             <div className="flex items-center justify-between p-4 bg-[#faf8f0] rounded-2xl">
-              <span className="font-semibold text-gray-700">إجمالي المستخدمين</span>
+              <span className="font-semibold text-gray-700">المستخدمين المسجلين</span>
               <span className="font-black text-2xl gold-text">{totalUsers}</span>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-[#faf8f0] rounded-2xl">
+              <span className="font-semibold text-gray-700">العملاء</span>
+              <span className="font-black text-2xl gold-text">{totalCustomers}</span>
             </div>
             <div className="flex items-center justify-between p-4 bg-[#faf8f0] rounded-2xl">
               <span className="font-semibold text-gray-700">الحجوزات المؤكدة</span>
               <span className="font-black text-2xl gold-text">{confirmedBookings}</span>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-[#faf8f0] rounded-2xl">
-              <span className="font-semibold text-gray-700">معدل التحويل</span>
-              <span className="font-black text-2xl gold-text">{conversionRate}%</span>
             </div>
           </div>
         </div>
@@ -102,11 +108,11 @@ export default async function AdminStatsPage() {
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-700">كفاءة المنصة</span>
-                <span className="text-sm font-black text-[#b8941f]">85%</span>
+                <span className="text-sm font-bold text-gray-700">متوسط قيمة الحجز</span>
+                <span className="text-sm font-black text-[#b8941f]">{avgBooking.toLocaleString()} ج.م</span>
               </div>
               <div className="h-3 bg-[#faf8f0] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#d4af37] to-[#b8941f]" style={{ width: "85%" }}></div>
+                <div className="h-full bg-gradient-to-r from-[#d4af37] to-[#b8941f]" style={{ width: "70%" }}></div>
               </div>
             </div>
             <div>

@@ -1,23 +1,60 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Calendar, Eye, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Calendar, Eye, CheckCircle2, Clock, DollarSign, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminBookingsPage() {
-  const bookings = await prisma.booking.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      artist: { select: { name: true, slug: true } },
-      user: { select: { name: true, email: true, phone: true } },
-    },
-  }).catch(() => []);
+  let bookings: any[] = [];
+  try {
+    bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        artist: { select: { name: true, slug: true } },
+        venue: { select: { name: true, city: true } },
+        user: { select: { name: true, email: true } },
+        customer: { select: { name: true, email: true, phone: true } },
+      },
+    });
+  } catch (e: any) {
+    console.error("Bookings error:", e);
+  }
+
+  const getStatusInfo = (status: string) => {
+    const s = (status || "").toUpperCase();
+    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) {
+      return { label: "مؤكد", class: "status-confirmed" };
+    }
+    if (["PENDING_APPROVAL", "PENDING", "WAITING"].includes(s)) {
+      return { label: "قيد المراجعة", class: "status-pending" };
+    }
+    if (["COMPLETED", "DONE", "FINISHED"].includes(s)) {
+      return { label: "مكتمل", class: "status-completed" };
+    }
+    if (["REJECTED", "CANCELLED", "CANCELED"].includes(s)) {
+      return { label: "مرفوض", class: "status-rejected" };
+    }
+    return { label: status || "غير محدد", class: "status-pending" };
+  };
+
+  const getAmount = (b: any): number => b.grossAmount ?? b.totalAmount ?? b.amount ?? 0;
+
+  const getClient = (b: any) => {
+    return b.user?.name || b.customer?.name || b.clientName || "عميل";
+  };
+
+  const getClientEmail = (b: any) => {
+    return b.user?.email || b.customer?.email || b.clientEmail || "—";
+  };
 
   const stats = {
     total: bookings.length,
-    pending: bookings.filter(b => b.status === "PENDING").length,
-    confirmed: bookings.filter(b => b.status === "CONFIRMED").length,
-    completed: bookings.filter(b => b.status === "COMPLETED").length,
+    pending: bookings.filter(b => ["PENDING_APPROVAL", "PENDING"].includes((b.status || "").toUpperCase())).length,
+    confirmed: bookings.filter(b => ["CONFIRMED", "APPROVED", "ACCEPTED"].includes((b.status || "").toUpperCase())).length,
+    completed: bookings.filter(b => ["COMPLETED", "DONE", "FINISHED"].includes((b.status || "").toUpperCase())).length,
+    revenue: bookings
+      .filter(b => ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"].includes((b.status || "").toUpperCase()))
+      .reduce((sum, b) => sum + getAmount(b), 0),
   };
 
   return (
@@ -25,7 +62,7 @@ export default async function AdminBookingsPage() {
       <div>
         <div className="badge-gold mb-3">إدارة الحجوزات</div>
         <h1 className="text-4xl font-black text-gray-900">الحجوزات</h1>
-        <p className="text-gray-500 mt-1">متابعة جميع حجوزات المنصة</p>
+        <p className="text-gray-500 mt-1">متابعة جميع حجوزات المنصة — {bookings.length} حجز</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -38,7 +75,7 @@ export default async function AdminBookingsPage() {
         </div>
         <div className="stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="stat-label">قيد الانتظار</span>
+            <span className="stat-label">قيد المراجعة</span>
             <Clock size={20} className="text-amber-500" />
           </div>
           <div className="stat-value">{stats.pending}</div>
@@ -52,10 +89,11 @@ export default async function AdminBookingsPage() {
         </div>
         <div className="stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="stat-label">مكتملة</span>
-            <CheckCircle2 size={20} className="text-green-600" />
+            <span className="stat-label">الإيرادات</span>
+            <DollarSign size={20} className="text-green-600" />
           </div>
-          <div className="stat-value">{stats.completed}</div>
+          <div className="stat-value">{stats.revenue.toLocaleString()}</div>
+          <p className="text-xs text-gray-500 mt-1">ج.م</p>
         </div>
       </div>
 
@@ -71,53 +109,69 @@ export default async function AdminBookingsPage() {
               <tr>
                 <th>العميل</th>
                 <th>الفنان</th>
-                <th>التاريخ</th>
+                <th>التاريخ والوقت</th>
+                <th>المكان</th>
                 <th>المبلغ</th>
                 <th>الحالة</th>
                 <th className="text-center">عرض</th>
               </tr>
             </thead>
             <tbody>
-              {bookings.map((b: any) => (
-                <tr key={b.id}>
-                  <td>
-                    <div>
-                      <p className="font-bold text-gray-900">{b.user?.name || "عميل"}</p>
-                      <p className="text-xs text-gray-500" dir="ltr">{b.user?.email}</p>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-2">
-                      <div className="icon-circle">
-                        <Music size={16} />
+              {bookings.map((b: any) => {
+                const status = getStatusInfo(b.status);
+                const amount = getAmount(b);
+                return (
+                  <tr key={b.id}>
+                    <td>
+                      <div>
+                        <p className="font-bold text-gray-900">{getClient(b)}</p>
+                        <p className="text-xs text-gray-500" dir="ltr">{getClientEmail(b)}</p>
+                        {b.clientPhone && (
+                          <p className="text-xs text-gray-400" dir="ltr">{b.clientPhone}</p>
+                        )}
                       </div>
+                    </td>
+                    <td>
                       <span className="font-bold text-gray-900">{b.artist?.name || "—"}</span>
-                    </div>
-                  </td>
-                  <td className="text-sm font-semibold text-gray-700">
-                    {new Date(b.eventDate).toLocaleDateString("ar-EG")}
-                  </td>
-                  <td className="font-black text-gray-900">
-                    {(b.totalAmount || 0).toLocaleString()} ج.م
-                  </td>
-                  <td>
-                    <span className={`status-chip ${
-                      b.status === "CONFIRMED" ? "status-confirmed" :
-                      b.status === "PENDING" ? "status-pending" :
-                      b.status === "COMPLETED" ? "status-completed" : "status-rejected"
-                    }`}>
-                      {b.status === "CONFIRMED" ? "مؤكد" :
-                       b.status === "PENDING" ? "قيد الانتظار" :
-                       b.status === "COMPLETED" ? "مكتمل" : "مرفوض"}
-                    </span>
-                  </td>
-                  <td className="text-center">
-                    <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block">
-                      <Eye size={16} />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
+                        </p>
+                        {b.timeSlot && (
+                          <p className="text-xs text-gray-500">{b.timeSlot}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-1 text-sm text-gray-700">
+                        <MapPin size={13} className="text-gray-400" />
+                        <span>{b.venue?.name || "—"}</span>
+                      </div>
+                      {b.venue?.city && (
+                        <p className="text-xs text-gray-500 mt-0.5">{b.venue.city}</p>
+                      )}
+                    </td>
+                    <td>
+                      <div>
+                        <p className="font-black text-gray-900">{amount.toLocaleString()} ج.م</p>
+                        {b.depositAmount > 0 && (
+                          <p className="text-xs text-gray-500">عربون: {b.depositAmount.toLocaleString()}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`status-chip ${status.class}`}>{status.label}</span>
+                    </td>
+                    <td className="text-center">
+                      <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block">
+                        <Eye size={16} />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -125,5 +179,3 @@ export default async function AdminBookingsPage() {
     </div>
   );
 }
-
-import { Music } from "lucide-react";
