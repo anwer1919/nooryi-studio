@@ -2,86 +2,93 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { isSuperAdmin } from "@/lib/permissions"
 import bcrypt from "bcryptjs"
 
-// جلب قائمة الأدمنز (للسوبر أدمن فقط)
+export const dynamic = "force-dynamic"
+
+// GET - جلب جميع المديرين
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    
-    if (!session?.user || !isSuperAdmin(session.user as any)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
+    }
+
+    if (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN") {
+      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 403 })
     }
 
     const admins = await prisma.user.findMany({
       where: {
-        role: { in: ["SUPER_ADMIN", "ARTIST_ADMIN"] }
+        role: { in: ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"] },
       },
-      include: {
-        artist: {
-          select: { name: true, slug: true }
-        }
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        artistId: true,
+        permissions: true,
+        createdAt: true,
       },
-      orderBy: { createdAt: "desc" }
     })
 
-    return NextResponse.json(admins)
+    return NextResponse.json({ success: true, data: admins })
   } catch (error: any) {
-    console.error("❌ Admins GET error:", error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("Error fetching admins:", error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
 
-// إنشاء أدمن جديد (للسوبر أدمن فقط)
+// POST - إضافة مدير جديد
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
-    if (!session?.user || !isSuperAdmin(session.user as any)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
+    }
+
+    if (session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, error: "ممنوع - للسوبر أدمن فقط" }, { status: 403 })
     }
 
     const body = await request.json()
-    const { email, password, name, artistId } = body
+    const { name, email, password, phone, role, artistId } = body
 
-    if (!email || !password || !name || !artistId) {
-      return NextResponse.json({ error: "جميع الحقول مطلوبة" }, { status: 400 })
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { success: false, error: "الاسم والبريد وكلمة السر مطلوبون" },
+        { status: 400 }
+      )
     }
 
-    // التحقق من وجود الإيميل
-    const existingUser = await prisma.user.findUnique({ where: { email } })
-    if (existingUser) {
-      return NextResponse.json({ error: "البريد الإلكتروني مستخدم بالفعل" }, { status: 400 })
+    // التحقق من عدم تكرار البريد
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: "هذا البريد الإلكتروني مستخدم بالفعل" },
+        { status: 400 }
+      )
     }
 
-    // التحقق من وجود الفنان
-    const artist = await prisma.artist.findUnique({ where: { id: artistId } })
-    if (!artist) {
-      return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
-    }
-
-    // تشفير كلمة المرور
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // إنشاء حساب الأدمن
     const admin = await prisma.user.create({
       data: {
+        name,
         email,
         password: hashedPassword,
-        name,
-        role: "ARTIST_ADMIN",
-        artistId,
+        phone,
+        role: role || "ARTIST_MANAGER",
+        artistId: artistId || null,
       },
-      include: {
-        artist: { select: { name: true, slug: true } }
-      }
     })
 
-    console.log("✅ Artist admin created:", admin.email)
-    return NextResponse.json(admin, { status: 201 })
+    return NextResponse.json({ success: true, data: admin })
   } catch (error: any) {
-    console.error("❌ Admin POST error:", error.message)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("Error creating admin:", error)
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }

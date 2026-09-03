@@ -24,6 +24,7 @@ const iconMap: Record<string, any> = {
   FileText,
   Settings,
   Banknote,
+  Users,
 }
 
 interface MenuItem {

@@ -3,14 +3,15 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
-// إضافة types للـ Session
 declare module "next-auth" {
   interface User {
     id: string
     role: string
     phone?: string | null
+    permissions: string[]
+    artistId?: string | null
   }
-  
+
   interface Session {
     user: {
       id: string
@@ -19,6 +20,8 @@ declare module "next-auth" {
       image?: string | null
       role: string
       phone?: string | null
+      permissions: string[]
+      artistId?: string | null
     }
   }
 }
@@ -28,6 +31,8 @@ declare module "next-auth/jwt" {
     id: string
     role: string
     phone?: string | null
+    permissions: string[]
+    artistId?: string | null
   }
 }
 
@@ -52,12 +57,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
         }
 
-        const isHashed = user.password.startsWith('$2a$') || 
+        const isHashed = user.password.startsWith('$2a$') ||
                          user.password.startsWith('$2b$') ||
                          user.password.startsWith('$2y$')
-        
+
         let isPasswordValid = false
-        
+
         if (isHashed) {
           isPasswordValid = await bcrypt.compare(credentials.password, user.password)
         } else {
@@ -74,33 +79,44 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           phone: user.phone,
+          permissions: user.permissions || [],
+          artistId: user.artistId,
         }
       },
     }),
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
         token.role = user.role
         token.phone = user.phone
+        token.permissions = user.permissions
+        token.artistId = user.artistId
       }
       return token
     },
+
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
-        session.user.phone = token.phone as string | null
+        session.user.phone = token.phone as string
+        session.user.permissions = token.permissions as string[]
+        session.user.artistId = token.artistId as string
       }
       return session
     },
   },
+
   pages: {
     signIn: "/login",
   },
+
   session: {
     strategy: "jwt",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 }
