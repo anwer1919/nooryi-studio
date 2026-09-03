@@ -1,136 +1,188 @@
-﻿import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { Calendar, Clock, CheckCircle2, AlertCircle, XCircle, TrendingUp } from "lucide-react"
-import BookingsList from "./BookingsList"
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { Calendar, Clock, MapPin, DollarSign, Music, FileText, ArrowLeft } from "lucide-react";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 export default async function MyBookingsPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getServerSession(authOptions);
+  if (!session?.user) redirect("/login?callbackUrl=/my-bookings");
 
-  if (!session?.user?.email) {
-    redirect("/login?callbackUrl=/my-bookings")
-  }
-
-  // جلب جميع حجوزات المستخدم
-  const bookings = await prisma.booking
-    .findMany({
-      where: { clientEmail: session.user.email },
+  let bookings: any[] = [];
+  try {
+    // البحث عن حجوزات مرتبطة بالـ user أو بالـ customer المرتبط به
+    bookings = await prisma.booking.findMany({
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { user: { email: session.user.email || "" } },
+          { customer: { email: session.user.email || "" } },
+          { clientEmail: session.user.email || "" },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       include: {
-        artist: { select: { name: true, profileImage: true, slug: true, category: true } },
-        venue: { select: { name: true } },
+        artist: { select: { name: true, slug: true, profileImage: true, category: true } },
+        venue: { select: { name: true, city: true } },
+        payments: { select: { amount: true, status: true, createdAt: true } },
       },
-    })
-    .catch(() => [])
-
-  // حساب الإحصائيات
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-
-  const stats = {
-    total: bookings.length,
-    upcoming: 0,
-    pending: 0,
-    completed: 0,
-    cancelled: 0,
+    });
+  } catch (e: any) {
+    console.error("My bookings error:", e);
   }
 
-  bookings.forEach((b) => {
-    const bookingDate = new Date(b.date)
-    bookingDate.setHours(0, 0, 0, 0)
-
-    if (b.status === "PENDING_APPROVAL") {
-      stats.pending++
-    } else if (b.status === "CANCELLED" || b.status === "REJECTED") {
-      stats.cancelled++
-    } else if (b.status === "COMPLETED") {
-      stats.completed++
-    } else if (
-      (b.status === "APPROVED" || b.status === "CONFIRMED") &&
-      bookingDate >= now
-    ) {
-      stats.upcoming++
-    }
-  })
+  const getStatusInfo = (status: string) => {
+    const s = (status || "").toUpperCase();
+    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) return { label: "مؤكد", class: "status-confirmed", icon: "✓" };
+    if (["PENDING_APPROVAL", "PENDING"].includes(s)) return { label: "قيد المراجعة", class: "status-pending", icon: "⏳" };
+    if (["COMPLETED", "DONE"].includes(s)) return { label: "مكتمل", class: "status-completed", icon: "✓" };
+    return { label: "مرفوض", class: "status-rejected", icon: "✕" };
+  };
 
   return (
-    <div className="min-h-screen bg-background dark:bg-dark-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        {/* العنوان */}
-        <div className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-black text-primary dark:text-white mb-2">
-            حجوزاتي
+    <div className="min-h-screen bg-white" dir="rtl">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#e8e4d9] shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center">
+              <span className="text-[#d4af37] text-2xl font-black">N</span>
+            </div>
+            <div>
+              <p className="text-xl font-black text-gray-900">Nooryi</p>
+              <p className="text-[10px] text-[#b8941f] font-bold tracking-[0.25em] uppercase">Studio</p>
+            </div>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-8">
+            <Link href="/" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">الرئيسية</Link>
+            <Link href="/artists" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">الفنانين</Link>
+            <Link href="/my-bookings" className="text-sm font-black text-[#b8941f]">حجوزاتي</Link>
+          </nav>
+
+          <Link href="/admin" className="btn-outline text-sm py-2.5">
+            لوحة التحكم
+          </Link>
+        </div>
+      </header>
+
+      <main className="pt-28 pb-20 px-4 lg:px-8 max-w-6xl mx-auto">
+        <div className="mb-10">
+          <div className="badge-gold mb-3">حسابي</div>
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">
+            حجوزاتي <span className="gold-text">الخاصة</span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            إدارة ومتابعة جميع حجوزاتك في مكان واحد
-          </p>
+          <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك في مكان واحد</p>
         </div>
 
-        {/* بطاقات الإحصائيات */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-8">
-          <div className="card-premium p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
-                <Calendar size={20} className="text-purple-700 dark:text-purple-400" />
-              </div>
-            </div>
-            <p className="text-2xl lg:text-3xl font-black text-primary dark:text-white mb-1">
-              {stats.total}
-            </p>
-            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 font-semibold">
-              إجمالي الحجوزات
-            </p>
+        {bookings.length === 0 ? (
+          <div className="card-pro text-center py-20">
+            <Calendar className="mx-auto text-gray-300 mb-4" size={64} />
+            <h3 className="text-2xl font-black text-gray-900 mb-2">لا توجد حجوزات بعد</h3>
+            <p className="text-gray-500 mb-6">ابدأ رحلتك بحجز فنانك المفضل</p>
+            <Link href="/artists" className="btn-gold inline-flex">
+              <Music size={18} />
+              تصفح الفنانين
+            </Link>
           </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            {bookings.map((b: any) => {
+              const status = getStatusInfo(b.status);
+              return (
+                <div key={b.id} className="card-pro overflow-hidden">
+                  {/* بطاقة الفنان */}
+                  <div className="relative h-48 bg-gradient-to-br from-[#111] to-[#232323] overflow-hidden">
+                    {b.artist?.profileImage ? (
+                      <img src={b.artist.profileImage} alt={b.artist.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Music size={48} className="text-[#d4af37]/50" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div className="absolute top-4 right-4">
+                      <span className={`status-chip ${status.class}`}>{status.icon} {status.label}</span>
+                    </div>
+                    <div className="absolute bottom-4 right-4 left-4">
+                      <p className="text-[#d4af37] text-xs font-bold mb-1">{b.artist?.category}</p>
+                      <h3 className="text-2xl font-black text-white">{b.artist?.name}</h3>
+                    </div>
+                  </div>
 
-          <div className="card-premium p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
-                <TrendingUp size={20} className="text-blue-700 dark:text-blue-400" />
-              </div>
-            </div>
-            <p className="text-2xl lg:text-3xl font-black text-primary dark:text-white mb-1">
-              {stats.upcoming}
-            </p>
-            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 font-semibold">
-              حجوزات قادمة
-            </p>
+                  {/* التفاصيل */}
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-start gap-2">
+                        <Calendar size={16} className="text-[#b8941f] mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500">التاريخ</p>
+                          <p className="text-sm font-bold text-gray-900">
+                            {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Clock size={16} className="text-[#b8941f] mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500">الوقت</p>
+                          <p className="text-sm font-bold text-gray-900">{b.timeSlot || "—"}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <MapPin size={16} className="text-[#b8941f] mt-0.5" />
+                      <div>
+                        <p className="text-xs text-gray-500">المكان</p>
+                        <p className="text-sm font-bold text-gray-900">
+                          {b.venue?.name || "—"}
+                          {b.venue?.city && <span className="text-gray-500"> • {b.venue.city}</span>}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <DollarSign size={16} className="text-[#b8941f] mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500">المبلغ الإجمالي</p>
+                        <p className="text-lg font-black text-gray-900">
+                          {(b.grossAmount || 0).toLocaleString()} ج.م
+                        </p>
+                        {b.depositAmount > 0 && (
+                          <p className="text-xs text-gray-500">
+                            عربون: {b.depositAmount.toLocaleString()} • متبقي: {(b.remainingAmount || 0).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-3 border-t border-[#e8e4d9]">
+                      <Link
+                        href={`/my-bookings/${b.id}`}
+                        className="btn-gold flex-1 text-sm py-2.5"
+                      >
+                        <FileText size={14} />
+                        عرض الفاتورة
+                      </Link>
+                      <Link
+                        href={`/artists/${b.artist?.slug}`}
+                        className="btn-outline flex-1 text-sm py-2.5"
+                      >
+                        <ArrowLeft size={14} />
+                        الفنان
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="card-premium p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
-                <Clock size={20} className="text-orange-700 dark:text-orange-400" />
-              </div>
-            </div>
-            <p className="text-2xl lg:text-3xl font-black text-primary dark:text-white mb-1">
-              {stats.pending}
-            </p>
-            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 font-semibold">
-              قيد المراجعة
-            </p>
-          </div>
-
-          <div className="card-premium p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-green-100 dark:bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 size={20} className="text-green-700 dark:text-green-400" />
-              </div>
-            </div>
-            <p className="text-2xl lg:text-3xl font-black text-primary dark:text-white mb-1">
-              {stats.completed}
-            </p>
-            <p className="text-xs lg:text-sm text-gray-500 dark:text-gray-400 font-semibold">
-              مكتملة
-            </p>
-          </div>
-        </div>
-
-        {/* قائمة الحجوزات مع الفلترة */}
-        <BookingsList bookings={bookings} />
-      </div>
+        )}
+      </main>
     </div>
-  )
+  );
 }

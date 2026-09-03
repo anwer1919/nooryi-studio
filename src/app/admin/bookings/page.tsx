@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Calendar, Eye, CheckCircle2, Clock, DollarSign, MapPin } from "lucide-react";
+import { Calendar, Eye, CheckCircle2, Clock, DollarSign, MapPin, Phone, Mail } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +12,9 @@ export default async function AdminBookingsPage() {
       include: {
         artist: { select: { name: true, slug: true } },
         venue: { select: { name: true, city: true } },
-        user: { select: { name: true, email: true } },
         customer: { select: { name: true, email: true, phone: true } },
+        user: { select: { name: true, email: true, phone: true } },
+        payments: { select: { amount: true, status: true } },
       },
     });
   } catch (e: any) {
@@ -22,36 +23,24 @@ export default async function AdminBookingsPage() {
 
   const getStatusInfo = (status: string) => {
     const s = (status || "").toUpperCase();
-    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) {
-      return { label: "مؤكد", class: "status-confirmed" };
-    }
-    if (["PENDING_APPROVAL", "PENDING", "WAITING"].includes(s)) {
-      return { label: "قيد المراجعة", class: "status-pending" };
-    }
-    if (["COMPLETED", "DONE", "FINISHED"].includes(s)) {
-      return { label: "مكتمل", class: "status-completed" };
-    }
-    if (["REJECTED", "CANCELLED", "CANCELED"].includes(s)) {
-      return { label: "مرفوض", class: "status-rejected" };
-    }
+    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) return { label: "مؤكد", class: "status-confirmed" };
+    if (["PENDING_APPROVAL", "PENDING", "WAITING"].includes(s)) return { label: "قيد المراجعة", class: "status-pending" };
+    if (["COMPLETED", "DONE", "FINISHED"].includes(s)) return { label: "مكتمل", class: "status-completed" };
+    if (["REJECTED", "CANCELLED", "CANCELED"].includes(s)) return { label: "مرفوض", class: "status-rejected" };
     return { label: status || "غير محدد", class: "status-pending" };
   };
 
   const getAmount = (b: any): number => b.grossAmount ?? b.totalAmount ?? b.amount ?? 0;
 
-  const getClient = (b: any) => {
-    return b.user?.name || b.customer?.name || b.clientName || "عميل";
-  };
-
-  const getClientEmail = (b: any) => {
-    return b.user?.email || b.customer?.email || b.clientEmail || "—";
-  };
+  const getClient = (b: any) => b.customer?.name || b.user?.name || b.clientName || "عميل";
+  const getClientEmail = (b: any) => b.customer?.email || b.user?.email || b.clientEmail || "—";
+  const getClientPhone = (b: any) => b.customer?.phone || b.user?.phone || b.clientPhone || b.phoneNumber || "—";
 
   const stats = {
     total: bookings.length,
     pending: bookings.filter(b => ["PENDING_APPROVAL", "PENDING"].includes((b.status || "").toUpperCase())).length,
     confirmed: bookings.filter(b => ["CONFIRMED", "APPROVED", "ACCEPTED"].includes((b.status || "").toUpperCase())).length,
-    completed: bookings.filter(b => ["COMPLETED", "DONE", "FINISHED"].includes((b.status || "").toUpperCase())).length,
+    completed: bookings.filter(b => ["COMPLETED", "DONE"].includes((b.status || "").toUpperCase())).length,
     revenue: bookings
       .filter(b => ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"].includes((b.status || "").toUpperCase()))
       .reduce((sum, b) => sum + getAmount(b), 0),
@@ -62,7 +51,7 @@ export default async function AdminBookingsPage() {
       <div>
         <div className="badge-gold mb-3">إدارة الحجوزات</div>
         <h1 className="text-4xl font-black text-gray-900">الحجوزات</h1>
-        <p className="text-gray-500 mt-1">متابعة جميع حجوزات المنصة — {bookings.length} حجز</p>
+        <p className="text-gray-500 mt-1">متابعة جميع الحجوزات — {bookings.length} حجز</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -104,76 +93,78 @@ export default async function AdminBookingsPage() {
         </div>
       ) : (
         <div className="card-pro overflow-hidden">
-          <table className="table-pro">
-            <thead>
-              <tr>
-                <th>العميل</th>
-                <th>الفنان</th>
-                <th>التاريخ والوقت</th>
-                <th>المكان</th>
-                <th>المبلغ</th>
-                <th>الحالة</th>
-                <th className="text-center">عرض</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b: any) => {
-                const status = getStatusInfo(b.status);
-                const amount = getAmount(b);
-                return (
-                  <tr key={b.id}>
-                    <td>
-                      <div>
-                        <p className="font-bold text-gray-900">{getClient(b)}</p>
-                        <p className="text-xs text-gray-500" dir="ltr">{getClientEmail(b)}</p>
-                        {b.clientPhone && (
-                          <p className="text-xs text-gray-400" dir="ltr">{b.clientPhone}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="font-bold text-gray-900">{b.artist?.name || "—"}</span>
-                    </td>
-                    <td>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
-                        </p>
-                        {b.timeSlot && (
-                          <p className="text-xs text-gray-500">{b.timeSlot}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-1 text-sm text-gray-700">
-                        <MapPin size={13} className="text-gray-400" />
-                        <span>{b.venue?.name || "—"}</span>
-                      </div>
-                      {b.venue?.city && (
-                        <p className="text-xs text-gray-500 mt-0.5">{b.venue.city}</p>
-                      )}
-                    </td>
-                    <td>
-                      <div>
-                        <p className="font-black text-gray-900">{amount.toLocaleString()} ج.م</p>
-                        {b.depositAmount > 0 && (
-                          <p className="text-xs text-gray-500">عربون: {b.depositAmount.toLocaleString()}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`status-chip ${status.class}`}>{status.label}</span>
-                    </td>
-                    <td className="text-center">
-                      <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block">
-                        <Eye size={16} />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto touch-pan-x">
+            <table className="table-pro min-w-[1000px]">
+              <thead>
+                <tr>
+                  <th>العميل</th>
+                  <th>الفنان</th>
+                  <th>التاريخ</th>
+                  <th>المكان</th>
+                  <th>المبلغ</th>
+                  <th>الحالة</th>
+                  <th className="text-center">عرض</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map((b: any) => {
+                  const status = getStatusInfo(b.status);
+                  const amount = getAmount(b);
+                  return (
+                    <tr key={b.id}>
+                      <td>
+                        <div>
+                          <p className="font-bold text-gray-900">{getClient(b)}</p>
+                          <div className="flex items-center gap-1 mt-1 text-xs text-gray-500" dir="ltr">
+                            <Mail size={11} />
+                            <span>{getClientEmail(b)}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500" dir="ltr">
+                            <Phone size={11} />
+                            <span>{getClientPhone(b)}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="font-bold text-gray-900">{b.artist?.name || "—"}</span>
+                      </td>
+                      <td>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
+                          </p>
+                          {b.timeSlot && <p className="text-xs text-gray-500">{b.timeSlot}</p>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1 text-sm text-gray-700">
+                          <MapPin size={13} className="text-gray-400" />
+                          <span>{b.venue?.name || "—"}</span>
+                        </div>
+                        {b.venue?.city && <p className="text-xs text-gray-500 mt-0.5">{b.venue.city}</p>}
+                      </td>
+                      <td>
+                        <div>
+                          <p className="font-black text-gray-900">{amount.toLocaleString()} ج.م</p>
+                          {b.depositAmount > 0 && (
+                            <p className="text-xs text-gray-500">عربون: {b.depositAmount.toLocaleString()}</p>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`status-chip ${status.class}`}>{status.label}</span>
+                      </td>
+                      <td className="text-center">
+                        <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block">
+                          <Eye size={16} />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
