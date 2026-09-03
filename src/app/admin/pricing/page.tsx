@@ -43,7 +43,8 @@ export default function AdminPricingPage() {
       setArtist(selected || null)
       fetchRegions()
     }
-  }, [selectedArtist, artists])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedArtist])
 
   const fetchArtists = async () => {
     try {
@@ -51,7 +52,6 @@ export default function AdminPricingPage() {
       if (!res.ok) throw new Error("Failed to fetch artists")
       const data = await res.json()
       const artistsArray = Array.isArray(data) ? data : (data.artists || data.data || [])
-      console.log("✅ Artists fetched:", artistsArray.length)
       setArtists(artistsArray)
     } catch (err) {
       console.error("Error fetching artists:", err)
@@ -63,29 +63,15 @@ export default function AdminPricingPage() {
     setLoading(true)
     try {
       const selected = artists.find((a) => a.id === selectedArtist)
-      if (!selected) {
-        console.log("❌ No artist selected")
-        setRegions([])
-        setLoading(false)
-        return
-      }
+      if (!selected) return
 
-      console.log("🔍 Fetching regions for:", selected.slug)
       const res = await fetch(`/api/artists/${selected.slug}/pricing-regions`)
-      
       if (!res.ok) throw new Error("Failed to fetch regions")
-      
       const data = await res.json()
-      console.log("📦 Regions response:", data)
-      
-      const regionsArray = Array.isArray(data) 
-        ? data 
-        : (data.data || data.regions || [])
-      
-      console.log("✅ Regions array:", regionsArray.length, regionsArray)
+      const regionsArray = Array.isArray(data) ? data : (data.data || data.regions || [])
       setRegions(regionsArray)
     } catch (err) {
-      console.error("❌ Error fetching regions:", err)
+      console.error("Error fetching regions:", err)
       setRegions([])
     } finally {
       setLoading(false)
@@ -109,8 +95,6 @@ export default function AdminPricingPage() {
         ? `/api/artists/${selected.slug}/pricing-regions/${editingId}`
         : `/api/artists/${selected.slug}/pricing-regions`
 
-      console.log(`📝 ${method} to:`, url)
-
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -121,11 +105,9 @@ export default function AdminPricingPage() {
         }),
       })
 
-      const result = await res.json()
-      console.log("📦 Response:", result)
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || "فشل الحفظ")
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || "فشل الحفظ")
       }
 
       setMessage({
@@ -134,13 +116,9 @@ export default function AdminPricingPage() {
       })
       setFormData({ regionName: "", basePrice: "", travelFee: "0" })
       setEditingId(null)
-      
-      // ✅ إعادة جلب المناطق فوراً
       await fetchRegions()
-      
       setTimeout(() => setMessage(null), 3000)
     } catch (err: any) {
-      console.error("❌ Error saving region:", err)
       setMessage({ type: "error", text: err.message || "فشل الحفظ" })
     } finally {
       setSaving(false)
@@ -163,21 +141,14 @@ export default function AdminPricingPage() {
     if (!selected) return
 
     try {
-      const res = await fetch(`/api/artists/${selected.slug}/pricing-regions/${id}`, {
+      await fetch(`/api/artists/${selected.slug}/pricing-regions/${id}`, {
         method: "DELETE",
       })
-      
-      const result = await res.json()
-      
-      if (!res.ok || !result.success) {
-        throw new Error(result.error || "فشل الحذف")
-      }
-
       setMessage({ type: "success", text: "تم الحذف بنجاح" })
       await fetchRegions()
       setTimeout(() => setMessage(null), 3000)
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "فشل الحذف" })
+    } catch (err) {
+      setMessage({ type: "error", text: "فشل الحذف" })
     }
   }
 
@@ -186,15 +157,16 @@ export default function AdminPricingPage() {
     setFormData({ regionName: "", basePrice: "", travelFee: "0" })
   }
 
-  const handlePrint = () => {
-    console.log("🖨️ Printing. Regions count:", regions.length)
-    window.print()
-  }
+  const handlePrint = () => window.print()
 
+  // ✅ حسابات الإجمالي العام
   const totalRegions = regions.length
-  const avgPrice = totalRegions > 0
-    ? Math.round(regions.reduce((sum, r) => sum + r.basePrice, 0) / totalRegions)
-    : 0
+  const totalBasePrice = regions.reduce((sum, r) => sum + Number(r.basePrice || 0), 0)
+  const totalTravelFee = regions.reduce((sum, r) => sum + Number(r.travelFee || 0), 0)
+  const totalOverall = totalBasePrice + totalTravelFee
+  const totalDeposit = Math.round(totalOverall * 0.2)
+  const avgPrice = totalRegions > 0 ? Math.round(totalBasePrice / totalRegions) : 0
+
   const reportId = `PRC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${artist?.id?.slice(-6)?.toUpperCase() || "000000"}`
   const qrValue = `${STUDIO_INFO.website}/admin/pricing`
 
@@ -223,10 +195,12 @@ export default function AdminPricingPage() {
         break-inside: avoid;
         page-break-inside: avoid;
       }
-      .region-card {
+      .pricing-table {
+        break-inside: auto;
+      }
+      .pricing-table tr {
         break-inside: avoid;
         page-break-inside: avoid;
-        margin-bottom: 8px;
       }
       .stamp-container {
         width: 100px !important;
@@ -240,6 +214,15 @@ export default function AdminPricingPage() {
         height: 90px !important;
       }
     }
+
+    @keyframes stampRotate {
+      from { transform: rotate(-8deg) scale(0.8); opacity: 0; }
+      to { transform: rotate(-8deg) scale(1); opacity: 1; }
+    }
+
+    .official-stamp {
+      animation: stampRotate 0.5s ease-out;
+    }
   `
 
   return (
@@ -249,7 +232,7 @@ export default function AdminPricingPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 lg:p-8" dir="rtl">
         <div className="max-w-6xl mx-auto">
 
-          {/* Header */}
+          {/* ═══════════ HEADER مع زر الطباعة ═══════════ */}
           <div className="mb-6 no-print">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
@@ -338,7 +321,7 @@ export default function AdminPricingPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      السعر الأساسي (ج.م) *
+                      التسعيرة (ج.م) *
                     </label>
                     <input
                       type="number"
@@ -404,7 +387,7 @@ export default function AdminPricingPage() {
                 </div>
               </div>
 
-              {/* ✅ منطقة الطباعة - تظهر البيانات دائماً */}
+              {/* ═══════════ منطقة الطباعة ═══════════ */}
               <div className="print-area bg-white rounded-2xl shadow-xl border-2 border-[#D4AF37] overflow-hidden">
 
                 {/* الترويسة */}
@@ -474,220 +457,145 @@ export default function AdminPricingPage() {
                   </div>
                 </div>
 
-                {/* ✅ قائمة الأسعار - تظهر دائماً حتى لو فارغة */}
-                {/* قائمة الأسعار */}
-<div className="p-4 md:p-6 relative min-h-[400px]">
-  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
-    <span className="text-8xl font-black text-[#111] rotate-[-30deg]">
-      {STUDIO_INFO.name}
-    </span>
-  </div>
-
-  {loading ? (
-    <div className="flex items-center justify-center py-12 relative z-10">
-      <Loader2 className="animate-spin text-[#D4AF37]" size={32} />
-      <span className="mr-3 text-gray-600">جاري تحميل المناطق...</span>
-    </div>
-  ) : regions.length === 0 ? (
-    <div className="text-center py-12 bg-gray-50 rounded-xl relative z-10">
-      <Banknote className="mx-auto text-gray-300 mb-3" size={48} />
-      <p className="text-gray-500 font-semibold mb-2">لا توجد مناطق مسعرة بعد</p>
-      <p className="text-sm text-gray-400">أضف منطقة جديدة باستخدام النموذج أعلاه</p>
-    </div>
-  ) : (
-    <div className="relative z-10 overflow-hidden rounded-xl border-2 border-[#D4AF37]/40 bg-white">
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="bg-[#111] text-[#D4AF37]">
-            <th className="p-3 text-center font-black border border-[#D4AF37]/30 w-12">
-              #
-            </th>
-            <th className="p-3 text-right font-black border border-[#D4AF37]/30">
-              المنطقة
-            </th>
-            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
-              التسعيرة
-            </th>
-            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
-              رسوم السفر
-            </th>
-            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
-              الإجمالي
-            </th>
-            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
-              العربون 20%
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {regions.map((region, index) => {
-            const basePrice = Number(region.basePrice || 0)
-            const travelFee = Number(region.travelFee || 0)
-            const totalPrice = basePrice + travelFee
-            const deposit = Math.round(totalPrice * 0.2)
-
-            return (
-              <tr
-                key={region.id}
-                className={index % 2 === 0 ? "bg-white" : "bg-[#faf8f0]"}
-              >
-                <td className="p-3 text-center font-bold text-gray-800 border border-gray-200">
-                  {index + 1}
-                </td>
-
-                <td className="p-3 font-black text-gray-900 border border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-[#D4AF37]" />
-                    {region.regionName}
+                {/* ═══════════ جدول الأسعار ═══════════ */}
+                <div className="p-4 md:p-6 relative min-h-[400px]">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] z-0">
+                    <span className="text-8xl font-black text-[#111] rotate-[-30deg]">
+                      {STUDIO_INFO.name}
+                    </span>
                   </div>
-                </td>
-
-                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
-                  {basePrice.toLocaleString()} ج.م
-                </td>
-
-                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
-                  {travelFee > 0 ? `${travelFee.toLocaleString()} ج.م` : "-"}
-                </td>
-
-                <td className="p-3 text-center font-black text-[#D4AF37] border border-gray-200">
-                  {totalPrice.toLocaleString()} ج.م
-                </td>
-
-                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
-                  {deposit.toLocaleString()} ج.م
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-
-        <tfoot>
-          <tr className="bg-[#111] text-[#D4AF37]">
-            <td
-              colSpan={2}
-              className="p-3 font-black border border-[#D4AF37]/30"
-            >
-              الإجمالي العام
-            </td>
-
-            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
-              {regions
-                .reduce((sum, r) => sum + Number(r.basePrice || 0), 0)
-                .toLocaleString()} ج.م
-            </td>
-
-            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
-              {regions
-                .reduce((sum, r) => sum + Number(r.travelFee || 0), 0)
-                .toLocaleString()} ج.م
-            </td>
-
-            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
-              {regions
-                .reduce(
-                  (sum, r) =>
-                    sum + Number(r.basePrice || 0) + Number(r.travelFee || 0),
-                  0
-                )
-                .toLocaleString()} ج.م
-            </td>
-
-            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
-              {Math.round(
-                regions.reduce(
-                  (sum, r) =>
-                    sum + Number(r.basePrice || 0) + Number(r.travelFee || 0),
-                  0
-                ) * 0.2
-              ).toLocaleString()} ج.م
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  )}
-</div>
 
                   {loading ? (
-                    <div className="flex items-center justify-center py-12">
+                    <div className="flex items-center justify-center py-12 relative z-10">
                       <Loader2 className="animate-spin text-[#D4AF37]" size={32} />
                       <span className="mr-3 text-gray-600">جاري تحميل المناطق...</span>
                     </div>
                   ) : regions.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl">
+                    <div className="text-center py-12 bg-gray-50 rounded-xl relative z-10">
                       <Banknote className="mx-auto text-gray-300 mb-3" size={48} />
                       <p className="text-gray-500 font-semibold mb-2">لا توجد مناطق مسعرة بعد</p>
                       <p className="text-sm text-gray-400">أضف منطقة جديدة باستخدام النموذج أعلاه</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10">
-                      {regions.map((region) => {
-                        const totalPrice = region.basePrice + (region.travelFee || 0)
-                        const deposit = Math.round(totalPrice * 0.2)
+                    <div className="pricing-table relative z-10 overflow-hidden rounded-xl border-2 border-[#D4AF37]/40 bg-white">
+                      <table className="w-full border-collapse text-sm">
+                        <thead>
+                          <tr className="bg-[#111] text-[#D4AF37]">
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30 w-12">
+                              #
+                            </th>
+                            <th className="p-3 text-right font-black border border-[#D4AF37]/30">
+                              المنطقة
+                            </th>
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              التسعيرة
+                            </th>
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              رسوم السفر
+                            </th>
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              الإجمالي
+                            </th>
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              العربون 20%
+                            </th>
+                            <th className="p-3 text-center font-black border border-[#D4AF37]/30 no-print w-24">
+                              إجراءات
+                            </th>
+                          </tr>
+                        </thead>
 
-                        return (
-                          <div
-                            key={region.id}
-                            className="region-card p-5 bg-white border-2 border-[#D4AF37]/30 rounded-xl"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-2">
-                                <MapPin className="text-[#D4AF37]" size={20} />
-                                <h4 className="text-lg font-black text-gray-900">
-                                  {region.regionName}
-                                </h4>
-                              </div>
-                              <div className="flex items-center gap-1 no-print">
-                                <button
-                                  onClick={() => handleEdit(region)}
-                                  className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition"
-                                  title="تعديل"
-                                >
-                                  <Edit3 size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(region.id)}
-                                  className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition"
-                                  title="حذف"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            </div>
+                        <tbody>
+                          {regions.map((region, index) => {
+                            const basePrice = Number(region.basePrice || 0)
+                            const travelFee = Number(region.travelFee || 0)
+                            const totalPrice = basePrice + travelFee
+                            const deposit = Math.round(totalPrice * 0.2)
 
-                            <div className="space-y-1.5 text-sm">
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-600">السعر الأساسي</span>
-                                <span className="font-bold text-gray-900">
-                                  {region.basePrice.toLocaleString()} ج.م
-                                </span>
-                              </div>
+                            return (
+                              <tr
+                                key={region.id}
+                                className={index % 2 === 0 ? "bg-white" : "bg-[#faf8f0]"}
+                              >
+                                <td className="p-3 text-center font-bold text-gray-800 border border-gray-200">
+                                  {index + 1}
+                                </td>
 
-                              {region.travelFee > 0 && (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-gray-600">رسوم السفر</span>
-                                  <span className="font-bold text-gray-900">
-                                    +{region.travelFee.toLocaleString()} ج.م
-                                  </span>
-                                </div>
-                              )}
+                                <td className="p-3 font-black text-gray-900 border border-gray-200">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin size={16} className="text-[#D4AF37] flex-shrink-0" />
+                                    {region.regionName}
+                                  </div>
+                                </td>
 
-                              <div className="pt-2 mt-2 border-t border-[#D4AF37]/20 flex items-center justify-between">
-                                <span className="font-black text-gray-900">الإجمالي</span>
-                                <span className="text-lg font-black text-[#D4AF37]">
+                                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
+                                  {basePrice.toLocaleString()} ج.م
+                                </td>
+
+                                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
+                                  {travelFee > 0 ? `${travelFee.toLocaleString()} ج.م` : "-"}
+                                </td>
+
+                                <td className="p-3 text-center font-black text-[#D4AF37] border border-gray-200">
                                   {totalPrice.toLocaleString()} ج.م
-                                </span>
-                              </div>
+                                </td>
 
-                              <p className="text-xs text-gray-500 mt-1">
-                                العربون: {deposit.toLocaleString()} ج.م (20%)
-                              </p>
-                            </div>
-                          </div>
-                        )
-                      })}
+                                <td className="p-3 text-center font-bold text-gray-900 border border-gray-200">
+                                  {deposit.toLocaleString()} ج.م
+                                </td>
+
+                                <td className="p-3 border border-gray-200 no-print">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      onClick={() => handleEdit(region)}
+                                      className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition"
+                                      title="تعديل"
+                                    >
+                                      <Edit3 size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(region.id)}
+                                      className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition"
+                                      title="حذف"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+
+                        <tfoot>
+                          <tr className="bg-[#111] text-[#D4AF37]">
+                            <td
+                              colSpan={2}
+                              className="p-3 font-black border border-[#D4AF37]/30 text-right"
+                            >
+                              الإجمالي العام
+                            </td>
+
+                            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              {totalBasePrice.toLocaleString()} ج.م
+                            </td>
+
+                            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              {totalTravelFee.toLocaleString()} ج.م
+                            </td>
+
+                            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              {totalOverall.toLocaleString()} ج.م
+                            </td>
+
+                            <td className="p-3 text-center font-black border border-[#D4AF37]/30">
+                              {totalDeposit.toLocaleString()} ج.م
+                            </td>
+
+                            <td className="p-3 border border-[#D4AF37]/30 no-print"></td>
+                          </tr>
+                        </tfoot>
+                      </table>
                     </div>
                   )}
                 </div>
@@ -731,6 +639,8 @@ export default function AdminPricingPage() {
                           </p>
                         </div>
                       </div>
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[#D4AF37] text-xs">★ ★ ★</div>
                     </div>
                   </div>
                 </div>
