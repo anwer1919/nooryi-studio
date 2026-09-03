@@ -1,10 +1,10 @@
-﻿import type { Metadata } from "next"
-import { KageLandingPage } from "@/shaders/landing-pages/LandingPages"
+﻿import type { Metadata } from "next";
+import { KageLandingPage } from "@/shaders/landing-pages/LandingPages";
 
 export const metadata: Metadata = {
   title: "Nooryi Studio — منصة حجز الفنانين",
   description: "منصة احترافية لحجز أفضل الفنانين والموسيقيين",
-}
+};
 
 export default function HomePage() {
   return (
@@ -29,5 +29,5 @@ export default function HomePage() {
         headingLetterSpacing={-0.012}
       />
     </main>
-  )
+  );
 }
