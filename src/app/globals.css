@@ -1,6 +1,4 @@
-﻿@import "tailwindcss";
-
-/* ═══════════ إعدادات أساسية فقط — بدون تعارض مع Kage ═══════════ */
+@import "tailwindcss";
 
 *,
 *::before,
@@ -20,13 +18,9 @@ body {
   background-color: #ffffff;
   color: #111111;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-img,
-video,
-canvas,
-svg {
+img, video, canvas, svg {
   max-width: 100%;
   height: auto;
   display: block;
@@ -42,27 +36,6 @@ button {
   cursor: pointer;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   font-family: inherit;
-}
-
-/* سكرول بار أنيق */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c4c4c4;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
 }
