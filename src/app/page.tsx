@@ -47,12 +47,36 @@ async function getFeaturedArtists() {
     return [];
   }
 }
+async function getSiteSettings() {
+  try {
+    const settings = await prisma.siteSetting.findUnique({
+      where: { id: "site_settings" }
+    })
+    return settings || {
+      siteName: "Nooryi",
+      tagline: "منصة حجز الفنانين الأولى",
+      email: "info@noorystudio.com",
+      phone: "+20 100 000 0000",
+      address: "القاهرة، مصر",
+    }
+  } catch (error) {
+    console.error("Error fetching settings:", error)
+    return {
+      siteName: "Nooryi",
+      tagline: "منصة حجز الفنانين الأولى",
+      email: "info@noorystudio.com",
+      phone: "+20 100 000 0000",
+      address: "القاهرة، مصر",
+    }
+  }
+}
+
 export default async function HomePage() {
   const featuredArtists = await getFeaturedArtists();
   const siteSettings = await getSiteSettings();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#111] dark:bg-[#0a0a0a] transition-colors duration-300" dir="rtl">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] transition-colors duration-300" dir="rtl">
       {/* ═══════════ الترويسة ═══════════ */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-[#111]/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">

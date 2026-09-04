@@ -1,7 +1,0 @@
--- AlterTable: Artist payment fields
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "bankName" TEXT;
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "bankAccount" TEXT;
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "iban" TEXT;
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "vodafoneCash" TEXT;
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "instaPay" TEXT;
-ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "paymentNote" TEXT;
