@@ -49,6 +49,7 @@ async function getFeaturedArtists() {
 }
 export default async function HomePage() {
   const featuredArtists = await getFeaturedArtists();
+  const siteSettings = await getSiteSettings();
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#111] dark:bg-[#0a0a0a] transition-colors duration-300" dir="rtl">
@@ -64,8 +65,8 @@ export default async function HomePage() {
                 </div>
               </div>
               <div>
-                <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Nooryi</h1>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">Studio</p>
+                <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{siteSettings.siteName}</h1>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
               </div>
             </Link>
 
@@ -284,8 +285,8 @@ export default async function HomePage() {
                       <span className="text-[#111] text-3xl font-black">N</span>
                     </div>
                     <div>
-                      <p className="text-xl font-black text-gray-900 dark:text-white">Nooryi Studio</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">منصة حجز الفنانين</p>
+                      <p className="text-xl font-black text-gray-900 dark:text-white">{siteSettings.siteName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{siteSettings.tagline}</p>
                     </div>
                   </div>
 
@@ -354,7 +355,7 @@ export default async function HomePage() {
                 <Phone size={28} className="text-[#D4AF37]" />
               </div>
               <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">اتصل بنا</h3>
-              <p className="text-gray-600 dark:text-gray-400" dir="ltr">+20 100 000 0000</p>
+              <p className="text-gray-600 dark:text-gray-400" dir="ltr">{siteSettings.phone}</p>
             </div>
 
             <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
@@ -362,7 +363,7 @@ export default async function HomePage() {
                 <Mail size={28} className="text-[#111]" />
               </div>
               <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">راسلنا</h3>
-              <p className="text-gray-600 dark:text-gray-400" dir="ltr">info@noorystudio.com</p>
+              <p className="text-gray-600 dark:text-gray-400" dir="ltr">{siteSettings.email}</p>
             </div>
 
             <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
@@ -370,7 +371,7 @@ export default async function HomePage() {
                 <MapPin size={28} className="text-[#D4AF37]" />
               </div>
               <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">موقعنا</h3>
-              <p className="text-gray-600 dark:text-gray-400">القاهرة، مصر</p>
+              <p className="text-gray-600 dark:text-gray-400">{siteSettings.address}</p>
             </div>
           </div>
         </div>
@@ -387,7 +388,7 @@ export default async function HomePage() {
                 </div>
                 <div>
                   <p className="text-xl font-black text-gray-900 dark:text-white">Nooryi</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">Studio</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
                 </div>
               </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-md">
@@ -418,7 +419,7 @@ export default async function HomePage() {
 
           <SocialLinks />
           <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">© 2026 Nooryi Studio. جميع الحقوق محفوظة.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">© 2026 {siteSettings.siteName}. جميع الحقوق محفوظة.</p>
             <div className="flex items-center gap-2 text-[#D4AF37]">
               <Award size={16} />
               <span className="text-xs font-bold">منصة معتمدة رسمياً</span>
