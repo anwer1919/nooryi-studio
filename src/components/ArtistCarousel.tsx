@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Star, Calendar, Music, ChevronRight, ChevronLeft, Award } from "lucide-react"
+import { Star, Calendar, Music, ChevronRight, ChevronLeft, Award, Play } from "lucide-react"
 
 interface Artist {
   id: string
@@ -12,210 +11,229 @@ interface Artist {
   category: string | null
   bio: string | null
   profileImage: string | null
+  coverImage?: string | null
   rating?: number
   reviewsCount?: number
   bookingsCount?: number
 }
 
 export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [maxIndex, setMaxIndex] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [startX, setStartX] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
+  // التمرير التلقائي
   useEffect(() => {
-    const updateMaxIndex = () => {
-      if (scrollRef.current) {
-        const { scrollWidth, clientWidth } = scrollRef.current
-        const cardWidth = 320 + 24 // عرض البطاقة + الفجوة
-        const visibleCards = Math.floor(clientWidth / cardWidth)
-        setMaxIndex(Math.max(0, artists.length - visibleCards))
-      }
+    if (isAutoPlaying && artists.length > 1) {
+      timerRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % artists.length)
+      }, 5000)
     }
-    updateMaxIndex()
-    window.addEventListener("resize", updateMaxIndex)
-    return () => window.removeEventListener("resize", updateMaxIndex)
-  }, [artists.length])
-
-  const scrollToIndex = (index: number) => {
-    if (scrollRef.current) {
-      const cardWidth = 320 + 24
-      const targetScroll = index * cardWidth
-      scrollRef.current.scrollTo({
-        left: targetScroll,
-        behavior: "smooth"
-      })
-      setCurrentIndex(index)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
     }
+  }, [isAutoPlaying, artists.length])
+
+  const goTo = (index: number) => {
+    setCurrentIndex(index)
+    setIsAutoPlaying(false)
+    if (timerRef.current) clearInterval(timerRef.current)
+    setTimeout(() => setIsAutoPlaying(true), 10000)
   }
 
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      const cardWidth = 320 + 24
-      const index = Math.round(scrollRef.current.scrollLeft / cardWidth)
-      setCurrentIndex(Math.min(index, maxIndex))
-    }
-  }
-
-  // السحب باللمس / الماوس
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0))
-    setScrollLeft(scrollRef.current?.scrollLeft || 0)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    e.preventDefault()
-    const x = e.pageX - (scrollRef.current?.offsetLeft || 0)
-    const walk = (x - startX) * 1.5
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollLeft - walk
-    }
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-    handleScroll()
-  }
+  const next = () => goTo((currentIndex + 1) % artists.length)
+  const prev = () => goTo((currentIndex - 1 + artists.length) % artists.length)
 
   if (artists.length === 0) return null
 
   return (
-    <div className="relative">
-      {/* أزرار التنقل */}
+    <div 
+      className="relative"
+      onMouseEnter={() => setIsAutoPlaying(false)}
+      onMouseLeave={() => setIsAutoPlaying(true)}
+    >
+      {/* ═══════════ حاوية البطاقات ثلاثية الأبعاد ═══════════ */}
+      <div className="relative h-[500px] md:h-[560px] flex items-center justify-center" style={{ perspective: "1500px" }}>
+        {artists.map((artist, index) => {
+          const position = index - currentIndex
+          const absPosition = Math.abs(position)
+          
+          // حساب الـ transform للبطاقة
+          let transform = ""
+          let zIndex = 0
+          let opacity = 0
+          let scale = 0.7
+
+          if (position === 0) {
+            // البطاقة النشطة في المنتصف
+            transform = "translateX(0) translateZ(0) rotateY(0deg)"
+            zIndex = 30
+            opacity = 1
+            scale = 1
+          } else if (position === 1 || position === -(artists.length - 1)) {
+            // البطاقة على اليمين
+            transform = "translateX(280px) translateZ(-200px) rotateY(-25deg)"
+            zIndex = 20
+            opacity = 0.7
+            scale = 0.85
+          } else if (position === -1 || position === artists.length - 1) {
+            // البطاقة على اليسار
+            transform = "translateX(-280px) translateZ(-200px) rotateY(25deg)"
+            zIndex = 20
+            opacity = 0.7
+            scale = 0.85
+          } else {
+            // البطاقات الأخرى (مخفية)
+            transform = position > 0 
+              ? "translateX(500px) translateZ(-400px) rotateY(-40deg)"
+              : "translateX(-500px) translateZ(-400px) rotateY(40deg)"
+            zIndex = 10
+            opacity = 0
+            scale = 0.6
+          }
+
+          return (
+            <div
+              key={artist.id}
+              className="absolute w-[320px] md:w-[380px] transition-all duration-700 ease-out"
+              style={{
+                transform,
+                transformStyle: "preserve-3d",
+                zIndex,
+                opacity,
+                transform: `${transform} scale(${scale})`,
+              }}
+            >
+              <Link href={`/artists/${artist.slug}`} className="block group">
+                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
+                  {/* صورة الفنان */}
+                  <div className="relative h-72 md:h-80 overflow-hidden">
+                    {artist.coverImage || artist.profileImage ? (
+                      <img
+                        src={artist.coverImage || artist.profileImage || ""}
+                        alt={artist.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#D4AF37]/20 to-[#111] flex items-center justify-center">
+                        <Music size={80} className="text-[#D4AF37]/30" />
+                      </div>
+                    )}
+
+                    {/* تأثير التدرج */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+
+                    {/* شارة "معتمد" */}
+                    <div className="absolute top-4 right-4 px-3 py-1.5 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] rounded-full flex items-center gap-1.5 shadow-lg">
+                      <Award size={12} className="text-[#111]" />
+                      <span className="text-[10px] font-black text-[#111] uppercase tracking-wider">معتمد</span>
+                    </div>
+
+                    {/* التقييم */}
+                    <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/80 backdrop-blur-md rounded-full flex items-center gap-1.5 border border-[#D4AF37]/30">
+                      <Star size={14} className="text-[#D4AF37] fill-[#D4AF37]" />
+                      <span className="text-sm font-black text-white">
+                        {artist.rating || "5.0"}
+                      </span>
+                    </div>
+
+                    {/* زر التشغيل */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/50 animate-pulse-gold">
+                        <Play size={24} className="text-[#111] ml-1" fill="#111" />
+                      </div>
+                    </div>
+
+                    {/* معلومات على الصورة */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <p className="text-[#D4AF37] text-xs font-bold uppercase tracking-[0.2em] mb-1">
+                        {artist.category || "فنان"}
+                      </p>
+                      <h3 className="text-3xl font-black text-white leading-tight drop-shadow-lg">
+                        {artist.name}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* التفاصيل */}
+                  <div className="p-6 space-y-4">
+                    <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                      {artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}
+                    </p>
+
+                    {/* الإحصائيات */}
+                    <div className="flex items-center justify-between pt-4 border-t border-[#D4AF37]/10">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar size={14} className="text-[#D4AF37]" />
+                          <span className="text-xs font-bold text-gray-400">
+                            {artist.bookingsCount || 0} حجز
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Star size={14} className="text-[#D4AF37]" />
+                          <span className="text-xs font-bold text-gray-400">
+                            {artist.reviewsCount || 0} تقييم
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-[#D4AF37] group-hover:translate-x-[-4px] transition-transform">
+                        احجز الآن ←
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* توهج ذهبي */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#D4AF37]/0 via-[#D4AF37]/0 to-[#D4AF37]/0 group-hover:from-[#D4AF37]/5 group-hover:via-transparent group-hover:to-[#D4AF37]/5 transition-all duration-500 pointer-events-none"></div>
+                </div>
+              </Link>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ═══════════ أزرار التنقل ═══════════ */}
       <button
-        onClick={() => scrollToIndex(Math.max(0, currentIndex - 1))}
-        disabled={currentIndex === 0}
-        className={`absolute -right-16 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-lg transition-all duration-300 ${
-          currentIndex === 0 
-            ? "opacity-30 cursor-not-allowed" 
-            : "hover:scale-110 hover:shadow-xl hover:shadow-[#D4AF37]/30"
-        }`}
+        onClick={prev}
+        className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-xl shadow-[#D4AF37]/30 hover:scale-110 hover:shadow-2xl transition-all duration-300 z-40"
         aria-label="السابق"
       >
         <ChevronRight size={24} />
       </button>
 
       <button
-        onClick={() => scrollToIndex(Math.min(maxIndex, currentIndex + 1))}
-        disabled={currentIndex >= maxIndex}
-        className={`absolute -left-16 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-lg transition-all duration-300 ${
-          currentIndex >= maxIndex 
-            ? "opacity-30 cursor-not-allowed" 
-            : "hover:scale-110 hover:shadow-xl hover:shadow-[#D4AF37]/30"
-        }`}
+        onClick={next}
+        className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-xl shadow-[#D4AF37]/30 hover:scale-110 hover:shadow-2xl transition-all duration-300 z-40"
         aria-label="التالي"
       >
         <ChevronLeft size={24} />
       </button>
 
-      {/* الحاوية القابلة للتمرير */}
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className={`flex gap-6 overflow-x-hidden pb-4 scroll-smooth ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
-        style={{ scrollBehavior: "smooth" }}
-      >
-        {artists.map((artist) => (
-          <Link
-            key={artist.id}
-            href={`/artists/${artist.slug}`}
-            className="group flex-shrink-0 w-[320px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-[#D4AF37]/20 transition-all duration-500 hover:-translate-y-2"
-          >
-            {/* صورة الفنان */}
-            <div className="relative h-64 bg-gradient-to-br from-[#111] to-[#333] overflow-hidden">
-              {artist.profileImage ? (
-                <img
-                  src={artist.profileImage}
-                  alt={artist.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Music size={64} className="text-[#D4AF37]/30" />
-                </div>
-              )}
-              
-              {/* تأثير التدرج */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              
-              {/* شارة التقييم */}
-              <div className="absolute top-4 right-4 px-3 py-1.5 bg-[#111]/80 backdrop-blur-sm rounded-full flex items-center gap-1.5 border border-[#D4AF37]/30">
-                <Star size={14} className="text-[#D4AF37] fill-[#D4AF37]" />
-                <span className="text-sm font-black text-white">
-                  {artist.rating || "5.0"}
-                </span>
-              </div>
-
-              {/* شارة معتمد */}
-              <div className="absolute top-4 left-4 px-3 py-1.5 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] rounded-full flex items-center gap-1.5">
-                <Award size={12} className="text-[#111]" />
-                <span className="text-xs font-black text-[#111]">معتمد</span>
-              </div>
-
-              {/* معلومات فوق الصورة */}
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-[#D4AF37] text-xs font-bold mb-1 uppercase tracking-wider">
-                  {artist.category || "فنان"}
-                </p>
-                <h3 className="text-2xl font-black text-white leading-tight">
-                  {artist.name}
-                </h3>
-              </div>
-            </div>
-
-            {/* التفاصيل */}
-            <div className="p-5">
-              <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4">
-                {artist.bio || "فنان محترف يقدم أفضل العروض"}
-              </p>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar size={16} className="text-[#D4AF37]" />
-                    <span className="text-xs font-bold text-gray-600">
-                      {artist.bookingsCount || 0} حجز
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Star size={16} className="text-[#D4AF37]" />
-                    <span className="text-xs font-bold text-gray-600">
-                      {artist.reviewsCount || 0} تقييم
-                    </span>
-                  </div>
-                </div>
-                <span className="text-sm font-black text-[#D4AF37] group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                  احجز الآن
-                  <ChevronLeft size={16} />
-                </span>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* مؤشرات النقاط */}
-      <div className="flex items-center justify-center gap-2 mt-8">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+      {/* ═══════════ مؤشرات النقاط ═══════════ */}
+      <div className="flex items-center justify-center gap-2 mt-12">
+        {artists.map((_, i) => (
           <button
             key={i}
-            onClick={() => scrollToIndex(i)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            onClick={() => goTo(i)}
+            className={`transition-all duration-300 ${
               i === currentIndex
-                ? "w-8 bg-gradient-to-r from-[#D4AF37] to-[#b8941f]"
-                : "w-2 bg-gray-300 hover:bg-[#D4AF37]/50"
+                ? "w-10 h-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] rounded-full shadow-lg shadow-[#D4AF37]/30"
+                : "w-2 h-2 bg-gray-600 hover:bg-[#D4AF37]/50 rounded-full"
             }`}
             aria-label={`الانتقال إلى ${i + 1}`}
           />
         ))}
+      </div>
+
+      {/* ═══════════ مؤشر التشغيل التلقائي ═══════════ */}
+      <div className="flex items-center justify-center gap-2 mt-4">
+        <button
+          onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+          className="flex items-center gap-2 px-4 py-2 bg-[#111]/50 hover:bg-[#111] border border-[#D4AF37]/20 rounded-full transition-all duration-300 text-xs font-bold text-gray-400 hover:text-[#D4AF37]"
+        >
+          <span className={`w-2 h-2 rounded-full transition-colors ${isAutoPlaying ? "bg-[#D4AF37]" : "bg-gray-600"}`}></span>
+          {isAutoPlaying ? "تلقائي" : "متوقف"}
+        </button>
       </div>
     </div>
   )
