@@ -241,3 +241,30 @@ model PricingRegion {
   @@unique([artistId, regionName])
   @@map("pricing_regions")
 }
+model SiteSetting {
+  id        String   @id @default("site_settings")
+  siteName  String   @default("Nooryi Studio")
+  tagline   String   @default("منصة حجز الفنانين الأولى")
+  email     String?
+  phone     String?
+  address   String?
+  currency  String   @default("EGP")
+  timezone  String   @default("Africa/Cairo")
+  
+  // منصات التواصل الاجتماعي
+  facebook  String?
+  instagram String?
+  tiktok    String?
+  youtube   String?
+  whatsapp  String?
+  twitter   String?
+  
+  // معلومات الدفع
+  bankName      String?
+  bankAccount   String?
+  iban          String?
+  paymentPhone  String?
+  paymentNote   String?
+  
+  updatedAt DateTime @updatedAt
+}

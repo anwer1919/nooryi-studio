@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import ArtistCarousel from "@/components/ArtistCarousel";
+import SocialLinks from "@/components/SocialLinks";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
@@ -415,6 +416,7 @@ export default async function HomePage() {
             </div>
           </div>
 
+          <SocialLinks />
           <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">© 2026 Nooryi Studio. جميع الحقوق محفوظة.</p>
             <div className="flex items-center gap-2 text-[#D4AF37]">
