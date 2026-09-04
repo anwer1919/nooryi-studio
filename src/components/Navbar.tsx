@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import NavbarClient from "./NavbarClient"
 import NotificationBell from "./NotificationBell"
+import ThemeToggle from "./ThemeToggle"
 
 export default function Navbar() {
   const [session, setSession] = useState<any>(null)
@@ -117,6 +118,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
               <>
+                <ThemeToggle />
                 <NotificationBell />
                 <NavbarClient user={user} mode="desktop" />
               </>
@@ -142,6 +144,8 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             {isLoggedIn ? (
               <>
+                <ThemeToggle />
+                <ThemeToggle />
                 <NotificationBell />
                 <NavbarClient user={user} mode="mobile" />
               </>
