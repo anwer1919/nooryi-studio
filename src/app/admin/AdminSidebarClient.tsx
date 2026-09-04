@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, Home, BarChart3 } from "lucide-react"
+import { LayoutDashboard, Calendar, Music, UserCog, Menu, X, LogOut, Home, BarChart3, DollarSign, Bug } from "lucide-react"
 import { useState } from "react"
 
 export default function AdminSidebarClient({ userRole, userName, userEmail }: any) {
@@ -20,6 +20,9 @@ export default function AdminSidebarClient({ userRole, userName, userEmail }: an
         { href: "/admin/artists", label: "الفنانين", icon: Music },
         { href: "/admin/artists-managers", label: "مديرو الأعمال", icon: UserCog },
         { href: "/admin/stats", label: "التقارير المالية", icon: BarChart3 },
+        { href: "/admin/calendar", label: "التقويم", icon: Calendar },
+        { href: "/admin/pricing", label: "التسعير", icon: DollarSign },
+        { href: "/admin/debug", label: "الاختبار", icon: Bug },
       ]
     : [
         { href: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
