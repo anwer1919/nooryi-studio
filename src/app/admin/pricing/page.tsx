@@ -1,179 +1,111 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import QRCode from "react-qr-code";
-import {
-  Banknote, Plus, Trash2, Edit3, Save, X, Loader2, AlertCircle,
-  Check, MapPin, Phone, Mail, Award, Shield, Printer, DollarSign
-} from "lucide-react";
-
-const STUDIO_INFO = {
-  name: "Nooryi Studio",
-  nameAr: "استوديو نوري",
-  tagline: "منصة حجز الفنانين والفعاليات",
-  phone: "+20 100 000 0000",
-  email: "info@noorystudio.com",
-  address: "القاهرة، جمهورية مصر العربية",
-  website: "https://nooryi-studio.vercel.app",
-  licenseNumber: "NS-2026-001",
-};
+import { DollarSign, Plus, Trash2, Edit3, Save, X, Loader2, Check, AlertCircle, MapPin, Printer } from "lucide-react";
 
 export default function AdminPricingPage() {
   const [artists, setArtists] = useState<any[]>([]);
-  const [selectedArtist, setSelectedArtist] = useState<string>("");
+  const [selectedArtistId, setSelectedArtistId] = useState("");
+  const [regions, setRegions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [regions, setRegions] = useState<any[]>([]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    regionName: "",
-    basePrice: "",
-    travelFee: "0",
-  });
+  const [form, setForm] = useState({ regionName: "", basePrice: "", travelFee: "0" });
 
-  // جلب الفنانين عند التحميل
+  // جلب الفنانين
   useEffect(() => {
-    const fetchArtists = async () => {
-    try {
-      console.log("🎨 Fetching artists...");
-      const res = await fetch("/api/admin/artists");
-      const text = await res.text();
-      console.log("📦 Artists raw:", text);
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("❌ Failed to parse artists JSON");
-        setArtists([]);
-        return;
-      }
-      
-      // معالجة جميع الأشكال المحتملة
-      let list: any[] = [];
-      if (Array.isArray(data)) {
-        list = data;
-      } else if (data.data && Array.isArray(data.data)) {
-        list = data.data;
-      } else if (data.artists && Array.isArray(data.artists)) {
-        list = data.artists;
-      }
-      
-      console.log("✅ Artists loaded:", list.length);
-      setArtists(list);
-    } catch (err: any) {
-      console.error("❌ Error fetching artists:", err);
-      setArtists([]);
-    }
-  };
-    fetchArtists();
+    console.log("🔄 [Pricing] Fetching artists...");
+    fetch("/api/artists")
+      .then(async (res) => {
+        const text = await res.text();
+        console.log("📦 [Pricing] Raw response:", text);
+        try {
+          const data = JSON.parse(text);
+          const list = Array.isArray(data) ? data : (data.data || []);
+          console.log(`✅ [Pricing] Got ${list.length} artists`);
+          setArtists(list);
+        } catch (e) {
+          console.error("❌ [Pricing] Parse error:", e);
+          setError("فشل في قراءة بيانات الفنانين");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ [Pricing] Fetch error:", err);
+        setError("فشل في الاتصال بالخادم");
+      });
   }, []);
 
   // جلب المناطق عند اختيار فنان
   useEffect(() => {
-    if (!selectedArtist) {
-      setRegions([]);
-      return;
-    }
-
-    const fetchRegions = async () => {
-    const selected = artists.find((a) => a.id === selectedArtist);
-    if (!selected || !selected.slug) {
-      console.warn("⚠️ No artist or slug found for id:", selectedArtist);
-      setRegions([]);
-      return;
-    }
+    if (!selectedArtistId) { setRegions([]); return; }
+    const artist = artists.find(a => a.id === selectedArtistId);
+    if (!artist || !artist.slug) return;
 
     setLoading(true);
-    try {
-      console.log("🔍 Fetching regions for:", selected.slug);
-      const res = await fetch(`/api/artists/${selected.slug}/pricing-regions`);
-      const text = await res.text();
-      console.log("📦 Regions raw:", text);
-      
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("❌ Failed to parse regions JSON");
-        setRegions([]);
-        setLoading(false);
-        return;
-      }
-      
-      // معالجة جميع الأشكال المحتملة
-      let list: any[] = [];
-      if (Array.isArray(data)) {
-        list = data;
-      } else if (data.data && Array.isArray(data.data)) {
-        list = data.data;
-      } else if (data.regions && Array.isArray(data.regions)) {
-        list = data.regions;
-      }
-      
-      console.log("✅ Regions loaded:", list.length);
-      setRegions(list);
-    } catch (err: any) {
-      console.error("❌ Error fetching regions:", err);
-      setRegions([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-    fetchRegions();
-  }, [selectedArtist, artists]);
+    console.log(`🔍 [Pricing] Fetching regions for: ${artist.slug}`);
+    
+    fetch(`/api/artists/${artist.slug}/pricing-regions`)
+      .then(async (res) => {
+        const text = await res.text();
+        console.log("📦 [Pricing] Regions raw:", text);
+        try {
+          const data = JSON.parse(text);
+          const list = Array.isArray(data) ? data : (data.data || []);
+          console.log(`✅ [Pricing] Got ${list.length} regions`);
+          setRegions(list);
+        } catch (e) {
+          console.error("❌ [Pricing] Parse error:", e);
+        }
+      })
+      .catch(err => console.error("❌ [Pricing] Regions error:", err))
+      .finally(() => setLoading(false));
+  }, [selectedArtistId, artists]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selected = artists.find((a) => a.id === selectedArtist);
-    if (!selected) return;
-
-    if (!formData.regionName || !formData.basePrice) {
-      setMessage({ type: "error", text: "يرجى ملء جميع الحقول المطلوبة" });
+    const artist = artists.find(a => a.id === selectedArtistId);
+    if (!artist || !form.regionName || !form.basePrice) {
+      setError("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
 
     setSaving(true);
+    setError("");
     try {
       const method = editingId ? "PUT" : "POST";
-      const url = editingId
-        ? `/api/artists/${selected.slug}/pricing-regions/${editingId}`
-        : `/api/artists/${selected.slug}/pricing-regions`;
+      const url = editingId 
+        ? `/api/artists/${artist.slug}/pricing-regions/${editingId}`
+        : `/api/artists/${artist.slug}/pricing-regions`;
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          regionName: formData.regionName,
-          basePrice: parseFloat(formData.basePrice),
-          travelFee: parseFloat(formData.travelFee) || 0,
+          regionName: form.regionName,
+          basePrice: parseFloat(form.basePrice),
+          travelFee: parseFloat(form.travelFee) || 0,
         }),
       });
 
-      const result = await res.json();
-      console.log("💾 Save result:", result);
-
       if (!res.ok) {
-        throw new Error(result.error || "فشل الحفظ");
+        const errData = await res.json();
+        throw new Error(errData.error || "فشل الحفظ");
       }
 
-      setMessage({
-        type: "success",
-        text: editingId ? "تم تحديث المنطقة بنجاح" : "تم إضافة المنطقة بنجاح",
-      });
-      setFormData({ regionName: "", basePrice: "", travelFee: "0" });
+      setSuccess(editingId ? "تم التحديث بنجاح" : "تم الإضافة بنجاح");
+      setForm({ regionName: "", basePrice: "", travelFee: "0" });
       setEditingId(null);
-      
+
       // إعادة التحميل
-      const refreshRes = await fetch(`/api/artists/${selected.slug}/pricing-regions`);
+      const refreshRes = await fetch(`/api/artists/${artist.slug}/pricing-regions`);
       const refreshData = await refreshRes.json();
       setRegions(Array.isArray(refreshData) ? refreshData : (refreshData.data || []));
       
-      setTimeout(() => setMessage(null), 3000);
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -181,7 +113,7 @@ export default function AdminPricingPage() {
 
   const handleEdit = (region: any) => {
     setEditingId(region.id);
-    setFormData({
+    setForm({
       regionName: region.regionName,
       basePrice: String(region.basePrice),
       travelFee: String(region.travelFee || 0),
@@ -189,289 +121,194 @@ export default function AdminPricingPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذه المنطقة؟")) return;
-    const selected = artists.find((a) => a.id === selectedArtist);
-    if (!selected) return;
+    if (!confirm("هل أنت متأكد من الحذف؟")) return;
+    const artist = artists.find(a => a.id === selectedArtistId);
+    if (!artist) return;
 
     try {
-      await fetch(`/api/artists/${selected.slug}/pricing-regions/${id}`, {
-        method: "DELETE",
-      });
-      
-      const refreshRes = await fetch(`/api/artists/${selected.slug}/pricing-regions`);
-      const refreshData = await refreshRes.json();
-      setRegions(Array.isArray(refreshData) ? refreshData : (refreshData.data || []));
-      
-      setMessage({ type: "success", text: "تم الحذف بنجاح" });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      setMessage({ type: "error", text: "فشل الحذف" });
+      await fetch(`/api/artists/${artist.slug}/pricing-regions/${id}`, { method: "DELETE" });
+      setRegions(regions.filter(r => r.id !== id));
+      setSuccess("تم الحذف بنجاح");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const selectedArtistData = artists.find((a) => a.id === selectedArtist);
-  const reportId = `PRC-${Date.now().toString(36).toUpperCase()}`;
+  const selectedArtist = artists.find(a => a.id === selectedArtistId);
 
   return (
-    <>
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          @page { margin: 1cm; size: A4; }
-        }
-      `}</style>
-
-      <div dir="rtl" className="space-y-6">
-        {/* Header */}
-        <div className="no-print">
-          <div className="badge-gold mb-3">التسعير</div>
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white">إدارة أسعار المناطق</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">تحديد الأسعار لكل فنان حسب المنطقة الجغرافية</p>
+    <div dir="rtl" className="p-6 space-y-6 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white">إدارة التسعير</h1>
+          <p className="text-gray-500 mt-1">تحديد أسعار المناطق لكل فنان</p>
         </div>
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-bold rounded-xl hover:shadow-lg transition"
+        >
+          <Printer size={16} />
+          طباعة
+        </button>
+      </div>
 
-        {/* Messages */}
-        {message && (
-          <div className={`no-print p-4 rounded-xl flex items-center gap-2 font-bold ${
-            message.type === "success" 
-              ? "bg-green-50 text-green-700 border border-green-200" 
-              : "bg-red-50 text-red-700 border border-red-200"
-          }`}>
-            {message.type === "success" ? <Check size={20} /> : <AlertCircle size={20} />}
-            {message.text}
-          </div>
-        )}
-
-        {/* اختيار الفنان */}
-        <div className="card-pro p-6 no-print">
-          <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
-            اختر الفنان *
-          </label>
-          <select
-            value={selectedArtist}
-            onChange={(e) => setSelectedArtist(e.target.value)}
-            className="input-modern w-full"
-          >
-            <option value="">— اختر فناناً —</option>
-            {artists.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name} — {a.category || "فنان"}
-              </option>
-            ))}
-          </select>
-          {artists.length === 0 && (
-            <p className="text-xs text-red-500 mt-2">⚠️ لا يوجد فنانين — أضف فناناً أولاً</p>
-          )}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-2 text-red-700 dark:text-red-300 font-bold">
+          <AlertCircle size={20} /> {error}
         </div>
+      )}
 
-        {!selectedArtist ? (
-          <div className="card-pro text-center py-20 no-print">
-            <Banknote className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={56} />
-            <p className="text-gray-500 dark:text-gray-400">اختر فناناً لإدارة أسعار مناطقه</p>
-          </div>
-        ) : (
-          <>
-            {/* Printable Report */}
-            <div className="print-area bg-white dark:bg-[#111] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-              {/* Report Header */}
-              <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] p-6 text-white">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    {selectedArtistData?.profileImage ? (
-                      <img src={selectedArtistData.profileImage} alt={selectedArtistData.name} className="w-14 h-14 rounded-xl object-cover" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
-                        <span className="text-[#111] text-2xl font-black">{selectedArtistData?.name?.charAt(0) || "ف"}</span>
-                      </div>
-                    )}
-                    <div>
-                      <h2 className="text-2xl font-black">{selectedArtistData?.name}</h2>
-                      <p className="text-sm text-gray-300">{selectedArtistData?.category || "فنان"} — أسعار المناطق</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">عدد المناطق</p>
-                    <p className="text-3xl font-black text-[#D4AF37]">{regions.length}</p>
-                  </div>
-                </div>
-              </div>
+      {success && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-2 text-green-700 dark:text-green-300 font-bold">
+          <Check size={20} /> {success}
+        </div>
+      )}
 
-              {/* Action Bar */}
-              <div className="p-4 bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-700 flex items-center justify-between no-print">
-                <h3 className="text-lg font-black text-gray-900 dark:text-white">قائمة المناطق</h3>
-                <button
-                  onClick={handlePrint}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-bold rounded-xl hover:shadow-lg transition"
-                >
-                  <Printer size={16} />
-                  طباعة
-                </button>
-              </div>
-
-              {/* Regions Table */}
-              <div className="p-6">
-                {loading ? (
-                  <div className="text-center py-12">
-                    <Loader2 className="mx-auto animate-spin text-[#D4AF37]" size={40} />
-                    <p className="text-gray-500 mt-2">جاري التحميل...</p>
-                  </div>
-                ) : regions.length === 0 ? (
-                  <div className="text-center py-12">
-                    <MapPin className="mx-auto text-gray-300 dark:text-gray-600 mb-3" size={48} />
-                    <p className="text-gray-500 dark:text-gray-400 mb-2">لا توجد مناطق مسجلة لهذا الفنان</p>
-                    <p className="text-xs text-gray-400">أضف منطقة جديدة باستخدام النموذج أدناه</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 dark:bg-[#1a1a1a]">
-                        <tr>
-                          <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">المنطقة</th>
-                          <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">السعر الأساسي</th>
-                          <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">رسوم السفر</th>
-                          <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">الإجمالي</th>
-                          <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase no-print">الإجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {regions.map((r) => (
-                          <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition">
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-2">
-                                <MapPin size={16} className="text-[#D4AF37]" />
-                                <span className="font-bold text-gray-900 dark:text-white">{r.regionName}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-4 text-center font-black text-gray-900 dark:text-white">
-                              {Number(r.basePrice).toLocaleString()} ج.م
-                            </td>
-                            <td className="px-4 py-4 text-center text-gray-700 dark:text-gray-300">
-                              {Number(r.travelFee || 0).toLocaleString()} ج.م
-                            </td>
-                            <td className="px-4 py-4 text-center font-black text-[#D4AF37]">
-                              {(Number(r.basePrice) + Number(r.travelFee || 0)).toLocaleString()} ج.م
-                            </td>
-                            <td className="px-4 py-4 no-print">
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => handleEdit(r)}
-                                  className="p-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition"
-                                  title="تعديل"
-                                >
-                                  <Edit3 size={16} className="text-blue-600" />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(r.id)}
-                                  className="p-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition"
-                                  title="حذف"
-                                >
-                                  <Trash2 size={16} className="text-red-600" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Add/Edit Form */}
-            <div className="card-pro p-6 no-print">
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Plus size={18} className="text-[#D4AF37]" />
-                {editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}
-              </h3>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
-                      اسم المنطقة *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.regionName}
-                      onChange={(e) => setFormData({ ...formData, regionName: e.target.value })}
-                      placeholder="مثال: القاهرة"
-                      className="input-modern w-full"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
-                      السعر الأساسي (ج.م) *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.basePrice}
-                      onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
-                      placeholder="5000"
-                      min="0"
-                      step="100"
-                      className="input-modern w-full"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
-                      رسوم السفر (ج.م)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.travelFee}
-                      onChange={(e) => setFormData({ ...formData, travelFee: e.target.value })}
-                      placeholder="0"
-                      min="0"
-                      step="50"
-                      className="input-modern w-full"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {saving ? (
-                      <><Loader2 size={18} className="animate-spin" /> جاري الحفظ...</>
-                    ) : (
-                      <><Save size={18} /> {editingId ? "تحديث المنطقة" : "إضافة المنطقة"}</>
-                    )}
-                  </button>
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingId(null);
-                        setFormData({ regionName: "", basePrice: "", travelFee: "0" });
-                      }}
-                      className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition flex items-center gap-2"
-                    >
-                      <X size={18} /> إلغاء
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
-
-            {/* Print Report Footer */}
-            <div className="hidden print:block bg-gray-50 p-6 border-t border-gray-200 text-center">
-              <p className="text-xs text-gray-500">
-                تم إنشاء هذا التقرير تلقائياً بواسطة Nooryi Studio © {new Date().getFullYear()}
-              </p>
-            </div>
-          </>
+      {/* اختيار الفنان */}
+      <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+        <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">
+          اختر الفنان ({artists.length} متاح)
+        </label>
+        <select
+          value={selectedArtistId}
+          onChange={(e) => setSelectedArtistId(e.target.value)}
+          className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+        >
+          <option value="">— اختر فناناً —</option>
+          {artists.map(a => (
+            <option key={a.id} value={a.id}>
+              {a.name} {a.slug ? `(${a.slug})` : "❌ بدون slug"}
+            </option>
+          ))}
+        </select>
+        {artists.length === 0 && (
+          <p className="text-xs text-red-500 mt-2">
+            ⚠️ لا يوجد فنانين — تحقق من Console (F12) للرسائل
+          </p>
         )}
       </div>
-    </>
+
+      {selectedArtistId && (
+        <>
+          {/* جدول المناطق */}
+          <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <MapPin size={20} className="text-[#D4AF37]" />
+              مناطق التسعير — {selectedArtist?.name}
+            </h2>
+
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader2 size={32} className="animate-spin text-[#D4AF37] mx-auto" />
+              </div>
+            ) : regions.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <DollarSign size={40} className="mx-auto mb-2 opacity-30" />
+                <p>لا توجد مناطق مسجلة — أضف منطقة جديدة أدناه</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-[#1a1a1a]">
+                  <tr>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">المنطقة</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">السعر الأساسي</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">رسوم السفر</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">الإجمالي</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {regions.map(r => (
+                    <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-[#1a1a1a]">
+                      <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">{r.regionName}</td>
+                      <td className="px-4 py-3 text-center font-black">{Number(r.basePrice).toLocaleString()} ج.م</td>
+                      <td className="px-4 py-3 text-center">{Number(r.travelFee || 0).toLocaleString()} ج.م</td>
+                      <td className="px-4 py-3 text-center font-black text-[#D4AF37]">
+                        {(Number(r.basePrice) + Number(r.travelFee || 0)).toLocaleString()} ج.م
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => handleEdit(r)} className="p-2 bg-blue-50 hover:bg-blue-100 rounded-lg">
+                            <Edit3 size={16} className="text-blue-600" />
+                          </button>
+                          <button onClick={() => handleDelete(r.id)} className="p-2 bg-red-50 hover:bg-red-100 rounded-lg">
+                            <Trash2 size={16} className="text-red-600" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* نموذج الإضافة/التعديل */}
+          <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Plus size={18} className="text-[#D4AF37]" />
+              {editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}
+            </h3>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-bold mb-2">اسم المنطقة *</label>
+                  <input
+                    type="text"
+                    value={form.regionName}
+                    onChange={(e) => setForm({ ...form, regionName: e.target.value })}
+                    placeholder="مثال: القاهرة"
+                    className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-2">السعر الأساسي (ج.م) *</label>
+                  <input
+                    type="number"
+                    value={form.basePrice}
+                    onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
+                    placeholder="5000"
+                    className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-2">رسوم السفر (ج.م)</label>
+                  <input
+                    type="number"
+                    value={form.travelFee}
+                    onChange={(e) => setForm({ ...form, travelFee: e.target.value })}
+                    placeholder="0"
+                    className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {saving ? <><Loader2 size={18} className="animate-spin" /> جاري الحفظ...</> : <><Save size={18} /> {editingId ? "تحديث" : "إضافة"}</>}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={() => { setEditingId(null); setForm({ regionName: "", basePrice: "", travelFee: "0" }); }}
+                    className="px-6 py-3 bg-gray-200 dark:bg-gray-700 rounded-xl font-bold"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
