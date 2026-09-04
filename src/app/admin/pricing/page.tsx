@@ -35,16 +35,38 @@ export default function AdminPricingPage() {
   // جلب الفنانين عند التحميل
   useEffect(() => {
     const fetchArtists = async () => {
+    try {
+      console.log("🎨 Fetching artists...");
+      const res = await fetch("/api/admin/artists");
+      const text = await res.text();
+      console.log("📦 Artists raw:", text);
+      
+      let data;
       try {
-        const res = await fetch("/api/admin/artists");
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (data.artists || data.data || []);
-        console.log("🎨 Artists loaded:", list.length);
-        setArtists(list);
-      } catch (err) {
-        console.error("❌ Error fetching artists:", err);
+        data = JSON.parse(text);
+      } catch {
+        console.error("❌ Failed to parse artists JSON");
+        setArtists([]);
+        return;
       }
-    };
+      
+      // معالجة جميع الأشكال المحتملة
+      let list: any[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        list = data.data;
+      } else if (data.artists && Array.isArray(data.artists)) {
+        list = data.artists;
+      }
+      
+      console.log("✅ Artists loaded:", list.length);
+      setArtists(list);
+    } catch (err: any) {
+      console.error("❌ Error fetching artists:", err);
+      setArtists([]);
+    }
+  };
     fetchArtists();
   }, []);
 
@@ -56,32 +78,49 @@ export default function AdminPricingPage() {
     }
 
     const fetchRegions = async () => {
-      const selected = artists.find((a) => a.id === selectedArtist);
-      if (!selected || !selected.slug) {
-        console.warn("⚠️ No artist or slug found for id:", selectedArtist);
+    const selected = artists.find((a) => a.id === selectedArtist);
+    if (!selected || !selected.slug) {
+      console.warn("⚠️ No artist or slug found for id:", selectedArtist);
+      setRegions([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log("🔍 Fetching regions for:", selected.slug);
+      const res = await fetch(`/api/artists/${selected.slug}/pricing-regions`);
+      const text = await res.text();
+      console.log("📦 Regions raw:", text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("❌ Failed to parse regions JSON");
+        setRegions([]);
+        setLoading(false);
         return;
       }
-
-      setLoading(true);
-      try {
-        console.log("🔍 Fetching regions for:", selected.slug);
-        const res = await fetch(`/api/artists/${selected.slug}/pricing-regions`);
-        const data = await res.json();
-        console.log("📦 API Response:", data);
-        
-        const list = Array.isArray(data) 
-          ? data 
-          : (data.data || data.regions || []);
-        
-        console.log("✅ Regions loaded:", list.length);
-        setRegions(list);
-      } catch (err) {
-        console.error("❌ Error fetching regions:", err);
-        setRegions([]);
-      } finally {
-        setLoading(false);
+      
+      // معالجة جميع الأشكال المحتملة
+      let list: any[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        list = data.data;
+      } else if (data.regions && Array.isArray(data.regions)) {
+        list = data.regions;
       }
-    };
+      
+      console.log("✅ Regions loaded:", list.length);
+      setRegions(list);
+    } catch (err: any) {
+      console.error("❌ Error fetching regions:", err);
+      setRegions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchRegions();
   }, [selectedArtist, artists]);

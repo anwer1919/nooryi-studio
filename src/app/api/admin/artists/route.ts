@@ -6,12 +6,10 @@ import { prisma } from "@/lib/prisma"
 // GET - جلب جميع الفنانين
 export async function GET() {
   try {
+    // التحقق من المصادقة (اختياري للقراءة)
     const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
-    }
-
+    
+    // جلب جميع الفنانين
     const artists = await prisma.artist.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -21,8 +19,12 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({ success: true, data: artists })
+    console.log("✅ [API] Artists fetched:", artists.length)
+    
+    // إرجاع البيانات مباشرة كمصفوفة (للحصول على توافق أفضل)
+    return NextResponse.json(artists)
   } catch (error: any) {
+    console.error("❌ [API] Error:", error.message)
     return NextResponse.json(
       { error: error.message || "حدث خطأ" },
       { status: 500 }
@@ -48,7 +50,6 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    // التحقق من البيانات المطلوبة
     if (!body.name || !body.slug) {
       return NextResponse.json(
         { error: "الاسم والـ slug مطلوبان" },
@@ -56,7 +57,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // التحقق من عدم وجود slug مكرر
     const existingArtist = await prisma.artist.findUnique({
       where: { slug: body.slug }
     })
@@ -68,7 +68,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // إنشاء الفنان الجديد
     const newArtist = await prisma.artist.create({
       data: {
         name: body.name,
