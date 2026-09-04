@@ -3,13 +3,13 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// GET - جلب جميع الفنانين
+export const dynamic = "force-dynamic"
+
+// GET - جلب جميع الفنانين (بدون session للموثوقية)
 export async function GET() {
   try {
-    // التحقق من المصادقة (اختياري للقراءة)
-    const session = await getServerSession(authOptions)
+    console.log("🎨 [Admin API] Fetching all artists...")
     
-    // جلب جميع الفنانين
     const artists = await prisma.artist.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -19,12 +19,11 @@ export async function GET() {
       }
     })
 
-    console.log("✅ [API] Artists fetched:", artists.length)
+    console.log(`✅ [Admin API] Found ${artists.length} artists`)
     
-    // إرجاع البيانات مباشرة كمصفوفة (للحصول على توافق أفضل)
     return NextResponse.json(artists)
   } catch (error: any) {
-    console.error("❌ [API] Error:", error.message)
+    console.error("❌ [Admin API] Error:", error.message)
     return NextResponse.json(
       { error: error.message || "حدث خطأ" },
       { status: 500 }
@@ -41,7 +40,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const userRole = session.user.role || "USER"
+    const userRole = (session.user as any).role || "USER"
     const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
 
     if (!isAdmin) {
@@ -63,7 +62,7 @@ export async function POST(request: Request) {
 
     if (existingArtist) {
       return NextResponse.json(
-        { error: "هذا الرابط مستخدم بالفعل، اختر رابط آخر" },
+        { error: "هذا الرابط مستخدم بالفعل" },
         { status: 400 }
       )
     }

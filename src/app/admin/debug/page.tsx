@@ -7,36 +7,94 @@ export default function DebugAPIsPage() {
   const [selectedArtist, setSelectedArtist] = useState("");
   const [results, setResults] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [artistsLoading, setArtistsLoading] = useState(true);
+  const [artistsError, setArtistsError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/artists")
-      .then(r => r.json())
-      .then(d => {
-        const list = Array.isArray(d) ? d : (d.data || []);
+    const fetchArtists = async () => {
+      setArtistsLoading(true);
+      setArtistsError(null);
+      
+      try {
+        console.log("🔍 Fetching artists...");
+        
+        // محاولة 1: API عام
+        let res = await fetch("/api/artists");
+        let text = await res.text();
+        console.log("📦 /api/artists response:", text);
+        
+        let list: any[] = [];
+        try {
+          const data = JSON.parse(text);
+          if (Array.isArray(data)) {
+            list = data;
+          } else if (data.data && Array.isArray(data.data)) {
+            list = data.data;
+          }
+        } catch {
+          console.error("❌ Failed to parse /api/artists");
+        }
+        
+        // إذا فشل، محاولة 2: API أدمن
+        if (list.length === 0) {
+          console.log("🔍 Trying /api/admin/artists...");
+          res = await fetch("/api/admin/artists");
+          text = await res.text();
+          console.log("📦 /api/admin/artists response:", text);
+          
+          try {
+            const data = JSON.parse(text);
+            if (Array.isArray(data)) {
+              list = data;
+            } else if (data.data && Array.isArray(data.data)) {
+              list = data.data;
+            }
+          } catch {
+            console.error("❌ Failed to parse /api/admin/artists");
+          }
+        }
+        
+        console.log(`✅ Found ${list.length} artists`);
+        
+        if (list.length === 0) {
+          setArtistsError("لم يتم العثور على أي فنان — راجع Console (F12)");
+        }
+        
         setArtists(list);
-      });
+      } catch (err: any) {
+        console.error("❌ Error:", err);
+        setArtistsError(err.message);
+      } finally {
+        setArtistsLoading(false);
+      }
+    };
+    
+    fetchArtists();
   }, []);
 
   const testAPIs = async () => {
     if (!selectedArtist) return;
     const artist = artists.find(a => a.id === selectedArtist);
-    if (!artist) return;
+    if (!artist || !artist.slug) {
+      alert("الفنان ليس له slug!");
+      return;
+    }
 
     setLoading(true);
     const slug = artist.slug;
 
     try {
-      // 1) تفاصيل الفنان
-      const artistRes = await fetch(`/api/artists/${slug}`);
-      const artistData = await artistRes.json();
+      const [artistRes, regionsRes, bookingsRes] = await Promise.all([
+        fetch(`/api/artists/${slug}`),
+        fetch(`/api/artists/${slug}/pricing-regions`),
+        fetch(`/api/artists/${slug}/bookings`),
+      ]);
 
-      // 2) مناطق التسعير
-      const regionsRes = await fetch(`/api/artists/${slug}/pricing-regions`);
-      const regionsData = await regionsRes.json();
-
-      // 3) الحجوزات
-      const bookingsRes = await fetch(`/api/artists/${slug}/bookings`);
-      const bookingsData = await bookingsRes.json();
+      const [artistData, regionsData, bookingsData] = await Promise.all([
+        artistRes.json().catch(() => ({})),
+        regionsRes.json().catch(() => []),
+        bookingsRes.json().catch(() => []),
+      ]);
 
       setResults({
         artist: artistData,
@@ -57,35 +115,45 @@ export default function DebugAPIsPage() {
         🔍 اختبار APIs الفنانين
       </h1>
 
-      {/* اختيار الفنان */}
       <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
-        <label className="block text-sm font-bold mb-2">اختر فناناً:</label>
-        <select
-          value={selectedArtist}
-          onChange={(e) => setSelectedArtist(e.target.value)}
-          className="w-full p-3 border rounded-xl dark:bg-[#1a1a1a] dark:text-white dark:border-gray-700"
-        >
-          <option value="">— اختر —</option>
-          {artists.map(a => (
-            <option key={a.id} value={a.id}>
-              {a.name} — slug: {a.slug || "❌ لا يوجد"}
-            </option>
-          ))}
-        </select>
+        <label className="block text-sm font-bold mb-2">
+          اختر فناناً: ({artists.length} متاح)
+        </label>
+        
+        {artistsLoading ? (
+          <p className="text-gray-500">جاري تحميل الفنانين...</p>
+        ) : artistsError ? (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+            <p className="text-red-700 dark:text-red-300 font-bold">❌ {artistsError}</p>
+          </div>
+        ) : (
+          <>
+            <select
+              value={selectedArtist}
+              onChange={(e) => setSelectedArtist(e.target.value)}
+              className="w-full p-3 border rounded-xl dark:bg-[#1a1a1a] dark:text-white dark:border-gray-700"
+            >
+              <option value="">— اختر —</option>
+              {artists.map(a => (
+                <option key={a.id} value={a.id}>
+                  {a.name} — slug: {a.slug || "❌ لا يوجد"}
+                </option>
+              ))}
+            </select>
 
-        <button
-          onClick={testAPIs}
-          disabled={!selectedArtist || loading}
-          className="mt-4 bg-[#D4AF37] text-[#111] font-black px-6 py-3 rounded-xl disabled:opacity-50"
-        >
-          {loading ? "جاري الاختبار..." : "اختبر APIs"}
-        </button>
+            <button
+              onClick={testAPIs}
+              disabled={!selectedArtist || loading}
+              className="mt-4 bg-[#D4AF37] text-[#111] font-black px-6 py-3 rounded-xl disabled:opacity-50"
+            >
+              {loading ? "جاري الاختبار..." : "اختبر APIs"}
+            </button>
+          </>
+        )}
       </div>
 
-      {/* النتائج */}
       {results.slug && (
         <div className="space-y-4">
-          {/* معلومات الفنان */}
           <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">1️⃣ تفاصيل الفنان</h2>
             {results.artist?.error ? (
@@ -100,7 +168,6 @@ export default function DebugAPIsPage() {
             )}
           </div>
 
-          {/* مناطق التسعير */}
           <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">
               2️⃣ مناطق التسعير ({results.regions?.length || 0})
@@ -138,7 +205,6 @@ export default function DebugAPIsPage() {
             )}
           </div>
 
-          {/* الحجوزات */}
           <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">
               3️⃣ الحجوزات ({results.bookings?.length || 0})
