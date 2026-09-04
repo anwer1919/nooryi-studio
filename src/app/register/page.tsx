@@ -22,7 +22,16 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // التحقق من رقم الجوال الدولي
+const validatePhone = (phone: string): boolean => {
+    if (!phone) return false;
+    const cleaned = phone.replace(/[\s-]/g, "");
+    const internationalPattern = /^(\+|00)[1-9]\d{6,14}$/;
+    const localPattern = /^0\d{9,10}$/;
+    return internationalPattern.test(cleaned) || localPattern.test(cleaned);
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
