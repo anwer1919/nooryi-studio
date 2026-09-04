@@ -5,22 +5,22 @@ import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
-// PUT - تعديل منطقة
+// PUT - تعديل منطقة تسعير
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string; id: string }> }
 ) {
   try {
+    const { id } = await params
+    console.log(`📝 [PUT] Updating region: ${id}`)
+
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
 
-    const { id } = await params
     const body = await request.json()
     const { regionName, basePrice, travelFee } = body
-
-    console.log("📝 [PUT] Updating region:", id)
 
     const updateData: any = {}
     if (regionName) updateData.regionName = regionName.trim()
@@ -32,50 +32,34 @@ export async function PUT(
       data: updateData,
     })
 
-    console.log("✅ [PUT] Region updated:", updated.id)
-
-    return NextResponse.json({ 
-      success: true, 
-      data: updated,
-      message: "تم التحديث بنجاح"
-    })
+    console.log(`✅ [PUT] Updated: ${updated.id}`)
+    return NextResponse.json({ success: true, data: updated })
   } catch (error: any) {
-    console.error("❌ [PUT] Error:", error)
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    )
+    console.error("❌ [PUT] Error:", error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
-// DELETE - حذف منطقة
+// DELETE - حذف منطقة تسعير
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ slug: string; id: string }> }
 ) {
   try {
+    const { id } = await params
+    console.log(`🗑️ [DELETE] Removing region: ${id}`)
+
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 })
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
-
-    const { id } = await params
-
-    console.log("🗑️ [DELETE] Deleting region:", id)
 
     await prisma.pricingRegion.delete({ where: { id } })
 
-    console.log("✅ [DELETE] Region deleted")
-
-    return NextResponse.json({ 
-      success: true, 
-      message: "تم الحذف بنجاح" 
-    })
+    console.log(`✅ [DELETE] Deleted: ${id}`)
+    return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error("❌ [DELETE] Error:", error)
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    )
+    console.error("❌ [DELETE] Error:", error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
