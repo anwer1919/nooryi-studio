@@ -5,7 +5,7 @@ import QRCode from "react-qr-code";
 import {
   DollarSign, Plus, Trash2, Edit3, Save, X, Loader2, Check,
   AlertCircle, MapPin, Printer, FileText, Shield, Award
-} from "lucide-react";
+, Eye} from "lucide-react";
 
 const STUDIO_INFO = {
   name: "Nooryi Studio",
@@ -29,6 +29,7 @@ export default function AdminPricingPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ regionName: "", basePrice: "", travelFee: "0" });
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   // جلب الفنانين
   useEffect(() => {
@@ -225,6 +226,14 @@ export default function AdminPricingPage() {
             <h1 className="text-4xl font-black text-gray-900 dark:text-white">إدارة أسعار المناطق</h1>
             <p className="text-gray-500 mt-1">تحديد الأسعار لكل فنان حسب المنطقة الجغرافية</p>
           </div>
+          <button
+            onClick={() => setShowPreview(true)}
+            disabled={!selectedArtistId || regions.length === 0}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+          >
+            <Eye size={18} />
+            معاينة التقرير
+          </button>
           <button
             onClick={handlePrint}
             disabled={!selectedArtistId || regions.length === 0}
