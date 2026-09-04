@@ -49,6 +49,8 @@ function BookingForm() {
       // معالجة مناطق التسعير
       const regionsList = Array.isArray(pr) ? pr : (pr?.data || []);
       setRegions(regionsList);
+      console.log("🗺️ Regions fetched:", regionsList);
+      console.log("📅 Booked dates:", dates);
       
       // معالجة الحجوزات المحجوزة
       const bookingsList = Array.isArray(bk) ? bk : (bk?.data || []);
