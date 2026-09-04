@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import ArtistCarousel from "@/components/ArtistCarousel";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,7 @@ export default async function HomePage() {
             </nav>
 
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Link
                 href="/login"
                 className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-900 dark:text-white border-2 border-gray-200 rounded-xl hover:border-[#D4AF37] hover:text-[#D4AF37] transition"
