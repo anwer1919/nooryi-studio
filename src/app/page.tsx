@@ -20,13 +20,13 @@ async function getFeaturedArtists() {
         reviews: { select: { rating: true } },
       },
     });
-    
-    const artistsWithRating = (artists || []).map((artist: any) => {
+
+    return (artists || []).map((artist: any) => {
       const ratings = artist.reviews?.map((r: any) => r.rating) || [];
       const avgRating = ratings.length > 0
         ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
         : 5.0;
-      
+
       return {
         id: artist.id,
         name: artist.name,
@@ -34,18 +34,16 @@ async function getFeaturedArtists() {
         category: artist.category,
         bio: artist.bio,
         profileImage: artist.profileImage,
+        coverImage: artist.coverImage,
         rating: parseFloat(avgRating.toFixed(1)),
         reviewsCount: artist._count.reviews,
         bookingsCount: artist._count.bookings,
       };
     });
-    
-    return artistsWithRating;
   } catch (error) {
     console.error("Error fetching artists:", error);
     return [];
   }
-}
 }
 export default async function HomePage() {
   const featuredArtists = await getFeaturedArtists();
@@ -88,7 +86,7 @@ export default async function HomePage() {
                 href="/register"
                 className="px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#111] text-sm font-black rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
               >
-                <Mic, Sparkles size={16} />
+                <Sparkles size={16} />
                 إنشاء حساب
               </Link>
             </div>
