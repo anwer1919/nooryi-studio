@@ -7,6 +7,7 @@ import {
   ArrowLeft, Calendar, MapPin, User, Music, DollarSign,
   CheckCircle2, XCircle, Clock, FileText, Phone, Mail
 } from "lucide-react"
+import BookingActions from "./BookingActions"
 
 export const dynamic = "force-dynamic"
 
@@ -211,6 +212,23 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
           </div>
         </div>
       </div>
+
+        {/* ═══════════ أزرار الإجراءات ═══════════ */}
+        <div className="mt-6">
+          <BookingActions
+            bookingId={booking.id}
+            status={booking.status}
+            artistName={booking.artist?.name || "غير محدد"}
+            clientName={clientName}
+            clientPhone={booking.clientPhone || ""}
+            clientEmail={booking.clientEmail || ""}
+            depositAmount={depositAmount}
+            totalAmount={grossAmount}
+            date={booking.date ? new Date(booking.date).toLocaleDateString("ar-EG") : ""}
+            timeSlot={timeSlotLabel}
+            venue={booking.venue?.name || "غير محدد"}
+          />
+        </div>
     </div>
   )
 }
