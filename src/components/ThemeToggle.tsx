@@ -25,7 +25,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 border border-white/10">
+      <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10">
         <Sun size={18} className="text-[#D4AF37]" />
       </button>
     )
@@ -34,7 +34,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 transition-all duration-300 group"
+      className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 transition-all duration-300 group"
       aria-label={isDark ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
       title={isDark ? "الوضع النهاري" : "الوضع الليلي"}
     >

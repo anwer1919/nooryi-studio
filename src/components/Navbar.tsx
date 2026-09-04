@@ -35,7 +35,7 @@ export default function Navbar() {
 
   if (status === "loading") {
     return (
-      <nav className="fixed top-0 left-0 right-0 z-[9999] bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#d4af37]/20">
+      <nav className="fixed top-0 left-0 right-0 z-[9999] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-gray-200 dark:border-[#d4af37]/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="w-32 h-8 bg-white/10 rounded-lg animate-pulse" />
           <div className="w-40 h-10 bg-white/10 rounded-full animate-pulse" />
@@ -61,8 +61,8 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-[9999] transition-all duration-500 ${
         scrolled
-          ? "bg-[#0a0a0a]/98 backdrop-blur-xl shadow-2xl shadow-[#d4af37]/5 border-b border-[#d4af37]/20"
-          : "bg-[#0a0a0a]/90 backdrop-blur-lg border-b border-white/5"
+          ? "bg-white/98 dark:bg-[#0a0a0a]/98 backdrop-blur-xl shadow-2xl shadow-[#d4af37]/5 border-b border-gray-200 dark:border-[#d4af37]/20"
+          : "bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-lg border-b border-gray-200 dark:border-white/5"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -73,7 +73,7 @@ export default function Navbar() {
               <span className="text-[#0a0a0a] text-lg font-black">N</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-black text-white leading-tight">Nooryi</span>
+              <span className="text-lg font-black text-gray-900 dark:text-white leading-tight">Nooryi</span>
               <span className="text-[9px] text-[#d4af37] font-bold tracking-[0.25em] uppercase leading-tight">Studio</span>
             </div>
           </Link>
@@ -85,7 +85,7 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                 pathname === "/"
                   ? "text-[#d4af37] bg-[#d4af37]/10"
-                  : "text-white/70 hover:text-[#d4af37] hover:bg-white/5"
+                  : "text-gray-700 dark:text-white/70 hover:text-[#d4af37] hover:bg-gray-100 dark:hover:bg-white/5"
               }`}
             >
               الرئيسية
@@ -95,7 +95,7 @@ export default function Navbar() {
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                 pathname.startsWith("/artists")
                   ? "text-[#d4af37] bg-[#d4af37]/10"
-                  : "text-white/70 hover:text-[#d4af37] hover:bg-white/5"
+                  : "text-gray-700 dark:text-white/70 hover:text-[#d4af37] hover:bg-gray-100 dark:hover:bg-white/5"
               }`}
             >
               الفنانين
@@ -106,7 +106,7 @@ export default function Navbar() {
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
                   pathname === "/my-bookings"
                     ? "text-[#d4af37] bg-[#d4af37]/10"
-                    : "text-white/70 hover:text-[#d4af37] hover:bg-white/5"
+                    : "text-gray-700 dark:text-white/70 hover:text-[#d4af37] hover:bg-gray-100 dark:hover:bg-white/5"
                 }`}
               >
                 حجوزاتي
@@ -126,7 +126,7 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-5 py-2 text-white/80 border border-white/20 rounded-xl font-bold hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 text-sm"
+                  className="px-5 py-2 text-gray-700 dark:text-white/80 border border-white/20 rounded-xl font-bold hover:border-[#d4af37] hover:text-[#d4af37] transition-all duration-300 text-sm"
                 >
                   تسجيل الدخول
                 </Link>

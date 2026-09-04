@@ -105,7 +105,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
               }}
             >
               <Link href={`/artists/${artist.slug}`} className="block group">
-                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
+                <div className="relative bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
                   {/* صورة الفنان */}
                   <div className="relative h-80 md:h-96 overflow-hidden">
                     {artist.coverImage || artist.profileImage ? (
@@ -157,7 +157,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
 
                   {/* التفاصيل */}
                   <div className="p-6 space-y-4">
-                    <p className="text-sm text-gray-400 leading-relaxed line-clamp-3 min-h-[4rem]">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3 min-h-[4rem]">
                       {artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}
                     </p>
 
@@ -166,13 +166,13 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
                           <Calendar size={14} className="text-[#D4AF37]" />
-                          <span className="text-xs font-bold text-gray-400">
+                          <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
                             {artist.bookingsCount || 0} حجز
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Star size={14} className="text-[#D4AF37]" />
-                          <span className="text-xs font-bold text-gray-400">
+                          <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
                             {artist.reviewsCount || 0} تقييم
                           </span>
                         </div>
@@ -230,7 +230,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
       <div className="flex items-center justify-center gap-2 mt-4">
         <button
           onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#111]/50 hover:bg-[#111] border border-[#D4AF37]/20 rounded-full transition-all duration-300 text-xs font-bold text-gray-400 hover:text-[#D4AF37]"
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#111]/50 dark:hover:bg-[#111] border border-[#D4AF37]/20 rounded-full transition-all duration-300 text-xs font-bold text-gray-600 dark:text-gray-600 dark:text-gray-400 hover:text-[#D4AF37]"
         >
           <span className={`w-2 h-2 rounded-full transition-colors ${isAutoPlaying ? "bg-[#D4AF37]" : "bg-gray-600"}`}></span>
           {isAutoPlaying ? "تلقائي" : "متوقف"}

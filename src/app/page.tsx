@@ -57,7 +57,7 @@ export default async function HomePage() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-sm group-hover:blur-md transition-all"></div>
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111] to-[#333] flex items-center justify-center shadow-xl">
+                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center shadow-xl">
                   <span className="text-[#D4AF37] text-2xl font-black">N</span>
                 </div>
               </div>
@@ -96,7 +96,7 @@ export default async function HomePage() {
 
       {/* ═══════════ Hero Section ═══════════ */}
       {/* ═══════════ نخبة الفنانين (Carousel 3D) ═══════════ */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#0a0a0a] dark:via-[#111] dark:to-[#0a0a0a] overflow-hidden">
         {/* خلفية متحركة - نقاط ذهبية */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 right-[10%] w-2 h-2 bg-[#D4AF37]/40 rounded-full animate-float-up"></div>
@@ -127,7 +127,7 @@ export default async function HomePage() {
             {/* اللوجو N */}
             <div className="relative animate-float-up">
               <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-lg opacity-70"></div>
-              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#111] to-[#333] border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
                 <span className="text-[#D4AF37] text-3xl font-black">N</span>
               </div>
             </div>
@@ -147,7 +147,7 @@ export default async function HomePage() {
           
 
           {/* العنوان الرئيسي */}
-          <h2 className="text-center text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
+          <h2 className="text-center text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
             اختر من{" "}
             <span className="relative inline-block">
               <span className="relative z-10 bg-gradient-to-r from-[#D4AF37] via-[#F4E5B8] to-[#D4AF37] bg-clip-text text-transparent">
@@ -160,7 +160,7 @@ export default async function HomePage() {
           </h2>
 
           {/* الوصف */}
-          <p className="text-center text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-6">
+          <p className="text-center text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-6">
             تصفح أفضل الفنانين المعتمدين لدينا واحجز من يناسب فعاليتك —
             <span className="text-[#D4AF37] font-semibold"> تجربة لا تُنسى</span>
           </p>
@@ -180,8 +180,8 @@ export default async function HomePage() {
           ) : (
             <div className="text-center py-16">
               <Music className="mx-auto text-[#D4AF37]/30 mb-4 animate-float-up" size={64} />
-              <h3 className="text-2xl font-black text-white mb-2">لا يوجد فنانين بعد</h3>
-              <p className="text-gray-400 mb-6">سيتم إضافة فنانين قريباً</p>
+              <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">لا يوجد فنانين بعد</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">سيتم إضافة فنانين قريباً</p>
             </div>
           )}
 
@@ -229,7 +229,7 @@ export default async function HomePage() {
                 key={i}
                 className="group bg-white dark:bg-[#111] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
               >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#111] to-[#333] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <feature.icon size={32} className="text-[#D4AF37]" />
                 </div>
                 <h3 className="text-xl font-black text-gray-900 dark:text-white mb-3">{feature.title}</h3>
@@ -274,7 +274,7 @@ export default async function HomePage() {
             </div>
 
             <div className="relative">
-              <div className="bg-gradient-to-br from-[#111] to-[#333] rounded-3xl p-8 shadow-2xl">
+              <div className="bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] rounded-3xl p-8 shadow-2xl">
                 <div className="bg-white dark:bg-[#111] rounded-2xl p-6">
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center">
@@ -309,7 +309,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════ CTA ═══════════ */}
-      <section className="py-20 bg-gradient-to-br from-[#111] to-[#333]">
+      <section className="py-20 bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333]">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center">
           <h2 className="text-3xl md:text-5xl font-black text-white mb-6">
             جاهز لبدء <span className="text-[#D4AF37]">رحلتك؟</span>
@@ -379,7 +379,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111] to-[#333] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center">
                   <span className="text-[#D4AF37] text-2xl font-black">N</span>
                 </div>
                 <div>
