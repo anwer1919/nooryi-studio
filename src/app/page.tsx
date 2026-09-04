@@ -2,7 +2,7 @@ import Link from "next/link";
 import { 
   Music, Star, Shield, CreditCard, Zap,
   Award, CheckCircle2, Phone, Mail, MapPin, 
-  ArrowLeft, Sparkles, ChevronRight
+  ArrowLeft, Mic, Sparkles, ChevronRight
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import ArtistCarousel from "@/components/ArtistCarousel";
@@ -14,12 +14,38 @@ async function getFeaturedArtists() {
     const artists = await prisma.artist.findMany({
       where: { status: "ACTIVE" },
       orderBy: { createdAt: "desc" },
-      take: 6,
+      take: 8,
+      include: {
+        _count: { select: { bookings: true, reviews: true } },
+        reviews: { select: { rating: true } },
+      },
     });
-    return artists;
-  } catch {
+    
+    const artistsWithRating = (artists || []).map((artist: any) => {
+      const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+      const avgRating = ratings.length > 0
+        ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
+        : 5.0;
+      
+      return {
+        id: artist.id,
+        name: artist.name,
+        slug: artist.slug,
+        category: artist.category,
+        bio: artist.bio,
+        profileImage: artist.profileImage,
+        rating: parseFloat(avgRating.toFixed(1)),
+        reviewsCount: artist._count.reviews,
+        bookingsCount: artist._count.bookings,
+      };
+    });
+    
+    return artistsWithRating;
+  } catch (error) {
+    console.error("Error fetching artists:", error);
     return [];
   }
+}
 }
 
 export default async function HomePage() {
@@ -63,7 +89,7 @@ export default async function HomePage() {
                 href="/register"
                 className="px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#111] text-sm font-black rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
               >
-                <Sparkles size={16} />
+                <Mic, Sparkles size={16} />
                 إنشاء حساب
               </Link>
             </div>
@@ -157,9 +183,9 @@ export default async function HomePage() {
           </div>
 
           {/* Carousel */}
-          {featuredArtists.length > 0 ? (
+          {(featuredArtists?.length || 0) > 0 ? (
             <div className="relative px-4 md:px-12 lg:px-20">
-              <ArtistCarousel artists={featuredArtists} />
+              <ArtistCarousel artists={featuredArtists || []} />
             </div>
           ) : (
             <div className="text-center py-16">
