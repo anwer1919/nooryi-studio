@@ -47,7 +47,6 @@ async function getFeaturedArtists() {
   }
 }
 }
-
 export default async function HomePage() {
   const featuredArtists = await getFeaturedArtists();
 
