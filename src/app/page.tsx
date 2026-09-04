@@ -72,47 +72,111 @@ export default async function HomePage() {
       </header>
 
       {/* ═══════════ Hero Section ═══════════ */}
-            {/* ═══════════ نخبة الفنانين (Carousel) ═══════════ */}
-      <section className="py-20 lg:py-28 bg-gradient-to-br from-gray-50 via-white to-gray-50 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          {/* عنوان القسم */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37]/10 to-[#F4E5B8]/10 border border-[#D4AF37]/20 rounded-full mb-6">
-              <Sparkles size={14} className="text-[#D4AF37]" />
-              <span className="text-sm font-bold text-gray-900">نخبة الفنانين</span>
+      {/* ═══════════ نخبة الفنانين (Carousel 3D) ═══════════ */}
+      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a] overflow-hidden">
+        {/* خلفية متحركة - نقاط ذهبية */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-[10%] w-2 h-2 bg-[#D4AF37]/40 rounded-full animate-float-up"></div>
+          <div className="absolute top-40 left-[15%] w-3 h-3 bg-[#D4AF37]/30 rounded-full animate-float-down"></div>
+          <div className="absolute bottom-20 right-[20%] w-2 h-2 bg-[#F4E5B8]/30 rounded-full animate-float-up-delay"></div>
+          <div className="absolute top-1/2 left-[8%] w-2 h-2 bg-[#D4AF37]/20 rounded-full animate-float-down-delay"></div>
+          <div className="absolute top-[30%] right-[40%] w-1.5 h-1.5 bg-[#D4AF37]/50 rounded-full animate-float-up"></div>
+          <div className="absolute bottom-[30%] left-[40%] w-2 h-2 bg-[#F4E5B8]/40 rounded-full animate-float-down-delay"></div>
+        </div>
+
+        {/* نوتات موسيقية متحركة */}
+        <div className="absolute top-10 left-[20%] text-[#D4AF37]/50 animate-note-float hidden md:block pointer-events-none">
+          <Music size={28} />
+        </div>
+        <div className="absolute top-1/3 right-[15%] text-[#F4E5B8]/40 animate-note-float-delay hidden md:block pointer-events-none">
+          <Music size={22} />
+        </div>
+        <div className="absolute bottom-20 left-[30%] text-[#D4AF37]/30 animate-note-float hidden lg:block pointer-events-none">
+          <Music size={20} />
+        </div>
+        <div className="absolute top-1/2 right-[8%] text-[#F4E5B8]/30 animate-note-float-delay hidden lg:block pointer-events-none">
+          <Music size={26} />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
+          {/* اللوجو + الميكروفون */}
+          <div className="flex items-center justify-center gap-6 mb-10">
+            {/* اللوجو N */}
+            <div className="relative animate-float-up">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-lg opacity-70"></div>
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#111] to-[#333] border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
+                <span className="text-[#D4AF37] text-3xl font-black">N</span>
+              </div>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-              اختر من{" "}
-              <span className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] bg-clip-text text-transparent">
+
+            {/* خط فاصل */}
+            <div className="w-px h-16 bg-gradient-to-b from-transparent via-[#D4AF37] to-transparent"></div>
+
+            {/* الميكروفون */}
+            <div className="relative animate-mic-bounce">
+              <div className="absolute inset-0 bg-[#D4AF37]/30 rounded-full blur-xl animate-pulse-gold"></div>
+              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/40 border-2 border-[#F4E5B8]/50">
+                <Mic size={28} className="text-[#111]" strokeWidth={2.5} />
+              </div>
+            </div>
+          </div>
+
+          {/* الشارة */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#D4AF37]/10 to-[#F4E5B8]/10 border border-[#D4AF37]/30 rounded-full backdrop-blur-sm">
+              <Sparkles size={16} className="text-[#D4AF37] animate-float-up" />
+              <span className="text-sm font-bold text-[#F4E5B8] tracking-wider uppercase">نخبة الفنانين المعتمدين</span>
+              <Sparkles size={16} className="text-[#D4AF37] animate-float-down" />
+            </div>
+          </div>
+
+          {/* العنوان الرئيسي */}
+          <h2 className="text-center text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
+            اختر من{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10 bg-gradient-to-r from-[#D4AF37] via-[#F4E5B8] to-[#D4AF37] bg-clip-text text-transparent">
                 نخبة الفنانين
               </span>
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              تصفح أفضل الفنانين المعتمدين لدينا واحجز من يناسب فعاليتك
-            </p>
+              <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 300 12" fill="none">
+                <path d="M2 8C75 2 225 2 298 8" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+            </span>
+          </h2>
+
+          {/* الوصف */}
+          <p className="text-center text-lg md:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-6">
+            تصفح أفضل الفنانين المعتمدين لدينا واحجز من يناسب فعاليتك —
+            <span className="text-[#D4AF37] font-semibold"> تجربة لا تُنسى</span>
+          </p>
+
+          {/* خط فاصل ذهبي مع نوتة */}
+          <div className="flex items-center justify-center gap-3 mb-16">
+            <div className="h-px w-20 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
+            <Music size={18} className="text-[#D4AF37] animate-float-up" />
+            <div className="h-px w-20 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
           </div>
 
           {/* Carousel */}
           {featuredArtists.length > 0 ? (
-            <div className="relative px-12 lg:px-20">
+            <div className="relative px-4 md:px-12 lg:px-20">
               <ArtistCarousel artists={featuredArtists} />
             </div>
           ) : (
             <div className="text-center py-16">
-              <Music className="mx-auto text-gray-300 mb-4" size={64} />
-              <h3 className="text-2xl font-black text-gray-900 mb-2">لا يوجد فنانين بعد</h3>
-              <p className="text-gray-500 mb-6">سيتم إضافة فنانين قريباً</p>
+              <Music className="mx-auto text-[#D4AF37]/30 mb-4 animate-float-up" size={64} />
+              <h3 className="text-2xl font-black text-white mb-2">لا يوجد فنانين بعد</h3>
+              <p className="text-gray-400 mb-6">سيتم إضافة فنانين قريباً</p>
             </div>
           )}
 
           {/* زر عرض الكل */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Link
               href="/artists"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-2xl hover:shadow-xl hover:shadow-[#D4AF37]/30 hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/40 hover:scale-105 transition-all duration-300 text-lg"
             >
               عرض جميع الفنانين
-              <ChevronRight size={20} />
+              <ChevronRight size={22} />
             </Link>
           </div>
         </div>
