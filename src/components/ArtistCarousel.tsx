@@ -53,7 +53,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
       onMouseLeave={() => setIsAutoPlaying(true)}
     >
       {/* ═══════════ حاوية البطاقات ثلاثية الأبعاد ═══════════ */}
-      <div className="relative h-[500px] md:h-[560px] flex items-center justify-center" style={{ perspective: "1500px" }}>
+      <div className="relative h-[560px] md:h-[640px] flex items-center justify-center" style={{ perspective: "1500px" }}>
         {artists.map((artist, index) => {
           const position = index - currentIndex
           const absPosition = Math.abs(position)
@@ -107,7 +107,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
               <Link href={`/artists/${artist.slug}`} className="block group">
                 <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
                   {/* صورة الفنان */}
-                  <div className="relative h-72 md:h-80 overflow-hidden">
+                  <div className="relative h-80 md:h-96 overflow-hidden">
                     {artist.coverImage || artist.profileImage ? (
                       <img
                         src={artist.coverImage || artist.profileImage || ""}
@@ -149,7 +149,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                       <p className="text-[#D4AF37] text-xs font-bold uppercase tracking-[0.2em] mb-1">
                         {artist.category || "فنان"}
                       </p>
-                      <h3 className="text-3xl font-black text-white leading-tight drop-shadow-lg">
+                      <h3 className="text-3xl md:text-4xl font-black text-white leading-tight drop-shadow-lg">
                         {artist.name}
                       </h3>
                     </div>
@@ -157,7 +157,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
 
                   {/* التفاصيل */}
                   <div className="p-6 space-y-4">
-                    <p className="text-sm text-gray-400 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                    <p className="text-sm text-gray-400 leading-relaxed line-clamp-3 min-h-[4rem]">
                       {artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}
                     </p>
 
@@ -177,8 +177,9 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-[#D4AF37] group-hover:translate-x-[-4px] transition-transform">
-                        احجز الآن ←
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] text-xs font-black rounded-full hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all duration-300 group-hover:scale-105">
+                        احجز الآن
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                       </span>
                     </div>
                   </div>
