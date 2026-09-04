@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET(
@@ -9,13 +7,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params
-    const session = await getServerSession(authOptions)
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
-    }
-
-    // جلب الفنان
     const artist = await prisma.artist.findUnique({
       where: { slug },
       select: { id: true, name: true }
@@ -25,40 +17,29 @@ export async function GET(
       return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
     }
 
-    // جلب الحجوزات
+    // جلب الحجوزات النشطة فقط (الموافقة والمؤكدة والمكتملة)
     const bookings = await prisma.booking.findMany({
       where: {
         artistId: artist.id,
-        status: { in: ["PENDING_APPROVAL", "APPROVED", "CONFIRMED", "COMPLETED"] }
-      },
-      include: {
-        venue: { select: { name: true, address: true, city: true } },
+        status: { in: ["APPROVED", "CONFIRMED", "COMPLETED"] }
       },
       orderBy: { date: "asc" }
     })
 
-    // تحويل البيانات للصيغة المتوقعة من التقويم
+    // تحويل البيانات للصيغة المتوقعة
     const formattedBookings = bookings.map(b => ({
       id: b.id,
+      date: b.date,
       eventDate: b.date,
-      eventTime: b.timeSlot === "MORNING" ? "صباحاً (8-12)" :
-                 b.timeSlot === "AFTERNOON" ? "ظهراً (12-5)" :
-                 b.timeSlot === "EVENING" ? "مساءً (5-9)" :
-                 b.timeSlot === "NIGHT" ? "ليلاً (9-12)" : b.timeSlot,
-      eventType: "حجز " + artist.name,
-      location: b.venue?.name || b.venue?.address || "غير محدد",
+      timeSlot: b.timeSlot,
+      status: b.status,
       clientName: b.clientName,
       clientPhone: b.clientPhone,
-      status: b.status,
-      grossAmount: b.grossAmount,
     }))
 
     return NextResponse.json(formattedBookings)
   } catch (error: any) {
     console.error("Bookings API Error:", error)
-    return NextResponse.json(
-      { error: error.message || "خطأ في الخادم" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
