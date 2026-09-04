@@ -41,6 +41,16 @@ model Artist {
   commissionDiscountVal Float     @default(0)
   adminUserId           String?
   userId                String?
+
+  // ═══════════ بيانات الدفع الخاصة بالفنان ═══════════
+  bankName        String?
+  bankAccount     String?
+  iban            String?
+  vodafoneCash    String?
+  instaPay        String?
+  paymentNote     String?
+
+  // ═══════════ نسبة عمولة المنصة ═══════════
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -260,11 +270,7 @@ model SiteSetting {
   twitter   String?
   
   // معلومات الدفع
-  bankName      String?
-  bankAccount   String?
-  iban          String?
   paymentPhone  String?
-  paymentNote   String?
   
   updatedAt DateTime @updatedAt
 }

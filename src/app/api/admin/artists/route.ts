@@ -81,6 +81,12 @@ export async function POST(request: Request) {
         status: body.status || "PENDING",
         commissionRate: body.commissionRate || 15,
         commissionDiscountVal: body.commissionDiscountVal || 0,
+        bankName: body.bankName || null,
+        bankAccount: body.bankAccount || null,
+        iban: body.iban || null,
+        vodafoneCash: body.vodafoneCash || null,
+        instaPay: body.instaPay || null,
+        paymentNote: body.paymentNote || null,
       },
     })
 

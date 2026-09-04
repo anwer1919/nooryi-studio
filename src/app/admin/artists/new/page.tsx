@@ -53,6 +53,12 @@ export default function NewArtistPage() {
     commissionRate: 15,
     commissionDiscountVal: 0,
     status: "ACTIVE",
+    bankName: "",
+    bankAccount: "",
+    iban: "",
+    vodafoneCash: "",
+    instaPay: "",
+    paymentNote: "",
   })
 
   const [profileImage, setProfileImage] = useState<string | null>(null)
@@ -422,6 +428,113 @@ export default function NewArtistPage() {
               </div>
             </div>
           </div>
+          {/* ═══════════ بيانات الدفع للفنان ═══════════ */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 text-purple-700" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="2" y1="10" x2="22" y2="10" />
+              </svg>
+              بيانات الدفع للفنان
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              هذه البيانات ستظهر للعميل عند إتمام عملية الدفع
+            </p>
+            
+            <div className="space-y-4">
+              {/* التحويل البنكي */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
+                  </svg>
+                  التحويل البنكي
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">اسم البنك</label>
+                    <input
+                      type="text"
+                      value={formData.bankName}
+                      onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                      placeholder="البنك الأهلي المصري"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">رقم الحساب</label>
+                    <input
+                      type="text"
+                      value={formData.bankAccount}
+                      onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono"
+                      placeholder="1234567890"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">IBAN</label>
+                    <input
+                      type="text"
+                      value={formData.iban}
+                      onChange={(e) => setFormData({ ...formData, iban: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono text-sm"
+                      placeholder="EG12345678901234567890123456"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* المحافظ الإلكترونية */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                  </svg>
+                  المحافظ الإلكترونية
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">فودافون كاش</label>
+                    <input
+                      type="text"
+                      value={formData.vodafoneCash}
+                      onChange={(e) => setFormData({ ...formData, vodafoneCash: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono"
+                      placeholder="01000000000"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">إنستا باي</label>
+                    <input
+                      type="text"
+                      value={formData.instaPay}
+                      onChange={(e) => setFormData({ ...formData, instaPay: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono"
+                      placeholder="username@instapay"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ملاحظات الدفع */}
+              <div className="border-t border-gray-200 pt-4">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">ملاحظات الدفع</label>
+                <textarea
+                  value={formData.paymentNote}
+                  onChange={(e) => setFormData({ ...formData, paymentNote: e.target.value })}
+                  rows={2}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500"
+                  placeholder="مثال: يرجى إرسال صورة إيصال التحويل عبر واتساب..."
+                />
+              </div>
+            </div>
+          </div>
+
 
           {/* Submit Button */}
           <div className="flex gap-4">
