@@ -1,5 +1,7 @@
 "use client";
 
+import ArtistPaymentDisplay from "@/components/ArtistPaymentDisplay";
+
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -174,6 +176,16 @@ function PaymentForm() {
                     <span className="font-bold text-green-600">- {depositAmount.toLocaleString()} ج.م</span>
                   </div>
                 )}
+              {/* ═══════════ بيانات الدفع للفنان ═══════════ */}
+              {booking.artist && (
+                <div className="mt-4">
+                  <ArtistPaymentDisplay
+                    artist={booking.artist}
+                    amount={currentPay}
+                  />
+                </div>
+              )}
+
               </div>
 
               <div className="p-5 bg-gradient-to-br from-[#111] to-[#232323] rounded-2xl text-white">

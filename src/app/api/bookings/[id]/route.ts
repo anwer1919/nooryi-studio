@@ -18,7 +18,22 @@ export async function GET(
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
-        artist: { select: { name: true, category: true } },
+        artist: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            category: true,
+            profileImage: true,
+            bankName: true,
+            bankAccount: true,
+            iban: true,
+            vodafoneCash: true,
+            instaPay: true,
+            paymentNote: true,
+            commissionRate: true,
+          }
+        },
         venue: { select: { name: true, address: true, city: true } },
       },
     })
