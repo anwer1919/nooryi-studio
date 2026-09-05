@@ -102,7 +102,7 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
-          <Link href={`/booking/${booking.id}/invoice/print`} target="_blank" className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg">
+          <Link href={`/invoice/print?id=${booking.id}`} target="_blank" className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition shadow-lg">
             <FileText size={20} /> عرض الفاتورة
           </Link>
         </div>
