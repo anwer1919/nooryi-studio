@@ -166,8 +166,10 @@ export async function POST(request: Request) {
     try {
       booking = await prisma.booking.create({
         data: {
-          artistId,
-          venueId,
+          artist: { connect: { id: artistId } },
+          venue: venue ? { connect: { id: venue.id } } : undefined,
+          customer: customer ? { connect: { id: customer.id } } : undefined,
+          user: userId ? { connect: { id: userId } } : undefined,
           clientName,
           clientPhone,
           clientEmail,
@@ -175,13 +177,10 @@ export async function POST(request: Request) {
           timeSlot,
           grossAmount: finalGrossAmount,
           depositAmount: finalDepositAmount,
-          // ✅ الحقول الجديدة للأرقام الدولية والتسعير حسب المنطقة
           countryCode: countryCode || "+20",
           phoneNumber: phoneNumber || "",
           region: region || "",
           travelFee: finalTravelFee,
-          customerId: customer?.id || null,
-          userId: userId,
         },
         include: {
           artist: true,
