@@ -7,8 +7,12 @@ import { Calendar, Clock, MapPin, DollarSign, Music, FileText, ArrowLeft } from 
 
 export const dynamic = "force-dynamic";
 
-export default async function MyBookingsPage() {
+export default async function MyBookingsPage({ searchParams }: { searchParams: Promise<{ new?: string; id?: string; success?: string }> }) {
   const session = await getServerSession(authOptions);
+  
+  const params = await searchParams;
+  const isNewBooking = params.new === "true" || params.success === "true";
+  const newBookingId = params.id || null;
   if (!session?.user) redirect("/login?callbackUrl=/my-bookings");
 
   const userEmail = (session.user as any)?.email || "";
@@ -64,7 +68,30 @@ export default async function MyBookingsPage() {
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">
             حجوزاتي <span className="gold-text">الخاصة</span>
           </h1>
-          <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك — {bookings.length} حجز</p>
+          {isNewBooking && (
+          <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 animate-[fadeIn_0.5s]">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-2xl">✓</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-black text-green-900 mb-1">
+                  تم إرسال حجزك بنجاح! 🎉
+                </h3>
+                <p className="text-sm text-green-800 mb-2">
+                  حجزك الآن <strong>قيد المراجعة</strong> من قبل إدارة المنصة.
+                  ستتلقى إشعاراً فور الموافقة لتتمكن من إتمام عملية الدفع.
+                </p>
+                {newBookingId && (
+                  <p className="text-xs text-green-700 font-mono bg-green-100 inline-block px-3 py-1 rounded">
+                    رقم الحجز: {newBookingId.slice(0, 12)}...
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك — {bookings.length} حجز</p>
         </div>
 
         {bookings.length === 0 ? (

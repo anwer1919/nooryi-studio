@@ -140,11 +140,7 @@ function BookingForm() {
       
       // انتظار ثانيتين ثم التوجيه
       setTimeout(() => {
-        if (bookingId) {
-          router.push(`/booking/${slug}/invoice?id=${bookingId}`);
-        } else {
-          router.push("/my-bookings");
-        }
+        router.push(`/my-bookings?new=true&id=${bookingId}`);
       }, 2500);
     } catch (e: any) {
       setError(e.message);
