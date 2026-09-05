@@ -173,8 +173,6 @@ export async function POST(request: Request) {
           countryCode: countryCode || "+20",
           phoneNumber: phoneNumber || clientPhone,
           region: region || "",
-          eventType: eventType || null,
-          notes: notes || null,
         },
         include: {
           artist: true,
