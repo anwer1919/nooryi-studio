@@ -171,7 +171,7 @@ export default async function UniversalPrintPage({
           </div>
           <div className="flex flex-col items-center">
             <div className="bg-white p-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">
-              <div style="width:95px;height:95px;border:2px solid #D4AF37;border-radius:8px;display:flex;align-items:center;justify-content:center;background:white"><p style="font-size:8px;color:#666;text-align:center;word-break:break-all;padding:4px">امسح للتحقق<br/>{verifyUrl.replace("https://","")}</p></div>
+              <div style={{width:"95px",height:"95px",border:"2px solid #D4AF37",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",background:"white"}}><p style={{fontSize:"8px",color:"#666",textAlign:"center",wordBreak:"break-all",padding:"4px"}}>امسح للتحقق<br/>{verifyUrl.replace("https://","")}</p></div>
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
             <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
@@ -185,6 +185,4 @@ export default async function UniversalPrintPage({
     </div>
   )
 }
-// build: 20260906014127
 
-// build: 20260906014331
