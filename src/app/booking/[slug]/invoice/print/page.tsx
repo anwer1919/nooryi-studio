@@ -1,12 +1,10 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
+import Link from "next/link"
 import QRCode from "react-qr-code"
 
 export const dynamic = "force-dynamic"
 
-const STUDIO_INFO = {
+const STUDIO = {
   name: "Nooryi Studio",
   nameAr: "استوديو نوري",
   tagline: "منصة حجز الفنانين والفعاليات",
@@ -25,21 +23,38 @@ export default async function InvoicePrintPage({
   params: Promise<{ slug: string }>
   searchParams: Promise<{ id?: string }>
 }) {
-  const session = await getServerSession(authOptions)
   const { id } = await searchParams
   const { slug } = await params
 
-  // التحقق من الملكية — مرن (الرابط قد يأتي من بريد إلكتروني)
-    const isOwner = 
-      !session?.user ||
-      booking.clientEmail === userEmail ||
-      booking.userId === userId ||
-      role === "SUPER_ADMIN" ||
-      role === "ADMIN"
-    
-    if (!isOwner && session?.user) {
-      // نعرض الصفحة لأن الرابط قد يأتي من بريد إلكتروني
-    }
+  if (!id) {
+    return (
+      <div dir="rtl" className="min-h-screen flex items-center justify-center">
+        <p className="text-xl font-bold text-gray-500">معرف الحجز غير موجود</p>
+      </div>
+    )
+  }
+
+  let booking
+  try {
+    booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        artist: true,
+        venue: true,
+        payments: { orderBy: { createdAt: "desc" } },
+      },
+    })
+  } catch (e) {
+    console.error("Print fetch error:", e)
+  }
+
+  if (!booking) {
+    return (
+      <div dir="rtl" className="min-h-screen flex items-center justify-center">
+        <p className="text-xl font-bold text-gray-500">الحجز غير موجود</p>
+      </div>
+    )
+  }
 
   const totalPaid = booking.payments
     .filter((p: any) => ["COMPLETED", "SUCCESS"].includes(p.status))
@@ -50,23 +65,15 @@ export default async function InvoicePrintPage({
   const basePrice = grossAmount - travelFee
   const remaining = Math.max(0, grossAmount - totalPaid)
 
-  const status = (booking.status || "").toUpperCase()
+  const invoiceNumber = "INV-" + booking.id.slice(0, 8).toUpperCase()
+  const issueDate = new Date(booking.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+  const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", weekday: "long" })
+  const verifyUrl = STUDIO.website + "/verify/invoice/" + booking.id
+
   const statusLabel =
-    status === "COMPLETED" ? "مدفوعة بالكامل" :
-    status === "CONFIRMED" ? "مؤكدة — عربون مدفوع" :
-    status === "APPROVED" ? "بانتظار الدفع" :
-    "قيد المراجعة"
-
-  const invoiceNumber = `INV-${booking.id.slice(0, 8).toUpperCase()}`
-  const issueDate = new Date(booking.createdAt).toLocaleDateString("ar-EG", {
-    year: "numeric", month: "long", day: "numeric"
-  })
-  const eventDate = new Date(booking.date).toLocaleDateString("ar-EG", {
-    year: "numeric", month: "long", day: "numeric", weekday: "long"
-  })
-
-  // رابط التحقق من الفاتورة عبر QR
-  const verifyUrl = `${STUDIO_INFO.website}/verify/invoice/${booking.id}`
+    remaining === 0 ? "مدفوعة بالكامل" :
+    totalPaid > 0 ? "مدفوعة جزئياً" :
+    "بانتظار الدفع"
 
   return (
     <div dir="rtl" className="print-area bg-white text-black">
@@ -75,39 +82,26 @@ export default async function InvoicePrintPage({
           @page { size: A4; margin: 0; }
           body * { visibility: hidden; }
           .print-area, .print-area * { visibility: visible; }
-          .print-area {
-            position: absolute; left: 0; top: 0;
-            width: 210mm; min-height: 297mm;
-            background: white !important;
-          }
+          .print-area { position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white !important; }
           .no-print { display: none !important; }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
 
-      {/* أزرار الشاشة فقط */}
+      {/* أزرار الشاشة */}
       <div className="no-print fixed top-4 left-4 z-50 flex gap-2">
-        <button
-          onClick={() => window.print()}
-          className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black px-6 py-3 rounded-xl hover:shadow-lg"
-        >
+        <button onClick={() => window.print()} className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black px-6 py-3 rounded-xl hover:shadow-lg">
           🖨️ طباعة الآن
         </button>
-        <button
-          onClick={() => window.history.back()}
-          className="bg-gray-900 text-white font-bold px-6 py-3 rounded-xl hover:bg-gray-800"
-        >
+        <button onClick={() => window.history.back()} className="bg-gray-900 text-white font-bold px-6 py-3 rounded-xl">
           ← رجوع
         </button>
       </div>
 
-      {/* ═══════ الشريط الذهبي العلوي ═══════ */}
+      {/* الشريط الذهبي العلوي */}
       <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
 
-      {/* ═══════ الترويسة ═══════ */}
+      {/* الترويسة */}
       <div className="px-12 pt-8 pb-5 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-5">
@@ -115,25 +109,24 @@ export default async function InvoicePrintPage({
               <span className="text-[#111] text-3xl font-black">N</span>
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight">{STUDIO_INFO.nameAr}</h1>
-              <p className="text-[#D4AF37] font-bold mt-0.5">{STUDIO_INFO.name}</p>
-              <p className="text-xs text-gray-400 mt-1">{STUDIO_INFO.tagline}</p>
+              <h1 className="text-3xl font-black">{STUDIO.nameAr}</h1>
+              <p className="text-[#D4AF37] font-bold mt-0.5">{STUDIO.name}</p>
+              <p className="text-xs text-gray-400 mt-1">{STUDIO.tagline}</p>
             </div>
           </div>
-
           <div className="text-left">
             <div className="inline-block px-4 py-2 bg-[#D4AF37]/20 border border-[#D4AF37] rounded-lg">
               <p className="text-xs text-[#D4AF37] font-bold">فاتورة رسمية</p>
               <p className="text-xs text-gray-300 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
             </div>
             <p className="text-xs text-gray-400 mt-2">تاريخ الإصدار: {issueDate}</p>
-            <p className="text-xs text-gray-400 mt-1">حالة الفاتورة: <span className="text-[#D4AF37] font-bold">{statusLabel}</span></p>
+            <p className="text-xs text-gray-400 mt-1">الحالة: <span className="text-[#D4AF37] font-bold">{statusLabel}</span></p>
           </div>
         </div>
         <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
       </div>
 
-      {/* ═══════ معلومات العميل والفنان ═══════ */}
+      {/* العميل والفنان */}
       <div className="px-12 py-5 bg-[#faf8f0] border-b-4 border-[#D4AF37]">
         <div className="grid grid-cols-2 gap-6">
           <div>
@@ -150,9 +143,9 @@ export default async function InvoicePrintPage({
                 <p className="text-sm text-gray-600">{booking.artist?.category || "فنان"}</p>
               </div>
               {booking.artist?.profileImage ? (
-                <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
+                <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-2xl object-cover" />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
                   <span className="text-[#111] text-2xl font-black">{booking.artist?.name?.charAt(0) || "ف"}</span>
                 </div>
               )}
@@ -161,7 +154,7 @@ export default async function InvoicePrintPage({
         </div>
       </div>
 
-      {/* ═══════ تفاصيل الحجز ═══════ */}
+      {/* تفاصيل الحجز */}
       <div className="px-12 py-5">
         <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
           <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>
@@ -174,7 +167,6 @@ export default async function InvoicePrintPage({
               <th className="px-3 py-2.5 text-center text-xs font-bold">الفترة</th>
               <th className="px-3 py-2.5 text-right text-xs font-bold">المكان</th>
               <th className="px-3 py-2.5 text-right text-xs font-bold">المنطقة</th>
-              <th className="px-3 py-2.5 text-center text-xs font-bold">نوع المناسبة</th>
             </tr>
           </thead>
           <tbody>
@@ -183,13 +175,12 @@ export default async function InvoicePrintPage({
               <td className="px-3 py-3 text-center">{booking.timeSlot}</td>
               <td className="px-3 py-3">{booking.venue?.name || "سيتم تحديده"}</td>
               <td className="px-3 py-3">{booking.region || "—"}</td>
-              <td className="px-3 py-3 text-center">{booking.eventType || "—"}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* ═══════ جدول المبالغ ═══════ */}
+      {/* جدول المبالغ */}
       <div className="px-12 py-5">
         <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
           <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>
@@ -224,89 +215,82 @@ export default async function InvoicePrintPage({
               <td colSpan={2} className="px-4 py-3 font-bold text-green-800">✓ المدفوع</td>
               <td className="px-4 py-3 text-center font-black text-green-700">{totalPaid.toLocaleString()} ج.م</td>
             </tr>
-            <tr className="bg-white">
-              <td colSpan={2} className="px-4 py-3 font-bold text-gray-700">المتبقي</td>
-              <td className="px-4 py-3 text-center font-black text-red-600">{remaining.toLocaleString()} ج.م</td>
-            </tr>
+            {remaining > 0 && (
+              <tr className="bg-white">
+                <td colSpan={2} className="px-4 py-3 font-bold text-gray-700">المتبقي</td>
+                <td className="px-4 py-3 text-center font-black text-red-600">{remaining.toLocaleString()} ج.م</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* ═══════ الشروط والأحكام ═══════ */}
+      {/* الشروط والأحكام */}
       <div className="px-12 py-4 bg-[#faf8f0] border-t border-b border-gray-200">
         <h4 className="text-sm font-black text-gray-900 mb-2">الشروط والأحكام</h4>
         <ol className="list-decimal list-inside space-y-1 text-[11px] text-gray-700 leading-relaxed">
-          <li>هذه الفاتورة صادرة رسمياً من {STUDIO_INFO.nameAr} ومرخصة برقم {STUDIO_INFO.licenseNumber}.</li>
+          <li>هذه الفاتورة صادرة رسمياً من {STUDIO.nameAr} ومرخصة برقم {STUDIO.licenseNumber}.</li>
           <li>يُعتبر الحجز مؤكداً نهائياً بعد سداد العربون أو كامل المبلغ واستلام إشعار التأكيد.</li>
-          <li>في حال إلغاء الحجز من قِبل العميل قبل 72 ساعة من موعد الفعالية، يُخصم 25% من قيمة العربون كمصاريف إدارية.</li>
-          <li>في حال إلغاء الحجز خلال أقل من 72 ساعة من موعد الفعالية، لا يُسترد العربون.</li>
-          <li>في حال اعتذار الفنان عن الحفل لظروف قهرية، يُرد كامل المبلغ المدفوع أو يُعاد جدولة الحجز باتفاق الطرفين.</li>
+          <li>في حال إلغاء الحجز من قِبل العميل قبل 72 ساعة، يُخصم 25% من قيمة العربون كمصاريف إدارية.</li>
+          <li>في حال إلغاء الحجز خلال أقل من 72 ساعة، لا يُسترد العربون.</li>
+          <li>في حال اعتذار الفنان لظروف قهرية، يُرد كامل المبلغ أو يُعاد جدولة الحجز باتفاق الطرفين.</li>
           <li>يلتزم العميل بتوفير مكان مناسب وآمن للفنان ومعدات الصوت المتفق عليها.</li>
           <li>أي تعديلات على موعد أو مكان الحفل يجب إبلاغ المنصة بها قبل 48 ساعة على الأقل.</li>
-          <li>يمكن التحقق من صحة هذه الفاتورة بمسح رمز QR أدناه أو عبر الرابط المذكور.</li>
+          <li>يمكن التحقق من صحة هذه الفاتورة بمسح رمز QR أدناه.</li>
         </ol>
       </div>
 
-      {/* ═══════ التذييل: تواصل + ختم + QR ═══════ */}
+      {/* التذييل: تواصل + ختم + QR */}
       <div className="px-12 py-6 bg-gradient-to-b from-white to-[#faf8f0]">
         <div className="grid grid-cols-3 gap-6 items-center">
           {/* معلومات التواصل */}
           <div className="text-right">
             <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">تواصل معنا</p>
             <div className="space-y-1 text-[11px] text-gray-700">
-              <p dir="ltr" className="text-right">{STUDIO_INFO.phone}</p>
-              <p>{STUDIO_INFO.email}</p>
-              <p>{STUDIO_INFO.address}</p>
-              <p dir="ltr" className="text-right font-mono text-[#D4AF37]">
-                {STUDIO_INFO.website.replace("https://", "")}
-              </p>
-              <p className="text-gray-500">س.ت: <span className="font-mono">{STUDIO_INFO.taxNumber}</span></p>
+              <p dir="ltr" className="text-right">{STUDIO.phone}</p>
+              <p>{STUDIO.email}</p>
+              <p>{STUDIO.address}</p>
+              <p dir="ltr" className="text-right font-mono text-[#D4AF37]">{STUDIO.website.replace("https://", "")}</p>
+              <p className="text-gray-500">س.ت: <span className="font-mono">{STUDIO.taxNumber}</span></p>
             </div>
           </div>
 
-          {/* الختم الرسمي في المنتصف */}
+          {/* الختم الرسمي */}
           <div className="flex flex-col items-center justify-center">
             <div className="relative">
               <div
                 className="w-28 h-28 rounded-full border-4 border-[#D4AF37] flex items-center justify-center"
-                style={{
-                  transform: "rotate(-15deg)",
-                  boxShadow: "inset 0 0 0 2px #D4AF37, 0 0 0 2px #D4AF37",
-                }}
+                style={{ transform: "rotate(-15deg)", boxShadow: "inset 0 0 0 2px #D4AF37, 0 0 0 2px #D4AF37" }}
               >
                 <div className="text-center">
-                  <p className="text-[7px] font-bold text-[#D4AF37] uppercase tracking-widest">{STUDIO_INFO.name}</p>
+                  <p className="text-[7px] font-bold text-[#D4AF37] uppercase tracking-widest">{STUDIO.name}</p>
                   <p className="text-[10px] font-black text-[#D4AF37] my-1">✦ معتمد ✦</p>
                   <p className="text-[8px] font-black text-[#D4AF37]">APPROVED</p>
                   <p className="text-[7px] text-[#D4AF37] mt-1 font-mono" dir="ltr">{new Date().getFullYear()}</p>
                 </div>
               </div>
-              <div
-                className="absolute inset-0 rounded-full border-2 border-[#D4AF37]"
-                style={{ transform: "rotate(-15deg) scale(1.15)", opacity: 0.5 }}
-              ></div>
+              <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]" style={{ transform: "rotate(-15deg) scale(1.15)", opacity: 0.5 }}></div>
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
           </div>
 
-          {/* QR Code للتحقق */}
+          {/* QR Code */}
           <div className="flex flex-col items-center">
             <div className="bg-white p-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">
               <QRCode value={verifyUrl} size={95} level="H" bgColor="#FFFFFF" fgColor="#0a0a0a" />
             </div>
-            <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق من الفاتورة</p>
+            <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
             <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
           </div>
         </div>
 
         <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
-
         <p className="mt-3 text-[10px] text-gray-500 text-center">
-          © {new Date().getFullYear()} {STUDIO_INFO.name} — جميع الحقوق محفوظة | ترخيص رقم <span className="font-mono">{STUDIO_INFO.licenseNumber}</span>
+          © {new Date().getFullYear()} {STUDIO.name} — جميع الحقوق محفوظة | ترخيص <span className="font-mono">{STUDIO.licenseNumber}</span>
         </p>
       </div>
 
-      {/* ═══════ الشريط الذهبي السفلي ═══════ */}
+      {/* الشريط الذهبي السفلي */}
       <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
     </div>
   )
