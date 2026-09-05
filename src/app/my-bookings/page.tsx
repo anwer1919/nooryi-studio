@@ -15,13 +15,26 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
   const userId = (session.user as any)?.id || "";
   let bookings: any[] = [];
   try {
-    const customers = await prisma.customer.findMany({ where: { OR: [{ email: userEmail }, { userId }] }, select: { id: true, phone: true } });
-    const cIds = customers.map(c => c.id);
-    const cPhones = customers.map(c => c.phone).filter(Boolean);
-    const sc: any[] = [{ clientEmail: userEmail }, { userId }];
-    if (cIds.length > 0) sc.push({ customerId: { in: cIds } });
-    for (const p of cPhones) { const c = p.replace(/[^0-9]/g, ""); if (c.length >= 10) sc.push({ clientPhone: { contains: c.slice(-10) } }); }
-    bookings = await prisma.booking.findMany({ where: { OR: sc }, orderBy: { createdAt: "desc" }, include: { artist: { select: { name: true, slug: true, profileImage: true, category: true } }, venue: { select: { name: true, city: true } }, payments: { select: { amount: true, status: true, createdAt: true } } } });
+    // جلب كل الحجوزات ثم فلترتها في JS (حل جذري)
+    const allBookings = await prisma.booking.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        artist: { select: { name: true, slug: true, profileImage: true, category: true } },
+        venue: { select: { name: true, city: true } },
+        payments: { select: { amount: true, status: true, createdAt: true } },
+        customer: { select: { id: true, email: true, phone: true, userId: true } },
+      },
+      take: 100,
+    });
+    // فلتر: يطابق email أو userId أو customerId أو phone
+    bookings = allBookings.filter((b: any) => {
+      if (b.clientEmail && b.clientEmail.toLowerCase() === userEmail.toLowerCase()) return true;
+      if (b.userId && b.userId === userId) return true;
+      if (b.customer?.userId && b.customer.userId === userId) return true;
+      if (b.customer?.email && b.customer.email.toLowerCase() === userEmail.toLowerCase()) return true;
+      return false;
+    });
+    console.log("Total bookings:", allBookings.length, "Filtered:", bookings.length);
   } catch (e: any) { console.error("Error:", e); }
   const gs = (s: string) => { const u = (s||"").toUpperCase(); if (["CONFIRMED","APPROVED","ACCEPTED"].includes(u)) return {l:"مؤكد",c:"status-confirmed",i:"✓"}; if (["PENDING_APPROVAL","PENDING"].includes(u)) return {l:"قيد المراجعة",c:"status-pending",i:"⏳"}; if (["COMPLETED","DONE"].includes(u)) return {l:"مكتمل",c:"status-completed",i:"✓"}; return {l:"مرفوض",c:"status-rejected",i:"✕"}; };
   return (
