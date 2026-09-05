@@ -140,8 +140,8 @@ export function bookingApprovedTemplate(booking: any) {
 // ═══════════════════════════════════════════════════
 export function paymentConfirmedTemplate(booking: any, payment: any) {
   const baseUrl = process.env.NEXTAUTH_URL || "https://nooryi-studio.vercel.app"
-  const printLink = `${baseUrl}/booking/${booking.artist?.slug}/invoice/print?id=${booking.id}`
-  const invoiceLink = `${baseUrl}/booking/${booking.artist?.slug}/invoice?id=${booking.id}`
+  const printLink = `${baseUrl}/invoice/print?id=${booking.id}`
+  const invoiceLink = `${baseUrl}/invoice?id=${booking.id}`
   
   return `
     <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #faf8f0; padding: 30px; border-radius: 20px;">

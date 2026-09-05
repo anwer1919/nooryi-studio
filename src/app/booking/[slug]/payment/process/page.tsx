@@ -76,7 +76,7 @@ function PaymentProcessForm() {
         const bookingData = await bookingRes.json()
         const artistSlug = bookingData?.artist?.slug || "artist"
         setTimeout(() => {
-          router.push(`/booking/${artistSlug}/invoice/print?id=${id}`)
+          router.push(`/invoice/print?id=${id}`)
         }, 2500)
       } catch {
         setTimeout(() => {

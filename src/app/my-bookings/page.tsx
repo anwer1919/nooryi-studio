@@ -176,7 +176,7 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
 
                     <div className="flex gap-2 pt-3 border-t border-[#e8e4d9]">
                       <Link
-                        href={`/booking/${b.artist?.slug || "artist"}/invoice?id=${b.id}`}
+                        href={`/invoice?id=${b.id}`}
                         className="btn-gold flex-1 text-sm py-2.5"
                       >
                         <FileText size={14} />
