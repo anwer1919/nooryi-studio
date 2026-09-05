@@ -48,6 +48,7 @@ function PaymentProcessForm() {
       const res = await fetch("/api/payments/process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+          credentials: "include",
         body: JSON.stringify({
           bookingId: id,
           amount: parseFloat(amount),
