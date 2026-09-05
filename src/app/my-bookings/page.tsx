@@ -27,10 +27,12 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
       take: 100,
     });
     // فلتر: يطابق email أو userId أو customerId أو phone
+    // إذا كان userId فارغ، نبحث بالemail فقط
+    const effectiveUserId = userId || "none";
     bookings = allBookings.filter((b: any) => {
       if (b.clientEmail && b.clientEmail.toLowerCase() === userEmail.toLowerCase()) return true;
-      if (b.userId && b.userId === userId) return true;
-      if (b.customer?.userId && b.customer.userId === userId) return true;
+      if (b.userId && b.userId === effectiveUserId) return true;
+      if (b.customer?.userId && b.customer.userId === effectiveUserId) return true;
       if (b.customer?.email && b.customer.email.toLowerCase() === userEmail.toLowerCase()) return true;
       return false;
     });
@@ -76,6 +78,4 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
     </div>
   );
 }
-// build: 20260906014128
 
-// build: 20260906014331
