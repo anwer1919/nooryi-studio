@@ -37,20 +37,38 @@ function BookingForm() {
   });
 
   useEffect(() => {
+    console.log("🔄 [Booking] Loading data for:", slug);
+    
     Promise.all([
       fetch(`/api/artists/${slug}`).then((r) => r.json()).catch(() => null),
       fetch("/api/venues").then((r) => r.json()).catch(() => []),
       fetch(`/api/artists/${slug}/pricing-regions`).then((r) => r.json()).catch(() => []),
       fetch(`/api/artists/${slug}/bookings`).then((r) => r.json()).catch(() => []),
     ]).then(([a, v, pr, bk]) => {
+      console.log("📦 [Booking] Artist:", a);
+      console.log("📦 [Booking] Regions:", pr);
+      console.log("📦 [Booking] Bookings:", bk);
+      
       setArtist(a);
       setVenues(Array.isArray(v) ? v : v?.data || []);
       
       // معالجة مناطق التسعير
       const regionsList = Array.isArray(pr) ? pr : (pr?.data || []);
       setRegions(regionsList);
-      console.log("🗺️ Regions fetched:", regionsList);
+      
+      // معالجة الحجوزات المحجوزة
+      const bookingsList = Array.isArray(bk) ? bk : (bk?.data || []);
+      const dates = bookingsList.map((b: any) => {
+        if (b.eventDate || b.date) {
+          return new Date(b.eventDate || b.date).toISOString().split("T")[0];
+        }
+        return null;
+      }).filter(Boolean);
+      setBookedDates(dates);
+      
+      console.log("🗺️ Regions loaded:", regionsList.length);
       console.log("📅 Booked dates:", dates);
+      
       setLoading(false);
     });
   }, [slug]);
@@ -59,14 +77,7 @@ function BookingForm() {
   const validatePhone = (phone: string): boolean => {
     if (!phone) return false;
     
-    // إزالة المسافات والشرطات
     const cleaned = phone.replace(/[\s-]/g, "");
-    
-    // يقبل:
-    // - أرقام دولية: +20, 0020, +966, 00966, +1, 001
-    // - أرقام محلية: 010, 011, 012, 015 (مصر)
-    // - أرقام محلية: 05, 050, 055 (السعودية)
-    // - أرقام محلية: 050, 055, 056 (الإمارات)
     
     // نمط دولي: يبدأ بـ + أو 00 متبوعاً بـ 7-15 رقم
     const internationalPattern = /^(\+|00)[1-9]\d{6,14}$/;
@@ -77,16 +88,21 @@ function BookingForm() {
     return internationalPattern.test(cleaned) || localPattern.test(cleaned);
   };
 
+  // ✅ إصلاح: استخدام ?. لحماية من null
   const selectedRegion = regions.find((r) => r.id === form.regionId);
   const basePrice = selectedRegion 
     ? Number(selectedRegion.basePrice) + Number(selectedRegion.travelFee || 0)
-    : artist.basePrice || artist.minPrice || 1000;
+    : (artist?.basePrice || artist?.minPrice || 1000);
 
   const handleSubmit = async () => {
-    // التحقق من رقم الجوال
     if (!validatePhone(form.clientPhone)) {
       setError("رقم الجوال غير صالح. أدخل رقماً دولياً (مثل: +201000000000) أو محلياً (مثل: 01000000000)");
       setStep(1);
+      return;
+    }
+
+    if (!artist?.id) {
+      setError("فشل تحميل بيانات الفنان");
       return;
     }
 
@@ -98,7 +114,7 @@ function BookingForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          artistId: artist?.id,
+          artistId: artist.id,
           artistSlug: slug,
           grossAmount: basePrice,
         }),
@@ -137,7 +153,12 @@ function BookingForm() {
   if (!artist) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">الفنان غير موجود</p>
+        <div className="text-center">
+          <p className="text-gray-500 text-xl font-bold mb-4">الفنان غير موجود</p>
+          <Link href="/artists" className="text-[#b8941f] hover:underline">
+            العودة لقائمة الفنانين
+          </Link>
+        </div>
       </div>
     );
   }
@@ -150,7 +171,7 @@ function BookingForm() {
             <ArrowRight size={18} />
             <span className="font-bold">العودة</span>
           </Link>
-          <h1 className="text-lg font-black text-gray-900 dark:text-white">حجز {artist.name}</h1>
+          <h1 className="text-lg font-black text-gray-900 dark:text-white">حجز {artist?.name || "الفنان"}</h1>
           <div className="w-20"></div>
         </div>
       </header>
@@ -267,7 +288,7 @@ function BookingForm() {
                   {regions.map((r: any) => (
                     <option key={r.id} value={r.id}>
                       {r.regionName} — {Number(r.basePrice).toLocaleString()} ج.م
-                      {r.travelFee > 0 ? ` (+${Number(r.travelFee).toLocaleString()} سفر)` : ""}
+                      {Number(r.travelFee) > 0 ? ` (+${Number(r.travelFee).toLocaleString()} سفر)` : ""}
                     </option>
                   ))}
                 </select>
@@ -309,7 +330,7 @@ function BookingForm() {
             <div className="bg-gradient-to-br from-[#111] to-[#232323] p-5 rounded-2xl text-white">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-300">السعر الأساسي</span>
-                <span className="font-bold">{(artist.basePrice || artist.minPrice || 1000).toLocaleString()} ج.م</span>
+                <span className="font-bold">{(artist?.basePrice || artist?.minPrice || 1000).toLocaleString()} ج.م</span>
               </div>
               {selectedRegion && (
                 <>
@@ -397,7 +418,7 @@ function BookingForm() {
               <h3 className="font-black text-gray-900 dark:text-white mb-3">ملخص الحجز</h3>
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">الفنان</span>
-                <span className="font-bold text-gray-900 dark:text-white">{artist.name}</span>
+                <span className="font-bold text-gray-900 dark:text-white">{artist?.name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">الاسم</span>
