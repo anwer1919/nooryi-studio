@@ -27,7 +27,21 @@ export async function POST(request: Request) {
     }
 
     // التحقق من الملكية
-    if (booking.clientEmail !== session.user.email) {
+    // التحقق من الملكية — يقبل clientEmail أو userId
+    const userEmail = session.user.email
+    const userId = (session.user as any).id
+    
+    const isOwner = 
+      booking.clientEmail === userEmail ||
+      booking.userId === userId
+    
+    if (!isOwner) {
+      console.error("❌ Unauthorized payment attempt:", {
+        userEmail,
+        userId,
+        bookingClientEmail: booking.clientEmail,
+        bookingUserId: booking.userId,
+      })
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })
     }
 
