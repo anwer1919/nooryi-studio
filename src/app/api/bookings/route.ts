@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     } = body
 
     // 3. التحقق من الحقول المطلوبة
-    if (!artistId || !venueId || !clientName || !clientPhone || !date || !timeSlot) {
+    if (!artistId || !clientName || !clientPhone || !date || !timeSlot) {
       console.error("❌ حقول ناقصة:", { artistId, venueId, clientName, clientPhone, date, timeSlot })
       return NextResponse.json(
         { error: "جميع الحقول المطلوبة يجب أن تكون موجودة" },
@@ -72,9 +72,17 @@ export async function POST(request: Request) {
     }
 
     // 5. التحقق من وجود المكان أو إنشاؤه
-    let venue = await prisma.venue.findUnique({
-      where: { id: venueId },
-    })
+    let venue = null
+    
+    if (venueId) {
+      try {
+        venue = await prisma.venue.findUnique({
+          where: { id: venueId },
+        })
+      } catch (err) {
+        console.warn("⚠️ فشل البحث عن المكان:", err)
+      }
+    }
 
     if (!venue) {
       console.log("⚠️ المكان غير موجود، إنشاء مكان افتراضي...")

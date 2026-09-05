@@ -113,10 +113,17 @@ function BookingForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+
           ...form,
           artistId: artist.id,
           artistSlug: slug,
           grossAmount: basePrice,
+        
+          venueId: form.venueId || undefined,
+          countryCode: "+20",
+          phoneNumber: form.clientPhone,
+          region: selectedRegion?.regionName || "",
+          travelFee: selectedRegion ? Number(selectedRegion.travelFee || 0) : 0,
         }),
       });
       const data = await res.json();
