@@ -68,143 +68,12 @@ export async function POST(request: Request) {
 
     if (!artist) {
       console.error("❌ الفنان غير موجود:", artistId)
-      return NextResponse.json({ error: "الفنان غير موجود" }, { status: 404 })
-    }
-
-    // 5. التحقق من وجود المكان أو إنشاؤه
-    let venue = null
-    
-    if (venueId) {
-      try {
-        venue = await prisma.venue.findUnique({
-          where: { id: venueId },
-        })
-      } catch (err) {
-        console.warn("⚠️ فشل البحث عن المكان:", err)
-      }
-    }
-
-    if (!venue) {
-      console.log("⚠️ المكان غير موجود، إنشاء مكان افتراضي...")
-      try {
-        venue = await prisma.venue.create({
-          data: {
-            name: "مكان عام",
-            address: "سيتم تحديده لاحقاً",
-          },
-        })
-        console.log("✅ تم إنشاء مكان افتراضي:", venue.id)
-      } catch (err) {
-        console.error("❌ فشل إنشاء المكان:", err)
-        return NextResponse.json({ error: "المكان غير موجود" }, { status: 404 })
-      }
-    }
-
-    // 6. البحث عن العميل أو إنشاؤه
-    let customer = null
-    try {
-      if (clientEmail) {
-        customer = await prisma.customer.findFirst({
-          where: { email: clientEmail },
-        })
-      }
-
-      if (!customer && clientPhone) {
-        customer = await prisma.customer.findFirst({
-          where: { phone: clientPhone },
-        })
-      }
-
-      if (!customer) {
-        customer = await prisma.customer.create({
-          data: {
-            fullName: clientName,
-            phone: clientPhone,
-            email: clientEmail || null,
-          },
-        })
-        console.log("✅ تم إنشاء عميل جديد:", customer.id)
-      } else {
-        console.log("✅ العميل موجود:", customer.id)
-      }
-    } catch (error) {
-      console.error("❌ خطأ في التعامل مع العميل:", error)
-      return NextResponse.json({ error: "خطأ في بيانات العميل" }, { status: 500 })
-    }
-
-    // 7. حساب المبالغ
-    const finalGrossAmount = grossAmount || 5000
-    const finalDepositAmount = depositAmount || Math.round(finalGrossAmount * 0.2)
-    const remainingAmount = finalGrossAmount - finalDepositAmount
-    const finalTravelFee = travelFee || 0
-
-    console.log("💰 المبالغ:", { 
-      grossAmount: finalGrossAmount, 
-      depositAmount: finalDepositAmount, 
-      remainingAmount,
-      travelFee: finalTravelFee,
-      countryCode: countryCode || "+20",
-      region: region || "غير محدد"
-    })
-
-    // 8. البحث عن userId
-    let userId = null
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-      })
-      if (user) {
-        userId = user.id
-        console.log("✅ تم العثور على المستخدم:", userId)
-      }
-    } catch (error) {
-      console.warn("⚠️ لم يتم العثور على المستخدم:", error)
-    }
-
-    // 9. إنشاء الحجز
-    let booking
-    try {
-      booking = await prisma.booking.create({
-        data: {
-          artist: { connect: { id: artistId } },
-          venue: venue ? { connect: { id: venue.id } } : undefined,
-          customer: customer ? { connect: { id: customer.id } } : undefined,
-          userId: userId || null,
-          clientName,
-          clientPhone,
-          clientEmail,
-          date: new Date(date),
-          timeSlot,
-          grossAmount: finalGrossAmount,
-          depositAmount: finalDepositAmount,
-          countryCode: countryCode || "+20",
-          phoneNumber: phoneNumber || "",
-          region: region || "",
-          travelFee: finalTravelFee,
-        },
-        include: {
-          artist: true,
-          venue: true,
-          customer: true,
-        },
-      })
-      console.log("✅ تم إنشاء الحجز بنجاح:", booking.id)
-    } catch (error: any) {
-      console.error("❌ خطأ في إنشاء الحجز:", error)
-      console.error("تفاصيل الخطأ:", error.message)
-      return NextResponse.json(
-        { error: "خطأ في إنشاء الحجز: " + error.message },
-        { status: 500 }
-      )
-    }
-
-    // 10. إنشاء إشعار للأدمن
-    try {
-      const admins = await prisma.user.findMany({
-        where: {
-          role: { in: ["SUPER_ADMIN", "ADMIN"] },
-        },
-        select: { id: true, email: true },
+      return NextResponse.json({
+        success: true,
+        id: booking.id,
+        bookingId: booking.id,
+        status: booking.status,
+        message: "تم إرسال الحجز بنجاح — سيتم المراجعة خلال دقائق"
       })
 
       console.log(`📨 إرسال إشعار لـ ${admins.length} أدمن`)
@@ -227,20 +96,12 @@ export async function POST(request: Request) {
 
     // 11. إرجاع النتيجة
     return NextResponse.json({
-      success: true,
-      message: "تم إرسال طلب الحجز بنجاح!",
-      booking: {
+        success: true,
         id: booking.id,
-        artistName: booking.artist?.name,
-        date: booking.date,
-        timeSlot: booking.timeSlot,
+        bookingId: booking.id,
         status: booking.status,
-        grossAmount: booking.grossAmount,
-        depositAmount: booking.depositAmount,
-        region: booking.region,
-        countryCode: booking.countryCode,
-      },
-    })
+        message: "تم إرسال الحجز بنجاح — سيتم المراجعة خلال دقائق"
+      })
   } catch (error: any) {
     console.error("❌ خطأ غير متوقع:", error)
     console.error("Stack:", error.stack)

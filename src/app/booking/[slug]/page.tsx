@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -14,6 +15,7 @@ function BookingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const { data: session } = useSession();
 
   const [artist, setArtist] = useState<any>(null);
   const [venues, setVenues] = useState<any[]>([]);
@@ -23,6 +25,8 @@ function BookingForm() {
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showingSuccess, setShowingSuccess] = useState(false);
 
   const [form, setForm] = useState({
     clientName: "",
@@ -113,8 +117,8 @@ function BookingForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-
           ...form,
+          clientEmail: form.clientEmail || session?.user?.email || "",
           artistId: artist.id,
           artistSlug: slug,
           grossAmount: basePrice,
@@ -129,7 +133,19 @@ function BookingForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل إنشاء الحجز");
       const bookingId = data.id || data.bookingId;
-      router.push(bookingId ? `/booking/${slug}/invoice?id=${bookingId}` : "/my-bookings?success=true");
+      
+      // ✅ عرض رسالة نجاح قبل التوجيه
+      setSuccessMessage(data.message || "تم إرسال الحجز بنجاح — سيتم المراجعة خلال دقائق");
+      setShowingSuccess(true);
+      
+      // انتظار ثانيتين ثم التوجيه
+      setTimeout(() => {
+        if (bookingId) {
+          router.push(`/booking/${slug}/invoice?id=${bookingId}`);
+        } else {
+          router.push("/my-bookings");
+        }
+      }, 2500);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -200,6 +216,27 @@ function BookingForm() {
           ))}
         </div>
 
+        {showingSuccess && (
+          <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center animate-[fadeIn_0.3s]">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <CheckCircle2 size={40} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2">تم إرسال الحجز بنجاح! 🎉</h2>
+              <p className="text-gray-600 mb-4">{successMessage}</p>
+              <div className="bg-[#faf8f0] border border-[#D4AF37]/30 rounded-xl p-4 mb-4">
+                <p className="text-sm text-gray-700">
+                  <strong>الخطوة التالية:</strong><br />
+                  سيتم مراجعة حجزك من قبل إدارة المنصة، وبعدها ستتلقى إشعاراً لإتمام عملية الدفع.
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-[#D4AF37]">
+                <Loader2 size={18} className="animate-spin" />
+                <span className="text-sm font-bold">جاري التوجيه...</span>
+              </div>
+            </div>
+          </div>
+        )}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-300 font-bold">
             {error}

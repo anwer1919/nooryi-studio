@@ -15,13 +15,28 @@ export default async function MyBookingsPage() {
 
   let bookings: any[] = [];
   try {
-    bookings = await prisma.booking.findMany({
-      where: {
+    // ✅ جلب customer المرتبط بالـ user
+    const userCustomer = await prisma.customer.findFirst({
+      where: { 
         OR: [
-          { clientEmail: userEmail },
-          { customer: { email: userEmail } },
-        ],
+          { email: userEmail },
+          { userId: (session.user as any).id }
+        ]
       },
+      select: { id: true }
+    });
+
+    const searchConditions: any[] = [
+      { clientEmail: userEmail },
+      { userId: (session.user as any).id },
+    ];
+    
+    if (userCustomer) {
+      searchConditions.push({ customerId: userCustomer.id });
+    }
+
+    bookings = await prisma.booking.findMany({
+      where: { OR: searchConditions },
       orderBy: { createdAt: "desc" },
       include: {
         artist: { select: { name: true, slug: true, profileImage: true, category: true } },
