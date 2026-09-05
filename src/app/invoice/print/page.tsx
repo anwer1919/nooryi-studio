@@ -1,3 +1,4 @@
+"use client";
 import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
@@ -57,8 +58,8 @@ export default async function UniversalPrintPage({
       `}</style>
 
       <div className="no-print fixed top-4 left-4 z-50 flex gap-2">
-        <button onClick={() => window.print()} className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black px-6 py-3 rounded-xl">🖨️ طباعة</button>
-        <button onClick={() => window.history.back()} className="bg-gray-900 text-white font-bold px-6 py-3 rounded-xl">← رجوع</button>
+        <button onclick="window.print()" className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black px-6 py-3 rounded-xl">🖨️ طباعة</button>
+        <button onclick="window.history.back()" className="bg-gray-900 text-white font-bold px-6 py-3 rounded-xl">← رجوع</button>
       </div>
 
       <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
