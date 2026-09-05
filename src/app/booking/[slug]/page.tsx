@@ -51,17 +51,6 @@ function BookingForm() {
       setRegions(regionsList);
       console.log("🗺️ Regions fetched:", regionsList);
       console.log("📅 Booked dates:", dates);
-      
-      // معالجة الحجوزات المحجوزة
-      const bookingsList = Array.isArray(bk) ? bk : (bk?.data || []);
-      const dates = bookingsList.map((b: any) => {
-        if (b.eventDate || b.date) {
-          return new Date(b.eventDate || b.date).toISOString().split("T")[0];
-        }
-        return null;
-      }).filter(Boolean);
-      setBookedDates(dates);
-      
       setLoading(false);
     });
   }, [slug]);
