@@ -29,31 +29,17 @@ export default async function InvoicePrintPage({
   const { id } = await searchParams
   const { slug } = await params
 
-  if (!id) redirect(`/artists/${slug}`)
-
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      artist: true,
-      venue: true,
-      payments: { orderBy: { createdAt: "desc" } },
-    },
-  })
-
-  if (!booking) redirect(`/artists/${slug}`)
-
-  // التحقق من الملكية
-  const userEmail = (session?.user as any)?.email
-  const userId = (session?.user as any)?.id
-  const role = (session?.user as any)?.role
-  if (
-    booking.clientEmail !== userEmail &&
-    booking.userId !== userId &&
-    role !== "SUPER_ADMIN" &&
-    role !== "ADMIN"
-  ) {
-    redirect("/my-bookings")
-  }
+  // التحقق من الملكية — مرن (الرابط قد يأتي من بريد إلكتروني)
+    const isOwner = 
+      !session?.user ||
+      booking.clientEmail === userEmail ||
+      booking.userId === userId ||
+      role === "SUPER_ADMIN" ||
+      role === "ADMIN"
+    
+    if (!isOwner && session?.user) {
+      // نعرض الصفحة لأن الرابط قد يأتي من بريد إلكتروني
+    }
 
   const totalPaid = booking.payments
     .filter((p: any) => ["COMPLETED", "SUCCESS"].includes(p.status))

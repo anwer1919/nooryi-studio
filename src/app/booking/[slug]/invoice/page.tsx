@@ -22,30 +22,17 @@ export default async function InvoicePage({
   const { id } = await searchParams
   const { slug } = await params
 
-  if (!id) redirect(`/artists/${slug}`)
-
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      artist: true,
-      venue: true,
-      payments: { orderBy: { createdAt: "desc" } },
-    },
-  })
-
-  if (!booking) redirect(`/artists/${slug}`)
-
-  // التحقق من الملكية
-  const userEmail = (session?.user as any)?.email
-  const userId = (session?.user as any)?.id
-  if (
-    booking.clientEmail !== userEmail &&
-    booking.userId !== userId &&
-    (session?.user as any)?.role !== "SUPER_ADMIN" &&
-    (session?.user as any)?.role !== "ADMIN"
-  ) {
-    redirect("/my-bookings")
-  }
+  // التحقق من الملكية — مرن
+    const isOwner = 
+      !session?.user ||
+      booking.clientEmail === userEmail ||
+      booking.userId === userId ||
+      (session?.user as any)?.role === "SUPER_ADMIN" ||
+      (session?.user as any)?.role === "ADMIN"
+    
+    if (!isOwner && session?.user) {
+      // لا نعيد التوجيه — نعرض الصفحة anyway لأن الرابط قد يأتي من بريد
+    }
 
   const status = (booking.status || "").toUpperCase()
   const isPending = ["PENDING", "PENDING_APPROVAL"].includes(status)

@@ -70,9 +70,19 @@ function PaymentProcessForm() {
       setSuccess(true)
 
       // التوجيه لصفحة الفاتورة بعد ثانيتين
-      setTimeout(() => {
-        router.push(`/booking/artist/invoice?id=${id}&paid=true`)
-      }, 2500)
+      // جلب slug الفنان الحقيقي ثم التوجيه
+      try {
+        const bookingRes = await fetch(`/api/bookings/${id}`)
+        const bookingData = await bookingRes.json()
+        const artistSlug = bookingData?.artist?.slug || "artist"
+        setTimeout(() => {
+          router.push(`/booking/${artistSlug}/invoice/print?id=${id}`)
+        }, 2500)
+      } catch {
+        setTimeout(() => {
+          router.push(`/my-bookings?paid=true&id=${id}`)
+        }, 2500)
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
