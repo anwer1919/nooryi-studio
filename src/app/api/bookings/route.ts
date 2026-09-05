@@ -169,7 +169,7 @@ export async function POST(request: Request) {
           artist: { connect: { id: artistId } },
           venue: venue ? { connect: { id: venue.id } } : undefined,
           customer: customer ? { connect: { id: customer.id } } : undefined,
-          user: userId ? { connect: { id: userId } } : undefined,
+          userId: userId || null,
           clientName,
           clientPhone,
           clientEmail,
