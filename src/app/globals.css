@@ -51,6 +51,12 @@ body {
   color: var(--ink); font-weight: 800; font-size: .95rem;
   box-shadow: var(--shadow-gold); cursor: pointer;
   transition: transform .2s, box-shadow .2s, filter .2s;
+
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
 }
 .btn-gold:hover, .btn-primary:hover {
   transform: translateY(-2px); filter: brightness(1.06);

@@ -155,7 +155,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                   {artist.availability.map((slot: any) => (
                     <Link
                       key={slot.id}
-                      href={`/booking/${artist.slug}?date=${slot.id}`}
+                      href={`/booking/${artist.slug}?date=${slot.id}`} style={{ cursor: "pointer" }}
                       className="p-4 bg-[#faf8f0] border-2 border-[#e8e4d9] rounded-2xl hover:border-[#d4af37] hover:bg-white transition group"
                     >
                       <p className="text-xs text-gray-500 mb-1">موعد متاح</p>
@@ -245,7 +245,11 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                 </div>
               </div>
 
-              <Link href={`/booking/${artist.slug}`} className="btn-gold w-full py-4 text-base">
+              <Link
+                  href={`/booking/${artist.slug}`}
+                  className="btn-gold w-full py-4 text-base font-black hover:shadow-2xl hover:scale-[1.02] transition-all"
+                  style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                >
                 <Calendar size={18} />
                 احجز الآن
               </Link>
