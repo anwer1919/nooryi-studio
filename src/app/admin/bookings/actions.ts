@@ -105,3 +105,97 @@ export async function rejectBooking(bookingId: string) {
     return { success: false, error: error.message }
   }
 }
+
+// ═══════════ تأكيد الدفع (للأدمن) ═══════════
+export async function confirmPayment(bookingId: string) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "ADMIN")) {
+      return { success: false, error: "غير مصرح" }
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { artist: true, payments: { orderBy: { createdAt: "desc" } } },
+    })
+
+    if (!booking) {
+      return { success: false, error: "الحجز غير موجود" }
+    }
+
+    // تحديث حالة الدفعات إلى COMPLETED
+    await prisma.payment.updateMany({
+      where: { bookingId, status: "PENDING" },
+      data: { status: "COMPLETED" },
+    })
+
+    // حساب المبالغ
+    const totalPaid = booking.payments
+      .reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
+
+    const grossAmount = Number(booking.grossAmount || 0)
+    const remaining = Math.max(0, grossAmount - totalPaid)
+
+    // تحديث الحجز
+    const newStatus = remaining === 0 ? "COMPLETED" : "CONFIRMED"
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        status: newStatus,
+        depositAmount: totalPaid,
+        remainingAmount: remaining,
+      },
+      include: { artist: true },
+    })
+
+    // إرسال بريد تأكيد الدفع للعميل
+    try {
+      if (booking.clientEmail) {
+        const { sendEmail, paymentConfirmedTemplate } = await import("@/lib/email")
+        await sendEmail({
+          to: booking.clientEmail,
+          subject: `✅ تم استلام الدفع — ${booking.artist?.name}`,
+          html: paymentConfirmedTemplate(updatedBooking, {
+            transactionId: `TXN-${Date.now()}`,
+            amount: totalPaid,
+          }),
+        })
+      }
+    } catch (e) {
+      console.error("Email error:", e)
+    }
+
+    // إشعار داخلي
+    try {
+      if (booking.clientEmail) {
+        const user = await prisma.user.findUnique({ where: { email: booking.clientEmail } })
+        if (user) {
+          await prisma.notification.create({
+            data: {
+              userId: user.id,
+              title: "✅ تم استلام الدفع بنجاح",
+              message: `تم تأكيد دفع ${totalPaid.toLocaleString()} ج.م لحجز ${booking.artist?.name}`,
+              type: "PAYMENT_CONFIRMED",
+              relatedId: booking.id,
+            },
+          })
+        }
+      }
+    } catch (e) {
+      console.error("Notification error:", e)
+    }
+
+    revalidatePath("/admin/bookings")
+    revalidatePath(`/admin/bookings/${bookingId}`)
+    revalidatePath("/my-bookings")
+
+    return { 
+      success: true, 
+      message: `تم تأكيد الدفع — ${newStatus === "COMPLETED" ? "الحجز مكتمل" : "الحجز مؤكد"}` 
+    }
+  } catch (error: any) {
+    console.error("Confirm payment error:", error)
+    return { success: false, error: error.message }
+  }
+}
