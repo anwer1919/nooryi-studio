@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import QRCode from "react-qr-code"
+import QRCodeDisplay from "@/components/QRCodeDisplay"
 
 export const dynamic = "force-dynamic"
 
@@ -174,7 +174,7 @@ export default async function UniversalPrintPage({
           </div>
           <div className="flex flex-col items-center">
             <div className="bg-white p-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">
-              <QRCode value={verifyUrl} size={95} level="H" bgColor="#FFFFFF" fgColor="#0a0a0a" />
+              <QRCodeDisplay value={verifyUrl} size={95} />
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
             <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
