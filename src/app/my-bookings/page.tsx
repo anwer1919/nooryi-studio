@@ -25,22 +25,16 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
       },
       take: 200,
     });
-    // جلب رقم هاتف المستخدم من Customer
     let userPhone = "";
     if (userId) {
       const cust = await prisma.customer.findFirst({ where: { userId }, select: { phone: true } });
       if (cust?.phone) userPhone = cust.phone.replace(/[^0-9]/g, "");
     }
     bookings = allBookings.filter((b: any) => {
-      // 1) مطابقة بالإيميل
       if (userEmail && b.clientEmail && b.clientEmail.toLowerCase() === userEmail) return true;
-      // 2) مطابقة بـ userId
       if (userId && b.userId && b.userId === userId) return true;
-      // 3) مطابقة بـ customer.userId
       if (userId && b.customer?.userId && b.customer.userId === userId) return true;
-      // 4) مطابقة بـ customer.email
       if (userEmail && b.customer?.email && b.customer.email.toLowerCase() === userEmail) return true;
-      // 5) مطابقة برقم الهاتف
       if (userPhone && b.clientPhone) {
         const bp = b.clientPhone.replace(/[^0-9]/g, "");
         if (bp === userPhone || bp.slice(-10) === userPhone.slice(-10)) return true;
