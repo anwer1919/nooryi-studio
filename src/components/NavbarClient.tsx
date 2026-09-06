@@ -13,7 +13,7 @@ import {
   ChevronDown,
   User as UserIcon,
   Home,
-, Settings} from "lucide-react"
+Settings } from "lucide-react"
 
 interface User {
   name: string
