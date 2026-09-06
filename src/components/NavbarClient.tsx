@@ -13,7 +13,7 @@ import {
   ChevronDown,
   User as UserIcon,
   Home,
-} from "lucide-react"
+, Settings} from "lucide-react"
 
 interface User {
   name: string
@@ -175,7 +175,11 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
 
             <div className="h-px bg-white/10 my-1" />
 
-            <button
+                          <Link href="/settings" onClick={() => setIsDesktopMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors">
+                <Settings size={16} className="text-[#d4af37]" />
+                <span className="text-sm font-semibold text-white/80">الإعدادات</span>
+              </Link>
+              <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-colors text-red-600"
             >
@@ -319,7 +323,11 @@ export default function NavbarClient({ user, mode = "desktop" }: NavbarClientPro
 
         {/* زر تسجيل الخروج */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a0a0a]">
-          <button
+                        <Link href="/settings" onClick={() => setIsDesktopMenuOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#d4af37]/10 transition-colors">
+                <Settings size={16} className="text-[#d4af37]" />
+                <span className="text-sm font-semibold text-white/80">الإعدادات</span>
+              </Link>
+              <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-xl font-bold transition-colors"
           >

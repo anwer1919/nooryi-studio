@@ -274,3 +274,10 @@ model SiteSetting {
   
   updatedAt DateTime @updatedAt
 }
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
