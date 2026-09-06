@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     const body = await request.json()
     const { bookingId, rating, comment } = body
 

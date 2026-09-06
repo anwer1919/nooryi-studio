@@ -6,7 +6,7 @@ import { sendEmail, bookingApprovedTemplate, paymentConfirmedTemplate } from "@/
 
 export async function approveBooking(bookingId: string) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "ADMIN")) return { success: false, error: "غير مصرح" }
     const booking = await prisma.booking.update({ where: { id: bookingId }, data: { status: "APPROVED" }, include: { artist: true, customer: true } })
     // إشعار داخلي
@@ -25,7 +25,7 @@ export async function approveBooking(bookingId: string) {
 
 export async function rejectBooking(bookingId: string) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "ADMIN")) return { success: false, error: "غير مصرح" }
     await prisma.booking.update({ where: { id: bookingId }, data: { status: "CANCELLED" }, include: { artist: true } })
     revalidatePath("/admin/bookings"); revalidatePath(`/admin/bookings/${bookingId}`); revalidatePath("/my-bookings")
@@ -35,7 +35,7 @@ export async function rejectBooking(bookingId: string) {
 
 export async function confirmPayment(bookingId: string) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user || ((session.user as any).role !== "SUPER_ADMIN" && (session.user as any).role !== "ADMIN")) return { success: false, error: "غير مصرح" }
     const booking = await prisma.booking.findUnique({ where: { id: bookingId }, include: { artist: true, payments: { orderBy: { createdAt: "desc" } } } })
     if (!booking) return { success: false, error: "الحجز غير موجود" }

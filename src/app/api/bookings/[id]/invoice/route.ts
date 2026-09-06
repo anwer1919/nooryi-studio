@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }

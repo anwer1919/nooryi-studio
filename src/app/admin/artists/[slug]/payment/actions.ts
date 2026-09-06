@@ -29,7 +29,7 @@ export async function getArtistPaymentInfo(slug: string) {
 
 export async function saveArtistPaymentInfo(slug: string, formData: FormData) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
       return { success: false, error: "غير مصرح" }
     }

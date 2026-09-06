@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "غير مصرح" }, { status: 403 })

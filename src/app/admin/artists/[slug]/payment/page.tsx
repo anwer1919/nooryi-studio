@@ -14,7 +14,7 @@ export default async function ArtistPaymentPage({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/login")
   
   const role = session.user.role || "USER"

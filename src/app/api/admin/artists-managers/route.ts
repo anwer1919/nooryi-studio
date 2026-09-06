@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     
     if (!session?.user || session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })

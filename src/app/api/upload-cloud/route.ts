@@ -4,7 +4,7 @@ import { uploadImage } from "@/lib/cloudinary"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     
     // التحقق من أن المستخدم أدمن
     if (!session?.user || 

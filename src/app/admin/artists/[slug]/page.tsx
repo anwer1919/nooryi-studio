@@ -9,7 +9,7 @@ export default async function ArtistDetailsPage({
 }: { 
   params: Promise<{ slug: string }> 
 }) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     redirect("/login")

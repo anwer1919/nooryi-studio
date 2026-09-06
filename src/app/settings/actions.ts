@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
 export async function updateUserSettings(formData: FormData) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   if (!session?.user) return { success: false }
 
   const name = formData.get("name") as string

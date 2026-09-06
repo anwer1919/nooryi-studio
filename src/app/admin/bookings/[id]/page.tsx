@@ -26,7 +26,7 @@ const safeFormatDate = (dateInput: any, includeTime = false) => {
 }
 
 export default async function BookingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/login")
 
   const userRole = session.user.role || "USER"

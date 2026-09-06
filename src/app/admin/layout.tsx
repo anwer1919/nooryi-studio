@@ -8,7 +8,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin")

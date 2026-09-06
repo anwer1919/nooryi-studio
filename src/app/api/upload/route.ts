@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }

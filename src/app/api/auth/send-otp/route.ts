@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendOtp } from "@/lib/auth"
+// sendOtp used for OTP verification
 
 export async function POST(req: Request) {
   try {

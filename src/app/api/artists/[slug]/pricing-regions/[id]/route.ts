@@ -13,7 +13,7 @@ export async function PUT(
     const { id } = await params
     console.log(`📝 [PUT] Updating region: ${id}`)
 
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
@@ -48,7 +48,7 @@ export async function DELETE(
     const { id } = await params
     console.log(`🗑️ [DELETE] Removing region: ${id}`)
 
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }

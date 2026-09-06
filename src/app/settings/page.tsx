@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import SettingsForm from "./SettingsForm"
 
 export default async function SettingsPage() {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/login")
 
   const user = await prisma.user.findUnique({

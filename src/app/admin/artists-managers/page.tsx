@@ -7,7 +7,7 @@ import { UserCog, Music, Plus, Mail, Phone, Trash2 } from "lucide-react"
 export const dynamic = "force-dynamic"
 
 export default async function ArtistsManagersPage() {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   
   if (!session?.user || session.user.role !== "SUPER_ADMIN") {
     redirect("/admin")

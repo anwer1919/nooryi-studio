@@ -11,7 +11,7 @@ function cleanPhone(phone?: string | null) {
 
 export async function GET() {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
 
     if (!session?.user) {
       return NextResponse.json(

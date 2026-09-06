@@ -50,7 +50,7 @@ export async function POST(
     console.log(`📝 [POST pricing-regions] Slug: ${slug}`)
 
     // التحقق من المصادقة
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       console.log("❌ [POST] Unauthorized")
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })

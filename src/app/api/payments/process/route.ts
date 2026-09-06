@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     console.log("💳 === بدء عملية الدفع ===")
 
     // 1) التحقق من تسجيل الدخول
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     
     if (!session?.user) {
       console.error("❌ لا يوجد session")

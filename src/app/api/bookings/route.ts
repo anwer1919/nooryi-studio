@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic"
 // ═══════════════════════════════════════════════════
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
 
     console.log("=== بدء عملية الحجز ===")
     console.log("Session:", session?.user?.email || "غير مسجل")
@@ -234,7 +234,7 @@ export async function POST(request: Request) {
 // ═══════════════════════════════════════════════════
 export async function GET(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }

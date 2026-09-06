@@ -16,7 +16,7 @@ export default async function InvoicePage({
   params: Promise<{ slug: string }>
   searchParams: Promise<{ id?: string }>
 }) {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
   const { id } = await searchParams
   const { slug } = await params
 

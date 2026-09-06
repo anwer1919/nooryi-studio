@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(request: Request) {
   try {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }
