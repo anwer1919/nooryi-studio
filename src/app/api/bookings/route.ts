@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { sendEmail, newBookingAdminTemplate, bookingApprovedTemplate, paymentReceivedAdminTemplate, paymentConfirmedTemplate } from "@/lib/email"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
