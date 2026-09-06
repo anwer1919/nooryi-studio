@@ -30,6 +30,7 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
       const cust = await prisma.customer.findFirst({ where: { userId }, select: { phone: true } });
       if (cust?.phone) userPhone = cust.phone.replace(/[^0-9]/g, "");
     }
+    console.log("🔍 userEmail:", userEmail, "userId:", userId);
     bookings = allBookings.filter((b: any) => {
       if (userEmail && b.clientEmail && b.clientEmail.toLowerCase() === userEmail) return true;
       if (userId && b.userId && b.userId === userId) return true;
@@ -82,3 +83,4 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
     </div>
   );
 }
+// force-rebuild: 20260906181638
