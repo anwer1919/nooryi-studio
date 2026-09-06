@@ -18,45 +18,19 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
 
   let bookings: any[] = [];
   try {
-    // بناء شروط البحث مباشرة في Prisma (بدون فلتر JS)
     const conditions: any[] = [];
+    if (userEmail) conditions.push({ clientEmail: userEmail });
+    if (userId) conditions.push({ userId: userId });
 
-    // 1) البحث بالبريد الإلكتروني
-    if (userEmail) {
-      conditions.push({ clientEmail: userEmail });
-    }
-
-    // 2) البحث بـ userId
     if (userId) {
-      conditions.push({ userId: userId });
-    }
-
-    // 3) البحث برقم هاتف المستخدم
-    if (userId) {
-      const cust = await prisma.customer.findFirst({
-        where: { userId: userId },
-        select: { phone: true }
-      });
+      const cust = await prisma.customer.findFirst({ where: { userId }, select: { phone: true } });
       if (cust?.phone) {
-        const cleanPhone = cust.phone.replace(/[^0-9]/g, "");
-        if (cleanPhone.length >= 10) {
-          conditions.push({ clientPhone: { contains: cleanPhone.slice(-10) } });
-        }
+        const cp = cust.phone.replace(/[^0-9]/g, "");
+        if (cp.length >= 10) conditions.push({ clientPhone: { contains: cp.slice(-10) } });
       }
+      const customers = await prisma.customer.findMany({ where: { userId }, select: { id: true } });
+      if (customers.length > 0) conditions.push({ customerId: { in: customers.map((c: any) => c.id) } });
     }
-
-    // 4) البحث عبر customer المرتبط
-    if (userId) {
-      const customers = await prisma.customer.findMany({
-        where: { userId: userId },
-        select: { id: true }
-      });
-      if (customers.length > 0) {
-        conditions.push({ customerId: { in: customers.map(c => c.id) } });
-      }
-    }
-
-    console.log("🔍 Prisma conditions:", JSON.stringify(conditions));
 
     if (conditions.length > 0) {
       bookings = await prisma.booking.findMany({
@@ -69,11 +43,7 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
         },
       });
     }
-
-    console.log("✅ Found bookings:", bookings.length);
-  } catch (e: any) {
-    console.error("My bookings error:", e);
-  }
+  } catch (e: any) { console.error("Error:", e); }
 
   const gs = (s: string) => {
     const u = (s || "").toUpperCase();
@@ -88,101 +58,34 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
       <main className="pb-20 px-4 lg:px-8 max-w-6xl mx-auto">
         <div className="mb-10">
           <div className="badge-gold mb-3">حسابي</div>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">
-            حجوزاتي <span className="gold-text">الخاصة</span>
-          </h1>
-          {isNewBooking && (
-            <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-2xl">✓</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-green-900">تم إرسال حجزك بنجاح! 🎉</h3>
-                  <p className="text-sm text-green-800">حجزك قيد المراجعة.</p>
-                  {newBookingId && <p className="text-xs font-mono bg-green-100 inline-block px-3 py-1 rounded mt-2">{newBookingId.slice(0, 12)}...</p>}
-                </div>
-              </div>
-            </div>
-          )}
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">حجوزاتي <span className="gold-text">الخاصة</span></h1>
+          {isNewBooking && (<div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6"><div className="flex items-start gap-4"><div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"><span className="text-white text-2xl">✓</span></div><div><h3 className="text-lg font-black text-green-900">تم إرسال حجزك بنجاح! 🎉</h3><p className="text-sm text-green-800">حجزك قيد المراجعة.</p>{newBookingId && <p className="text-xs font-mono bg-green-100 inline-block px-3 py-1 rounded mt-2">{newBookingId.slice(0,12)}...</p>}</div></div></div>)}
           <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك — {bookings.length} حجز</p>
         </div>
-
-        {bookings.length === 0 ? (
-          <div className="card-pro text-center py-20">
-            <Calendar className="mx-auto text-gray-300 mb-4" size={64} />
-            <h3 className="text-2xl font-black text-gray-900 mb-2">لا توجد حجوزات بعد</h3>
-            <p className="text-gray-500 mb-6">ابدأ رحلتك بحجز فنانك المفضل</p>
-            <Link href="/artists" className="btn-gold inline-flex">
-              <Music size={18} /> تصفح الفنانين
-            </Link>
-          </div>
-        ) : (
+        {bookings.length === 0 ? (<div className="card-pro text-center py-20"><Calendar className="mx-auto text-gray-300 mb-4" size={64}/><h3 className="text-2xl font-black text-gray-900 mb-2">لا توجد حجوزات بعد</h3><Link href="/artists" className="btn-gold inline-flex"><Music size={18}/> تصفح الفنانين</Link></div>) : (
           <div className="grid md:grid-cols-2 gap-6">
-            {bookings.map((b: any) => {
-              const s = gs(b.status);
-              return (
-                <div key={b.id} className="card-pro overflow-hidden">
-                  <div className="relative h-48 bg-gradient-to-br from-[#111] to-[#232323] overflow-hidden">
-                    {b.artist?.profileImage ? (
-                      <img src={b.artist.profileImage} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Music size={48} className="text-[#d4af37]/50" />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                    <div className="absolute top-4 right-4">
-                      <span className={`status-chip ${s.c}`}>{s.i} {s.l}</span>
-                    </div>
-                    <div className="absolute bottom-4 right-4 left-4">
-                      <p className="text-[#d4af37] text-xs font-bold mb-1">{b.artist?.category || "فنان"}</p>
-                      <h3 className="text-2xl font-black text-white">{b.artist?.name}</h3>
-                    </div>
+            {bookings.map((b: any) => { const s = gs(b.status); return (
+              <div key={b.id} className="card-pro overflow-hidden">
+                <div className="relative h-48 bg-gradient-to-br from-[#111] to-[#232323] overflow-hidden">
+                  {b.artist?.profileImage ? <img src={b.artist.profileImage} alt="" className="w-full h-full object-cover"/> : <div className="w-full h-full flex items-center justify-center"><Music size={48} className="text-[#d4af37]/50"/></div>}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                  <div className="absolute top-4 right-4"><span className={`status-chip ${s.c}`}>{s.i} {s.l}</span></div>
+                  <div className="absolute bottom-4 right-4 left-4"><p className="text-[#d4af37] text-xs font-bold mb-1">{b.artist?.category||"فنان"}</p><h3 className="text-2xl font-black text-white">{b.artist?.name}</h3></div>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-start gap-2"><Calendar size={16} className="text-[#b8941f] mt-0.5"/><div><p className="text-xs text-gray-500">التاريخ</p><p className="text-sm font-bold">{b.date?new Date(b.date).toLocaleDateString("ar-EG"):"—"}</p></div></div>
+                    <div className="flex items-start gap-2"><Clock size={16} className="text-[#b8941f] mt-0.5"/><div><p className="text-xs text-gray-500">الوقت</p><p className="text-sm font-bold">{b.timeSlot||"—"}</p></div></div>
                   </div>
-                  <div className="p-5 space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex items-start gap-2">
-                        <Calendar size={16} className="text-[#b8941f] mt-0.5" />
-                        <div>
-                          <p className="text-xs text-gray-500">التاريخ</p>
-                          <p className="text-sm font-bold">{b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Clock size={16} className="text-[#b8941f] mt-0.5" />
-                        <div>
-                          <p className="text-xs text-gray-500">الوقت</p>
-                          <p className="text-sm font-bold">{b.timeSlot || "—"}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <MapPin size={16} className="text-[#b8941f] mt-0.5" />
-                      <div>
-                        <p className="text-xs text-gray-500">المكان</p>
-                        <p className="text-sm font-bold">{b.venue?.name || "—"}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <DollarSign size={16} className="text-[#b8941f] mt-0.5" />
-                      <div>
-                        <p className="text-xs text-gray-500">المبلغ</p>
-                        <p className="text-lg font-black">{(b.grossAmount || 0).toLocaleString()} ج.م</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-3 border-t border-[#e8e4d9]">
-                      <Link href={`/invoice?id=${b.id}`} className="btn-gold flex-1 text-sm py-2.5">
-                        <FileText size={14} /> عرض الفاتورة
-                      </Link>
-                      <Link href={`/invoice/print?id=${b.id}`} target="_blank" className="btn-outline flex-1 text-sm py-2.5">
-                        <Printer size={14} /> طباعة
-                      </Link>
-                    </div>
+                  <div className="flex items-start gap-2"><MapPin size={16} className="text-[#b8941f] mt-0.5"/><div><p className="text-xs text-gray-500">المكان</p><p className="text-sm font-bold">{b.venue?.name||"—"}</p></div></div>
+                  <div className="flex items-start gap-2"><DollarSign size={16} className="text-[#b8941f] mt-0.5"/><div><p className="text-xs text-gray-500">المبلغ</p><p className="text-lg font-black">{(b.grossAmount||0).toLocaleString()} ج.م</p></div></div>
+                  <div className="flex gap-2 pt-3 border-t border-[#e8e4d9]">
+                    <Link href={`/invoice?id=${b.id}`} className="btn-gold flex-1 text-sm py-2.5"><FileText size={14}/> عرض الفاتورة</Link>
+                    <Link href={`/invoice/print?id=${b.id}`} target="_blank" className="btn-outline flex-1 text-sm py-2.5"><Printer size={14}/> طباعة</Link>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            );})}
           </div>
         )}
       </main>

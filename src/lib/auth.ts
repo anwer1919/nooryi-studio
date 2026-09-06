@@ -47,6 +47,29 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
 
+  callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+        token.phone = user.phone
+        token.permissions = user.permissions || []
+        token.artistId = user.artistId || null
+      }
+      return token
+    },
+    async session({ session, token }: any) {
+      if (session.user) {
+        session.user.id = token.id || ""
+        session.user.role = token.role || "USER"
+        session.user.phone = token.phone || null
+        session.user.permissions = token.permissions || []
+        session.user.artistId = token.artistId || null
+      }
+      return session
+    },
+  },
+
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -80,15 +103,14 @@ export const authOptions: NextAuthOptions = {
           user.password.startsWith("$2b$") ||
           user.password.startsWith("$2y$")
 
-        let isPasswordValid = false
-
+        let isValid = false
         if (isHashed) {
-          isPasswordValid = await bcrypt.compare(password, user.password)
+          isValid = await bcrypt.compare(password, user.password)
         } else {
-          isPasswordValid = password === user.password
+          isValid = password === user.password
         }
 
-        if (!isPasswordValid) {
+        if (!isValid) {
           throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
         }
 
@@ -96,39 +118,12 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role || "USER",
+          role: user.role,
           phone: user.phone,
-          permissions: user.permissions || [],
+          permissions: [],
           artistId: user.artistId,
         }
       },
     }),
   ],
-
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = user.role
-        token.phone = user.phone || null
-        token.permissions = user.permissions || []
-        token.artistId = user.artistId || null
-      }
-
-      return token
-    },
-
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id || ""
-        session.user.role = token.role || "USER"
-        session.user.phone = token.phone || null
-        session.user.permissions = token.permissions || []
-        session.user.artistId = token.artistId || null
-      }
-
-      return session
-    },
-  },
 }
-// rebuild: 20260906182558
