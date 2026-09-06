@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+;
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { TrendingUp, DollarSign, Calendar, Users, Printer, Eye, Award, FileText } from "lucide-react";
@@ -8,7 +8,7 @@ import { TrendingUp, DollarSign, Calendar, Users, Printer, Eye, Award, FileText 
 export const dynamic = "force-dynamic";
 
 export default async function AdminStatsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user) redirect("/login");
 
   const role = (session.user as any).role || "USER";
