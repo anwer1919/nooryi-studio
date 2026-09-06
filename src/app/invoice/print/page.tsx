@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import PrintButtons from "@/components/PrintButtons"
+import QRCodeDisplay from "@/components/QRCodeDisplay"
 
 export const dynamic = "force-dynamic"
 
@@ -21,7 +22,6 @@ export default async function UniversalPrintPage({
   searchParams: Promise<{ id?: string }>
 }) {
   const { id } = await searchParams
-
   if (!id) {
     return <div dir="rtl" className="min-h-screen flex items-center justify-center"><p className="text-xl font-bold text-gray-500">معرف الحجز غير موجود</p></div>
   }
@@ -54,18 +54,33 @@ export default async function UniversalPrintPage({
   return (
     <div dir="rtl" className="print-area bg-white text-black">
       <style>{`
-        @media print { @page { size: A4; margin: 0; } body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white !important; } .no-print { display: none !important; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+        @media print {
+          @page { size: A4 portrait; margin: 0; }
+          body * { visibility: hidden; }
+          .print-area, .print-area * { visibility: visible; }
+          .print-area {
+            position: absolute; left: 0; top: 0;
+            width: 210mm; min-height: 297mm;
+            background: white !important; color: black !important;
+            padding: 0; margin: 0;
+          }
+          .no-print { display: none !important; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
       `}</style>
 
       <PrintButtons />
-      <script dangerouslySetInnerHTML={{ __html: "document.querySelector('.no-print button').addEventListener('click', function(){ window.print(); });" }} />
 
+      {/* الشريط الذهبي العلوي */}
       <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
 
+      {/* الترويسة */}
       <div className="px-12 pt-8 pb-5 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center"><span className="text-[#111] text-3xl font-black">N</span></div>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl">
+              <span className="text-[#111] text-3xl font-black">N</span>
+            </div>
             <div>
               <h1 className="text-3xl font-black">{STUDIO.nameAr}</h1>
               <p className="text-[#D4AF37] font-bold mt-0.5">{STUDIO.name}</p>
@@ -84,6 +99,7 @@ export default async function UniversalPrintPage({
         <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
       </div>
 
+      {/* العميل والفنان */}
       <div className="px-12 py-5 bg-[#faf8f0] border-b-4 border-[#D4AF37]">
         <div className="grid grid-cols-2 gap-6">
           <div>
@@ -102,35 +118,79 @@ export default async function UniversalPrintPage({
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-2xl object-cover" />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center"><span className="text-[#111] text-2xl font-black">{booking.artist?.name?.charAt(0) || "ف"}</span></div>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                  <span className="text-[#111] text-2xl font-black">{booking.artist?.name?.charAt(0) || "ف"}</span>
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* تفاصيل الحجز */}
       <div className="px-12 py-5">
-        <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2"><div className="w-1 h-5 bg-[#D4AF37] rounded"></div>تفاصيل الحجز</h3>
+        <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
+          <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>تفاصيل الحجز
+        </h3>
         <table className="w-full border-collapse text-sm">
-          <thead><tr className="bg-[#0a0a0a] text-white"><th className="px-3 py-2.5 text-right text-xs font-bold">التاريخ</th><th className="px-3 py-2.5 text-center text-xs font-bold">الفترة</th><th className="px-3 py-2.5 text-right text-xs font-bold">المكان</th><th className="px-3 py-2.5 text-right text-xs font-bold">المنطقة</th></tr></thead>
-          <tbody><tr className="border-b border-gray-200 bg-white"><td className="px-3 py-3 font-bold">{eventDate}</td><td className="px-3 py-3 text-center">{booking.timeSlot}</td><td className="px-3 py-3">{booking.venue?.name || "سيتم تحديده"}</td><td className="px-3 py-3">{booking.region || "—"}</td></tr></tbody>
+          <thead><tr className="bg-[#0a0a0a] text-white">
+            <th className="px-3 py-2.5 text-right text-xs font-bold">التاريخ</th>
+            <th className="px-3 py-2.5 text-center text-xs font-bold">الفترة</th>
+            <th className="px-3 py-2.5 text-right text-xs font-bold">المكان</th>
+            <th className="px-3 py-2.5 text-right text-xs font-bold">المنطقة</th>
+          </tr></thead>
+          <tbody><tr className="border-b border-gray-200 bg-white">
+            <td className="px-3 py-3 font-bold">{eventDate}</td>
+            <td className="px-3 py-3 text-center">{booking.timeSlot}</td>
+            <td className="px-3 py-3">{booking.venue?.name || "سيتم تحديده"}</td>
+            <td className="px-3 py-3">{booking.region || "—"}</td>
+          </tr></tbody>
         </table>
       </div>
 
+      {/* جدول المبالغ */}
       <div className="px-12 py-5">
-        <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2"><div className="w-1 h-5 bg-[#D4AF37] rounded"></div>التفاصيل المالية</h3>
+        <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
+          <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>التفاصيل المالية
+        </h3>
         <table className="w-full border-collapse">
-          <thead><tr className="bg-[#0a0a0a] text-white"><th className="px-4 py-3 text-right text-xs font-bold">#</th><th className="px-4 py-3 text-right text-xs font-bold">البيان</th><th className="px-4 py-3 text-center text-xs font-bold">المبلغ</th></tr></thead>
+          <thead><tr className="bg-[#0a0a0a] text-white">
+            <th className="px-4 py-3 text-right text-xs font-bold">#</th>
+            <th className="px-4 py-3 text-right text-xs font-bold">البيان</th>
+            <th className="px-4 py-3 text-center text-xs font-bold">المبلغ</th>
+          </tr></thead>
           <tbody>
-            <tr className="border-b border-gray-200 bg-white"><td className="px-4 py-3 text-gray-500 font-mono text-xs">01</td><td className="px-4 py-3 font-bold">أجر الفنان الأساسي</td><td className="px-4 py-3 text-center font-bold">{basePrice.toLocaleString()} ج.م</td></tr>
-            {travelFee > 0 && <tr className="border-b border-gray-200 bg-gray-50"><td className="px-4 py-3 text-gray-500 font-mono text-xs">02</td><td className="px-4 py-3 font-bold">رسوم السفر</td><td className="px-4 py-3 text-center font-bold">+ {travelFee.toLocaleString()} ج.م</td></tr>}
-            <tr className="bg-[#1a1a1a] text-white font-black"><td colSpan={2} className="px-4 py-3 text-right">الإجمالي المستحق</td><td className="px-4 py-3 text-center text-[#D4AF37] text-lg">{grossAmount.toLocaleString()} ج.م</td></tr>
-            <tr className="border-b border-gray-200 bg-green-50"><td colSpan={2} className="px-4 py-3 font-bold text-green-800">✓ المدفوع</td><td className="px-4 py-3 text-center font-black text-green-700">{totalPaid.toLocaleString()} ج.م</td></tr>
-            {remaining > 0 && <tr className="bg-white"><td colSpan={2} className="px-4 py-3 font-bold text-gray-700">المتبقي</td><td className="px-4 py-3 text-center font-black text-red-600">{remaining.toLocaleString()} ج.م</td></tr>}
+            <tr className="border-b border-gray-200 bg-white">
+              <td className="px-4 py-3 text-gray-500 font-mono text-xs">01</td>
+              <td className="px-4 py-3 font-bold">أجر الفنان الأساسي</td>
+              <td className="px-4 py-3 text-center font-bold">{basePrice.toLocaleString()} ج.م</td>
+            </tr>
+            {travelFee > 0 && (
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <td className="px-4 py-3 text-gray-500 font-mono text-xs">02</td>
+                <td className="px-4 py-3 font-bold">رسوم السفر والتنقل</td>
+                <td className="px-4 py-3 text-center font-bold">+ {travelFee.toLocaleString()} ج.م</td>
+              </tr>
+            )}
+            <tr className="bg-[#1a1a1a] text-white font-black">
+              <td colSpan={2} className="px-4 py-3 text-right">الإجمالي المستحق</td>
+              <td className="px-4 py-3 text-center text-[#D4AF37] text-lg">{grossAmount.toLocaleString()} ج.م</td>
+            </tr>
+            <tr className="border-b border-gray-200 bg-green-50">
+              <td colSpan={2} className="px-4 py-3 font-bold text-green-800">✓ المدفوع</td>
+              <td className="px-4 py-3 text-center font-black text-green-700">{totalPaid.toLocaleString()} ج.م</td>
+            </tr>
+            {remaining > 0 && (
+              <tr className="bg-white">
+                <td colSpan={2} className="px-4 py-3 font-bold text-gray-700">المتبقي</td>
+                <td className="px-4 py-3 text-center font-black text-red-600">{remaining.toLocaleString()} ج.م</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* الشروط والأحكام */}
       <div className="px-12 py-4 bg-[#faf8f0] border-t border-b border-gray-200">
         <h4 className="text-sm font-black text-gray-900 mb-2">الشروط والأحكام</h4>
         <ol className="list-decimal list-inside space-y-1 text-[11px] text-gray-700 leading-relaxed">
@@ -145,6 +205,7 @@ export default async function UniversalPrintPage({
         </ol>
       </div>
 
+      {/* التذييل: تواصل + ختم + QR */}
       <div className="px-12 py-6 bg-gradient-to-b from-white to-[#faf8f0]">
         <div className="grid grid-cols-3 gap-6 items-center">
           <div className="text-right">
@@ -154,6 +215,7 @@ export default async function UniversalPrintPage({
               <p>{STUDIO.email}</p>
               <p>{STUDIO.address}</p>
               <p dir="ltr" className="text-right font-mono text-[#D4AF37]">{STUDIO.website.replace("https://", "")}</p>
+              <p className="text-gray-500">س.ت: <span className="font-mono">{STUDIO.taxNumber}</span></p>
             </div>
           </div>
           <div className="flex flex-col items-center justify-center">
@@ -172,7 +234,7 @@ export default async function UniversalPrintPage({
           </div>
           <div className="flex flex-col items-center">
             <div className="bg-white p-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">
-              <div style={{width:"95px",height:"95px",border:"2px solid #D4AF37",borderRadius:"8px",display:"flex",alignItems:"center",justifyContent:"center",background:"white"}}><p style={{fontSize:"8px",color:"#666",textAlign:"center",wordBreak:"break-all",padding:"4px"}}>امسح للتحقق<br/>{verifyUrl.replace("https://","")}</p></div>
+              <QRCodeDisplay value={verifyUrl} size={95} />
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
             <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
@@ -186,4 +248,3 @@ export default async function UniversalPrintPage({
     </div>
   )
 }
-
