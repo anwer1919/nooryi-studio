@@ -27,15 +27,14 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
       take: 100,
     });
     // فلتر: يطابق email أو userId أو customerId أو phone
-    // إذا كان userId فارغ، نبحث بالemail فقط
-    const effectiveUserId = userId || "none";
     bookings = allBookings.filter((b: any) => {
-      if (b.clientEmail && b.clientEmail.toLowerCase() === userEmail.toLowerCase()) return true;
-      if (b.userId && b.userId === effectiveUserId) return true;
-      if (b.customer?.userId && b.customer.userId === effectiveUserId) return true;
-      if (b.customer?.email && b.customer.email.toLowerCase() === userEmail.toLowerCase()) return true;
+      if (userEmail && b.clientEmail && b.clientEmail.toLowerCase() === userEmail.toLowerCase()) return true;
+      if (userId && b.userId && b.userId === userId) return true;
+      if (userId && b.customer?.userId && b.customer.userId === userId) return true;
+      if (userEmail && b.customer?.email && b.customer.email.toLowerCase() === userEmail.toLowerCase()) return true;
       return false;
     });
+    console.log("Total:", allBookings.length, "Matched:", bookings.length, "Email:", userEmail, "UserId:", userId);
     console.log("Total bookings:", allBookings.length, "Filtered:", bookings.length);
   } catch (e: any) { console.error("Error:", e); }
   const gs = (s: string) => { const u = (s||"").toUpperCase(); if (["CONFIRMED","APPROVED","ACCEPTED"].includes(u)) return {l:"مؤكد",c:"status-confirmed",i:"✓"}; if (["PENDING_APPROVAL","PENDING"].includes(u)) return {l:"قيد المراجعة",c:"status-pending",i:"⏳"}; if (["COMPLETED","DONE"].includes(u)) return {l:"مكتمل",c:"status-completed",i:"✓"}; return {l:"مرفوض",c:"status-rejected",i:"✕"}; };
