@@ -51,6 +51,11 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
           <div className="badge-gold mb-3">حسابي</div>
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-2">حجوزاتي <span className="gold-text">الخاصة</span></h1>
           {isNewBooking && (<div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6"><div className="flex items-start gap-4"><div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"><span className="text-white text-2xl">✓</span></div><div><h3 className="text-lg font-black text-green-900">تم إرسال حجزك بنجاح! 🎉</h3><p className="text-sm text-green-800">حجزك قيد المراجعة.</p>{newBookingId && <p className="text-xs font-mono bg-green-100 inline-block px-3 py-1 rounded mt-2">{newBookingId.slice(0,12)}...</p>}</div></div></div>)}
+          {/* DEBUG-INFO - احذف هذا بعد التأكد */}
+          <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-xs font-mono" dir="ltr">
+            <p>🔍 DEBUG: userEmail={userEmail || "EMPTY"} | userId={userId || "EMPTY"}</p>
+            <p>📊 Total bookings in DB: will show after filter</p>
+          </div>
           <p className="text-gray-500">إدارة ومتابعة جميع حجوزاتك — {bookings.length} حجز</p>
         </div>
         {bookings.length === 0 ? (<div className="card-pro text-center py-20"><Calendar className="mx-auto text-gray-300 mb-4" size={64}/><h3 className="text-2xl font-black text-gray-900 mb-2">لا توجد حجوزات بعد</h3><Link href="/artists" className="btn-gold inline-flex"><Music size={18}/> تصفح الفنانين</Link></div>) : (
