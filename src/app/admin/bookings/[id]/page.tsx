@@ -6,7 +6,7 @@ import Link from "next/link"
 import {
   ArrowLeft, Calendar, MapPin, User, Music, DollarSign,
   CheckCircle2, XCircle, Clock, FileText, Phone, Mail
-} from "lucide-react"
+, Printer} from "lucide-react"
 import BookingActions from "./BookingActions"
 
 export const dynamic = "force-dynamic"
