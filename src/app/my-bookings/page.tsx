@@ -18,10 +18,12 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
 
   let bookings: any[] = [];
   try {
-    // البحث المباشر بدون customer.findMany (لأن Customer ليس فيه userId)
+    // البحث المباشر بـ clientEmail و userId فقط (بدون Customer table)
     const conditions: any[] = [];
     if (userEmail) conditions.push({ clientEmail: userEmail });
     if (userId) conditions.push({ userId: userId });
+
+    console.log("🔍 [my-bookings] Searching with:", { userEmail, userId, conditionsCount: conditions.length });
 
     if (conditions.length > 0) {
       bookings = await prisma.booking.findMany({
@@ -34,7 +36,11 @@ export default async function MyBookingsPage({ searchParams }: { searchParams: P
         },
       });
     }
-  } catch (e: any) { console.error("Error:", e); }
+
+    console.log("✅ [my-bookings] Found:", bookings.length, "bookings");
+  } catch (e: any) {
+    console.error("❌ [my-bookings] Error:", e.message);
+  }
 
   const gs = (s: string) => {
     const u = (s || "").toUpperCase();
