@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import PrintButtons from "@/components/PrintButtons"
 
 export const dynamic = "force-dynamic"
 
@@ -56,9 +57,7 @@ export default async function UniversalPrintPage({
         @media print { @page { size: A4; margin: 0; } body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; left: 0; top: 0; width: 210mm; min-height: 297mm; background: white !important; } .no-print { display: none !important; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
       `}</style>
 
-      <div className="no-print fixed top-4 left-4 z-50 flex gap-2">
-        <button className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black px-6 py-3 rounded-xl cursor-pointer" dangerouslySetInnerHTML={{ __html: "🖨️ طباعة" }} onClick={undefined} />
-      </div>
+      <PrintButtons />
       <script dangerouslySetInnerHTML={{ __html: "document.querySelector('.no-print button').addEventListener('click', function(){ window.print(); });" }} />
 
       <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
