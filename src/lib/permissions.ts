@@ -17,7 +17,7 @@ export const PERMISSIONS = {
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS]
 
-export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
+export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
   SUPER_ADMIN: Object.values(PERMISSIONS),
   ADMIN: [
     PERMISSIONS.VIEW_ALL_ARTISTS,
@@ -94,7 +94,7 @@ export function isArtistManager(userRole: string): boolean {
 export function getEffectivePermissions(
   userRole: string,
   userPermissions: string[]
-): Permission[] {
+): string[] {
   if (userRole === "SUPER_ADMIN") return Object.values(PERMISSIONS)
   const defaultPerms = DEFAULT_ROLE_PERMISSIONS[userRole] || []
   const allPerms = new Set([...defaultPerms, ...userPermissions])

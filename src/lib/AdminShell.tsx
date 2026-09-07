@@ -19,7 +19,7 @@ export default function AdminShell({
   children: React.ReactNode
   menuItems: MenuItem[]
   userName: string
-  userRole: string
+  userRole: string; isOpen?: boolean; onClose?: () => void
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 

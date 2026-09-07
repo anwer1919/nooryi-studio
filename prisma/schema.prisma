@@ -286,3 +286,17 @@ model VerificationToken {
   @@index([identifier])
   @@unique([identifier, token])
 }
+// ═══ PricingRule (مرادف لـ Pricing) ═══
+model PricingRule {
+  id          String   @id @default(cuid())
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id])
+  name        String
+  description String?
+  price       Float
+  duration    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("pricing_rules")
+}
