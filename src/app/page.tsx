@@ -9,7 +9,6 @@ import ArtistCarousel from "@/components/ArtistCarousel";
 import SocialLinks from "@/components/SocialLinks";
 import ThemeToggle from "@/components/ThemeToggle";
 import Showcase3D from "@/components/Showcase3D"
-import EliteVisuals from "@/components/EliteVisuals"
 
 export const dynamic = "force-dynamic";
 
@@ -455,7 +454,6 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
-      <EliteVisuals />
 
     </div>
   );
