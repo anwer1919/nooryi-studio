@@ -42,16 +42,49 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
 
   callbacks: {
-    async jwt({ token, user }: any) {
+    async signIn({ user, account }: any) {
+      // عند تسجيل الدخول عبر Google/Apple
+      if (account?.provider === "google" || account?.provider === "apple") {
+        const email = user.email?.toLowerCase()
+        if (!email) return false
+
+        // البحث عن المستخدم أو إنشاؤه
+        let dbUser = await prisma.user.findUnique({ where: { email } })
+
+        if (!dbUser) {
+          // إنشاء مستخدم جديد
+          dbUser = await prisma.user.create({
+            data: {
+              email,
+              name: user.name || email.split("@")[0],
+              password: "oauth-user-no-password",
+              role: "USER",
+            },
+          })
+        }
+
+        // تحديث بيانات المستخدم من المزود
+        user.id = dbUser.id
+        user.role = dbUser.role
+        user.phone = dbUser.phone
+        user.permissions = dbUser.permissions || []
+        user.artistId = dbUser.artistId
+      }
+
+      return true
+    },
+
+    async jwt({ token, user, account }: any) {
       if (user) {
         token.id = user.id
-        token.role = user.role
+        token.role = user.role || "USER"
         token.phone = user.phone
         token.permissions = user.permissions || []
         token.artistId = user.artistId || null
       }
       return token
     },
+
     async session({ session, token }: any) {
       if (session.user) {
         session.user.id = token.id || ""

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -21,7 +21,6 @@ export default function LoginFormClient() {
   const [resendTimer, setResendTimer] = useState(0);
   const [showResendOptions, setShowResendOptions] = useState(false);
 
-  // ═══ عداد إعادة الإرسال ═══
   const startTimer = () => {
     setResendTimer(60);
     const iv = setInterval(() => {
@@ -29,7 +28,6 @@ export default function LoginFormClient() {
     }, 1000);
   };
 
-  // ═══ إرسال OTP ═══
   const sendOtp = async (email: string, method?: string) => {
     const res = await fetch("/api/auth/send-otp", {
       method: "POST",
@@ -44,21 +42,40 @@ export default function LoginFormClient() {
   const handleSocialLogin = async (provider: string) => {
     setLoading(true); setError("");
     try {
-      const result = await signIn(provider, { redirect: false, callbackUrl });
-      if (result?.error) { setError("فشل تسجيل الدخول"); setLoading(false); return; }
+      // تسجيل الدخول بدون redirect
+      const result = await signIn(provider, { redirect: false });
+      
+      if (result?.error) {
+        setError("فشل تسجيل الدخول عبر " + provider);
+        setLoading(false);
+        return;
+      }
 
+      // انتظار لحظة حتى تُحفظ الجلسة
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // جلب الجلسة
       const sessionRes = await fetch("/api/auth/session");
-      const session = await sessionRes.json();
-      const email = session?.user?.email;
-      if (!email) { router.push(callbackUrl || "/"); router.refresh(); return; }
+      const sessionData = await sessionRes.json();
+      const email = sessionData?.user?.email;
 
+      if (!email) {
+        setError("لم يتم الحصول على البريد الإلكتروني");
+        setLoading(false);
+        return;
+      }
+
+      // إرسال OTP
       const otpData = await sendOtp(email);
       setFormData((p) => ({ ...p, email }));
       setOtpInfo(otpData);
       setStep("otp");
       startTimer();
-    } catch (err: any) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (err: any) {
+      setError(err.message || "حدث خطأ أثناء تسجيل الدخول");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ═══ Credentials + 2FA ═══
@@ -68,6 +85,7 @@ export default function LoginFormClient() {
       const result = await signIn("credentials", { email: formData.email, password: formData.password, redirect: false });
       if (result?.error) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return; }
 
+      await new Promise(resolve => setTimeout(resolve, 300));
       const otpData = await sendOtp(formData.email);
       setOtpInfo(otpData);
       setStep("otp");
@@ -153,7 +171,6 @@ export default function LoginFormClient() {
           </button>
         </form>
 
-        {/* خيارات إعادة الإرسال */}
         <div className="mt-6 text-center">
           {!showResendOptions ? (
             <>
@@ -163,7 +180,7 @@ export default function LoginFormClient() {
               </button>
             </>
           ) : (
-            <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+            <div className="space-y-2">
               <p className="text-xs text-gray-500 mb-2">اختر طريقة الاستلام:</p>
               <button onClick={() => handleResend("email")} disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition text-sm font-semibold text-gray-700 disabled:opacity-50">
                 <Mail size={16} /> إرسال عبر البريد الإلكتروني
