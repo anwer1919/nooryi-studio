@@ -29,12 +29,10 @@ export default function Showcase3D() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* توهج خلفي */}
       <div className="absolute top-10 right-1/4 w-72 h-72 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 left-1/4 w-72 h-72 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* العنوان */}
         <div className="text-center mb-10 md:mb-14">
           <span className="badge-gold"><Sparkles size={14} /> تجربة Nooryi البصرية</span>
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mt-4">
@@ -45,7 +43,6 @@ export default function Showcase3D() {
           </p>
         </div>
 
-        {/* الكاروسيل ثلاثي الأبعاد */}
         <div className="relative" style={{ perspective: "1400px" }}>
           <div className="relative h-[240px] sm:h-[320px] md:h-[400px] lg:h-[460px] mx-auto max-w-5xl" style={{ transformStyle: "preserve-3d" }}>
             {SLIDES.map((s, i) => {
@@ -55,7 +52,7 @@ export default function Showcase3D() {
                   key={i}
                   className="absolute inset-x-4 sm:inset-x-10 md:inset-x-16 top-0 bottom-0 rounded-3xl overflow-hidden border border-[#d4af37]/30 shadow-2xl shadow-[#d4af37]/10 transition-transform duration-[900ms]"
                   style={{
-                    transform: otateY(\deg) translateZ(clamp(170px, 32vw, 400px)),
+                    transform: "rotateY(" + angle + "deg) translateZ(clamp(170px, 32vw, 400px))",
                     backfaceVisibility: "hidden",
                     transitionTimingFunction: "cubic-bezier(.22,.61,.36,1)",
                   }}
@@ -74,7 +71,6 @@ export default function Showcase3D() {
             })}
           </div>
 
-          {/* أسهم التنقل */}
           <button onClick={prev} aria-label="السابق" className="absolute right-0 md:-right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 dark:bg-[#1a1a1a]/90 border border-[#d4af37]/40 text-[#b8941f] hover:bg-[#d4af37] hover:text-[#111] transition-all flex items-center justify-center shadow-lg">
             <ChevronRight size={20} />
           </button>
@@ -83,14 +79,13 @@ export default function Showcase3D() {
           </button>
         </div>
 
-        {/* النقاط */}
         <div className="flex justify-center gap-2 mt-8">
           {SLIDES.map((_, i) => (
             <button
               key={i}
               onClick={() => setIndex(i)}
-              aria-label={شريحة \}
-              className={h-2 rounded-full transition-all duration-300 \}
+              aria-label={"شريحة " + (i + 1)}
+              className={"h-2 rounded-full transition-all duration-300 " + (i === index ? "w-8 bg-[#d4af37]" : "w-2 bg-gray-300 dark:bg-white/20 hover:bg-[#d4af37]/50")}
             />
           ))}
         </div>
