@@ -11,6 +11,7 @@ declare module "next-auth" {
     phone?: string | null
     permissions?: string[]
     artistId?: string | null
+    otpVerified?: boolean
   }
   interface Session {
     user: {
@@ -22,6 +23,7 @@ declare module "next-auth" {
       phone?: string | null
       permissions: string[]
       artistId?: string | null
+      otpVerified: boolean
     }
   }
 }
@@ -33,6 +35,7 @@ declare module "next-auth/jwt" {
     phone?: string | null
     permissions?: string[]
     artistId?: string | null
+    otpVerified?: boolean
   }
 }
 
@@ -43,44 +46,33 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }: any) {
-      // عند تسجيل الدخول عبر Google/Apple
       if (account?.provider === "google" || account?.provider === "apple") {
         const email = user.email?.toLowerCase()
         if (!email) return false
-
-        // البحث عن المستخدم أو إنشاؤه
         let dbUser = await prisma.user.findUnique({ where: { email } })
-
         if (!dbUser) {
-          // إنشاء مستخدم جديد
           dbUser = await prisma.user.create({
-            data: {
-              email,
-              name: user.name || email.split("@")[0],
-              password: "oauth-user-no-password",
-              role: "USER",
-            },
+            data: { email, name: user.name || email.split("@")[0], password: "oauth-no-password", role: "USER" },
           })
         }
-
-        // تحديث بيانات المستخدم من المزود
         user.id = dbUser.id
         user.role = dbUser.role
         user.phone = dbUser.phone
         user.permissions = dbUser.permissions || []
         user.artistId = dbUser.artistId
+        user.otpVerified = false
       }
-
       return true
     },
 
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id
         token.role = user.role || "USER"
         token.phone = user.phone
         token.permissions = user.permissions || []
         token.artistId = user.artistId || null
+        token.otpVerified = user.otpVerified === true
       }
       return token
     },
@@ -92,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         session.user.phone = token.phone || null
         session.user.permissions = token.permissions || []
         session.user.artistId = token.artistId || null
+        session.user.otpVerified = token.otpVerified === true
       }
       return session
     },
@@ -107,28 +100,61 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        otp: { label: "OTP", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("البريد الإلكتروني وكلمة السر مطلوبان")
-        }
+        if (!credentials?.email) return null
         const email = credentials.email.trim().toLowerCase()
-        const password = credentials.password
-        const user = await prisma.user.findUnique({ where: { email } })
-        if (!user) throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
-        if (!user.password) throw new Error("هذا الحساب لا يحتوي على كلمة مرور")
-        const isHashed = user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$")
-        const isValid = isHashed ? await bcrypt.compare(password, user.password) : password === user.password
-        if (!isValid) throw new Error("البريد الإلكتروني أو كلمة السر غير صحيحة")
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          phone: user.phone,
-          permissions: [],
-          artistId: user.artistId,
+
+        // ═══ المسار 2: OTP → جلسة موثقة كاملة ═══
+        if (credentials.otp) {
+          const rec = await prisma.verificationToken.findFirst({
+            where: { identifier: email },
+            orderBy: { createdAt: "desc" },
+          })
+
+          const valid = rec && rec.token === credentials.otp && rec.expires > new Date() && (rec.attempts ?? 0) < 5
+
+          if (!valid) {
+            // عدّاد محاولات: بعد 5 محاولات فاشلة يُحذف الرمز نهائياً
+            if (rec) {
+              const attempts = (rec.attempts ?? 0) + 1
+              if (attempts >= 5) {
+                await prisma.verificationToken.deleteMany({ where: { identifier: email } })
+              } else {
+                await prisma.verificationToken.update({
+                  where: { identifier_token: { identifier: email, token: rec.token } },
+                  data: { attempts },
+                })
+              }
+            }
+            throw new Error("OTP_INVALID")
+          }
+
+          const user = await prisma.user.findUnique({ where: { email } })
+          if (!user) return null
+          await prisma.verificationToken.deleteMany({ where: { identifier: email } })
+
+          return {
+            id: user.id, email: user.email, name: user.name, role: user.role,
+            phone: user.phone, permissions: user.permissions || [], artistId: user.artistId,
+            otpVerified: true,
+          } as any
         }
+
+        // ═══ المسار 1: باسورد → جلسة غير موثقة (تنتظر OTP) ═══
+        if (!credentials.password) return null
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (!user || !user.password) return null
+        const isHashed = user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$")
+        const ok = isHashed ? await bcrypt.compare(credentials.password, user.password) : credentials.password === user.password
+        if (!ok) return null
+
+        return {
+          id: user.id, email: user.email, name: user.name, role: user.role,
+          phone: user.phone, permissions: user.permissions || [], artistId: user.artistId,
+          otpVerified: false,
+        } as any
       },
     }),
   ],

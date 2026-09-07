@@ -123,6 +123,8 @@ model Booking {
   venue           Venue     @relation(fields: [venueId], references: [id])
   payments        Payment[]
   
+  @@index([clientEmail])
+  @@index([userId])
   @@map("bookings")
 }
 
@@ -278,6 +280,9 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
+  createdAt  DateTime @default(now())
+  attempts   Int      @default(0)
 
+  @@index([identifier])
   @@unique([identifier, token])
 }
