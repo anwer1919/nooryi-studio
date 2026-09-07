@@ -1,12 +1,10 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import SettingsForm from "./SettingsForm"
 
 export default async function SettingsPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const user = await prisma.user.findUnique({

@@ -1,7 +1,4 @@
 "use server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
@@ -31,7 +28,7 @@ export async function getArtistPaymentInfo(slug: string) {
 
 export async function saveArtistPaymentInfo(slug: string, formData: FormData) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user || (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN")) {
       return { success: false, error: "غير مصرح" }
     }

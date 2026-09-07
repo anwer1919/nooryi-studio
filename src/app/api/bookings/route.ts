@@ -1,5 +1,3 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { sendEmail, newBookingAdminTemplate, bookingApprovedTemplate, paymentReceivedAdminTemplate, paymentConfirmedTemplate } from "@/lib/email"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
@@ -12,7 +10,7 @@ export const dynamic = "force-dynamic"
 // ═══════════════════════════════════════════════════
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     console.log("=== بدء عملية الحجز ===")
     console.log("Session:", session?.user?.email || "غير مسجل")
@@ -236,7 +234,7 @@ export async function POST(request: Request) {
 // ═══════════════════════════════════════════════════
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session?.user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 })
     }

@@ -1,5 +1,3 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { auth } from "@/lib/auth";
 ;
 import { redirect } from "next/navigation";
@@ -9,7 +7,7 @@ import { Calendar, Clock, MapPin, DollarSign, Music, FileText, Printer } from "l
 export const dynamic = "force-dynamic";
 
 export default async function MyBookingsPage({ searchParams }: { searchParams: Promise<{ new?: string; id?: string; success?: string }> }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const params = await searchParams;
   const isNewBooking = params.new === "true" || params.success === "true";
   const newBookingId = params.id || null;

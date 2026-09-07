@@ -1,5 +1,3 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
@@ -9,7 +7,7 @@ import { UserCog, Music, Plus, Mail, Phone, Trash2 } from "lucide-react"
 export const dynamic = "force-dynamic"
 
 export default async function ArtistsManagersPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session?.user || session.user.role !== "SUPER_ADMIN") {
     redirect("/admin")
