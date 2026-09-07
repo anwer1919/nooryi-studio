@@ -6,31 +6,43 @@ export async function POST(req: Request) {
     const { email } = await req.json()
     if (!email) return NextResponse.json({ error: "البريد مطلوب" }, { status: 400 })
 
+    const normalizedEmail = email.trim().toLowerCase()
+
+    // التحقق من وجود المستخدم
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    if (!user) return NextResponse.json({ error: "الحساب غير موجود" }, { status: 404 })
+
     // توليد رمز OTP من 6 أرقام
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    const expires = new Date(Date.now() + 10 * 60 * 1000) // صالح لمدة 10 دقائق
+    const expires = new Date(Date.now() + 5 * 60 * 1000) // صالح 5 دقائق
 
-    // حذف الرموز القديمة لنفس البريد
-    await prisma.verificationToken.deleteMany({ where: { identifier: email.toLowerCase() } })
+    // حذف الرموز القديمة
+    await prisma.verificationToken.deleteMany({ where: { identifier: normalizedEmail } })
 
     // إنشاء رمز جديد
     await prisma.verificationToken.create({
-      data: {
-        identifier: email.toLowerCase(),
-        token: otp,
-        expires,
-      },
+      data: { identifier: normalizedEmail, token: otp, expires },
     })
 
-    // طباعة الرمز في الـ logs (للتجربة بدون بريد حقيقي)
-    console.log(`📧 [OTP] Code for ${email}: ${otp}`)
+    // تحديد وجهة الإرسال (إيميل أو هاتف)
+    const destination = user.phone || user.email
+    const method = user.phone ? "phone" : "email"
 
-    // TODO: إرسال البريد الإلكتروني الحقيقي هنا لاحقاً
-    // await transporter.sendMail({ to: email, subject: "رمز التحقق", html: `<h1>${otp}</h1>` })
+    console.log(`🔐 [2FA] OTP for ${normalizedEmail}: ${otp} (sent via ${method} to ${destination})`)
 
-    return NextResponse.json({ success: true, message: "تم إرسال رمز التحقق" })
+    // TODO: تفعيل إرسال SMS/Email الحقيقي لاحقاً
+    // if (method === "email") { await sendEmail(destination, otp) }
+    // if (method === "phone") { await sendSMS(destination, otp) }
+
+    return NextResponse.json({
+      success: true,
+      method,
+      destination: method === "phone"
+        ? destination.replace(/(\d{3})\d+(\d{2})/, "$1****$2")
+        : destination.replace(/(.{2}).+(@.+)/, "$1***$2"),
+    })
   } catch (error: any) {
-    console.error("[OTP Error]", error)
+    console.error("[2FA Error]", error)
     return NextResponse.json({ error: error.message || "فشل إرسال الرمز" }, { status: 500 })
   }
 }
