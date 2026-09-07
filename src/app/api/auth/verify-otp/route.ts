@@ -6,23 +6,17 @@ export async function POST(req: Request) {
     const { email, otp } = await req.json()
     if (!email || !otp) return NextResponse.json({ error: "البيانات ناقصة" }, { status: 400 })
 
-    const normalizedEmail = email.trim().toLowerCase()
-
-    // البحث عن الرمز
     const token = await prisma.verificationToken.findFirst({
       where: {
-        identifier: normalizedEmail,
+        identifier: email.trim().toLowerCase(),
         token: otp,
         expires: { gt: new Date() },
       },
     })
 
-    if (!token) {
-      return NextResponse.json({ error: "رمز غير صحيح أو منتهي الصلاحية" }, { status: 401 })
-    }
+    if (!token) return NextResponse.json({ error: "رمز غير صحيح أو منتهي الصلاحية" }, { status: 401 })
 
-    // حذف الرمز بعد الاستخدام (لمرة واحدة فقط)
-    await prisma.verificationToken.deleteMany({ where: { identifier: normalizedEmail } })
+    await prisma.verificationToken.deleteMany({ where: { identifier: email.trim().toLowerCase() } })
 
     return NextResponse.json({ verified: true })
   } catch (error: any) {

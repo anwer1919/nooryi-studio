@@ -12,9 +12,9 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
     if (!user) return NextResponse.json({ error: "الحساب غير موجود" }, { status: 404 })
 
-    // توليد رمز OTP من 6 أرقام
+    // توليد رمز OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    const expires = new Date(Date.now() + 5 * 60 * 1000) // صالح 5 دقائق
+    const expires = new Date(Date.now() + 5 * 60 * 1000)
 
     // حذف الرموز القديمة
     await prisma.verificationToken.deleteMany({ where: { identifier: normalizedEmail } })
@@ -24,15 +24,11 @@ export async function POST(req: Request) {
       data: { identifier: normalizedEmail, token: otp, expires },
     })
 
-    // تحديد وجهة الإرسال (إيميل أو هاتف)
     const destination = user.phone || user.email
     const method = user.phone ? "phone" : "email"
 
-    console.log(`🔐 [2FA] OTP for ${normalizedEmail}: ${otp} (sent via ${method} to ${destination})`)
-
-    // TODO: تفعيل إرسال SMS/Email الحقيقي لاحقاً
-    // if (method === "email") { await sendEmail(destination, otp) }
-    // if (method === "phone") { await sendSMS(destination, otp) }
+    // طباعة الرمز في Logs (للتجربة)
+    console.log(`🔐 [2FA] OTP for ${normalizedEmail}: ${otp} → ${method}: ${destination}`)
 
     return NextResponse.json({
       success: true,

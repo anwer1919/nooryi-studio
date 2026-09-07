@@ -145,7 +145,6 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <ThemeToggle />
-                <ThemeToggle />
                 <NotificationBell />
                 <NavbarClient user={user} mode="mobile" />
               </>
