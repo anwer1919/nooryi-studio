@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Star, Calendar, Music, Award, Play } from "lucide-react"
 
@@ -23,6 +23,10 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
   const [startX, setStartX] = useState(0)
   const [endX, setEndX] = useState(0)
 
+  useEffect(() => {
+    console.log('[CAROUSEL] Received artists:', artists?.length, 'first:', artists?.[0]?.name)
+  }, [artists])
+
   const onStart = (x: number) => { setDragging(true); setStartX(x); setEndX(x) }
   const onMove = (x: number) => { if (dragging) setEndX(x) }
   const onEnd = () => {
@@ -33,15 +37,20 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
     if (diff < -60 && currentIndex < artists.length - 1) setCurrentIndex(currentIndex + 1)
   }
 
-  if (!artists || artists.length === 0) return null
+  if (!artists || artists.length === 0) {
+    console.log('[CAROUSEL] No artists - returning null')
+    return null
+  }
+
+  console.log('[CAROUSEL] Rendering with', artists.length, 'artists, currentIndex:', currentIndex)
 
   return (
-    <div className="relative w-full select-none" dir="rtl">
+    <div className="relative w-full select-none py-8" dir="rtl" style={{ overflow: "visible" }}>
       <div
-        className="relative h-[560px] md:h-[640px] flex items-center justify-center cursor-grab active:cursor-grabbing overflow-visible"
-        style={{ perspective: "1500px" }}
+        className="relative h-[560px] md:h-[640px] flex items-center justify-center cursor-grab active:cursor-grabbing"
+        style={{ perspective: "1500px", overflow: "visible" }}
         onMouseDown={(e) => onStart(e.clientX)}
-        onMouseMove={(e) => onMove(e.clientX)}
+        onMouseMove={(e) => { e.preventDefault(); onMove(e.clientX) }}
         onMouseUp={onEnd}
         onMouseLeave={onEnd}
         onTouchStart={(e) => onStart(e.touches[0].clientX)}
@@ -61,11 +70,11 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
           } else if (position === 1 || position === -(artists.length - 1)) {
             transform = "translateX(260px) translateY(50px) translateZ(-100px) rotateY(-15deg) scale(0.85)"
             zIndex = 20
-            opacity = 0.6
+            opacity = 0.75
           } else if (position === -1 || position === artists.length - 1) {
             transform = "translateX(-260px) translateY(50px) translateZ(-100px) rotateY(15deg) scale(0.85)"
             zIndex = 20
-            opacity = 0.6
+            opacity = 0.75
           } else {
             transform = position > 0
               ? "translateX(500px) translateY(90px) translateZ(-300px) rotateY(-30deg) scale(0.7)"
@@ -78,7 +87,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
             <div
               key={artist.id}
               className="absolute w-[300px] md:w-[380px] transition-all duration-500 ease-out"
-              style={{ transform: transform, transformStyle: "preserve-3d", zIndex: zIndex, opacity: opacity, pointerEvents: position === 0 ? "auto" : "none" }}
+              style={{ transform, transformStyle: "preserve-3d", zIndex, opacity, pointerEvents: position === 0 ? "auto" : "none" }}
             >
               <Link href={"/artists/" + artist.slug} className="block group" draggable={false}>
                 <div className="relative bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
@@ -109,7 +118,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                       <h3 className="text-3xl md:text-4xl font-black text-white leading-tight drop-shadow-lg">{artist.name}</h3>
                     </div>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="p-6 space-y-4 bg-white dark:bg-[#111]">
                     <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3 min-h-[4rem]">
                       {artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}
                     </p>

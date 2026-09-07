@@ -94,6 +94,7 @@ async function getSiteSettings() {
 
 export default async function HomePage() {
   const featuredArtists = await getFeaturedArtists();
+  console.log('[PAGE] Featured artists count:', featuredArtists?.length, 'sample:', featuredArtists?.[0]?.name);
   const siteSettings = await getSiteSettings();
 
   return (
@@ -147,7 +148,7 @@ export default async function HomePage() {
 
       {/* ═══════════ Hero Section ═══════════ */}
       {/* ═══════════ نخبة الفنانين (Carousel 3D) ═══════════ */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#0a0a0a] dark:via-[#111] dark:to-[#0a0a0a] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#0a0a0a] dark:via-[#111] dark:to-[#0a0a0a] overflow-visible">
         {/* خلفية متحركة - نقاط ذهبية */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 right-[10%] w-2 h-2 bg-[#D4AF37]/40 rounded-full animate-float-up"></div>
