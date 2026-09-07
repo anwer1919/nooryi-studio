@@ -160,7 +160,7 @@ model Review {
   id         String    @id @default(cuid())
   artistId   String
   userId     String?
-  bookingId  String?
+  bookingId  String?  @unique
   rating     Int
   comment    String?
   clientName String?
