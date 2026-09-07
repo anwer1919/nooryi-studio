@@ -32,6 +32,21 @@ const TiktokIcon = () => (
 )
 
 export default async function AdminSettingsPage() {
+  const [message, setMessage] = useState<{type: string; text: string} | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  async function handleSubmit(formData: FormData) {
+    setSaving(true)
+    setMessage(null)
+    try {
+      const result = await saveSettings(formData)
+      setMessage({ type: "success", text: result.message || "تم الحفظ بنجاح" })
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "فشل الحفظ" })
+    } finally {
+      setSaving(false)
+    }
+  } {
   const settings = await getSettings()
   
   return (
@@ -42,7 +57,12 @@ export default async function AdminSettingsPage() {
         <p className="text-gray-500 dark:text-gray-400 mt-1">إدارة الإعدادات العامة والتواصل والدفع</p>
       </div>
 
-      <form action={saveSettings} className="space-y-6">
+      <form action={handleSubmit} className="space-y-6">
+        {message && (
+          <div className={`p-4 rounded-2xl font-bold text-center ${message.type === "success" ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-2 border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-2 border-red-200 dark:border-red-800"}`}>
+            {message.type === "success" ? "✅" : "❌"} {message.text}
+          </div>
+        )}
         {/* معلومات المنصة */}
         <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
           <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -157,10 +177,20 @@ export default async function AdminSettingsPage() {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+          disabled={saving}
+          className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <CheckCircle2 size={20} />
-          حفظ جميع الإعدادات
+          {saving ? (
+            <>
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              جاري الحفظ...
+            </>
+          ) : (
+            <>
+              <CheckCircle2 size={20} />
+              حفظ جميع الإعدادات
+            </>
+          )}
         </button>
       </form>
     </div>
