@@ -2,10 +2,10 @@
 import { Music, Volume2, Mic, Disc3 } from "lucide-react";
 
 const ITEMS = [
-  { img: "/images/showcase-guitar.jpg", icon: Music, tag: "الأكثر حجزاً", title: "جيتاريستات النخبة", desc: "أوتار تلامس الروح — عزف حي يرفع مستوى مناسبتك" },
-  { img: "/images/showcase-amps.jpg", icon: Volume2, tag: "صوتيات", title: "أنظمة صوت احترافية", desc: "قوة صوت نقية تملأ المكان دون تشويش" },
-  { img: "/images/showcase-drums.jpg", icon: Mic, tag: "فرق كاملة", title: "إيقاع وغناء", desc: "من الدرامز إلى الميكروفون — حفل لا يُنسى" },
-  { img: "/images/showcase-notes.jpg", icon: Disc3, tag: "أجواء", title: "دي جي وموسيقى", desc: "خلطات تبقي الطاقة عالية حتى آخر الليلة" },
+  { img: "/images/showcase-guitar.png", icon: Music, tag: "الأكثر حجزاً", title: "جيتاريستات النخبة", desc: "أوتار تلامس الروح — عزف حي يرفع مستوى مناسبتك" },
+  { img: "/images/showcase-amps.png", icon: Volume2, tag: "صوتيات", title: "أنظمة صوت احترافية", desc: "قوة صوت نقية تملأ المكان دون تشويش" },
+  { img: "/images/showcase-drums.png", icon: Mic, tag: "فرق كاملة", title: "إيقاع وغناء", desc: "من الدرامز إلى الميكروفون — حفل لا يُنسى" },
+  { img: "/images/showcase-notes.png", icon: Disc3, tag: "أجواء", title: "دي جي وموسيقى", desc: "خلطات تبقي الطاقة عالية حتى آخر الليلة" },
 ];
 
 export default function EliteVisuals() {

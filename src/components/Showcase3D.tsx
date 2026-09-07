@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
 const SLIDES = [
-  { src: "/images/showcase-guitar.jpg", title: "عزف حي يلامس الروح", sub: "جيتارات نخبة لصوت لا يُنسى" },
-  { src: "/images/showcase-amps.jpg", title: "قوة صوت نقية", sub: "أنظمة مضخمة تملأ المكان دون تشويش" },
-  { src: "/images/showcase-drums.jpg", title: "إيقاع وغناء", sub: "من الدرامز إلى الميكروفون — فرقة كاملة" },
-  { src: "/images/showcase-notes.jpg", title: "أجواء متواصلة", sub: "موسيقى تبقي الطاقة عالية حتى آخر الليلة" },
+  { src: "/images/showcase-guitar.png", title: "عزف حي يلامس الروح", sub: "جيتارات نخبة لصوت لا يُنسى" },
+  { src: "/images/showcase-amps.png", title: "قوة صوت نقية", sub: "أنظمة مضخمة تملأ المكان دون تشويش" },
+  { src: "/images/showcase-drums.png", title: "إيقاع وغناء", sub: "من الدرامز إلى الميكروفون — فرقة كاملة" },
+  { src: "/images/showcase-notes.png", title: "أجواء متواصلة", sub: "موسيقى تبقي الطاقة عالية حتى آخر الليلة" },
 ];
 
 export default function Showcase3D() {
