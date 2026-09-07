@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import ArtistCarousel from "@/components/ArtistCarousel";
 import SocialLinks from "@/components/SocialLinks";
 import ThemeToggle from "@/components/ThemeToggle";
-import Showcase3D from "@/components/Showcase3D"
+
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +89,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] transition-colors duration-300" dir="rtl">
 
-      <Showcase3D />
+      
       {/* ═══════════ الترويسة ═══════════ */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-[#111]/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">

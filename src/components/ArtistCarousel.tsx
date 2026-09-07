@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { Star, Calendar, Music, ChevronRight, ChevronLeft, Award, Play } from "lucide-react"
+import { Star, Calendar, Music, Award, Play } from "lucide-react"
 
 interface Artist {
   id: string
@@ -19,92 +19,111 @@ interface Artist {
 
 export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [currentX, setCurrentX] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // التمرير التلقائي
-  useEffect(() => {
-    if (isAutoPlaying && artists.length > 1) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % artists.length)
-      }, 5000)
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [isAutoPlaying, artists.length])
-
-  const goTo = (index: number) => {
-    setCurrentIndex(index)
-    setIsAutoPlaying(false)
-    if (timerRef.current) clearInterval(timerRef.current)
-    setTimeout(() => setIsAutoPlaying(true), 10000)
+  // سحب بالفأرة أو اللمس
+  const handleStart = (clientX: number) => {
+    setIsDragging(true)
+    setStartX(clientX)
+    setCurrentX(clientX)
   }
 
-  const next = () => goTo((currentIndex + 1) % artists.length)
-  const prev = () => goTo((currentIndex - 1 + artists.length) % artists.length)
+  const handleMove = (clientX: number) => {
+    if (!isDragging) return
+    setCurrentX(clientX)
+  }
+
+  const handleEnd = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    
+    const diff = currentX - startX
+    const threshold = 50 // حد السحب
+    
+    if (diff > threshold && currentIndex > 0) {
+      // سحب يمين → السابق
+      setCurrentIndex(currentIndex - 1)
+    } else if (diff < -threshold && currentIndex < artists.length - 1) {
+      // سحب يسار → التالي
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+
+  // Mouse events
+  const onMouseDown = (e: React.MouseEvent) => handleStart(e.clientX)
+  const onMouseMove = (e: React.MouseEvent) => handleMove(e.clientX)
+  const onMouseUp = () => handleEnd()
+  const onMouseLeave = () => { if (isDragging) handleEnd() }
+
+  // Touch events
+  const onTouchStart = (e: React.TouchEvent) => handleStart(e.touches[0].clientX)
+  const onTouchMove = (e: React.TouchEvent) => handleMove(e.touches[0].clientX)
+  const onTouchEnd = () => handleEnd()
 
   if (artists.length === 0) return null
 
   return (
-    <div 
-      className="relative"
-      onMouseEnter={() => setIsAutoPlaying(false)}
-      onMouseLeave={() => setIsAutoPlaying(true)}
-    >
-      {/* ═══════════ حاوية البطاقات ثلاثية الأبعاد ═══════════ */}
-      <div className="relative h-[560px] md:h-[640px] flex items-center justify-center" style={{ perspective: "1500px" }}>
+    <div className="relative w-full select-none" dir="rtl">
+      {/* حاوية البطاقات */}
+      <div
+        ref={containerRef}
+        className="relative h-[560px] md:h-[640px] flex items-center justify-center cursor-grab active:cursor-grabbing"
+        style={{ perspective: "1500px" }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseLeave}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         {artists.map((artist, index) => {
           const position = index - currentIndex
-          const absPosition = Math.abs(position)
           
-          // حساب الـ transform للبطاقة
           let transform = ""
           let zIndex = 0
           let opacity = 0
-          let scale = 0.7
 
           if (position === 0) {
             // البطاقة النشطة في المنتصف
-            transform = "translateX(0) translateZ(0) rotateY(0deg)"
+            transform = "translateX(0) translateY(0) translateZ(100px) rotateY(0deg) scale(1)"
             zIndex = 30
             opacity = 1
-            scale = 1
           } else if (position === 1 || position === -(artists.length - 1)) {
-            // البطاقة على اليمين
-            transform = "translateX(280px) translateZ(-200px) rotateY(-25deg)"
+            // البطاقة على اليمين (أصغر وأدنى)
+            transform = "translateX(280px) translateY(40px) translateZ(-100px) rotateY(-15deg) scale(0.85)"
             zIndex = 20
             opacity = 0.7
-            scale = 0.85
           } else if (position === -1 || position === artists.length - 1) {
-            // البطاقة على اليسار
-            transform = "translateX(-280px) translateZ(-200px) rotateY(25deg)"
+            // البطاقة على اليسار (أصغر وأدنى)
+            transform = "translateX(-280px) translateY(40px) translateZ(-100px) rotateY(15deg) scale(0.85)"
             zIndex = 20
             opacity = 0.7
-            scale = 0.85
           } else {
             // البطاقات الأخرى (مخفية)
             transform = position > 0 
-              ? "translateX(500px) translateZ(-400px) rotateY(-40deg)"
-              : "translateX(-500px) translateZ(-400px) rotateY(40deg)"
+              ? "translateX(500px) translateY(80px) translateZ(-300px) rotateY(-30deg) scale(0.7)"
+              : "translateX(-500px) translateY(80px) translateZ(-300px) rotateY(30deg) scale(0.7)"
             zIndex = 10
             opacity = 0
-            scale = 0.6
           }
 
           return (
             <div
               key={artist.id}
-              className="absolute w-[320px] md:w-[380px] transition-all duration-700 ease-out"
+              className="absolute w-[320px] md:w-[380px] transition-all duration-500 ease-out"
               style={{
                 transform,
                 transformStyle: "preserve-3d",
                 zIndex,
                 opacity,
-                transform: `${transform} scale(${scale})`,
+                pointerEvents: position === 0 ? "auto" : "none",
               }}
             >
-              <Link href={`/artists/${artist.slug}`} className="block group">
+              <Link href={`/artists/${artist.slug}`} className="block group" draggable={false}>
                 <div className="relative bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-2xl hover:shadow-[#D4AF37]/40 transition-all duration-500 hover:border-[#D4AF37]/50">
                   {/* صورة الفنان */}
                   <div className="relative h-80 md:h-96 overflow-hidden">
@@ -113,6 +132,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                         src={artist.coverImage || artist.profileImage || ""}
                         alt={artist.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        draggable={false}
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-[#D4AF37]/20 to-[#111] flex items-center justify-center">
@@ -193,48 +213,15 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
         })}
       </div>
 
-      {/* ═══════════ أزرار التنقل ═══════════ */}
-      <button
-        onClick={prev}
-        className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-xl shadow-[#D4AF37]/30 hover:scale-110 hover:shadow-2xl transition-all duration-300 z-40"
-        aria-label="السابق"
-      >
-        <ChevronRight size={24} />
-      </button>
-
-      <button
-        onClick={next}
-        className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 w-12 h-12 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] text-[#111] flex items-center justify-center shadow-xl shadow-[#D4AF37]/30 hover:scale-110 hover:shadow-2xl transition-all duration-300 z-40"
-        aria-label="التالي"
-      >
-        <ChevronLeft size={24} />
-      </button>
-
-      {/* ═══════════ مؤشرات النقاط ═══════════ */}
-      <div className="flex items-center justify-center gap-2 mt-12">
-        {artists.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={`transition-all duration-300 ${
-              i === currentIndex
-                ? "w-10 h-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] rounded-full shadow-lg shadow-[#D4AF37]/30"
-                : "w-2 h-2 bg-gray-600 hover:bg-[#D4AF37]/50 rounded-full"
-            }`}
-            aria-label={`الانتقال إلى ${i + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* ═══════════ مؤشر التشغيل التلقائي ═══════════ */}
-      <div className="flex items-center justify-center gap-2 mt-4">
-        <button
-          onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-[#111]/50 dark:hover:bg-[#111] border border-[#D4AF37]/20 rounded-full transition-all duration-300 text-xs font-bold text-gray-600 dark:text-gray-600 dark:text-gray-400 hover:text-[#D4AF37]"
-        >
-          <span className={`w-2 h-2 rounded-full transition-colors ${isAutoPlaying ? "bg-[#D4AF37]" : "bg-gray-600"}`}></span>
-          {isAutoPlaying ? "تلقائي" : "متوقف"}
-        </button>
+      {/* مؤشر السحب */}
+      <div className="flex items-center justify-center gap-2 mt-8 text-gray-400 dark:text-gray-600 text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 9l-3 3 3 3"/>
+          <path d="M9 5l3-3 3 3"/>
+          <path d="M15 19l-3 3-3-3"/>
+          <path d="M19 9l3 3-3 3"/>
+        </svg>
+        <span>اسحب للتنقل بين الفنانين</span>
       </div>
     </div>
   )
