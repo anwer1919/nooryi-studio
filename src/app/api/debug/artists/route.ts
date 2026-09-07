@@ -2,12 +2,21 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
+  const result: any = { ok: true }
   try {
-    const total = await prisma.artist.count()
-    const active = await prisma.artist.count({ where: { status: "ACTIVE" } })
-    const sample = await prisma.artist.findFirst({ select: { id: true, name: true, slug: true, status: true } })
-    return NextResponse.json({ ok: true, total, active, sample })
+    result.total = await prisma.artist.count()
+    result.active = await prisma.artist.count({ where: { status: "ACTIVE" } })
   } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
+    result.countError = e.message
   }
+  try {
+    // هذا هو نفس نوع الاستعلام الذي تستخدمه الصفحة الرئيسية (SELECT *)
+    const full = await prisma.artist.findFirst({ where: { status: "ACTIVE" } })
+    result.fullQueryWorks = !!full
+    result.firstArtist = full?.name || null
+  } catch (e: any) {
+    result.fullQueryWorks = false
+    result.fullQueryError = e.message
+  }
+  return NextResponse.json(result)
 }
