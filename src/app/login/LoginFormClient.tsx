@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect, useRef } from "react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, ArrowLeft, CheckCircle2, MessageCircle, Smartphone } from "lucide-react";
@@ -16,10 +16,42 @@ export default function LoginFormClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "", otp: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [otpInfo, setOtpInfo] = useState<{ method: string; destination: string; whatsappLink?: string | null } | null>(null);
   const [resendTimer, setResendTimer] = useState(0);
   const [showResendOptions, setShowResendOptions] = useState(false);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // ═══ عند تحميل الصفحة: فحص إذا كان المستخدم عائد من Google/Apple ═══
+  useEffect(() => {
+    const checkSocialReturn = async () => {
+      const session = await getSession();
+      if (session?.user?.email) {
+        // المستخدم عائد من Social Login → إرسال OTP مباشرة
+        setLoading(true);
+        try {
+          const otpData = await sendOtp(session.user.email);
+          setFormData((p) => ({ ...p, email: session.user!.email! }));
+          setOtpInfo(otpData);
+          setStep("otp");
+          startTimer();
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    checkSocialReturn();
+  }, []);
+
+  // ═══ Auto-focus لأول مربع OTP عند دخول الشاشة ═══
+  useEffect(() => {
+    if (step === "otp" && otpRefs.current[0]) {
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    }
+  }, [step]);
 
   const startTimer = () => {
     setResendTimer(60);
@@ -38,44 +70,9 @@ export default function LoginFormClient() {
     return await res.json();
   };
 
-  // ═══ Social Login + 2FA ═══
-  const handleSocialLogin = async (provider: string) => {
-    setLoading(true); setError("");
-    try {
-      // تسجيل الدخول بدون redirect
-      const result = await signIn(provider, { redirect: false });
-      
-      if (result?.error) {
-        setError("فشل تسجيل الدخول عبر " + provider);
-        setLoading(false);
-        return;
-      }
-
-      // انتظار لحظة حتى تُحفظ الجلسة
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // جلب الجلسة
-      const sessionRes = await fetch("/api/auth/session");
-      const sessionData = await sessionRes.json();
-      const email = sessionData?.user?.email;
-
-      if (!email) {
-        setError("لم يتم الحصول على البريد الإلكتروني");
-        setLoading(false);
-        return;
-      }
-
-      // إرسال OTP
-      const otpData = await sendOtp(email);
-      setFormData((p) => ({ ...p, email }));
-      setOtpInfo(otpData);
-      setStep("otp");
-      startTimer();
-    } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء تسجيل الدخول");
-    } finally {
-      setLoading(false);
-    }
+  // ═══ Social Login: redirect فعلي ═══
+  const handleSocialLogin = (provider: string) => {
+    signIn(provider, { callbackUrl: "/login" });
   };
 
   // ═══ Credentials + 2FA ═══
@@ -84,7 +81,6 @@ export default function LoginFormClient() {
     try {
       const result = await signIn("credentials", { email: formData.email, password: formData.password, redirect: false });
       if (result?.error) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return; }
-
       await new Promise(resolve => setTimeout(resolve, 300));
       const otpData = await sendOtp(formData.email);
       setOtpInfo(otpData);
@@ -92,6 +88,42 @@ export default function LoginFormClient() {
       startTimer();
     } catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
+  };
+
+  // ═══ إدخال أرقام OTP ═══
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = digit;
+    setOtpDigits(newDigits);
+
+    // Auto-focus للمربع التالي
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    // Backspace → الرجوع للمربع السابق
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+    // Enter → تحقق
+    if (e.key === "Enter") {
+      const otp = otpDigits.join("");
+      if (otp.length === 6) handleOtpSubmit();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted) {
+      const newDigits = pasted.split("").concat(Array(6).fill("")).slice(0, 6);
+      setOtpDigits(newDigits);
+      const nextIndex = Math.min(pasted.length, 5);
+      otpRefs.current[nextIndex]?.focus();
+    }
   };
 
   // ═══ إعادة إرسال OTP ═══
@@ -109,12 +141,14 @@ export default function LoginFormClient() {
   };
 
   // ═══ التحقق من OTP ═══
-  const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError("");
+  const handleOtpSubmit = async () => {
+    const otp = otpDigits.join("");
+    if (otp.length !== 6) return;
+    setLoading(true); setError("");
     try {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email: formData.email, otp: formData.otp }),
+        body: JSON.stringify({ email: formData.email, otp }),
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) { const d = await res.json(); setError(d.error || "رمز غير صحيح"); setLoading(false); return; }
@@ -140,9 +174,10 @@ export default function LoginFormClient() {
 
   // ═══ شاشة OTP ═══
   if (step === "otp") {
+    const otpComplete = otpDigits.join("").length === 6;
     return (
       <div className="w-full max-w-md py-8">
-        <button onClick={() => { setStep("credentials"); setFormData({ ...formData, otp: "" }); setError(""); setShowResendOptions(false); }} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#b8941f] mb-6 transition-colors">
+        <button onClick={() => { setStep("credentials"); setOtpDigits(["","","","","",""]); setError(""); setShowResendOptions(false); }} className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#b8941f] mb-6 transition-colors">
           <ArrowLeft size={16} /> العودة
         </button>
 
@@ -158,18 +193,27 @@ export default function LoginFormClient() {
 
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-center">{error}</div>}
 
-        <form onSubmit={handleOtpSubmit} className="space-y-4">
-          <input
-            type="text" required autoFocus
-            value={formData.otp}
-            onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, "").slice(0, 6) })}
-            className="w-full py-4 text-center text-2xl tracking-[0.5em] font-black text-gray-900 border-2 border-gray-200 rounded-2xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/30 outline-none transition-all placeholder:tracking-normal placeholder:text-base placeholder:font-normal placeholder:text-gray-400"
-            placeholder="000000" maxLength={6} inputMode="numeric"
-          />
-          <button type="submit" disabled={loading || formData.otp.length !== 6} className="w-full py-4 bg-gradient-to-r from-[#d4af37] to-[#b8941f] text-[#111] font-black rounded-xl hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? <Loader2 size={20} className="animate-spin" /> : "تحقق ومتابعة"}
-          </button>
-        </form>
+        {/* ═══ مربعات OTP ═══ */}
+        <div className="flex justify-center gap-3 mb-6" dir="ltr" onPaste={handleOtpPaste}>
+          {otpDigits.map((digit, i) => (
+            <input
+              key={i}
+              ref={(el) => { otpRefs.current[i] = el; }}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleOtpChange(i, e.target.value)}
+              onKeyDown={(e) => handleOtpKeyDown(i, e)}
+              className="w-13 h-14 sm:w-14 sm:h-16 text-center text-2xl font-black text-gray-900 border-2 border-gray-200 rounded-xl focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/30 outline-none transition-all bg-white"
+              style={{ width: "3.25rem" }}
+            />
+          ))}
+        </div>
+
+        <button onClick={handleOtpSubmit} disabled={loading || !otpComplete} className="w-full py-4 bg-gradient-to-r from-[#d4af37] to-[#b8941f] text-[#111] font-black rounded-xl hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          {loading ? <Loader2 size={20} className="animate-spin" /> : "تحقق ومتابعة"}
+        </button>
 
         <div className="mt-6 text-center">
           {!showResendOptions ? (
@@ -202,6 +246,12 @@ export default function LoginFormClient() {
   // ═══ شاشة Credentials ═══
   return (
     <div className="w-full max-w-md py-8">
+      {loading && (
+        <div className="flex justify-center mb-6">
+          <Loader2 size={32} className="animate-spin text-[#d4af37]" />
+        </div>
+      )}
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-black text-gray-900 mb-2">تسجيل الدخول</h2>
         <p className="text-gray-500 text-sm">أدخل بيانات حسابك للمتابعة</p>
