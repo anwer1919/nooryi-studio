@@ -13,17 +13,17 @@ model User {
   password      String
   name          String?
   phone         String?
-  role          String    @default("USER") // USER, ADMIN, SUPER_ADMIN, ARTIST_MANAGER
-  artistId      String?   // لربط مدير الأعمال بالفنان
+  role          String    @default("USER")
+  artistId      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   permissions   String[]  @default([])
   
-  // العلاقات
   managedArtist Artist?   @relation("ArtistManagerRelation", fields: [artistId], references: [id])
   notifications Notification[]
   payments      Payment[] @relation("PaymentConfirmer")
   
+  @@index([email])
   @@map("users")
 }
 
@@ -42,7 +42,6 @@ model Artist {
   adminUserId           String?
   userId                String?
 
-  // ═══════════ بيانات الدفع الخاصة بالفنان ═══════════
   bankName        String?
   bankAccount     String?
   iban            String?
@@ -50,7 +49,9 @@ model Artist {
   instaPay        String?
   paymentNote     String?
 
-  // ═══════════ نسبة عمولة المنصة ═══════════
+  genres          String[]  @default([])
+  basePrice       Float     @default(0)
+
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -59,8 +60,10 @@ model Artist {
   pricing               Pricing[]
   availability          Availability[]
   managers              User[]    @relation("ArtistManagerRelation")
-  pricingRegions    PricingRegion[]
+  pricingRegions        PricingRegion[]
+  pricingRules          PricingRule[]
   
+  @@index([slug])
   @@map("artists")
 }
 
@@ -72,11 +75,15 @@ model Customer {
   city      String?
   address   String?
   notes     String?
+  userId    String?   @unique
+  name      String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   
   bookings  Booking[]
   
+  @@index([email])
+  @@index([userId])
   @@map("customers")
 }
 
@@ -112,7 +119,6 @@ model Booking {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
-  // ✅ الحقول الجديدة (مرة واحدة فقط)
   region          String?
   countryCode     String?   @default("+20")
   phoneNumber     String?
@@ -125,6 +131,7 @@ model Booking {
   
   @@index([clientEmail])
   @@index([userId])
+  @@index([artistId])
   @@map("bookings")
 }
 
@@ -132,7 +139,7 @@ model Payment {
   id            String    @id @default(cuid())
   bookingId     String
   amount        Float
-  status        String    @default("PENDING") // PENDING, COMPLETED, FAILED
+  status        String    @default("PENDING")
   method        String    @default("CREDIT_CARD")
   transactionId String?
   confirmedBy   String?
@@ -144,21 +151,25 @@ model Payment {
   booking       Booking   @relation(fields: [bookingId], references: [id])
   confirmer     User?     @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
   
+  @@index([bookingId])
   @@map("payments")
 }
 
 model Review {
-  id        String    @id @default(cuid())
-  artistId  String
-  userId    String?
-  bookingId String?
-  rating    Int
-  comment   String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  artistId   String
+  userId     String?
+  bookingId  String?
+  rating     Int
+  comment    String?
+  clientName String?
+  customerId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   
-  artist    Artist    @relation(fields: [artistId], references: [id])
+  artist     Artist    @relation(fields: [artistId], references: [id])
   
+  @@index([artistId])
   @@map("reviews")
 }
 
@@ -174,9 +185,9 @@ model Pricing {
   
   artist      Artist    @relation(fields: [artistId], references: [id])
   
+  @@index([artistId])
   @@map("pricings")
 }
-
 
 model Notification {
   id        String    @id @default(cuid())
@@ -185,14 +196,18 @@ model Notification {
   message   String
   type      String    @default("info")
   link      String?
+  relatedId String?
   isRead    Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   
   user      User      @relation(fields: [userId], references: [id])
   
+  @@index([userId])
+  @@index([isRead])
   @@map("notifications")
 }
+
 model GeneratedReport {
   id            String   @id @default(cuid())
   reportNumber  String   @unique
@@ -209,84 +224,47 @@ model GeneratedReport {
   status        String   @default("ACTIVE")
   createdAt     DateTime @default(now())
 }
-// نموذج التوفر/التقويم للفنان
+
 model Availability {
   id          String   @id @default(cuid())
   artistId    String
   artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   
-  // يوم الأسبوع (0 = الأحد، 1 = الإثنين، ... 6 = السبت)
-  dayOfWeek   Int      // 0-6
-  
-  // وقت البداية والنهاية
-  startTime   String   // مثال: "09:00"
-  endTime     String   // مثال: "18:00"
-  
-  // هل متاح للحجز؟
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
   isAvailable Boolean  @default(true)
+  
+  date        DateTime?
+  status      String    @default("AVAILABLE")
+  isBooked    Boolean   @default(false)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([artistId, dayOfWeek, startTime])
+  @@index([artistId])
+  @@index([date])
   @@map("availabilities")
 }
 
-// نموذج التسعير حسب المنطقة
 model PricingRegion {
   id          String   @id @default(cuid())
   artistId    String
   artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
   
-  // اسم المنطقة
-  regionName  String   // مثال: "القاهرة"، "الإسكندرية"
-  
-  // السعر الأساسي
+  regionName  String
   basePrice   Float
-  
-  // رسوم إضافية (اختياري)
   travelFee   Float    @default(0)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([artistId, regionName])
+  @@index([artistId])
   @@map("pricing_regions")
 }
-model SiteSetting {
-  id        String   @id @default("site_settings")
-  siteName  String   @default("Nooryi Studio")
-  tagline   String   @default("منصة حجز الفنانين الأولى")
-  email     String?
-  phone     String?
-  address   String?
-  currency  String   @default("EGP")
-  timezone  String   @default("Africa/Cairo")
-  
-  // منصات التواصل الاجتماعي
-  facebook  String?
-  instagram String?
-  tiktok    String?
-  youtube   String?
-  whatsapp  String?
-  twitter   String?
-  
-  // معلومات الدفع
-  paymentPhone  String?
-  
-  updatedAt DateTime @updatedAt
-}
-model VerificationToken {
-  identifier String
-  token      String
-  expires    DateTime
-  createdAt  DateTime @default(now())
-  attempts   Int      @default(0)
 
-  @@index([identifier])
-  @@unique([identifier, token])
-}
-// ═══ PricingRule (مرادف لـ Pricing) ═══
 model PricingRule {
   id          String   @id @default(cuid())
   artistId    String
@@ -298,5 +276,43 @@ model PricingRule {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([artistId])
   @@map("pricing_rules")
+}
+
+model SiteSetting {
+  id            String   @id @default("site_settings")
+  siteName      String   @default("Nooryi Studio")
+  tagline       String   @default("منصة حجز الفنانين الأولى")
+  email         String?
+  phone         String?
+  address       String?
+  currency      String   @default("EGP")
+  timezone      String   @default("Africa/Cairo")
+  
+  facebook      String?
+  instagram     String?
+  tiktok        String?
+  youtube       String?
+  whatsapp      String?
+  twitter       String?
+  
+  paymentPhone  String?
+  bankName      String?
+  bankAccount   String?
+  iban          String?
+  paymentNote   String?
+  
+  updatedAt     DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  attempts   Int      @default(0)
+
+  @@index([identifier])
+  @@unique([identifier, token])
 }
