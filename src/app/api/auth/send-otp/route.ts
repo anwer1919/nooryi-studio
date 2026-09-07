@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { sendEmail, otpEmailTemplate } from "@/lib/email"
 
+// رقم واتساب البزنس
+const WHATSAPP_BUSINESS_NUMBER = process.env.WHATSAPP_BUSINESS_NUMBER || "00249998989999"
+
 export async function POST(req: Request) {
   try {
     const { email, method } = await req.json()
@@ -22,25 +25,42 @@ export async function POST(req: Request) {
     const sendMethod = method || "email"
     let destination = ""
     let whatsappLink: string | null = null
+    let sent = false
 
     if (sendMethod === "email" && user.email) {
       destination = user.email
       const html = otpEmailTemplate(otp)
       const result = await sendEmail({ to: user.email, subject: "🔐 رمز التحقق — Nooryi Studio", html })
-      console.log(`🔐 [2FA] OTP=${otp} method=email dest=${user.email} sent=${result.success}`)
+      sent = result.success
+      console.log(`🔐 [2FA] OTP=${otp} method=email dest=${user.email} sent=${sent}`)
+
     } else if (sendMethod === "whatsapp" && user.phone) {
+      // واتساب: فتح رابط مباشر برسالة جاهزة
       destination = user.phone
-      whatsappLink = `https://wa.me/${user.phone.replace(/[^0-9]/g, "")}?text=رمز التحقق الخاص بك: ${otp}`
-      console.log(`🔐 [2FA] OTP=${otp} method=whatsapp dest=${user.phone}`)
+      const phoneClean = user.phone.replace(/[^0-9]/g, "")
+      const message = encodeURIComponent(`🔐 رمز التحقق الخاص بك في Nooryi Studio:\n\n${otp}\n\n⏰ صالح لمدة 5 دقائق.\nلا تشاركه مع أي شخص.`)
+      whatsappLink = `https://wa.me/${phoneClean}?text=${message}`
+      sent = true
+      console.log(`🔐 [2FA] OTP=${otp} method=whatsapp dest=${user.phone} link_ready=true`)
+
     } else if (sendMethod === "sms" && user.phone) {
+      // SMS: حالياً نفس رابط واتساب كحل بديل
+      // لتفعيل SMS حقيقي: أضف TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN
       destination = user.phone
-      console.log(`🔐 [2FA] OTP=${otp} method=sms dest=${user.phone}`)
+      const phoneClean = user.phone.replace(/[^0-9]/g, "")
+      const message = encodeURIComponent(`رمز التحقق: ${otp} — Nooryi Studio`)
+      whatsappLink = `https://wa.me/${phoneClean}?text=${message}`
+      sent = true
+      console.log(`🔐 [2FA] OTP=${otp} method=sms(fallback-whatsapp) dest=${user.phone}`)
+
     } else {
+      // Fallback: إيميل
       if (user.email) {
         destination = user.email
         const html = otpEmailTemplate(otp)
         const result = await sendEmail({ to: user.email, subject: "🔐 رمز التحقق — Nooryi Studio", html })
-        console.log(`🔐 [2FA] OTP=${otp} method=email(fallback) dest=${user.email} sent=${result.success}`)
+        sent = result.success
+        console.log(`🔐 [2FA] OTP=${otp} method=email(fallback) dest=${user.email} sent=${sent}`)
       } else {
         return NextResponse.json({ error: "لا يوجد بريد أو هاتف مسجل" }, { status: 400 })
       }
@@ -48,11 +68,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      sent,
       method: sendMethod,
       destination: sendMethod === "email"
         ? destination.replace(/(.{2}).+(@.+)/, "$1***$2")
         : destination.replace(/(\d{3})\d+(\d{2})/, "$1****$2"),
       whatsappLink,
+      // رابط واتساب بزنس رسمي (للتواصل)
+      supportWhatsApp: `https://wa.me/${WHATSAPP_BUSINESS_NUMBER.replace(/[^0-9]/g, "")}`,
     })
   } catch (error: any) {
     console.error("[2FA Error]", error)
