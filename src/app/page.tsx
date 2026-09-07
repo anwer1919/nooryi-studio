@@ -24,25 +24,35 @@ async function getFeaturedArtists() {
       },
     });
 
-    return (artists || []).map((artist: any) => {
-      const ratings = artist.reviews?.map((r: any) => r.rating) || [];
-      const avgRating = ratings.length > 0
-        ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
-        : 5.0;
+    if (artists.length > 0) {
+      return (artists || []).map((artist: any) => {
+        const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+        const avgRating = ratings.length > 0
+          ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
+          : 5.0;
 
-      return {
-        id: artist.id,
-        name: artist.name,
-        slug: artist.slug,
-        category: artist.category,
-        bio: artist.bio,
-        profileImage: artist.profileImage,
-        coverImage: artist.coverImage,
-        rating: parseFloat(avgRating.toFixed(1)),
-        reviewsCount: artist._count.reviews,
-        bookingsCount: artist._count.bookings,
-      };
-    });
+        return {
+          id: artist.id,
+          name: artist.name,
+          slug: artist.slug,
+          category: artist.category,
+          bio: artist.bio,
+          profileImage: artist.profileImage,
+          coverImage: artist.coverImage,
+          rating: parseFloat(avgRating.toFixed(1)),
+          reviewsCount: artist._count.reviews,
+          bookingsCount: artist._count.bookings,
+        };
+      });
+    }
+
+    // Demo artists fallback
+    return [
+      { id: "demo-1", name: "أحمد الشريف", slug: "ahmed-alsharif", category: "مطرب", bio: "صوت شرقي أصيل يأسر القلوب — خبرة 15 عاماً في حفلات الزفاف والمناسبات الخاصة", profileImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600", coverImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200", rating: 4.9, reviewsCount: 47, bookingsCount: 128 },
+      { id: "demo-2", name: "فرقة النيل", slug: "nile-ensemble", category: "فرقة موسيقية", bio: "فرقة موسيقية متكاملة تقدم أجمل الألحان العربية والغربية بأسلوب عصري", profileImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=600", coverImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=1200", rating: 4.8, reviewsCount: 35, bookingsCount: 89 },
+      { id: "demo-3", name: "دي جي رامي", slug: "dj-rami", category: "دي جي", bio: "خلطات موسيقية تبقي الطاقة عالية حتى آخر الليلة — مناسب للحفلات والنوادي", profileImage: "https://images.unsplash.com/photo-1571266028243-e4733e5e9d48?w=600", coverImage: "https://images.unsplash.com/photo-1571266028243-e4733e5e9d48?w=1200", rating: 4.7, reviewsCount: 62, bookingsCount: 215 },
+      { id: "demo-4", name: "سارة محمود", slug: "sara-mahmoud", category: "مطربة", bio: "صوت ملائكي يجمع بين الطرب الأصيل والأغاني العصرية", profileImage: "https://images.unsplash.com/photo-1516223725307-6d7e5e5c5c5e?w=600", coverImage: "https://images.unsplash.com/photo-1516223725307-6d7e5e5c5c5e?w=1200", rating: 5.0, reviewsCount: 28, bookingsCount: 76 },
+    ];
   } catch (error) {
     console.error("Error fetching artists:", error);
     return [];
