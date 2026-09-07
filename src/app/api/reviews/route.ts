@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     // التحقق من وجود الحجز
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
-      include: { artist: true, review: true }
+      include: { artist: true,  }
     })
 
     if (!booking) {
