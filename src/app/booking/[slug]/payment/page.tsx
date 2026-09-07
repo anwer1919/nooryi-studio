@@ -197,6 +197,67 @@ export default async function PaymentPage({
           </div>
         </div>
 
+                {/* ═══ حسابات الفنان البنكية ═══ */}
+        {(booking.artist?.bankName || booking.artist?.vodafoneCash || booking.artist?.instaPay) && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-[#D4AF37]/30">
+            <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+              <Building2 size={18} className="text-[#D4AF37]" />
+              حسابات الدفع — {booking.artist?.name}
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {booking.artist?.bankName && (
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/10 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 size={16} className="text-green-700 dark:text-green-400" />
+                    <span className="font-bold text-sm text-green-800 dark:text-green-300">تحويل بنكي</span>
+                  </div>
+                  <p className="text-xs text-green-700 dark:text-green-400 mb-1">{booking.artist.bankName}</p>
+                  {booking.artist.bankAccount && (
+                    <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                      <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.bankAccount}</span>
+                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.bankAccount!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                    </div>
+                  )}
+                  {booking.artist.iban && (
+                    <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                      <span className="text-xs font-mono" dir="ltr">{booking.artist.iban}</span>
+                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.iban!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {booking.artist?.vodafoneCash && (
+                <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/10 rounded-xl p-4 border border-red-200 dark:border-red-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Smartphone size={16} className="text-red-700 dark:text-red-400" />
+                    <span className="font-bold text-sm text-red-800 dark:text-red-300">فودافون كاش</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                    <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.vodafoneCash}</span>
+                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.vodafoneCash!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                  </div>
+                </div>
+              )}
+              {booking.artist?.instaPay && (
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/10 rounded-xl p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CreditCard size={16} className="text-purple-700 dark:text-purple-400" />
+                    <span className="font-bold text-sm text-purple-800 dark:text-purple-300">إنستا باي</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                    <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.instaPay}</span>
+                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.instaPay!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                  </div>
+                </div>
+              )}
+            </div>
+            {booking.artist?.paymentNote && (
+              <div className="mt-4 bg-[#faf8f0] dark:bg-[#1a1a1a] rounded-xl p-3 text-sm text-gray-700 dark:text-gray-300 border border-[#D4AF37]/20">
+                💡 {booking.artist.paymentNote}
+              </div>
+            )}
+          </div>
+        )}
         {/* Payment Methods Info */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">

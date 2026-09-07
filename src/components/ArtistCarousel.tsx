@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Star, Calendar, Music, Award, Play } from "lucide-react"
 
@@ -19,13 +19,20 @@ interface Artist {
 
 export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+
+  // Desktop drag
   const [dragging, setDragging] = useState(false)
   const [startX, setStartX] = useState(0)
   const [endX, setEndX] = useState(0)
-
-  useEffect(() => {
-    console.log('[CAROUSEL] Received artists:', artists?.length, 'first:', artists?.[0]?.name)
-  }, [artists])
 
   const onStart = (x: number) => { setDragging(true); setStartX(x); setEndX(x) }
   const onMove = (x: number) => { if (dragging) setEndX(x) }
@@ -37,13 +44,77 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
     if (diff < -60 && currentIndex < artists.length - 1) setCurrentIndex(currentIndex + 1)
   }
 
-  if (!artists || artists.length === 0) {
-    console.log('[CAROUSEL] No artists - returning null')
-    return null
+  if (!artists || artists.length === 0) return null
+
+  // ═══ Mobile: Horizontal Scroll ═══
+  if (isMobile) {
+    return (
+      <div className="relative w-full" dir="rtl">
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-6 px-4 scrollbar-hide"
+          style={{ WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
+        >
+          {artists.map((artist) => (
+            <div
+              key={artist.id}
+              className="flex-shrink-0 w-[280px] snap-center"
+            >
+              <Link href={"/artists/" + artist.slug} className="block group">
+                <div className="relative bg-white dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#0a0a0a] rounded-3xl overflow-hidden border-2 border-[#D4AF37]/20 shadow-xl hover:shadow-[#D4AF37]/40 transition-all duration-500">
+                  <div className="relative h-64 overflow-hidden">
+                    {artist.coverImage || artist.profileImage ? (
+                      <img src={artist.coverImage || artist.profileImage || ""} alt={artist.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#D4AF37]/20 to-[#111] flex items-center justify-center">
+                        <Music size={60} className="text-[#D4AF37]/30" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                    <div className="absolute top-3 right-3 px-2 py-1 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] rounded-full flex items-center gap-1 shadow-lg">
+                      <Award size={10} className="text-[#111]" />
+                      <span className="text-[9px] font-black text-[#111]">معتمد</span>
+                    </div>
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/80 backdrop-blur-md rounded-full flex items-center gap-1 border border-[#D4AF37]/30">
+                      <Star size={12} className="text-[#D4AF37] fill-[#D4AF37]" />
+                      <span className="text-xs font-black text-white">{artist.rating || "5.0"}</span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5">{artist.category || "فنان"}</p>
+                      <h3 className="text-2xl font-black text-white leading-tight drop-shadow-lg">{artist.name}</h3>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                      {artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}
+                    </p>
+                    <div className="flex items-center justify-between pt-3 border-t border-[#D4AF37]/10">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={12} className="text-[#D4AF37]" />
+                          <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{artist.bookingsCount || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star size={12} className="text-[#D4AF37]" />
+                          <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{artist.reviewsCount || 0}</span>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] text-[10px] font-black rounded-full">احجز الآن</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-2 mt-2 text-gray-400 dark:text-gray-600 text-xs">
+          <span>← اسحب للتنقل →</span>
+        </div>
+      </div>
+    )
   }
 
-  console.log('[CAROUSEL] Rendering with', artists.length, 'artists, currentIndex:', currentIndex)
-
+  // ═══ Desktop: 3D Carousel with Drag ═══
   return (
     <div className="relative w-full select-none py-8" dir="rtl" style={{ overflow: "visible" }}>
       <div
@@ -53,9 +124,6 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
         onMouseMove={(e) => { e.preventDefault(); onMove(e.clientX) }}
         onMouseUp={onEnd}
         onMouseLeave={onEnd}
-        onTouchStart={(e) => onStart(e.touches[0].clientX)}
-        onTouchMove={(e) => onMove(e.touches[0].clientX)}
-        onTouchEnd={onEnd}
       >
         {artists.map((artist, index) => {
           const position = index - currentIndex
