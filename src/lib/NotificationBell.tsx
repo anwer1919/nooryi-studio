@@ -1,8 +1,7 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
-import Link from "next/link"
 import { Bell, Check, CheckCheck, X } from "lucide-react"
 
 interface Notification {
@@ -24,19 +23,7 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!session?.user) return
 
-    // جلب الإشعارات
-    fetch("/api/notifications")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.notifications) {
-          setNotifications(data.notifications)
-          setUnreadCount(data.notifications.filter((n: Notification) => !n.isRead).length)
-        }
-      })
-      .catch((err) => console.error("Error fetching notifications:", err))
-
-    // تحديث كل 30 ثانية
-    const interval = setInterval(() => {
+    const fetchNotifications = () => {
       fetch("/api/notifications")
         .then((res) => res.json())
         .then((data) => {
@@ -46,8 +33,10 @@ export default function NotificationBell() {
           }
         })
         .catch((err) => console.error("Error fetching notifications:", err))
-    }, 30000)
+    }
 
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 30000)
     return () => clearInterval(interval)
   }, [session?.user])
 
@@ -93,7 +82,6 @@ export default function NotificationBell() {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute left-0 mt-2 w-80 glass rounded-2xl z-50 shadow-2xl border border-white/10 max-h-96 overflow-hidden flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
               <h3 className="font-bold text-sm">الإشعارات</h3>
               <div className="flex items-center gap-2">
@@ -106,16 +94,12 @@ export default function NotificationBell() {
                     قراءة الكل
                   </button>
                 )}
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="text-white/40 hover:text-white"
-                >
+                <button onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white">
                   <X size={14} />
                 </button>
               </div>
             </div>
 
-            {/* Notifications List */}
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
                 <div className="text-center py-8 text-white/40 text-sm">
@@ -145,7 +129,8 @@ export default function NotificationBell() {
                             month: "short",
                             hour: "2-digit",
                             minute: "2-digit",
-                          , timeZone: "UTC"}))}
+                            timeZone: "UTC"
+                          })}
                         </p>
                       </div>
                     </div>
