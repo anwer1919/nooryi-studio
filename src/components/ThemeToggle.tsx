@@ -1,48 +1,35 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Sun, Moon } from "lucide-react"
+"use client";
+import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [dark, setDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-    const saved = localStorage.getItem("theme")
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    const initial = saved ? saved === "dark" : prefersDark
-    setIsDark(initial)
-    document.documentElement.classList.toggle("dark", initial)
-  }, [])
+    setMounted(true);
+    const stored = localStorage.getItem("theme");
+    const isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
 
-  const toggleTheme = () => {
-    const newTheme = !isDark
-    setIsDark(newTheme)
-    document.documentElement.classList.toggle("dark", newTheme)
-    localStorage.setItem("theme", newTheme ? "dark" : "light")
-  }
+  const toggle = () => {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  };
 
-  if (!mounted) {
-    return (
-      <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10">
-        <Sun size={18} className="text-[#D4AF37]" />
-      </button>
-    )
-  }
+  if (!mounted) return <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/10 animate-pulse" />;
 
   return (
     <button
-      onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 border border-[#D4AF37]/30 hover:border-[#D4AF37]/60 transition-all duration-300 group"
-      aria-label={isDark ? "التبديل للوضع النهاري" : "التبديل للوضع الليلي"}
-      title={isDark ? "الوضع النهاري" : "الوضع الليلي"}
+      onClick={toggle}
+      aria-label="تبديل الوضع الليلي"
+      className="w-10 h-10 rounded-xl flex items-center justify-center border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-[#d4af37] hover:border-[#d4af37] hover:text-[#d4af37] transition-all"
     >
-      {isDark ? (
-        <Sun size={18} className="text-[#D4AF37] group-hover:rotate-45 transition-transform duration-300" />
-      ) : (
-        <Moon size={18} className="text-[#D4AF37] group-hover:-rotate-12 transition-transform duration-300" />
-      )}
+      {dark ? <Sun size={18} /> : <Moon size={18} />}
     </button>
-  )
+  );
 }

@@ -5,7 +5,7 @@ import LoginFormClient from "./LoginFormClient";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-white" dir="rtl">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white dark:bg-[#0a0a0a]" dir="rtl">
       {/* اللوحة الجانبية */}
       <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#0a0a0a] via-[#161616] to-[#232323] p-12 relative overflow-hidden">
         <div className="absolute top-20 left-16 w-72 h-72 bg-[#d4af37]/10 rounded-full blur-3xl"></div>
@@ -25,8 +25,8 @@ export default function LoginPage() {
       </div>
 
       {/* نموذج الدخول */}
-      <div className="flex items-center justify-center p-6 bg-gradient-to-br from-white via-[#faf8f0] to-white">
-        <Suspense fallback={<div className="text-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#d4af37] border-t-transparent rounded-full mx-auto"></div><p className="mt-4 text-gray-500">جاري التحميل...</p></div>}>
+      <div className="flex items-center justify-center p-6 bg-gradient-to-br from-white dark:from-[#0a0a0a] via-[#faf8f0] to-white dark:to-[#0a0a0a]">
+        <Suspense fallback={<div className="text-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#d4af37] border-t-transparent rounded-full mx-auto"></div><p className="mt-4 text-gray-500 dark:text-white/60">جاري التحميل...</p></div>}>
           <LoginFormClient />
         </Suspense>
       </div>
