@@ -209,10 +209,12 @@ export default function ManagerStatsPrint({ data }: { data: any }) {
 
       <style>{`
         @media print {
-          body { background: white !important; padding: 0 !important; margin: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body * { visibility: hidden !important; }
+          #print-report, #print-report * { visibility: visible !important; }
+          #print-report { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 10mm !important; background: white !important; margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
           .no-print { display: none !important; }
-          .print-container { box-shadow: none !important; margin: 0 !important; max-width: 100% !important; padding: 10mm !important; }
           @page { margin: 10mm; size: A4 portrait; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
         }
       `}</style>
     </div>
