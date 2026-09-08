@@ -23,7 +23,7 @@ export default function LoginFormClient() {
   const [showResendOptions, setShowResendOptions] = useState(false);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // ═══ عائد من Google بجلسة غير موثقة → شاشة OTP مباشرة ═══
+  // ═══ فحص الجلسة عند التحميل (عائد من Google) ═══
   useEffect(() => {
     (async () => {
       const session = await getSession();
@@ -65,12 +65,24 @@ export default function LoginFormClient() {
 
   const handleSocialLogin = (provider: string) => signIn(provider, { callbackUrl: "/login" });
 
-  // ═══ خطوة 1: باسورد → جلسة غير موثقة + إرسال OTP ═══
+  // ═══ خطوة 1: تحقق من الباسورد عبر API (بدون signIn) + أرسل OTP ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError("");
     try {
-      const result = await signIn("credentials", { email: formData.email, password: formData.password, redirect: false });
-      if (result?.error) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return; }
+      // التحقق من الباسورد عبر API مخصص (لا ينشئ جلسة)
+      const verifyRes = await fetch("/api/auth/verify-password", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        headers: { "Content-Type": "application/json" },
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.success) {
+        setError(verifyData.error || "البريد أو كلمة المرور غير صحيحة");
+        setLoading(false);
+        return;
+      }
+
+      // الباسورد صحيح → أرسل OTP (بدون signIn)
       const otpData = await sendOtp(formData.email);
       setOtpInfo(otpData);
       setStep("otp");
@@ -109,7 +121,7 @@ export default function LoginFormClient() {
     finally { setLoading(false); }
   };
 
-  // ═══ خطوة 2: OTP → جلسة موثقة كاملة ═══
+  // ═══ خطوة 2: OTP صحيح → signIn ينشئ الجلسة الموثقة ═══
   const handleOtpSubmit = async () => {
     const otp = otpDigits.join("");
     if (otp.length !== 6) return;
@@ -128,6 +140,7 @@ export default function LoginFormClient() {
     } catch { setError("حدث خطأ"); setLoading(false); }
   };
 
+  // ═══ شاشة النجاح ═══
   if (step === "success") {
     return (
       <div className="w-full max-w-md py-8 text-center">
@@ -141,6 +154,7 @@ export default function LoginFormClient() {
     );
   }
 
+  // ═══ شاشة OTP ═══
   if (step === "otp") {
     const complete = otpDigits.join("").length === 6;
     return (
@@ -196,6 +210,7 @@ export default function LoginFormClient() {
     );
   }
 
+  // ═══ شاشة تسجيل الدخول ═══
   return (
     <div className="w-full max-w-md py-8">
       <div className="text-center mb-8">

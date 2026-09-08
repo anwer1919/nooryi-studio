@@ -19,6 +19,7 @@ export default async function AdminLayout({
   const isAdmin = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const isManager = userRole === "ARTIST_MANAGER"
 
+  // المستخدم العادي لا يدخل لوحة التحكم
   if (!isAdmin && !isManager) {
     redirect("/")
   }
@@ -37,9 +38,36 @@ export default async function AdminLayout({
     managedArtistName = managerUser?.managedArtist?.name || null
   }
 
+  // مدير أعمال بدون فنان مرتبط → صفحة فارغة
+  if (isManager && !managedArtistSlug) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-black text-white mb-2">لم يتم ربطك بفنان بعد</h2>
+          <p className="text-gray-400">يرجى التواصل مع المدير العام لتعيين فنان لك</p>
+        </div>
+      </div>
+    )
+  }
+
   const artistBase = managedArtistSlug ? `/admin/artist/${managedArtistSlug}` : "/admin"
 
-  // قائمة مخصصة حسب الدور
+  /*
+   * ═══ جدول الصلاحيات ═══
+   * ┌──────────────┬─────────────┬──────────────┬────────────┐
+   * │ الصفحة       │ SUPER_ADMIN │ ADMIN        │ MANAGER    │
+   * ├──────────────┼─────────────┼──────────────┼────────────
+   * │ لوحة التحكم  │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ الفنانين     │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ الحجوزات     │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ التقويم      │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ التسعير      │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ التقارير     │ ✅ الكل     │ ✅ الكل      │ ✅ فنانَه  │
+   * │ المستخدمين   │ ✅ فقط      │ ❌           │ ❌         │
+   * │ الإعدادات    │ ✅ فقط      │ ❌           │          │
+   * └──────────────┴─────────────┴──────────────┴────────────
+   */
+
   const menuItems = isManager && managedArtistSlug
     ? [
         { href: artistBase, label: "لوحة التحكم", icon: "LayoutDashboard" },
@@ -56,8 +84,8 @@ export default async function AdminLayout({
         { href: "/admin/calendar", label: "التقويم", icon: "Calendar" },
         { href: "/admin/pricing", label: "التسعير", icon: "Banknote" },
         ...(isAdmin ? [{ href: "/admin/stats", label: "التقارير المالية", icon: "FileText" }] : []),
-        ...(isAdmin ? [{ href: "/admin/users", label: "المستخدمين", icon: "Users" }] : []),
-        ...(isAdmin ? [{ href: "/admin/settings", label: "الإعدادات", icon: "Settings" }] : []),
+        ...(userRole === "SUPER_ADMIN" ? [{ href: "/admin/users", label: "المستخدمين", icon: "Users" }] : []),
+        ...(userRole === "SUPER_ADMIN" ? [{ href: "/admin/settings", label: "الإعدادات", icon: "Settings" }] : []),
       ]
 
   return (
@@ -75,7 +103,6 @@ export default async function AdminLayout({
           <span className="text-xl font-black text-[#d4af37]">لوحة التحكم</span>
           <div className="w-10"></div>
         </div>
-
         <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
