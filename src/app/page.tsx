@@ -1,358 +1,195 @@
-import Link from "next/link";
-import { 
-  Music, Star, Shield, CreditCard, Zap,
-  Award, CheckCircle2, Phone, Mail, MapPin, 
-  ArrowLeft, Mic, Sparkles, ChevronRight
-} from "lucide-react";
-import { prisma } from "@/lib/prisma";
-import ArtistCarousel from "@/components/ArtistCarousel";
-import SocialLinks from "@/components/SocialLinks";
-import ThemeToggle from "@/components/ThemeToggle";
+﻿import Link from "next/link"
+import { Music, Star, Shield, CreditCard, Zap, Award, CheckCircle2, Phone, Mail, MapPin, ArrowLeft, Mic, Sparkles, ChevronRight, Menu } from "lucide-react"
+import { prisma } from "@/lib/prisma"
+import ArtistCarousel from "@/components/ArtistCarousel"
+import SocialLinks from "@/components/SocialLinks"
+import ThemeToggle from "@/components/ThemeToggle"
 
-
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 function getDemoArtists() {
   return [
     { id: "demo-1", name: "أحمد الشريف", slug: "ahmed-alsharif", category: "مطرب", bio: "صوت شرقي أصيل يأسر القلوب — خبرة 15 عاماً في حفلات الزفاف والمناسبات", profileImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600", coverImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200", rating: 4.9, reviewsCount: 47, bookingsCount: 128 },
     { id: "demo-2", name: "فرقة النيل", slug: "nile-ensemble", category: "فرقة موسيقية", bio: "فرقة موسيقية متكاملة تقدم أجمل الألحان العربية والغربية بأسلوب عصري", profileImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=600", coverImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=1200", rating: 4.8, reviewsCount: 35, bookingsCount: 89 },
-    { id: "demo-3", name: "دي جي رامي", slug: "dj-rami", category: "دي جي", bio: "خلطات موسيقية تبقي الطاقة عالية حتى آخر الليلة — مناسب للحفلات والنوادي", profileImage: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600", coverImage: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200", rating: 4.7, reviewsCount: 62, bookingsCount: 215 },
+    { id: "demo-3", name: "دي جي رامي", slug: "dj-rami", category: "دي جي", bio: "خلطات موسيقية تبقي الطاقة عالية حتى آخر الليلة", profileImage: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600", coverImage: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=1200", rating: 4.7, reviewsCount: 62, bookingsCount: 215 },
     { id: "demo-4", name: "سارة محمود", slug: "sara-mahmoud", category: "مطربة", bio: "صوت ملائكي يجمع بين الطرب الأصيل والأغاني العصرية", profileImage: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=600", coverImage: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=1200", rating: 5.0, reviewsCount: 28, bookingsCount: 76 },
   ]
 }
 
 async function getFeaturedArtists() {
   try {
-    const artists = await prisma.artist.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: {
-        _count: { select: { bookings: true, reviews: true } },
-        reviews: { select: { rating: true } },
-      },
-    });
-
+    const artists = await prisma.artist.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" }, take: 8, include: { _count: { select: { bookings: true, reviews: true } }, reviews: { select: { rating: true } } } })
     if (artists.length > 0) {
-      if (!artists || artists.length === 0) return getDemoArtists();
-    return (artists || []).map((artist: any) => {
-        const ratings = artist.reviews?.map((r: any) => r.rating) || [];
-        const avgRating = ratings.length > 0
-          ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
-          : 5.0;
-
-        return {
-          id: artist.id,
-          name: artist.name,
-          slug: artist.slug,
-          category: artist.category,
-          bio: artist.bio,
-          profileImage: artist.profileImage,
-          coverImage: artist.coverImage,
-          rating: parseFloat(avgRating.toFixed(1)),
-          reviewsCount: artist._count.reviews,
-          bookingsCount: artist._count.bookings,
-        };
-      });
+      return artists.map((artist: any) => {
+        const ratings = artist.reviews?.map((r: any) => r.rating) || []
+        const avgRating = ratings.length > 0 ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length : 5.0
+        return { id: artist.id, name: artist.name, slug: artist.slug, category: artist.category, bio: artist.bio, profileImage: artist.profileImage, coverImage: artist.coverImage, rating: parseFloat(avgRating.toFixed(1)), reviewsCount: artist._count.reviews, bookingsCount: artist._count.bookings }
+      })
     }
-
-    // Demo artists fallback
-    return [
-      { id: "demo-1", name: "أحمد الشريف", slug: "ahmed-alsharif", category: "مطرب", bio: "صوت شرقي أصيل يأسر القلوب — خبرة 15 عاماً في حفلات الزفاف والمناسبات الخاصة", profileImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600", coverImage: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200", rating: 4.9, reviewsCount: 47, bookingsCount: 128 },
-      { id: "demo-2", name: "فرقة النيل", slug: "nile-ensemble", category: "فرقة موسيقية", bio: "فرقة موسيقية متكاملة تقدم أجمل الألحان العربية والغربية بأسلوب عصري", profileImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=600", coverImage: "https://images.unsplash.com/photo-1511650119689-90c1a9f5d4a2?w=1200", rating: 4.8, reviewsCount: 35, bookingsCount: 89 },
-      { id: "demo-3", name: "دي جي رامي", slug: "dj-rami", category: "دي جي", bio: "خلطات موسيقية تبقي الطاقة عالية حتى آخر الليلة — مناسب للحفلات والنوادي", profileImage: "https://images.unsplash.com/photo-1571266028243-e4733e5e9d48?w=600", coverImage: "https://images.unsplash.com/photo-1571266028243-e4733e5e9d48?w=1200", rating: 4.7, reviewsCount: 62, bookingsCount: 215 },
-      { id: "demo-4", name: "سارة محمود", slug: "sara-mahmoud", category: "مطربة", bio: "صوت ملائكي يجمع بين الطرب الأصيل والأغاني العصرية", profileImage: "https://images.unsplash.com/photo-1516223725307-6d7e5e5c5c5e?w=600", coverImage: "https://images.unsplash.com/photo-1516223725307-6d7e5e5c5c5e?w=1200", rating: 5.0, reviewsCount: 28, bookingsCount: 76 },
-    ];
-  } catch (error) {
-    console.error("Error fetching artists:", error);
-    return getDemoArtists();
-  }
+    return getDemoArtists()
+  } catch { return getDemoArtists() }
 }
+
 async function getSiteSettings() {
   try {
-    const settings = await prisma.siteSetting.findUnique({
-      where: { id: "site_settings" }
-    })
-    return settings || {
-      siteName: "Nooryi",
-      tagline: "منصة حجز الفنانين الأولى",
-      email: "info@noorystudio.com",
-      phone: "+20 100 000 0000",
-      address: "القاهرة، مصر",
-    }
-  } catch (error) {
-    console.error("Error fetching settings:", error)
-    return {
-      siteName: "Nooryi",
-      tagline: "منصة حجز الفنانين الأولى",
-      email: "info@noorystudio.com",
-      phone: "+20 100 000 0000",
-      address: "القاهرة، مصر",
-    }
-  }
+    const settings = await prisma.siteSetting.findUnique({ where: { id: "site_settings" } })
+    return settings || { siteName: "Nooryi", tagline: "منصة حجز الفنانين الأولى", email: "info@noorystudio.com", phone: "+20 100 000 0000", address: "القاهرة، مصر" }
+  } catch { return { siteName: "Nooryi", tagline: "منصة حجز الفنانين الأولى", email: "info@noorystudio.com", phone: "+20 100 000 0000", address: "القاهرة، مصر" } }
 }
 
 export default async function HomePage() {
-  const featuredArtists = await getFeaturedArtists();
-  console.log('[PAGE] Featured artists count:', featuredArtists?.length, 'sample:', featuredArtists?.[0]?.name);
-  const siteSettings = await getSiteSettings();
+  const featuredArtists = await getFeaturedArtists()
+  const siteSettings = await getSiteSettings()
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] transition-colors duration-300" dir="rtl">
+    <div className="min-h-screen bg-[#0a0a0a] overflow-x-hidden" dir="rtl">
 
-      
-      {/* ═══════════ الترويسة ═══════════ */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-[#111]/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
+      {/* ═══ Header ═══ */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#D4AF37]/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-sm group-hover:blur-md transition-all"></div>
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center shadow-xl">
-                  <span className="text-[#D4AF37] text-2xl font-black">N</span>
-                </div>
+          <div className="flex items-center justify-between h-16 md:h-20">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20">
+                <span className="text-[#0a0a0a] text-xl md:text-2xl font-black">N</span>
               </div>
-              <div>
-                <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{siteSettings.siteName}</h1>
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
+              <div className="hidden sm:block">
+                <h1 className="text-lg md:text-xl font-black text-white">{siteSettings.siteName}</h1>
+                <p className="text-[9px] text-[#D4AF37] font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
               </div>
             </Link>
-
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/" className="text-sm font-semibold text-gray-900 dark:text-white hover:text-[#D4AF37] transition">الرئيسية</Link>
-              <Link href="/artists" className="text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">الفنانين</Link>
-              <Link href="/#about" className="text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">من نحن</Link>
-              <Link href="/#services" className="text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">خدماتنا</Link>
-              <Link href="/#contact" className="text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">تواصل معنا</Link>
+              <Link href="/" className="text-sm font-semibold text-white hover:text-[#D4AF37] transition">الرئيسية</Link>
+              <Link href="/artists" className="text-sm font-semibold text-gray-400 hover:text-[#D4AF37] transition">الفنانين</Link>
+              <Link href="/#about" className="text-sm font-semibold text-gray-400 hover:text-[#D4AF37] transition">من نحن</Link>
+              <Link href="/#services" className="text-sm font-semibold text-gray-400 hover:text-[#D4AF37] transition">خدماتنا</Link>
+              <Link href="/#contact" className="text-sm font-semibold text-gray-400 hover:text-[#D4AF37] transition">تواصل معنا</Link>
             </nav>
-
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <ThemeToggle />
-              <Link
-                href="/login"
-                className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-900 dark:text-white border-2 border-gray-200 rounded-xl hover:border-[#D4AF37] hover:text-[#D4AF37] transition"
-              >
-                تسجيل الدخول
-              </Link>
-              <Link
-                href="/register"
-                className="px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#111] text-sm font-black rounded-xl hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2"
-              >
-                <Sparkles size={16} />
-                إنشاء حساب
-              </Link>
+              <Link href="/login" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-white border border-[#D4AF37]/30 rounded-xl hover:border-[#D4AF37] hover:text-[#D4AF37] transition">دخول</Link>
+              <Link href="/register" className="px-4 md:px-5 py-2 md:py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] text-sm font-black rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all flex items-center gap-1.5"><Sparkles size={14} /><span className="hidden sm:inline">إنشاء حساب</span><span className="sm:hidden">حساب</span></Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ═══════════ Hero Section ═══════════ */}
-      {/* ═══════════ نخبة الفنانين (Carousel 3D) ═══════════ */}
-      <section className="relative py-20 lg:py-28 bg-gradient-to-br from-white via-gray-50 to-white dark:from-[#0a0a0a] dark:via-[#111] dark:to-[#0a0a0a] overflow-visible">
-        {/* خلفية متحركة - نقاط ذهبية */}
+      {/* ═══ Hero + Carousel ═══ */}
+      <section className="relative pt-24 md:pt-28 pb-12 md:pb-20 bg-gradient-to-b from-[#0a0a0a] via-[#111] to-[#0a0a0a] overflow-hidden">
+        {/* خلفية */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 right-[10%] w-2 h-2 bg-[#D4AF37]/40 rounded-full animate-float-up"></div>
           <div className="absolute top-40 left-[15%] w-3 h-3 bg-[#D4AF37]/30 rounded-full animate-float-down"></div>
           <div className="absolute bottom-20 right-[20%] w-2 h-2 bg-[#F4E5B8]/30 rounded-full animate-float-up-delay"></div>
-          <div className="absolute top-1/2 left-[8%] w-2 h-2 bg-[#D4AF37]/20 rounded-full animate-float-down-delay"></div>
-          <div className="absolute top-[30%] right-[40%] w-1.5 h-1.5 bg-[#D4AF37]/50 rounded-full animate-float-up"></div>
-          <div className="absolute bottom-[30%] left-[40%] w-2 h-2 bg-[#F4E5B8]/40 rounded-full animate-float-down-delay"></div>
-        </div>
-
-        {/* نوتات موسيقية متحركة */}
-        <div className="absolute top-10 left-[20%] text-[#D4AF37]/50 animate-note-float hidden md:block pointer-events-none">
-          <Music size={28} />
-        </div>
-        <div className="absolute top-1/3 right-[15%] text-[#F4E5B8]/40 animate-note-float-delay hidden md:block pointer-events-none">
-          <Music size={22} />
-        </div>
-        <div className="absolute bottom-20 left-[30%] text-[#D4AF37]/30 animate-note-float hidden lg:block pointer-events-none">
-          <Music size={20} />
-        </div>
-        <div className="absolute top-1/2 right-[8%] text-[#F4E5B8]/30 animate-note-float-delay hidden lg:block pointer-events-none">
-          <Music size={26} />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
           {/* اللوجو + الميكروفون */}
-          <div className="flex items-center justify-center gap-6 mb-6 mt-12">
-            {/* اللوجو N */}
+          <div className="flex items-center justify-center gap-5 mb-5 mt-4 md:mt-8">
             <div className="relative animate-float-up">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-lg opacity-70"></div>
-              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
-                <span className="text-[#D4AF37] text-3xl font-black">N</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] rounded-2xl blur-lg opacity-60"></div>
+              <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[#111] to-[#1a1a1a] border border-[#D4AF37]/40 flex items-center justify-center shadow-2xl">
+                <span className="text-[#D4AF37] text-2xl md:text-3xl font-black">N</span>
               </div>
             </div>
-
-            {/* خط فاصل */}
-            <div className="w-px h-16 bg-gradient-to-b from-transparent via-[#D4AF37] to-transparent"></div>
-
-            {/* الميكروفون */}
+            <div className="w-px h-12 md:h-16 bg-gradient-to-b from-transparent via-[#D4AF37] to-transparent"></div>
             <div className="relative animate-mic-bounce">
               <div className="absolute inset-0 bg-[#D4AF37]/30 rounded-full blur-xl animate-pulse-gold"></div>
-              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/40 border-2 border-[#F4E5B8]/50">
-                <Mic size={28} className="text-[#111]" strokeWidth={2.5} />
+              <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl shadow-[#D4AF37]/40 border-2 border-[#F4E5B8]/50">
+                <Mic size={24} className="text-[#0a0a0a] md:hidden" strokeWidth={2.5} /><Mic size={28} className="text-[#0a0a0a] hidden md:block" strokeWidth={2.5} />
               </div>
             </div>
           </div>
 
-          
-
-          {/* العنوان الرئيسي */}
-          <h2 className="text-center text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
+          {/* العنوان */}
+          <h2 className="text-center text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 leading-tight px-2">
             اختر من{" "}
             <span className="relative inline-block">
-              <span className="relative z-10 bg-gradient-to-r from-[#D4AF37] via-[#F4E5B8] to-[#D4AF37] bg-clip-text text-transparent">
-                نخبة الفنانين
-              </span>
-              <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 300 12" fill="none">
-                <path d="M2 8C75 2 225 2 298 8" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round"/>
-              </svg>
+              <span className="relative z-10 bg-gradient-to-r from-[#D4AF37] via-[#F4E5B8] to-[#D4AF37] bg-clip-text text-transparent">نخبة الفنانين</span>
+              <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full" height="10" viewBox="0 0 300 12" fill="none"><path d="M2 8C75 2 225 2 298 8" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round"/></svg>
             </span>
           </h2>
-
-          {/* الوصف */}
-          <p className="text-center text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed mb-6">
-            تصفح أفضل الفنانين المعتمدين لدينا واحجز من يناسب فعاليتك —
+          <p className="text-center text-base md:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-4 md:mb-6 px-4">
+            تصفح أفضل الفنانين المعتمدين واحجز من يناسب فعاليتك —
             <span className="text-[#D4AF37] font-semibold"> تجربة لا تُنسى</span>
           </p>
-
-          {/* خط فاصل ذهبي مع نوتة */}
-          <div className="flex items-center justify-center gap-3 mb-16">
-            <div className="h-px w-20 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
-            <Music size={18} className="text-[#D4AF37] animate-float-up" />
-            <div className="h-px w-20 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
+          <div className="flex items-center justify-center gap-3 mb-8 md:mb-12">
+            <div className="h-px w-16 md:w-20 bg-gradient-to-r from-transparent to-[#D4AF37]"></div>
+            <Music size={16} className="text-[#D4AF37] animate-float-up" />
+            <div className="h-px w-16 md:w-20 bg-gradient-to-l from-transparent to-[#D4AF37]"></div>
           </div>
 
           {/* Carousel */}
           {(featuredArtists?.length || 0) > 0 ? (
-            <div className="relative px-4 md:px-12 lg:px-20">
-              <ArtistCarousel artists={featuredArtists || []} />
-            </div>
+            <ArtistCarousel artists={featuredArtists || []} />
           ) : (
-            <div className="text-center py-16">
-              <Music className="mx-auto text-[#D4AF37]/30 mb-4 animate-float-up" size={64} />
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">لا يوجد فنانين بعد</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">سيتم إضافة فنانين قريباً</p>
-            </div>
+            <div className="text-center py-16"><Music className="mx-auto text-[#D4AF37]/30 mb-4" size={64} /><h3 className="text-2xl font-black text-white mb-2">لا يوجد فنانين بعد</h3></div>
           )}
 
-          {/* زر عرض الكل */}
-          <div className="text-center mt-16">
-            <Link
-              href="/artists"
-              className="inline-flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/40 hover:scale-105 transition-all duration-300 text-lg"
-            >
-              عرض جميع الفنانين
-              <ChevronRight size={22} />
+          <div className="text-center mt-8 md:mt-12">
+            <Link href="/artists" className="inline-flex items-center gap-2 px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/40 hover:scale-105 transition-all duration-300 text-base md:text-lg">
+              عرض جميع الفنانين <ChevronRight size={20} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══════════ خدماتنا ═══════════ */}
-      <section id="services" className="py-20 bg-gradient-to-br from-gray-50 to-white">
+      {/* ═══ خدماتنا ═══ */}
+      <section id="services" className="py-16 md:py-20 bg-[#111]">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 md:mb-16">
             <span className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-bold mb-3">لماذا نحن؟</span>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">تجربة حجز استثنائية</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">نوفر لك أعلى معايير الجودة والاحترافية في كل خطوة</p>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-4">تجربة حجز استثنائية</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">نوفر لك أعلى معايير الجودة والاحترافية في كل خطوة</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
-              {
-                icon: Shield,
-                title: "فنانين معتمدين",
-                desc: "جميع الفنانين يخضعون لعملية تحقق صارمة لضمان أعلى مستوى من الاحترافية",
-              },
-              {
-                icon: CreditCard,
-                title: "دفع آمن 100%",
-                desc: "نظام دفع مشفر وآمن مع ضمان استرداد كامل في حالة الإلغاء",
-              },
-              {
-                icon: Zap,
-                title: "حجز سهل وسريع",
-                desc: "احجز فنانك المفضل في دقائق مع تأكيد فوري ومتابعة مستمرة",
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="group bg-white dark:bg-[#111] rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <feature.icon size={32} className="text-[#D4AF37]" />
+              { icon: Shield, title: "فنانين معتمدين", desc: "جميع الفنانين يخضعون لعملية تحقق صارمة لضمان أعلى مستوى من الاحترافية" },
+              { icon: CreditCard, title: "دفع آمن 100%", desc: "نظام دفع مشفر وآمن مع ضمان استرداد كامل في حالة الإلغاء" },
+              { icon: Zap, title: "حجز سهل وسريع", desc: "احجز فنانك المفضل في دقائق مع تأكيد فوري ومتابعة مستمرة" },
+            ].map((f, i) => (
+              <div key={i} className="group bg-[#0a0a0a] rounded-2xl md:rounded-3xl p-6 md:p-8 border border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition-all duration-300 hover:-translate-y-1">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-[#111] border border-[#D4AF37]/20 flex items-center justify-center mb-5 md:mb-6 group-hover:scale-110 transition-transform">
+                  <f.icon size={28} className="text-[#D4AF37]" />
                 </div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-3">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{feature.desc}</p>
+                <h3 className="text-lg md:text-xl font-black text-white mb-2 md:mb-3">{f.title}</h3>
+                <p className="text-gray-400 leading-relaxed text-sm md:text-base">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ من نحن ═══════════ */}
-      <section id="about" className="py-20 bg-white dark:bg-[#111]">
+      {/* ═══ من نحن ═══ */}
+      <section id="about" className="py-16 md:py-20 bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
             <div>
               <span className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-bold mb-3">من نحن</span>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-6">شريكك في نجاح فعالياتك</h2>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
-                نحن منصة رائدة في مجال حجز الفنانين والموسيقيين للفعاليات والمناسبات.
-                نجمع بين أفضل المواهب الفنية في مكان واحد، لنوفر لك تجربة حجز سلسة واحترافية.
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
-                سواء كنت تبحث عن فرقة موسيقية لحفل زفاف، أو مغني لفعالية خاصة،
-                أو حتى منسق أغاني لحفلة تخرج، تجد لدينا كل ما تحتاجه.
-              </p>
-
-              <div className="space-y-4">
-                {[
-                  "أكثر من 150 فنان محترف معتمد",
-                  "نظام دفع آمن ومشفر 100%",
-                  "دعم فني على مدار الساعة",
-                  "ضمان استرداد كامل في حالة الإلغاء",
-                ].map((item, i) => (
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-4 md:mb-6">شريكك في نجاح فعالياتك</h2>
+              <p className="text-gray-400 leading-relaxed mb-4 md:mb-6 text-sm md:text-base">نحن منصة رائدة في مجال حجز الفنانين والموسيقيين للفعاليات والمناسبات. نجمع بين أفضل المواهب الفنية في مكان واحد.</p>
+              <p className="text-gray-400 leading-relaxed mb-6 md:mb-8 text-sm md:text-base">سواء كنت تبحث عن فرقة موسيقية لحفل زفاف، أو مغني لفعالية خاصة، أو منسق أغاني — تجد لدينا كل ما تحتاجه.</p>
+              <div className="space-y-3">
+                {["أكثر من 150 فنان محترف معتمد", "نظام دفع آمن ومشفر 100%", "دعم فني على مدار الساعة", "ضمان استرداد كامل في حالة الإلغاء"].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 size={14} className="text-white" />
-                    </div>
-                    <span className="text-gray-700 font-semibold">{item}</span>
+                    <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center flex-shrink-0"><CheckCircle2 size={12} className="text-[#0a0a0a]" /></div>
+                    <span className="text-gray-300 font-semibold text-sm md:text-base">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
-
             <div className="relative">
-              <div className="bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] rounded-3xl p-8 shadow-2xl">
-                <div className="bg-white dark:bg-[#111] rounded-2xl p-6">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center">
-                      <span className="text-[#111] text-3xl font-black">N</span>
+              <div className="bg-[#111] rounded-2xl md:rounded-3xl p-6 md:p-8 border border-[#D4AF37]/10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center"><span className="text-[#0a0a0a] text-2xl md:text-3xl font-black">N</span></div>
+                  <div><p className="text-lg md:text-xl font-black text-white">{siteSettings.siteName}</p><p className="text-sm text-gray-400">{siteSettings.tagline}</p></div>
+                </div>
+                <div className="space-y-3">
+                  {[{ label: "سنوات الخبرة", value: "+5" }, { label: "الفنانين المعتمدين", value: "+150" }, { label: "الفعاليات الناجحة", value: "+500" }, { label: "رضا العملاء", value: "98%" }].map((stat, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 md:p-4 bg-[#0a0a0a] rounded-xl border border-[#D4AF37]/5">
+                      <span className="text-gray-400 font-semibold text-sm md:text-base">{stat.label}</span>
+                      <span className="text-xl md:text-2xl font-black text-[#D4AF37]">{stat.value}</span>
                     </div>
-                    <div>
-                      <p className="text-xl font-black text-gray-900 dark:text-white">{siteSettings.siteName}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{siteSettings.tagline}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {[
-                      { label: "سنوات الخبرة", value: "+5" },
-                      { label: "الفنانين المعتمدين", value: "+150" },
-                      { label: "الفعاليات الناجحة", value: "+500" },
-                      { label: "رضا العملاء", value: "98%" },
-                    ].map((stat, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#0f0f0f] rounded-xl">
-                        <span className="text-gray-600 dark:text-gray-400 font-semibold">{stat.label}</span>
-                        <span className="text-2xl font-black bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] bg-clip-text text-transparent">
-                          {stat.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -360,122 +197,77 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════ CTA ═══════════ */}
-      <section className="py-20 bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333]">
+      {/* ═══ CTA ═══ */}
+      <section className="py-16 md:py-20 bg-gradient-to-br from-[#111] to-[#1a1a1a]">
         <div className="max-w-4xl mx-auto px-4 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-6">
-            جاهز لبدء <span className="text-[#D4AF37]">رحلتك؟</span>
-          </h2>
-          <p className="text-lg text-white/80 mb-10 max-w-2xl mx-auto">
-            انضم إلى آلاف العملاء الذين يثقون بنا في تنظيم فعاليات لا تُنسى
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#111] rounded-2xl font-black text-lg hover:shadow-2xl hover:scale-105 transition-all"
-            >
-              <Sparkles size={20} />
-              إنشاء حساب مجاني
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white dark:bg-[#111]/10 backdrop-blur-sm border-2 border-white/20 text-white rounded-2xl font-black text-lg hover:bg-white dark:bg-[#111]/20 transition-all"
-            >
-              تسجيل الدخول
-            </Link>
+          <h2 className="text-2xl md:text-3xl lg:text-5xl font-black text-white mb-4 md:mb-6">جاهز لبدء <span className="text-[#D4AF37]">رحلتك؟</span></h2>
+          <p className="text-base md:text-lg text-gray-400 mb-8 md:mb-10 max-w-2xl mx-auto">انضم إلى آلاف العملاء الذين يثقون بنا في تنظيم فعاليات لا تُنسى</p>
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+            <Link href="/register" className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#D4AF37] to-[#F4E5B8] text-[#0a0a0a] rounded-2xl font-black text-base md:text-lg hover:shadow-2xl hover:shadow-[#D4AF37]/30 hover:scale-105 transition-all"><Sparkles size={18} /> إنشاء حساب مجاني</Link>
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-[#0a0a0a] border-2 border-[#D4AF37]/30 text-white rounded-2xl font-black text-base md:text-lg hover:border-[#D4AF37] transition-all">تسجيل الدخول</Link>
           </div>
         </div>
       </section>
 
-      {/* ═══════════ تواصل معنا ═══════════ */}
-      <section id="contact" className="py-20 bg-white dark:bg-[#111]">
+      {/* ═══ تواصل معنا ═══ */}
+      <section id="contact" className="py-16 md:py-20 bg-[#0a0a0a]">
         <div className="max-w-6xl mx-auto px-4 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10 md:mb-12">
             <span className="inline-block px-3 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full text-xs font-bold mb-3">تواصل معنا</span>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              نحن هنا <span className="text-[#D4AF37]">لمساعدتك</span>
-            </h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-4">نحن هنا <span className="text-[#D4AF37]">لمساعدتك</span></h2>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#111] flex items-center justify-center mb-4">
-                <Phone size={28} className="text-[#D4AF37]" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {[
+              { icon: Phone, title: "اتصل بنا", value: siteSettings.phone, ltr: true, bg: "bg-[#111]" },
+              { icon: Mail, title: "راسلنا", value: siteSettings.email, ltr: true, bg: "bg-gradient-to-br from-[#D4AF37] to-[#b8941f]", iconDark: true },
+              { icon: MapPin, title: "موقعنا", value: siteSettings.address, ltr: false, bg: "bg-[#111]" },
+            ].map((c, i) => (
+              <div key={i} className="bg-[#111] rounded-2xl p-6 md:p-8 text-center border border-[#D4AF37]/10 hover:border-[#D4AF37]/30 transition">
+                <div className={`w-14 h-14 md:w-16 md:h-16 mx-auto rounded-xl md:rounded-2xl ${c.bg} flex items-center justify-center mb-4`}><c.icon size={24} className={c.iconDark ? "text-[#0a0a0a]" : "text-[#D4AF37]"} /></div>
+                <h3 className="text-base md:text-lg font-black text-white mb-2">{c.title}</h3>
+                <p className="text-gray-400 text-sm md:text-base" dir={c.ltr ? "ltr" : "rtl"}>{c.value}</p>
               </div>
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">اتصل بنا</h3>
-              <p className="text-gray-600 dark:text-gray-400" dir="ltr">{siteSettings.phone}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#F4E5B8] flex items-center justify-center mb-4">
-                <Mail size={28} className="text-[#111]" />
-              </div>
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">راسلنا</h3>
-              <p className="text-gray-600 dark:text-gray-400" dir="ltr">{siteSettings.email}</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#D4AF37] transition">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#111] flex items-center justify-center mb-4">
-                <MapPin size={28} className="text-[#D4AF37]" />
-              </div>
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">موقعنا</h3>
-              <p className="text-gray-600 dark:text-gray-400">{siteSettings.address}</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════ التذييل ═══════════ */}
-      <footer className="bg-white dark:bg-[#111] border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+      {/* ═══ Footer ══ */}
+      <footer className="bg-[#111] border-t border-[#D4AF37]/10">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10 md:py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white to-gray-100 dark:from-[#111] dark:to-[#333] flex items-center justify-center">
-                  <span className="text-[#D4AF37] text-2xl font-black">N</span>
-                </div>
-                <div>
-                  <p className="text-xl font-black text-gray-900 dark:text-white">Nooryi</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
-                </div>
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center"><span className="text-[#0a0a0a] text-xl md:text-2xl font-black">N</span></div>
+                <div><p className="text-lg md:text-xl font-black text-white">Nooryi</p><p className="text-[9px] text-[#D4AF37] font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p></div>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-md">
-                منصة احترافية لحجز أفضل الفنانين والموسيقيين للفعاليات والمناسبات.
-                نوفر لك تجربة حجز سلسة وآمنة بأعلى معايير الجودة.
-              </p>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-md">منصة احترافية لحجز أفضل الفنانين والموسيقيين للفعاليات والمناسبات.</p>
             </div>
-
             <div>
-              <h4 className="text-sm font-black text-gray-900 dark:text-white mb-4">روابط سريعة</h4>
+              <h4 className="text-sm font-black text-white mb-4">روابط سريعة</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">الرئيسية</Link></li>
-                <li><Link href="/artists" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">الفنانين</Link></li>
-                <li><Link href="/#about" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">من نحن</Link></li>
-                <li><Link href="/#services" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">خدماتنا</Link></li>
+                <li><Link href="/" className="text-gray-400 hover:text-[#D4AF37] transition">الرئيسية</Link></li>
+                <li><Link href="/artists" className="text-gray-400 hover:text-[#D4AF37] transition">الفنانين</Link></li>
+                <li><Link href="/#about" className="text-gray-400 hover:text-[#D4AF37] transition">من نحن</Link></li>
+                <li><Link href="/#services" className="text-gray-400 hover:text-[#D4AF37] transition">خدماتنا</Link></li>
               </ul>
             </div>
-
             <div>
-              <h4 className="text-sm font-black text-gray-900 dark:text-white mb-4">حسابك</h4>
+              <h4 className="text-sm font-black text-white mb-4">حسابك</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/login" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">تسجيل الدخول</Link></li>
-                <li><Link href="/register" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">إنشاء حساب</Link></li>
-                <li><Link href="/my-bookings" className="text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition">حجوزاتي</Link></li>
+                <li><Link href="/login" className="text-gray-400 hover:text-[#D4AF37] transition">تسجيل الدخول</Link></li>
+                <li><Link href="/register" className="text-gray-400 hover:text-[#D4AF37] transition">إنشاء حساب</Link></li>
+                <li><Link href="/my-bookings" className="text-gray-400 hover:text-[#D4AF37] transition">حجوزاتي</Link></li>
               </ul>
             </div>
           </div>
-
           <SocialLinks />
-          <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">© 2026 {siteSettings.siteName}. جميع الحقوق محفوظة.</p>
-            <div className="flex items-center gap-2 text-[#D4AF37]">
-              <Award size={16} />
-              <span className="text-xs font-bold">منصة معتمدة رسمياً</span>
-            </div>
+          <div className="pt-6 md:pt-8 border-t border-[#D4AF37]/10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-gray-500">© 2026 {siteSettings.siteName}. جميع الحقوق محفوظة.</p>
+            <div className="flex items-center gap-2 text-[#D4AF37]"><Award size={14} /><span className="text-xs font-bold">منصة معتمدة رسمياً</span></div>
           </div>
         </div>
       </footer>
-
     </div>
-  );
+  )
 }
