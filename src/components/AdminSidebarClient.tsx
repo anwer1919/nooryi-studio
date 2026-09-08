@@ -22,7 +22,6 @@ export default function AdminSidebarClient({ menuItems, userName, userRole }: { 
       {isOpen && <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsOpen(false)} />}
       <aside className={`fixed top-0 right-0 h-full w-72 bg-[#0a0a0a] border-l border-[#D4AF37]/15 z-50 transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}`}>
         <div className="flex flex-col h-full">
-          {/* الشعار */}
           <div className="p-5 border-b border-[#D4AF37]/15">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -34,8 +33,6 @@ export default function AdminSidebarClient({ menuItems, userName, userRole }: { 
               <button onClick={() => setIsOpen(false)} className="lg:hidden p-2 hover:bg-[#1a1a1a] rounded-xl transition"><X size={20} className="text-gray-400" /></button>
             </div>
           </div>
-
-          {/* بطاقة المستخدم */}
           <div className="p-4 border-b border-[#D4AF37]/10">
             <div className="flex items-center gap-3 p-3 bg-[#111] rounded-2xl border border-[#D4AF37]/10">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center text-[#0a0a0a] font-black text-lg">{userName.charAt(0).toUpperCase()}</div>
@@ -45,8 +42,6 @@ export default function AdminSidebarClient({ menuItems, userName, userRole }: { 
               </div>
             </div>
           </div>
-
-          {/* التنقل */}
           <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
             {menuItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
@@ -61,8 +56,6 @@ export default function AdminSidebarClient({ menuItems, userName, userRole }: { 
               )
             })}
           </nav>
-
-          {/* الخروج */}
           <div className="p-3 border-t border-[#D4AF37]/10">
             <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 font-bold transition text-sm">
               <LogOut size={18} /><span>تسجيل الخروج</span>

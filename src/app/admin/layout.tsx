@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import AdminSidebarClient from "@/components/AdminSidebarClient"
 import MobileMenuToggle from "@/components/MobileMenuToggle"
+import { Bell } from "lucide-react"
+import Link from "next/link"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -14,11 +16,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isAdmin && !isManager) redirect("/")
 
   const userName = (session.user as any).name || "المستخدم"
+  const userId = (session.user as any).id
+
+  // جلب الإشعارات غير المقروءة
+  let unreadCount = 0
+  try {
+    unreadCount = await prisma.notification.count({ where: { userId, isRead: false } })
+  } catch {}
 
   let managedArtistSlug: string | null = null
   let managedArtistName: string | null = null
   if (isManager) {
-    const mgrUser = await prisma.user.findUnique({ where: { id: (session.user as any).id }, include: { managedArtist: { select: { slug: true, name: true } } } })
+    const mgrUser = await prisma.user.findUnique({ where: { id: userId }, include: { managedArtist: { select: { slug: true, name: true } } } })
     managedArtistSlug = mgrUser?.managedArtist?.slug || null
     managedArtistName = mgrUser?.managedArtist?.name || null
   }
@@ -56,11 +65,27 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-[#0a0a0a]">
       <AdminSidebarClient menuItems={menuItems} userName={userName} userRole={userRole} />
       <main className="lg:pr-72">
+        {/* Header الجوال */}
         <div className="lg:hidden h-16 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#D4AF37]/10 flex items-center justify-between px-4 sticky top-0 z-40">
           <MobileMenuToggle />
-          <span className="text-lg font-black text-[#D4AF37]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
-          <div className="w-10"></div>
+          <span className="text-base md:text-lg font-black text-[#D4AF37] truncate max-w-[180px]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
+          <Link href="/admin/notifications" className="relative w-9 h-9 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37]">
+            <Bell size={16} />
+            {unreadCount > 0 && <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+          </Link>
         </div>
+
+        {/* Header الديسكتوب */}
+        <div className="hidden lg:flex h-16 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#D4AF37]/10 items-center justify-between px-8 sticky top-0 z-40">
+          <div></div>
+          <div className="flex items-center gap-3">
+            <Link href="/admin/notifications" className="relative w-10 h-10 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] hover:border-[#D4AF37] transition">
+              <Bell size={18} />
+              {unreadCount > 0 && <span className="absolute -top-1 -left-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+            </Link>
+          </div>
+        </div>
+
         <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
