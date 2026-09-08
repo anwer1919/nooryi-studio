@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap");
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -11,3 +11,10 @@
 
 
 
+
+.icon-circle { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: rgba(212, 175, 55, 0.1); color: var(--gold-deep); flex-shrink: 0; }
+.icon-circle.dark { background: #1a1a1a; color: var(--gold); border: 1px solid rgba(212, 175, 55, 0.15); }
+
+.badge-gold { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: 999px; background: rgba(212, 175, 55, 0.12); border: 1px solid rgba(212, 175, 55, 0.3); color: var(--gold); font-size: .75rem; font-weight: 800; }
+
+.gold-text { background: linear-gradient(120deg, var(--gold), var(--gold-soft) 50%, var(--gold-deep)); -webkit-background-clip: text; background-clip: text; color: transparent; }
