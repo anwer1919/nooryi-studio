@@ -1,25 +1,30 @@
-import Link from "next/link";
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getManagerContext, artistWhere } from "@/lib/managerFilter";
-import { Music, Plus, Edit3, Eye, Star, Calendar } from "lucide-react";
+import { getManagerContext, artistWhere } from "@/lib/managerFilter"
+import { Music, Plus, Edit3, Eye, Star, Calendar } from "lucide-react"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 export default async function AdminArtistsPage() {
-  const artists = await prisma.artist.findMany({ where: artistWhere(mgr),
+  const mgr = await getManagerContext()
+
+  const artists = await prisma.artist.findMany({
+    where: artistWhere(mgr),
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { bookings: true, reviews: true } },
       reviews: { select: { rating: true } },
     },
-  }).catch(() => []);
+  }).catch(() => [])
 
   return (
     <div dir="rtl" className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="badge-gold mb-3">إدارة الفنانين</div>
-          <h1 className="text-4xl font-black text-gray-900">الفنانين</h1>
+          <h1 className="text-4xl font-black text-gray-900 dark:text-white">
+            الفنانين{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}
+          </h1>
           <p className="text-gray-500 mt-1">إجمالي {artists.length} فنان مسجل</p>
         </div>
         {!mgr.isManager && (
@@ -58,19 +63,19 @@ export default async function AdminArtistsPage() {
               </thead>
               <tbody>
                 {artists.map((artist: any) => {
-                  const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+                  const ratings = artist.reviews?.map((r: any) => r.rating) || []
                   const avg = ratings.length > 0
                     ? (ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length).toFixed(1)
-                    : "—";
+                    : "—"
 
                   const getStatus = (s: string) => {
-                    const u = (s || "").toUpperCase();
-                    if (["APPROVED", "ACTIVE"].includes(u)) return { label: "معتمد", class: "status-confirmed" };
-                    if (["PENDING", "PENDING_APPROVAL"].includes(u)) return { label: "قيد المراجعة", class: "status-pending" };
-                    if (u === "REJECTED") return { label: "مرفوض", class: "status-rejected" };
-                    return { label: s, class: "status-pending" };
-                  };
-                  const status = getStatus(artist.status);
+                    const u = (s || "").toUpperCase()
+                    if (["APPROVED", "ACTIVE"].includes(u)) return { label: "معتمد", class: "status-confirmed" }
+                    if (["PENDING", "PENDING_APPROVAL"].includes(u)) return { label: "قيد المراجعة", class: "status-pending" }
+                    if (u === "REJECTED") return { label: "مرفوض", class: "status-rejected" }
+                    return { label: s, class: "status-pending" }
+                  }
+                  const status = getStatus(artist.status)
 
                   return (
                     <tr key={artist.id}>
@@ -80,20 +85,20 @@ export default async function AdminArtistsPage() {
                             <Music size={18} />
                           </div>
                           <div>
-                            <p className="font-black text-gray-900">{artist.name}</p>
+                            <p className="font-black text-gray-900 dark:text-white">{artist.name}</p>
                             <p className="text-xs text-gray-500">@{artist.slug}</p>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span className="text-sm font-semibold text-gray-700">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                           {artist.category || "—"}
                         </span>
                       </td>
                       <td>
                         <div className="flex items-center gap-1">
                           <Star size={14} className="text-[#d4af37] fill-[#d4af37]" />
-                          <span className="font-bold text-gray-900">{avg}</span>
+                          <span className="font-bold text-gray-900 dark:text-white">{avg}</span>
                         </div>
                       </td>
                       <td>
@@ -116,7 +121,7 @@ export default async function AdminArtistsPage() {
                         </div>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
@@ -124,5 +129,5 @@ export default async function AdminArtistsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }
