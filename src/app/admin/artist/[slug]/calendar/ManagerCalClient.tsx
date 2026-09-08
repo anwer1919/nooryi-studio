@@ -5,89 +5,15 @@ import { ChevronRight, ChevronLeft, Calendar, User, Printer } from "lucide-react
 const MO = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
 const DA = ["أحد","إثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"]
 function dk(d: Date) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0") }
-
 interface BD { date: string; client: string; status: string; timeSlot: string; amount: number }
 
-const PRINT_CSS = [
-  "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');",
-  "*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}",
-  "body{font-family:'Cairo',sans-serif;background:#fff;color:#000;direction:rtl;padding:0}",
-  "@media print{@page{margin:10mm;size:A4 landscape}}",
-  ".page{max-width:297mm;margin:0 auto;background:#fff;padding:10mm 14mm;position:relative}",
-  ".hdr{margin-bottom:24px;padding-bottom:16px;border-bottom:4px solid #000;position:relative}",
-  ".hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:#D4AF37}",
-  ".hdr-flex{display:flex;justify-content:space-between;align-items:flex-start}",
-  ".hdr h1{font-size:42px;font-weight:900;margin-bottom:4px}",
-  ".gold-line{width:80px;height:3px;background:#D4AF37;margin-bottom:8px}",
-  ".tagline{font-size:11px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:10px}",
-  ".hdr-info{font-size:10px;color:#888;line-height:1.7}",
-  ".hdr-info b{color:#000}.hdr-info code{font-family:monospace}",
-  ".tbox{background:#000;padding:12px 24px;border-radius:8px;text-align:center}",
-  ".tbox h2{font-size:18px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.2em}",
-  ".tbox p{font-size:12px;color:#fff;margin-top:3px}",
-  ".rid{background:#D4AF37;padding:5px 12px;border-radius:6px;margin-top:8px;text-align:center}",
-  ".rid .rl{font-size:10px;font-weight:700}.rid .rv{font-family:monospace;font-weight:700;font-size:12px}",
-  ".content{margin-bottom:24px}",
-  ".info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}",
-  ".icard{background:linear-gradient(135deg,#f9fafb,#fff);padding:16px;border-radius:10px;border:2px solid #000}",
-  ".icard .il{font-size:10px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:8px}",
-  ".irow{display:flex;align-items:center;gap:10px}",
-  ".iph{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#D4AF37,#b8941f);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0a0a0a}",
-  ".inm{font-size:16px;font-weight:700}.ict{font-size:11px;color:#666}",
-  ".dgrid{display:inline-grid;grid-template-columns:auto auto;gap:6px 20px;font-size:11px;text-align:left}",
-  ".dgrid .dl{color:#888}.dgrid .dv{font-weight:700}",
-  ".stitle{font-size:14px;font-weight:900;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #D4AF37}",
-  ".tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}",
-  ".tbl th{background:#0a0a0a;color:#D4AF37;padding:8px 6px;font-size:10px;font-weight:700}",
-  ".tbl td{padding:8px 6px;border-bottom:1px solid #e5e7eb}",
-  ".tbl tr:nth-child(even){background:#f9fafb}",
-  ".tbl .mono{font-family:monospace;font-size:10px;color:#888}",
-  ".tbl .gold{font-weight:900;color:#D4AF37;text-align:center}",
-  ".tbl .bold{font-weight:700}",
-  ".ftr{border-top:4px solid #000;padding-top:16px;position:relative}",
-  ".ftr::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#D4AF37}",
-  ".ftr-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:end;margin-bottom:12px}",
-  ".ftr-left h4{font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:6px}",
-  ".ftr-left ul{list-style:none;font-size:10px;color:#666;line-height:1.7}",
-  ".ftr-left ul li{display:flex;gap:5px}",
-  ".dot{color:#D4AF37;font-weight:700}",
-  ".stamp-col{display:flex;flex-direction:column;align-items:center}",
-  ".stamp{width:100px;height:100px;border:3px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);position:relative}",
-  ".stamp-ring{position:absolute;inset:5px;border:2px solid #D4AF37;border-radius:50%}",
-  ".stamp-txt{text-align:center;z-index:1}",
-  ".stamp-txt .s1{font-size:15px;font-weight:900;letter-spacing:0.08em}",
-  ".stamp-txt .sline{width:55px;height:2px;background:#D4AF37;margin:2px auto}",
-  ".stamp-txt .s2{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em}",
-  ".stamp-txt .s3{font-size:8px;font-weight:700;color:#D4AF37;margin-top:2px}",
-  ".stamp-label{font-size:7px;color:#888;font-weight:700;text-transform:uppercase;margin-top:4px}",
-  ".qr-col{display:flex;flex-direction:column;align-items:center}",
-  ".qr-box{background:#fff;padding:6px;border-radius:6px;border:2px solid #000;display:inline-block}",
-  ".qr-label{font-size:7px;color:#888;font-weight:700;margin-top:3px}",
-  ".sig{text-align:center;margin-top:10px}",
-  ".sig-line{width:120px;height:2px;background:#000;margin:0 auto 6px}",
-  ".sig-name{font-size:11px;font-weight:900}.sig-dept{font-size:9px;color:#888;margin-top:2px}",
-  ".copyright{text-align:center;font-size:8px;color:#aaa;margin-top:8px;padding-top:8px;border-top:1px solid #eee}"
-].join("\n")
+const PRINT_CSS = "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{font-family:'Cairo',sans-serif;background:#fff;color:#000;direction:rtl;padding:0}@media print{@page{margin:10mm;size:A4 landscape}}.page{max-width:297mm;margin:0 auto;background:#fff;padding:10mm 14mm;position:relative}.hdr{margin-bottom:24px;padding-bottom:16px;border-bottom:4px solid #000;position:relative}.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:#D4AF37}.hdr-flex{display:flex;justify-content:space-between;align-items:flex-start}.hdr h1{font-size:42px;font-weight:900;margin-bottom:4px}.gold-line{width:80px;height:3px;background:#D4AF37;margin-bottom:8px}.tagline{font-size:11px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.3em;margin-bottom:10px}.hdr-info{font-size:10px;color:#888;line-height:1.7}.hdr-info b{color:#000}.hdr-info code{font-family:monospace}.tbox{background:#000;padding:12px 24px;border-radius:8px;text-align:center}.tbox h2{font-size:18px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:.2em}.tbox p{font-size:12px;color:#fff;margin-top:3px}.rid{background:#D4AF37;padding:5px 12px;border-radius:6px;margin-top:8px;text-align:center}.rid .rl{font-size:10px;font-weight:700}.rid .rv{font-family:monospace;font-weight:700;font-size:12px}.content{margin-bottom:24px}.info-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}.icard{background:linear-gradient(135deg,#f9fafb,#fff);padding:16px;border-radius:10px;border:2px solid #000}.icard .il{font-size:10px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:.3em;margin-bottom:8px}.irow{display:flex;align-items:center;gap:10px}.iph{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#D4AF37,#b8941f);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0a0a0a}.inm{font-size:16px;font-weight:700}.ict{font-size:11px;color:#666}.dgrid{display:inline-grid;grid-template-columns:auto auto;gap:6px 20px;font-size:11px;text-align:left}.dgrid .dl{color:#888}.dgrid .dv{font-weight:700}.stitle{font-size:14px;font-weight:900;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #D4AF37}.tbl{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}.tbl th{background:#0a0a0a;color:#D4AF37;padding:8px 6px;font-size:10px;font-weight:700}.tbl td{padding:8px 6px;border-bottom:1px solid #e5e7eb}.tbl tr:nth-child(even){background:#f9fafb}.tbl .mono{font-family:monospace;font-size:10px;color:#888}.tbl .gold{font-weight:900;color:#D4AF37;text-align:center}.tbl .bold{font-weight:700}.ftr{border-top:4px solid #000;padding-top:16px;position:relative}.ftr::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#D4AF37}.ftr-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:end;margin-bottom:12px}.ftr-left h4{font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.2em;margin-bottom:6px}.ftr-left ul{list-style:none;font-size:10px;color:#666;line-height:1.7}.ftr-left ul li{display:flex;gap:5px}.dot{color:#D4AF37;font-weight:700}.stamp-col{display:flex;flex-direction:column;align-items:center}.stamp{width:100px;height:100px;border:3px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);position:relative}.stamp-ring{position:absolute;inset:5px;border:2px solid #D4AF37;border-radius:50%}.stamp-txt{text-align:center;z-index:1}.stamp-txt .s1{font-size:15px;font-weight:900;letter-spacing:.08em}.stamp-txt .sline{width:55px;height:2px;background:#D4AF37;margin:2px auto}.stamp-txt .s2{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em}.stamp-txt .s3{font-size:8px;font-weight:700;color:#D4AF37;margin-top:2px}.stamp-label{font-size:7px;color:#888;font-weight:700;text-transform:uppercase;margin-top:4px}.qr-col{display:flex;flex-direction:column;align-items:center}.qr-box{background:#fff;padding:6px;border-radius:6px;border:2px solid #000;display:inline-block}.qr-label{font-size:7px;color:#888;font-weight:700;margin-top:3px}.sig{text-align:center;margin-top:10px}.sig-line{width:120px;height:2px;background:#000;margin:0 auto 6px}.sig-name{font-size:11px;font-weight:900}.sig-dept{font-size:9px;color:#888;margin-top:2px}.copyright{text-align:center;font-size:8px;color:#aaa;margin-top:8px;padding-top:8px;border-top:1px solid #eee}"
 
 export default function ManagerCalClient({ artistName, artistSlug, bookedDates }: { artistName: string; artistSlug: string; bookedDates: BD[] }) {
   const [cur, setCur] = useState(new Date())
   const [sel, setSel] = useState<string | null>(null)
-
-  const bMap = useMemo(() => {
-    const m: Record<string, BD[]> = {}
-    bookedDates.forEach(b => { if (!m[b.date]) m[b.date] = []; m[b.date].push(b) })
-    return m
-  }, [bookedDates])
-
-  const days = useMemo(() => {
-    const y = cur.getFullYear(), mo = cur.getMonth()
-    const f = new Date(y, mo, 1).getDay(), t = new Date(y, mo + 1, 0).getDate()
-    const a: (Date | null)[] = []
-    for (let i = 0; i < f; i++) a.push(null)
-    for (let d = 1; d <= t; d++) a.push(new Date(y, mo, d))
-    return a
-  }, [cur])
-
+  const bMap = useMemo(() => { const m: Record<string, BD[]> = {}; bookedDates.forEach(b => { if (!m[b.date]) m[b.date] = []; m[b.date].push(b) }); return m }, [bookedDates])
+  const days = useMemo(() => { const y = cur.getFullYear(), mo = cur.getMonth(), f = new Date(y, mo, 1).getDay(), t = new Date(y, mo + 1, 0).getDate(); const a: (Date | null)[] = []; for (let i = 0; i < f; i++) a.push(null); for (let d = 1; d <= t; d++) a.push(new Date(y, mo, d)); return a }, [cur])
   const today = dk(new Date())
   const selB = sel ? bMap[sel] || [] : []
   const monthB = bookedDates.filter(b => { const d = new Date(b.date); return d.getMonth() === cur.getMonth() && d.getFullYear() === cur.getFullYear() })
@@ -96,50 +22,11 @@ export default function ManagerCalClient({ artistName, artistSlug, bookedDates }
   const rd = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
   const vu = "https://nooryi-studio.vercel.app/verify/calendar/" + artistSlug + "?report=" + rn
 
-  const rows = monthB.map((b, i) =>
-    '<tr><td class="mono">' + String(i+1).padStart(2,'0') + '</td>' +
-    '<td class="bold">' + new Date(b.date).toLocaleDateString("ar-EG") + '</td>' +
-    '<td style="text-align:center">' + new Date(b.date).toLocaleDateString("ar-EG",{weekday:"short"}) + '</td>' +
-    '<td style="text-align:center">' + (b.timeSlot||"—") + '</td>' +
-    '<td class="bold">' + b.client + '</td>' +
-    '<td class="gold">' + b.amount.toLocaleString() + ' ج.م</td>' +
-    '<td style="text-align:center">' + b.status + '</td></tr>'
-  ).join("")
+  const rows = monthB.map((b, i) => '<tr><td class="mono">' + String(i+1).padStart(2,'0') + '</td><td class="bold">' + new Date(b.date).toLocaleDateString("ar-EG") + '</td><td style="text-align:center">' + new Date(b.date).toLocaleDateString("ar-EG",{weekday:"short"}) + '</td><td style="text-align:center">' + (b.timeSlot||"—") + '</td><td class="bold">' + b.client + '</td><td class="gold">' + b.amount.toLocaleString() + ' ج.م</td><td style="text-align:center">' + b.status + '</td></tr>').join("")
 
-  const printHTML =
-    '<div class="page">' +
-      '<div class="hdr"><div class="hdr-flex"><div>' +
-        '<h1>Nooryi</h1><div class="gold-line"></div>' +
-        '<p class="tagline">STUDIO FOR ARTISTS & EVENTS</p>' +
-        '<div class="hdr-info"><p><b>السجل التجاري:</b> <code>123456789</code></p><p><b>الرقم الضريبي:</b> <code>300000000000003</code></p></div>' +
-      '</div><div style="text-align:left">' +
-        '<div class="tbox"><h2>تقرير تقويم الحجوزات</h2><p>' + artistName + '</p></div>' +
-        '<div class="rid"><div class="rl">رقم التقرير</div><div class="rv">' + rn + '</div></div>' +
-      '</div></div></div>' +
-      '<div class="content">' +
-        '<div class="info-row"><div class="icard"><div class="il">الفنان:</div><div class="irow"><div class="iph">' + artistName.charAt(0) + '</div><div><div class="inm">' + artistName + '</div><div class="ict">' + MO[cur.getMonth()] + ' ' + cur.getFullYear() + '</div></div></div></div>' +
-        '<div style="text-align:left;display:flex;align-items:center"><div class="dgrid"><span class="dl">تاريخ الإصدار:</span><span class="dv">' + rd + '</span><span class="dl">حجوزات الشهر:</span><span class="dv">' + monthB.length + '</span><span class="dl">الإيرادات:</span><span class="dv">' + totalRev.toLocaleString() + ' ج.م</span></div></div></div>' +
-        '<div class="stitle">تفاصيل الحجوزات — ' + MO[cur.getMonth()] + ' ' + cur.getFullYear() + '</div>' +
-        (monthB.length === 0
-          ? '<p style="text-align:center;color:#888;padding:24px">لا توجد حجوزات في هذا الشهر</p>'
-          : '<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">التاريخ</th><th style="text-align:center">اليوم</th><th style="text-align:center">الوقت</th><th style="text-align:right">العميل</th><th style="text-align:center">المبلغ</th><th style="text-align:center">الحالة</th></tr></thead><tbody>' + rows + '</tbody><tfoot><tr style="background:#0a0a0a;color:#D4AF37;font-weight:900"><td colspan="5" style="text-align:right;padding:8px">الإجمالي</td><td class="gold" style="padding:8px">' + totalRev.toLocaleString() + ' ج.م</td><td></td></tr></tfoot></table>') +
-      '</div>' +
-      '<div class="ftr"><div class="ftr-grid">' +
-        '<div class="ftr-left"><h4>الشروط والأحكام:</h4><ul><li><span class="dot">\u2022</span>هذا التقرير صادر آلياً من نظام Nooryi Studio.</li><li><span class="dot">\u2022</span>يمكن التحقق من صحته عبر مسح رمز QR.</li></ul></div>' +
-        '<div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">\u2713 معتمد رسمياً</div></div></div><div class="stamp-label">ختم المنصة الرسمي</div></div>' +
-        '<div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(vu) + '" width="80" height="80"/></div><div class="qr-label">امسح للتحقق</div></div>' +
-      '</div>' +
-      '<div class="sig"><div class="sig-line"></div><div class="sig-name">توقيع المدير المالي</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div>' +
-      '<div class="copyright">\u00A9 ' + new Date().getFullYear() + ' Nooryi Studio \u2014 جميع الحقوق محفوظة</div></div>' +
-    '</div>'
+  const printHTML = '<div class="page"><div class="hdr"><div class="hdr-flex"><div><h1>Nooryi</h1><div class="gold-line"></div><p class="tagline">STUDIO FOR ARTISTS & EVENTS</p><div class="hdr-info"><p><b>السجل التجاري:</b> <code>123456789</code></p><p><b>الرقم الضريبي:</b> <code>300000000000003</code></p></div></div><div style="text-align:left"><div class="tbox"><h2>تقرير تقويم الحجوزات</h2><p>' + artistName + '</p></div><div class="rid"><div class="rl">رقم التقرير</div><div class="rv">' + rn + '</div></div></div></div></div><div class="content"><div class="info-row"><div class="icard"><div class="il">الفنان:</div><div class="irow"><div class="iph">' + artistName.charAt(0) + '</div><div><div class="inm">' + artistName + '</div><div class="ict">' + MO[cur.getMonth()] + ' ' + cur.getFullYear() + '</div></div></div></div><div style="text-align:left;display:flex;align-items:center"><div class="dgrid"><span class="dl">تاريخ الإصدار:</span><span class="dv">' + rd + '</span><span class="dl">حجوزات الشهر:</span><span class="dv">' + monthB.length + '</span><span class="dl">الإيرادات:</span><span class="dv">' + totalRev.toLocaleString() + ' ج.م</span></div></div></div><div class="stitle">تفاصيل الحجوزات — ' + MO[cur.getMonth()] + ' ' + cur.getFullYear() + '</div>' + (monthB.length === 0 ? '<p style="text-align:center;color:#888;padding:24px">لا توجد حجوزات في هذا الشهر</p>' : '<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">التاريخ</th><th style="text-align:center">اليوم</th><th style="text-align:center">الوقت</th><th style="text-align:right">العميل</th><th style="text-align:center">المبلغ</th><th style="text-align:center">الحالة</th></tr></thead><tbody>' + rows + '</tbody><tfoot><tr style="background:#0a0a0a;color:#D4AF37;font-weight:900"><td colspan="5" style="text-align:right;padding:8px">الإجمالي</td><td class="gold" style="padding:8px">' + totalRev.toLocaleString() + ' ج.م</td><td></td></tr></tfoot></table>') + '</div><div class="ftr"><div class="ftr-grid"><div class="ftr-left"><h4>الشروط والأحكام:</h4><ul><li><span class="dot">\u2022</span>هذا التقرير صادر آلياً من نظام Nooryi Studio.</li><li><span class="dot">\u2022</span>يمكن التحقق من صحته عبر مسح رمز QR.</li></ul></div><div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">\u2713 معتمد رسمياً</div></div></div><div class="stamp-label">ختم المنصة الرسمي</div></div><div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(vu) + '" width="80" height="80"/></div><div class="qr-label">امسح للتحقق</div></div></div><div class="sig"><div class="sig-line"></div><div class="sig-name">توقيع المدير المالي</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div><div class="copyright">\u00A9 ' + new Date().getFullYear() + ' Nooryi Studio \u2014 جميع الحقوق محفوظة</div></div></div>'
 
-  const handlePrint = () => {
-    const win = window.open("", "_blank", "width=900,height=700")
-    if (!win) { alert("يرجى السماح بالنوافذ المنبثقة للطباعة"); return }
-    win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقويم ' + artistName + '</title><style>' + PRINT_CSS + '</style></head><body>' + printHTML + '</body></html>')
-    win.document.close()
-    setTimeout(() => win.print(), 800)
-  }
+  const handlePrint = () => { const win = window.open("", "_blank", "width=900,height=700"); if (!win) { alert("يرجى السماح بالنوافذ المنبثقة للطباعة"); return }; win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقويم ' + artistName + '</title><style>' + PRINT_CSS + '</style></head><body>' + printHTML + '</body></html>'); win.document.close(); setTimeout(() => win.print(), 800) }
 
   return (
     <div dir="rtl" className="space-y-6">
@@ -147,53 +34,31 @@ export default function ManagerCalClient({ artistName, artistSlug, bookedDates }
         <div>
           <div className="badge-gold mb-3">التقويم</div>
           <h1 className="text-3xl font-black text-white flex items-center gap-2"><Calendar size={28} className="text-[#D4AF37]" /> تقويم {artistName}</h1>
-          <p className="text-gray-400 text-sm mt-1">{monthB.length} حجز في {MO[cur.getMonth()]} \u2022 إيرادات: {totalRev.toLocaleString()} ج.م</p>
+          <p className="text-gray-400 text-sm mt-1">{monthB.length} حجز في {MO[cur.getMonth()]} • إيرادات: {totalRev.toLocaleString()} ج.م</p>
         </div>
         <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition"><Printer size={16} /> طباعة</button>
       </div>
-
       <div className="bg-[#111] rounded-2xl p-4 border border-[#D4AF37]/20 flex items-center justify-between">
         <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()-1, 1))} className="p-2 hover:bg-[#1a1a1a] rounded-lg"><ChevronRight size={20} className="text-[#D4AF37]" /></button>
         <h2 className="text-xl font-black text-white">{MO[cur.getMonth()]} {cur.getFullYear()}</h2>
         <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()+1, 1))} className="p-2 hover:bg-[#1a1a1a] rounded-lg"><ChevronLeft size={20} className="text-[#D4AF37]" /></button>
       </div>
-
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-red-500"></div><span className="text-xs text-gray-400">محجوز</span></div>
         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#D4AF37]"></div><span className="text-xs text-gray-400">اليوم</span></div>
         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#1a1a1a] border border-[#D4AF37]/20"></div><span className="text-xs text-gray-400">متاح</span></div>
       </div>
-
       <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 overflow-hidden">
         <div className="grid grid-cols-7">
           {DA.map(d => <div key={d} className="bg-[#0a0a0a] text-[#D4AF37] text-center py-3 font-black text-sm border-b border-[#D4AF37]/20">{d}</div>)}
           {days.map((day, i) => {
             if (!day) return <div key={"e"+i} className="aspect-square bg-[#0a0a0a]/50"></div>
             const k = dk(day), ib = !!bMap[k], it = k === today, isel = k === sel
-            return (
-              <button key={k} onClick={() => setSel(isel ? null : k)}
-                className={"aspect-square flex flex-col items-center justify-center relative border border-[#D4AF37]/5 transition-all " + (ib ? "bg-red-500/20 hover:bg-red-500/30" : "bg-[#1a1a1a] hover:bg-[#222]") + (it ? " ring-2 ring-[#D4AF37] ring-inset" : "") + (isel ? " ring-2 ring-white ring-inset" : "")}>
-                <span className={"text-lg font-black " + (ib ? "text-red-400" : it ? "text-[#D4AF37]" : "text-gray-300")}>{day.getDate()}</span>
-                {ib && <div className="absolute bottom-1 w-2 h-2 rounded-full bg-red-500"></div>}
-              </button>
-            )
+            return (<button key={k} onClick={() => setSel(isel ? null : k)} className={"aspect-square flex flex-col items-center justify-center relative border border-[#D4AF37]/5 transition-all " + (ib ? "bg-red-500/20 hover:bg-red-500/30" : "bg-[#1a1a1a] hover:bg-[#222]") + (it ? " ring-2 ring-[#D4AF37] ring-inset" : "") + (isel ? " ring-2 ring-white ring-inset" : "")}><span className={"text-lg font-black " + (ib ? "text-red-400" : it ? "text-[#D4AF37]" : "text-gray-300")}>{day.getDate()}</span>{ib && <div className="absolute bottom-1 w-2 h-2 rounded-full bg-red-500"></div>}</button>)
           })}
         </div>
       </div>
-
-      {sel && (
-        <div className="bg-[#111] rounded-2xl p-5 border border-[#D4AF37]/20">
-          <h3 className="font-black text-white mb-3 flex items-center gap-2"><Calendar size={18} className="text-[#D4AF37]" /> تفاصيل {sel}</h3>
-          {selB.length === 0
-            ? <p className="text-gray-500 text-sm">متاح للحجز \u2705</p>
-            : selB.map((b, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl border border-red-500/20 mb-2">
-                  <div className="flex items-center gap-3"><User size={16} className="text-red-400" /><div><p className="font-bold text-white text-sm">{b.client}</p><p className="text-xs text-gray-400">{b.timeSlot}</p></div></div>
-                  <div className="text-left"><p className="font-bold text-[#D4AF37] text-sm">{b.amount.toLocaleString()} ج.م</p><span className="text-xs text-red-400">{b.status}</span></div>
-                </div>
-              ))}
-        </div>
-      )}
+      {sel && (<div className="bg-[#111] rounded-2xl p-5 border border-[#D4AF37]/20"><h3 className="font-black text-white mb-3 flex items-center gap-2"><Calendar size={18} className="text-[#D4AF37]" /> تفاصيل {sel}</h3>{selB.length === 0 ? <p className="text-gray-500 text-sm">متاح للحجز ✅</p> : selB.map((b, i) => (<div key={i} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl border border-red-500/20 mb-2"><div className="flex items-center gap-3"><User size={16} className="text-red-400" /><div><p className="font-bold text-white text-sm">{b.client}</p><p className="text-xs text-gray-400">{b.timeSlot}</p></div></div><div className="text-left"><p className="font-bold text-[#D4AF37] text-sm">{b.amount.toLocaleString()} ج.م</p><span className="text-xs text-red-400">{b.status}</span></div></div>))}</div>)}
     </div>
   )
 }
