@@ -13,18 +13,19 @@ export async function GET() {
       where: { ...artistWhere(mgr), status: "ACTIVE" },
       orderBy: { createdAt: "desc" },
       include: {
-        _count: {
-          select: { bookings: true, reviews: true },
-        },
+        _count: { select: { bookings: true, reviews: true } },
       },
     })
 
     return NextResponse.json(artists, {
       status: 200,
-      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      headers: {
+        "Cache-Control": "no-store",
+        "Connection": "keep-alive",
+      },
     })
   } catch (error: any) {
-    console.error("[API /api/artists] Error:", error.message)
+    console.error("[API /api/artists]", error.message)
     return NextResponse.json([], { status: 200 })
   }
 }

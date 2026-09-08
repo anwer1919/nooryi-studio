@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+              {
+        source: "/api/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "X-Accel-Buffering", value: "no" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
