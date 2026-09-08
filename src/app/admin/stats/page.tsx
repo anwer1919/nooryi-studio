@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 ;
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
+import { getManagerContext, artistWhere } from "@/lib/managerFilter";
 import Link from "next/link";
 import { TrendingUp, DollarSign, Calendar, Users, Printer, Eye, Award, FileText } from "lucide-react";
 
@@ -15,7 +16,7 @@ export default async function AdminStatsPage() {
   if (role !== "SUPER_ADMIN" && role !== "ADMIN") redirect("/");
 
   // جلب جميع الفنانين مع حجوزاتهم
-  const artists = await prisma.artist.findMany({
+  const artists = await prisma.artist.findMany({ where: { ...artistWhere(mgr), status: "ACTIVE" },
     where: { status: "ACTIVE" },
     include: {
       bookings: {

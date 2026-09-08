@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getManagerContext, artistWhere } from "@/lib/managerFilter"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
 // GET - جلب جميع الفنانين النشطين (API بسيط ومضمون)
 export async function GET() {
+  const mgr = await getManagerContext()
   try {
     console.log("🎨 [API /api/artists] Starting fetch...")
     
@@ -19,8 +21,8 @@ export async function GET() {
     }
 
     // جلب الفنانين النشطين فقط
-    const artists = await prisma.artist.findMany({
-      where: { 
+    const artists = await prisma.artist.findMany({ where: artistWhere(mgr),
+       { 
         status: "ACTIVE" 
       },
       orderBy: { 

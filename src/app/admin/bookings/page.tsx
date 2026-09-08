@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
+import { getManagerContext, bookingWhere } from "@/lib/managerFilter";
 import { Calendar, Eye, CheckCircle2, Clock, DollarSign, MapPin, Phone, Mail } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminBookingsPage() {
   let bookings: any[] = [];
   try {
-    bookings = await prisma.booking.findMany({
+    bookings = await prisma.booking.findMany({ where: bookingWhere(mgr),
       orderBy: { createdAt: "desc" },
       include: {
         artist: { select: { name: true, slug: true } },
@@ -49,7 +50,7 @@ export default async function AdminBookingsPage() {
     <div dir="rtl" className="space-y-6">
       <div>
         <div className="badge-gold mb-3">إدارة الحجوزات</div>
-        <h1 className="text-4xl font-black text-gray-900">الحجوزات</h1>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-white">الحجوزات{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}</h1>
         <p className="text-gray-500 mt-1">متابعة جميع الحجوزات — {bookings.length} حجز</p>
       </div>
 
