@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import AdminSidebarClient from "@/components/AdminSidebarClient"
@@ -18,11 +18,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const userName = (session.user as any).name || "المستخدم"
   const userId = (session.user as any).id
 
-  // جلب الإشعارات غير المقروءة
   let unreadCount = 0
-  try {
-    unreadCount = await prisma.notification.count({ where: { userId, isRead: false } })
-  } catch {}
+  try { unreadCount = await prisma.notification.count({ where: { userId, isRead: false } }) } catch {}
 
   let managedArtistSlug: string | null = null
   let managedArtistName: string | null = null
@@ -33,11 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   if (isManager && !managedArtistSlug) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center p-8"><h2 className="text-2xl font-black text-white mb-2">لم يتم ربطك بفنان بعد</h2><p className="text-gray-400">يرجى التواصل مع المدير العام</p></div>
-      </div>
-    )
+    return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center"><div className="text-center p-8"><h2 className="text-2xl font-black text-white mb-2">لم يتم ربطك بفنان بعد</h2><p className="text-gray-400">يرجى التواصل مع المدير العام</p></div></div>
   }
 
   const artistBase = managedArtistSlug ? `/admin/artist/${managedArtistSlug}` : "/admin"
@@ -66,9 +59,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AdminSidebarClient menuItems={menuItems} userName={userName} userRole={userRole} />
       <main className="lg:pr-72">
         {/* Header الجوال */}
-        <div className="lg:hidden h-16 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#D4AF37]/10 flex items-center justify-between px-4 sticky top-0 z-40">
+        <div className="lg:hidden h-16 bg-[#0a0a0a] border-b border-[#D4AF37]/15 flex items-center justify-between px-4 sticky top-0 z-40">
           <MobileMenuToggle />
-          <span className="text-base md:text-lg font-black text-[#D4AF37] truncate max-w-[180px]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
+          <span className="text-base font-black text-[#D4AF37] truncate max-w-[160px]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
           <Link href="/admin/notifications" className="relative w-9 h-9 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37]">
             <Bell size={16} />
             {unreadCount > 0 && <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
@@ -76,14 +69,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
 
         {/* Header الديسكتوب */}
-        <div className="hidden lg:flex h-16 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-[#D4AF37]/10 items-center justify-between px-8 sticky top-0 z-40">
-          <div></div>
-          <div className="flex items-center gap-3">
-            <Link href="/admin/notifications" className="relative w-10 h-10 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] hover:border-[#D4AF37] transition">
-              <Bell size={18} />
-              {unreadCount > 0 && <span className="absolute -top-1 -left-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
-            </Link>
-          </div>
+        <div className="hidden lg:flex h-16 bg-[#0a0a0a] border-b border-[#D4AF37]/15 items-center justify-end px-8 sticky top-0 z-40">
+          <Link href="/admin/notifications" className="relative w-10 h-10 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] hover:border-[#D4AF37] transition">
+            <Bell size={18} />
+            {unreadCount > 0 && <span className="absolute -top-1 -left-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+          </Link>
         </div>
 
         <div className="p-4 lg:p-8">{children}</div>

@@ -1,4 +1,4 @@
-﻿import Link from "next/link"
+import Link from "next/link"
 import { Music, Star, Shield, CreditCard, Zap, Award, CheckCircle2, Phone, Mail, MapPin, ArrowLeft, Mic, Sparkles, ChevronRight, Menu } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import ArtistCarousel from "@/components/ArtistCarousel"
