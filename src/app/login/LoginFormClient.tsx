@@ -63,7 +63,7 @@ export default function LoginFormClient() {
     return await res.json();
   };
 
-  const handleSocialLogin = (provider: string) => signIn(provider, { callbackUrl: "/login" });
+  const handleSocialLogin = (provider: string) => signIn(provider, { callbackUrl: callbackUrl || "/" });
 
   // ═══ خطوة 1: تحقق من الباسورد عبر API (بدون signIn) + أرسل OTP ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {

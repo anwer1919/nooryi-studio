@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
         user.role = dbUser.role
         user.phone = dbUser.phone
         user.artistId = dbUser.artistId
-        user.otpVerified = false
+        user.otpVerified = true
       }
       return true
     },
