@@ -1,6 +1,9 @@
 import { getManagerArtist } from "@/lib/managerAuth"
 import { prisma } from "@/lib/prisma"
-import { Calendar, CheckCircle2, XCircle, Clock } from "lucide-react"
+import Link from "next/link"
+import { Calendar, Eye, DollarSign } from "lucide-react"
+
+export const dynamic = "force-dynamic"
 
 export default async function ArtistBookings({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -9,32 +12,84 @@ export default async function ArtistBookings({ params }: { params: Promise<{ slu
   const bookings = await prisma.booking.findMany({
     where: { artistId: artist.id },
     orderBy: { date: "desc" },
-    include: { customer: true },
+    include: { venue: { select: { name: true, city: true } } },
   })
+
+  const getStatus = (s: string) => {
+    const u = (s || "").toUpperCase()
+    if (["CONFIRMED","APPROVED","ACCEPTED"].includes(u)) return { label: "مؤكد", cls: "bg-green-100 text-green-700" }
+    if (["PENDING_APPROVAL","PENDING"].includes(u)) return { label: "بانتظار", cls: "bg-yellow-100 text-yellow-700" }
+    if (["COMPLETED","DONE"].includes(u)) return { label: "مكتمل", cls: "bg-blue-100 text-blue-700" }
+    if (["REJECTED","CANCELLED"].includes(u)) return { label: "مرفوض", cls: "bg-red-100 text-red-700" }
+    return { label: s, cls: "bg-gray-100 text-gray-600" }
+  }
+
+  const pending = bookings.filter(b => ["PENDING_APPROVAL","PENDING"].includes((b.status||"").toUpperCase())).length
+  const confirmed = bookings.filter(b => ["CONFIRMED","APPROVED","ACCEPTED","COMPLETED"].includes((b.status||"").toUpperCase())).length
+  const revenue = bookings.filter(b => ["CONFIRMED","APPROVED","COMPLETED"].includes((b.status||"").toUpperCase())).reduce((s: number, b: any) => s + Number(b.grossAmount||0), 0)
 
   return (
     <div dir="rtl" className="space-y-6">
-      <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2"><Calendar size={28} className="text-[#D4AF37]" /> حجوزات {artist.name}</h1>
-      <p className="text-gray-500">{bookings.length} حجز</p>
-
-      <div className="space-y-3">
-        {bookings.map((b: any) => (
-          <div key={b.id} className="bg-white dark:bg-[#111] rounded-2xl p-5 border border-gray-200 dark:border-gray-800 flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <p className="font-black text-gray-900 dark:text-white">{b.clientName}</p>
-              <p className="text-sm text-gray-500">{new Date(b.date).toLocaleDateString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
-              <p className="text-xs text-gray-400 mt-1">{b.timeSlot} • {b.clientPhone}</p>
-            </div>
-            <div className="text-left flex items-center gap-3">
-              <p className="font-black text-[#D4AF37] text-lg">{Number(b.grossAmount || 0).toLocaleString()} ج.م</p>
-              <span className={`text-xs px-3 py-1 rounded-full font-bold ${b.status === "CONFIRMED" || b.status === "COMPLETED" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : b.status === "PENDING_APPROVAL" ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400" : b.status === "REJECTED" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"}`}>
-                {b.status === "CONFIRMED" ? "✅ مؤكد" : b.status === "PENDING_APPROVAL" ? "⏳ بانتظار" : b.status === "COMPLETED" ? "✅ مكتمل" : b.status === "REJECTED" ? "❌ مرفوض" : b.status}
-              </span>
-            </div>
-          </div>
-        ))}
-        {bookings.length === 0 && <p className="text-center py-12 text-gray-400">لا توجد حجوزات</p>}
+      <div>
+        <div className="badge-gold mb-3">حجوزات الفنان</div>
+        <h1 className="text-4xl font-black text-gray-900">حجوزات {artist.name}</h1>
+        <p className="text-gray-500 mt-1">{bookings.length} حجز</p>
       </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="stat-card"><div className="stat-label">الإجمالي</div><div className="stat-value">{bookings.length}</div></div>
+        <div className="stat-card"><div className="stat-label">بانتظار</div><div className="stat-value">{pending}</div></div>
+        <div className="stat-card dark"><div className="stat-label">مؤكدة</div><div className="stat-value">{confirmed}</div></div>
+        <div className="stat-card"><div className="stat-label">الإيرادات</div><div className="stat-value">{revenue.toLocaleString()}</div><p className="text-xs text-gray-500 mt-1">ج.م</p></div>
+      </div>
+
+      {bookings.length === 0 ? (
+        <div className="card-pro text-center py-20">
+          <Calendar className="mx-auto text-gray-300 mb-4" size={56} />
+          <p className="text-gray-500">لا توجد حجوزات بعد</p>
+        </div>
+      ) : (
+        <div className="card-pro overflow-hidden">
+          <div className="overflow-x-auto touch-pan-x">
+            <table className="table-pro min-w-[800px]">
+              <thead>
+                <tr>
+                  <th>العميل</th>
+                  <th>التاريخ</th>
+                  <th>الوقت</th>
+                  <th>المكان</th>
+                  <th>المبلغ</th>
+                  <th>الحالة</th>
+                  <th className="text-center">عرض</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bookings.map((b: any) => {
+                  const status = getStatus(b.status)
+                  return (
+                    <tr key={b.id}>
+                      <td>
+                        <p className="font-bold text-gray-900">{b.clientName}</p>
+                        <p className="text-xs text-gray-500">{b.clientPhone}</p>
+                      </td>
+                      <td>{b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}</td>
+                      <td>{b.timeSlot || "—"}</td>
+                      <td>{b.venue?.name || "—"}</td>
+                      <td><span className="font-black text-gray-900">{Number(b.grossAmount||0).toLocaleString()} ج.م</span></td>
+                      <td><span className={"status-chip " + status.cls}>{status.label}</span></td>
+                      <td className="text-center">
+                        <Link href={"/admin/bookings/" + b.id} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block" title="عرض التفاصيل والتأكيد">
+                          <Eye size={16} />
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

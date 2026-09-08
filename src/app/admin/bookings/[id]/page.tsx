@@ -63,6 +63,12 @@ export default async function BookingDetailsPage({ params }: { params: Promise<{
     )
   }
 
+    // ══ فحص صلاحية مدير الأعمال ══
+  if (isManager && booking) {
+    const mgrUser = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { artistId: true } })
+    if (mgrUser?.artistId && booking.artistId !== mgrUser.artistId) redirect("/admin")
+  }
+
   const grossAmount = Number(booking.grossAmount || 0)
   const depositAmount = Number(booking.depositAmount || 0)
   const remainingAmount = Number(booking.remainingAmount || 0)

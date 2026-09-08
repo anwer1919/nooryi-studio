@@ -1,6 +1,5 @@
 import { getManagerArtist } from "@/lib/managerAuth"
 import { prisma } from "@/lib/prisma"
-import { Calendar, Printer } from "lucide-react"
 import CalendarClient from "./CalendarClient"
 
 export const dynamic = "force-dynamic"
@@ -11,25 +10,15 @@ export default async function ArtistCalendarPage({ params }: { params: Promise<{
 
   const bookings = await prisma.booking.findMany({
     where: { artistId: artist.id, status: { in: ["CONFIRMED","APPROVED","COMPLETED","ACCEPTED","PENDING_APPROVAL"] } },
-    select: { id: true, date: true, clientName: true, status: true, timeSlot: true },
+    select: { id: true, date: true, clientName: true, status: true, timeSlot: true, grossAmount: true },
     orderBy: { date: "asc" },
   }).catch(() => [])
 
   const bookedDates = bookings.map((b: any) => ({
     date: b.date ? new Date(b.date).toISOString().split("T")[0] : "",
-    client: b.clientName, status: b.status, timeSlot: b.timeSlot,
+    client: b.clientName || "", status: b.status || "", timeSlot: b.timeSlot || "",
+    amount: Number(b.grossAmount || 0),
   })).filter((b: any) => b.date)
 
-  return (
-    <div dir="rtl" className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4 no-print">
-        <div>
-          <h1 className="text-3xl font-black text-white flex items-center gap-2"><Calendar size={28} className="text-[#D4AF37]" /> تقويم {artist.name}</h1>
-          <p className="text-gray-400 text-sm mt-1">{bookedDates.length} يوم محجوز</p>
-        </div>
-        <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] text-[#D4AF37] rounded-xl font-bold text-sm hover:bg-[#222] transition border border-[#D4AF37]/20"><Printer size={16} /> طباعة</button>
-      </div>
-      <CalendarClient artistName={artist.name} bookedDates={JSON.parse(JSON.stringify(bookedDates))} />
-    </div>
-  )
+  return <CalendarClient artistName={artist.name} bookedDates={JSON.parse(JSON.stringify(bookedDates))} />
 }
