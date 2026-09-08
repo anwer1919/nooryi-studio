@@ -108,7 +108,7 @@ export default function ManagerCalendarView({ artist, bookings }: { artist: any;
         </div>
 
         {/* PRINT AREA — A4 Landscape (نفس تصميم /admin/calendar) */}
-        <div className="print-area hidden print:block">
+        <div id="print-report">
           <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
           <div className="px-10 pt-6 pb-4 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
             <div className="flex items-start justify-between">

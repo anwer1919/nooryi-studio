@@ -95,7 +95,7 @@ export default function ManagerPricingView({ artist, regions, pricings }: { arti
 
         {/* PRINT AREA — A4 Portrait (نفس تصميم /admin/pricing) */}
         {regions.length > 0 && (
-          <div className={`print-area ${showPrintPreview ? '' : 'hidden print:block'}`}>
+          <div id="print-report" className={` ${showPrintPreview ? '' : 'block'}`}>
             <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
             <div className="px-12 pt-10 pb-6 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
               <div className="flex items-start justify-between">
