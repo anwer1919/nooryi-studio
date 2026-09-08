@@ -1,4 +1,4 @@
-mport type { Metadata } from "next";
+port type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
