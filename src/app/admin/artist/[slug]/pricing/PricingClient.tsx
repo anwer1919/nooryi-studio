@@ -3,42 +3,131 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Save, Loader2, MapPin, Printer, Edit3, Trash2, X, Check, AlertCircle } from "lucide-react"
 
-const S={name:"Nooryi Studio",tag:"STUDIO FOR ARTISTS & EVENTS",reg:"123456789",tax:"300000000000003",web:"https://nooryi-studio.vercel.app"}
+const PRINT_CSS = [
+  "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');",
+  "*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}",
+  "body{font-family:'Cairo',sans-serif;background:#fff;color:#000;direction:rtl;padding:0}",
+  "@media print{@page{margin:10mm;size:A4 portrait}}",
+  ".page{max-width:210mm;margin:0 auto;background:#fff;padding:12mm 16mm;position:relative}",
+  ".hdr{margin-bottom:30px;padding-bottom:20px;border-bottom:4px solid #000;position:relative}",
+  ".hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:#D4AF37}",
+  ".hdr-flex{display:flex;justify-content:space-between;align-items:flex-start}",
+  ".hdr h1{font-size:48px;font-weight:900;margin-bottom:6px}",
+  ".gold-line{width:100px;height:4px;background:#D4AF37;margin-bottom:10px}",
+  ".tagline{font-size:12px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:12px}",
+  ".hdr-info{font-size:11px;color:#888;line-height:1.8}",
+  ".hdr-info b{color:#000}.hdr-info code{font-family:monospace}",
+  ".tbox{background:#000;padding:14px 28px;border-radius:8px;text-align:center}",
+  ".tbox h2{font-size:20px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.2em}",
+  ".tbox p{font-size:13px;color:#fff;margin-top:4px}",
+  ".rid{background:#D4AF37;padding:6px 14px;border-radius:8px;margin-top:10px;text-align:center}",
+  ".rid .rl{font-size:11px;font-weight:700}.rid .rv{font-family:monospace;font-weight:700;font-size:13px}",
+  ".content{margin-bottom:30px}",
+  ".asec{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:30px}",
+  ".acard{background:linear-gradient(135deg,#f9fafb,#fff);padding:18px;border-radius:10px;border:2px solid #000}",
+  ".acard .al{font-size:11px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:10px}",
+  ".ainfo{display:flex;align-items:center;gap:12px}",
+  ".aph{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#D4AF37,#b8941f);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#0a0a0a}",
+  ".an{font-size:17px;font-weight:700}.acat{font-size:12px;color:#666}",
+  ".dgrid{display:inline-grid;grid-template-columns:auto auto;gap:8px 24px;font-size:12px;text-align:left}",
+  ".dgrid .dl{color:#888}.dgrid .dv{font-weight:700}",
+  ".stitle{font-size:16px;font-weight:900;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #D4AF37}",
+  ".tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:30px}",
+  ".tbl th{background:#0a0a0a;color:#D4AF37;padding:10px 8px;font-size:11px;font-weight:700}",
+  ".tbl td{padding:10px 8px;border-bottom:1px solid #e5e7eb}",
+  ".tbl tr:nth-child(even){background:#f9fafb}",
+  ".tbl .mono{font-family:monospace;font-size:11px;color:#888}",
+  ".tbl .gold{font-weight:900;color:#D4AF37;text-align:center}",
+  ".tbl .bold{font-weight:700}",
+  ".gld-bg{background:#D4AF37;color:#000;font-weight:900;padding:4px 12px;border-radius:6px;display:inline-block}",
+  ".ftr{border-top:4px solid #000;padding-top:20px;position:relative}",
+  ".ftr::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#D4AF37}",
+  ".ftr-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;margin-bottom:16px}",
+  ".ftr-left h4{font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px}",
+  ".ftr-left ul{list-style:none;font-size:11px;color:#666;line-height:1.8}",
+  ".ftr-left ul li{display:flex;gap:6px}",
+  ".dot{color:#D4AF37;font-weight:700}",
+  ".stamp-col{display:flex;flex-direction:column;align-items:center}",
+  ".stamp{width:120px;height:120px;border:3px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);position:relative}",
+  ".stamp-ring{position:absolute;inset:6px;border:2px solid #D4AF37;border-radius:50%}",
+  ".stamp-txt{text-align:center;z-index:1}",
+  ".stamp-txt .s1{font-size:18px;font-weight:900;letter-spacing:0.08em}",
+  ".stamp-txt .sline{width:70px;height:2px;background:#D4AF37;margin:3px auto}",
+  ".stamp-txt .s2{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em}",
+  ".stamp-txt .s3{font-size:9px;font-weight:700;color:#D4AF37;margin-top:3px}",
+  ".stamp-label{font-size:8px;color:#888;font-weight:700;text-transform:uppercase;margin-top:6px}",
+  ".qr-col{display:flex;flex-direction:column;align-items:center}",
+  ".qr-box{background:#fff;padding:8px;border-radius:8px;border:2px solid #000;display:inline-block}",
+  ".qr-label{font-size:8px;color:#888;font-weight:700;margin-top:4px}",
+  ".sig{text-align:center;margin-top:12px}",
+  ".sig-line{width:140px;height:2px;background:#000;margin:0 auto 8px}",
+  ".sig-name{font-size:12px;font-weight:900}.sig-dept{font-size:10px;color:#888;margin-top:3px}",
+  ".copyright{text-align:center;font-size:9px;color:#aaa;margin-top:12px;padding-top:10px;border-top:1px solid #eee}"
+].join("\n")
 
-export default function PricingClient({artistId,artistSlug,artistName,regions}:{artistId:string;artistSlug:string;artistName:string;regions:any[]}){
-  const router=useRouter();const[saving,setSaving]=useState(false);const[error,setError]=useState("");const[success,setSuccess]=useState("");const[editingId,setEditingId]=useState<string|null>(null);const[form,setForm]=useState({regionName:"",basePrice:"",travelFee:"0"})
-  const handleSubmit=async(e:React.FormEvent)=>{e.preventDefault();setSaving(true);setError("");try{const method=editingId?"PUT":"POST";const url=editingId?"/api/artists/"+artistSlug+"/pricing-regions/"+editingId:"/api/artists/"+artistSlug+"/pricing-regions";const res=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify({regionName:form.regionName,basePrice:parseFloat(form.basePrice),travelFee:parseFloat(form.travelFee)||0})});if(!res.ok){const d=await res.json();throw new Error(d.error||"فشل")}setSuccess(editingId?"تم التحديث ✅":"تم الإضافة ✅");setForm({regionName:"",basePrice:"",travelFee:"0"});setEditingId(null);router.refresh();setTimeout(()=>setSuccess(""),3000)}catch(err:any){setError(err.message)}finally{setSaving(false)}}
-  const handleEdit=(r:any)=>{setEditingId(r.id);setForm({regionName:r.regionName,basePrice:String(r.basePrice),travelFee:String(r.travelFee||0)})}
-  const handleDelete=async(id:string)=>{if(!confirm("حذف؟"))return;try{await fetch("/api/artists/"+artistSlug+"/pricing-regions/"+id,{method:"DELETE"});router.refresh();setSuccess("تم الحذف ✅");setTimeout(()=>setSuccess(""),3000)}catch(err:any){setError(err.message)}}
-  const avg=regions.length>0?Math.round(regions.reduce((s,r)=>s+Number(r.basePrice),0)/regions.length):0
-  const rn="PRC-"+artistSlug.toUpperCase().slice(0,6)+"-"+Date.now().toString(36).toUpperCase()
-  const rd=new Date().toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
-  const vu=S.web+"/verify/pricing/"+artistSlug+"?report="+rn
+export default function PricingClient({ artistId, artistSlug, artistName, regions }: { artistId: string; artistSlug: string; artistName: string; regions: any[] }) {
+  const router = useRouter()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState({ regionName: "", basePrice: "", travelFee: "0" })
 
-  const tRows=regions.map((r,i)=>{const tot=Number(r.basePrice)+Number(r.travelFee||0);return'<tr><td class="mono">'+String(i+1).padStart(2,'0')+'</td><td><div style="display:flex;align-items:center;gap:6px"><span style="color:#D4AF37">📍</span><span class="bold">'+r.regionName+'</span></div></td><td style="text-align:center;font-weight:700">'+Number(r.basePrice).toLocaleString()+' ج.م</td><td style="text-align:center;color:#666">'+(Number(r.travelFee||0)>0?"+"+Number(r.travelFee).toLocaleString()+" ج.م":"—")+'</td><td style="text-align:center"><span style="background:#D4AF37;color:#000;font-weight:900;padding:4px 12px;border-radius:6px;display:inline-block">'+tot.toLocaleString()+' ج.م</span></td></tr>'}).join("")
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true); setError("")
+    try {
+      const method = editingId ? "PUT" : "POST"
+      const url = editingId ? "/api/artists/" + artistSlug + "/pricing-regions/" + editingId : "/api/artists/" + artistSlug + "/pricing-regions"
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ regionName: form.regionName, basePrice: parseFloat(form.basePrice), travelFee: parseFloat(form.travelFee) || 0 }) })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || "\u0641\u0634\u0644") }
+      setSuccess(editingId ? "\u062A\u0645 \u0627\u0644\u062A\u062D\u062F\u064A\u062B \u2705" : "\u062A\u0645 \u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u2705")
+      setForm({ regionName: "", basePrice: "", travelFee: "0" }); setEditingId(null); router.refresh()
+      setTimeout(() => setSuccess(""), 3000)
+    } catch (err: any) { setError(err.message) } finally { setSaving(false) }
+  }
 
-  const printHTML='<div class="page">'+
-    '<div class="hdr"><div class="hdr-flex"><div><h1>Nooryi</h1><div class="gold-line"></div><p class="tagline">'+S.tag+'</p><div class="hdr-info"><p><b>السجل التجاري:</b> <code>'+S.reg+'</code></p><p><b>الرقم الضريبي:</b> <code>'+S.tax+'</code></p></div></div><div style="text-align:left"><div class="title-box"><h2>تقرير أسعار المناطق</h2><p>'+artistName+'</p></div><div class="rid"><div class="rl">رقم التقرير</div><div class="rv">'+rn+'</div></div></div></div></div>'+
-    '<div class="content">'+
-    '<div class="asec"><div class="acard"><div class="al">الفنان:</div><div class="ainfo"><div class="aph">'+artistName.charAt(0)+'</div><div><div class="an">'+artistName+'</div><div class="acat">'+(regions.length)+' منطقة مسجلة</div></div></div></div><div style="text-align:left;display:flex;align-items:center"><div class="dg"><span class="dl">تاريخ الإصدار:</span><span class="dv">'+rd+'</span><span class="dl">عدد المناطق:</span><span class="dv">'+regions.length+'</span><span class="dl">متوسط السعر:</span><span class="dv">'+avg.toLocaleString()+' ج.م</span><span class="dl">العملة:</span><span class="dv">EGP</span></div></div></div>'+
-    '<div class="stitle">تفاصيل الأسعار حسب المنطقة</div>'+
-    (regions.length===0?'<p style="text-align:center;color:#888;padding:30px">لا توجد مناطق مسجلة</p>':'<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">المنطقة</th><th style="text-align:center">السعر الأساسي</th><th style="text-align:center">رسوم السفر</th><th style="text-align:center">الإجمالي</th></tr></thead><tbody>'+tRows+'</tbody><tfoot><tr style="background:#0a0a0a;color:#D4AF37;font-weight:900"><td colspan="2" style="text-align:right;padding:10px">المجموع</td><td style="text-align:center;padding:10px">'+regions.reduce((s,r)=>s+Number(r.basePrice),0).toLocaleString()+' ج.م</td><td style="text-align:center;padding:10px">'+regions.reduce((s,r)=>s+Number(r.travelFee||0),0).toLocaleString()+' ج.م</td><td style="text-align:center;padding:10px">'+regions.reduce((s,r)=>s+Number(r.basePrice)+Number(r.travelFee||0),0).toLocaleString()+' ج.م</td></tr></tfoot></table>')+
-    '</div>'+
-    '<div class="ftr"><div class="ftr-grid"><div class="ftr-left"><h4>الشروط والأحكام:</h4><ul><li><span class="dot">•</span>الأسعار قابلة للتغيير دون إشعار مسبق.</li><li><span class="dot">•</span>رسوم السفر تُضاف تلقائياً حسب منطقة الفعالية.</li><li><span class="dot">•</span>يمكن التحقق بمسح رمز QR أدناه.</li></ul></div><div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">✓ معتمد رسمياً</div></div></div><div class="stamp-label">ختم المنصة الرسمي</div></div><div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data='+encodeURIComponent(vu)+'" width="80" height="80"/></div><div class="qr-label">امسح للتحقق من صحة التقرير</div></div></div><div class="sig"><div class="sig-line"></div><div class="sig-name">توقيع المدير المالي</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div><div class="copyright">© '+new Date().getFullYear()+' '+S.name+' — جميع الحقوق محفوظة</div></div>'+
-  '</div>'
+  const handleEdit = (r: any) => { setEditingId(r.id); setForm({ regionName: r.regionName, basePrice: String(r.basePrice), travelFee: String(r.travelFee || 0) }) }
+  const handleDelete = async (id: string) => { if (!confirm("\u062D\u0630\u0641\u061F")) return; try { await fetch("/api/artists/" + artistSlug + "/pricing-regions/" + id, { method: "DELETE" }); router.refresh(); setSuccess("\u062A\u0645 \u0627\u0644\u062D\u0630\u0641 \u2705"); setTimeout(() => setSuccess(""), 3000) } catch (err: any) { setError(err.message) } }
 
-  const handlePrint=()=>{const win=window.open("","_blank","width=800,height=1100");if(!win){alert("اسمح بالنوافذ المنبثقة");return}win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>أسعار '+artistName+'</title><style>'+$HEADER_CSS+'</style></head><body>'+printHTML+'</body></html>');win.document.close();setTimeout(()=>win.print(),800)}
+  const avg = regions.length > 0 ? Math.round(regions.reduce((s, r) => s + Number(r.basePrice), 0) / regions.length) : 0
+  const rn = "PRC-" + artistSlug.toUpperCase().slice(0, 6) + "-" + Date.now().toString(36).toUpperCase()
+  const rd = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+  const vu = "https://nooryi-studio.vercel.app/verify/pricing/" + artistSlug + "?report=" + rn
 
-  return(
+  const tRows = regions.map((r, i) => {
+    const tot = Number(r.basePrice) + Number(r.travelFee || 0)
+    return '<tr><td class="mono">' + String(i+1).padStart(2,'0') + '</td><td class="bold">' + r.regionName + '</td><td style="text-align:center;font-weight:700">' + Number(r.basePrice).toLocaleString() + ' \u062C.\u0645</td><td style="text-align:center;color:#666">' + (Number(r.travelFee||0) > 0 ? "+" + Number(r.travelFee).toLocaleString() + " \u062C.\u0645" : "\u2014") + '</td><td style="text-align:center"><span class="gld-bg">' + tot.toLocaleString() + ' \u062C.\u0645</span></td></tr>'
+  }).join("")
+
+  const printHTML =
+    '<div class="page">' +
+      '<div class="hdr"><div class="hdr-flex"><div><h1>Nooryi</h1><div class="gold-line"></div><p class="tagline">STUDIO FOR ARTISTS & EVENTS</p><div class="hdr-info"><p><b>\u0627\u0644\u0633\u062C\u0644 \u0627\u0644\u062A\u062C\u0627\u0631\u064A:</b> <code>123456789</code></p><p><b>\u0627\u0644\u0631\u0642\u0645 \u0627\u0644\u0636\u0631\u064A\u0628\u064A:</b> <code>300000000000003</code></p></div></div><div style="text-align:left"><div class="tbox"><h2>\u062A\u0642\u0631\u064A\u0631 \u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u0645\u0646\u0627\u0637\u0642</h2><p>' + artistName + '</p></div><div class="rid"><div class="rl">\u0631\u0642\u0645 \u0627\u0644\u062A\u0642\u0631\u064A\u0631</div><div class="rv">' + rn + '</div></div></div></div></div>' +
+      '<div class="content">' +
+        '<div class="asec"><div class="acard"><div class="al">\u0627\u0644\u0641\u0646\u0627\u0646:</div><div class="ainfo"><div class="aph">' + artistName.charAt(0) + '</div><div><div class="an">' + artistName + '</div><div class="acat">' + regions.length + ' \u0645\u0646\u0637\u0642\u0629 \u0645\u0633\u062C\u0644\u0629</div></div></div></div><div style="text-align:left;display:flex;align-items:center"><div class="dgrid"><span class="dl">\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0625\u0635\u062F\u0627\u0631:</span><span class="dv">' + rd + '</span><span class="dl">\u0639\u062F\u062F \u0627\u0644\u0645\u0646\u0627\u0637\u0642:</span><span class="dv">' + regions.length + '</span><span class="dl">\u0645\u062A\u0648\u0633\u0637 \u0627\u0644\u0633\u0639\u0631:</span><span class="dv">' + avg.toLocaleString() + ' \u062C.\u0645</span><span class="dl">\u0627\u0644\u0639\u0645\u0644\u0629:</span><span class="dv">EGP</span></div></div></div>' +
+        '<div class="stitle">\u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0623\u0633\u0639\u0627\u0631 \u062D\u0633\u0628 \u0627\u0644\u0645\u0646\u0637\u0642\u0629</div>' +
+        (regions.length === 0 ? '<p style="text-align:center;color:#888;padding:24px">\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0646\u0627\u0637\u0642</p>' : '<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">\u0627\u0644\u0645\u0646\u0637\u0642\u0629</th><th style="text-align:center">\u0627\u0644\u0633\u0639\u0631 \u0627\u0644\u0623\u0633\u0627\u0633\u064A</th><th style="text-align:center">\u0631\u0633\u0648\u0645 \u0627\u0644\u0633\u0641\u0631</th><th style="text-align:center">\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A</th></tr></thead><tbody>' + tRows + '</tbody><tfoot><tr style="background:#0a0a0a;color:#D4AF37;font-weight:900"><td colspan="2" style="text-align:right;padding:10px">\u0627\u0644\u0645\u062C\u0645\u0648\u0639</td><td style="text-align:center;padding:10px">' + regions.reduce((s,r)=>s+Number(r.basePrice),0).toLocaleString() + ' \u062C.\u0645</td><td style="text-align:center;padding:10px">' + regions.reduce((s,r)=>s+Number(r.travelFee||0),0).toLocaleString() + ' \u062C.\u0645</td><td style="text-align:center;padding:10px">' + regions.reduce((s,r)=>s+Number(r.basePrice)+Number(r.travelFee||0),0).toLocaleString() + ' \u062C.\u0645</td></tr></tfoot></table>') +
+      '</div>' +
+      '<div class="ftr"><div class="ftr-grid"><div class="ftr-left"><h4>\u0627\u0644\u0634\u0631\u0648\u0637 \u0648\u0627\u0644\u0623\u062D\u0643\u0627\u0645:</h4><ul><li><span class="dot">\u2022</span>\u0627\u0644\u0623\u0633\u0639\u0627\u0631 \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u062A\u063A\u064A\u064A\u0631 \u062F\u0648\u0646 \u0625\u0634\u0639\u0627\u0631 \u0645\u0633\u0628\u0642.</li><li><span class="dot">\u2022</span>\u0631\u0633\u0648\u0645 \u0627\u0644\u0633\u0641\u0631 \u062A\u064F\u0636\u0627\u0641 \u062A\u0644\u0642\u0627\u0626\u064A\u0627\u064B \u062D\u0633\u0628 \u0627\u0644\u0645\u0646\u0637\u0642\u0629.</li><li><span class="dot">\u2022</span>\u064A\u0645\u0643\u0646 \u0627\u0644\u062A\u062D\u0642\u0642 \u0628\u0645\u0633\u062D \u0631\u0645\u0632 QR \u0623\u062F\u0646\u0627\u0647.</li></ul></div><div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">\u2713 \u0645\u0639\u062A\u0645\u062F \u0631\u0633\u0645\u064A\u0627\u064B</div></div></div><div class="stamp-label">\u062E\u062A\u0645 \u0627\u0644\u0645\u0646\u0635\u0629 \u0627\u0644\u0631\u0633\u0645\u064A</div></div><div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(vu) + '" width="80" height="80"/></div><div class="qr-label">\u0627\u0645\u0633\u062D \u0644\u0644\u062A\u062D\u0642\u0642</div></div></div><div class="sig"><div class="sig-line"></div><div class="sig-name">\u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062F\u064A\u0631 \u0627\u0644\u0645\u0627\u0644\u064A</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div><div class="copyright">\u00A9 ' + new Date().getFullYear() + ' Nooryi Studio \u2014 \u062C\u0645\u064A\u0639 \u0627\u0644\u062D\u0642\u0648\u0642 \u0645\u062D\u0641\u0648\u0638\u0629</div></div>' +
+    '</div>'
+
+  const handlePrint = () => {
+    const win = window.open("", "_blank", "width=800,height=1100")
+    if (!win) { alert("\u0627\u0633\u0645\u062D \u0628\u0627\u0644\u0646\u0648\u0627\u0641\u0630 \u0627\u0644\u0645\u0646\u0628\u062B\u0642\u0629"); return }
+    win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>\u0623\u0633\u0639\u0627\u0631 ' + artistName + '</title><style>' + PRINT_CSS + '</style></head><body>' + printHTML + '</body></html>')
+    win.document.close()
+    setTimeout(() => win.print(), 800)
+  }
+
+  return (
     <div dir="rtl" className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><div className="badge-gold mb-3">التسعير</div><h1 className="text-3xl font-black text-white flex items-center gap-2"><MapPin size={28} className="text-[#D4AF37]"/> تسعير {artistName}</h1><p className="text-gray-400 text-sm mt-1">{regions.length} منطقة • متوسط: {avg.toLocaleString()} ج.م</p></div>
-        <button onClick={handlePrint} disabled={regions.length===0} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition disabled:opacity-50"><Printer size={16}/> طباعة</button>
+        <div><div className="badge-gold mb-3">\u0627\u0644\u062A\u0633\u0639\u064A\u0631</div><h1 className="text-3xl font-black text-white flex items-center gap-2"><MapPin size={28} className="text-[#D4AF37]" /> \u062A\u0633\u0639\u064A\u0631 {artistName}</h1><p className="text-gray-400 text-sm mt-1">{regions.length} \u0645\u0646\u0637\u0642\u0629 \u2022 \u0645\u062A\u0648\u0633\u0637: {avg.toLocaleString()} \u062C.\u0645</p></div>
+        <button onClick={handlePrint} disabled={regions.length===0} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition disabled:opacity-50"><Printer size={16} /> \u0637\u0628\u0627\u0639\u0629</button>
       </div>
-      {error&&<div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 font-bold flex items-center gap-2"><AlertCircle size={20}/>{error}</div>}
-      {success&&<div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-green-400 font-bold flex items-center gap-2"><Check size={20}/>{success}</div>}
-      <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 overflow-hidden"><div className="p-5 border-b border-[#D4AF37]/20"><h2 className="text-xl font-black text-white">مناطق التسعير</h2></div>{regions.length===0?<p className="text-gray-500 text-center py-10">لا توجد مناطق</p>:<div className="overflow-x-auto"><table className="w-full min-w-[600px]"><thead><tr className="border-b border-[#D4AF37]/20 bg-[#0a0a0a]"><th className="text-right py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">المنطقة</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">السعر</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">السفر</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">الإجمالي</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">إجراءات</th></tr></thead><tbody>{regions.map(r=>(<tr key={r.id} className="border-b border-[#D4AF37]/5 hover:bg-[#1a1a1a]"><td className="py-3 px-4 font-bold text-white">{r.regionName}</td><td className="py-3 px-4 text-center text-gray-300">{Number(r.basePrice).toLocaleString()} ج.م</td><td className="py-3 px-4 text-center text-gray-400">{Number(r.travelFee||0).toLocaleString()} ج.م</td><td className="py-3 px-4 text-center font-black text-[#D4AF37]">{(Number(r.basePrice)+Number(r.travelFee||0)).toLocaleString()} ج.م</td><td className="py-3 px-4 text-center"><div className="flex items-center justify-center gap-2"><button onClick={()=>handleEdit(r)} className="p-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg text-blue-400 transition"><Edit3 size={14}/></button><button onClick={()=>handleDelete(r.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400 transition"><Trash2 size={14}/></button></div></td></tr>))}</tbody></table></div>}</div>
-      <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 p-5"><h3 className="text-lg font-black text-white mb-4 flex items-center gap-2"><Plus size={18} className="text-[#D4AF37]"/>{editingId?"تعديل المنطقة":"إضافة منطقة جديدة"}</h3><form onSubmit={handleSubmit} className="space-y-4"><div className="grid md:grid-cols-3 gap-4"><div><label className="block text-xs font-bold text-gray-400 mb-1">اسم المنطقة *</label><input type="text" value={form.regionName} onChange={e=>setForm({...form,regionName:e.target.value})} placeholder="القاهرة" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]" required/></div><div><label className="block text-xs font-bold text-gray-400 mb-1">السعر (ج.م) *</label><input type="number" value={form.basePrice} onChange={e=>setForm({...form,basePrice:e.target.value})} placeholder="5000" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]" required/></div><div><label className="block text-xs font-bold text-gray-400 mb-1">رسوم السفر</label><input type="number" value={form.travelFee} onChange={e=>setForm({...form,travelFee:e.target.value})} placeholder="0" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]"/></div></div><div className="flex gap-3"><button type="submit" disabled={saving} className="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">{saving?<><Loader2 size={18} className="animate-spin"/> جاري...</>:<><Save size={18}/> {editingId?"تحديث":"إضافة"}</>}</button>{editingId&&<button type="button" onClick={()=>{setEditingId(null);setForm({regionName:"",basePrice:"",travelFee:"0"})}} className="px-6 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl font-bold text-gray-400 hover:text-white transition"><X size={18}/></button>}</div></form></div>
+      {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 font-bold flex items-center gap-2"><AlertCircle size={20} />{error}</div>}
+      {success && <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-green-400 font-bold flex items-center gap-2"><Check size={20} />{success}</div>}
+      <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 overflow-hidden"><div className="p-5 border-b border-[#D4AF37]/20"><h2 className="text-xl font-black text-white">\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u062A\u0633\u0639\u064A\u0631</h2></div>{regions.length===0 ? <p className="text-gray-500 text-center py-10">\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0646\u0627\u0637\u0642</p> : <div className="overflow-x-auto"><table className="w-full min-w-[600px]"><thead><tr className="border-b border-[#D4AF37]/20 bg-[#0a0a0a]"><th className="text-right py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">\u0627\u0644\u0645\u0646\u0637\u0642\u0629</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">\u0627\u0644\u0633\u0639\u0631</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">\u0627\u0644\u0633\u0641\u0631</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A</th><th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">\u0625\u062C\u0631\u0627\u0621\u0627\u062A</th></tr></thead><tbody>{regions.map(r => (<tr key={r.id} className="border-b border-[#D4AF37]/5 hover:bg-[#1a1a1a]"><td className="py-3 px-4 font-bold text-white">{r.regionName}</td><td className="py-3 px-4 text-center text-gray-300">{Number(r.basePrice).toLocaleString()} \u062C.\u0645</td><td className="py-3 px-4 text-center text-gray-400">{Number(r.travelFee||0).toLocaleString()} \u062C.\u0645</td><td className="py-3 px-4 text-center font-black text-[#D4AF37]">{(Number(r.basePrice)+Number(r.travelFee||0)).toLocaleString()} \u062C.\u0645</td><td className="py-3 px-4 text-center"><div className="flex items-center justify-center gap-2"><button onClick={()=>handleEdit(r)} className="p-2 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg text-blue-400 transition"><Edit3 size={14} /></button><button onClick={()=>handleDelete(r.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400 transition"><Trash2 size={14} /></button></div></td></tr>))}</tbody></table></div>}</div>
+      <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 p-5"><h3 className="text-lg font-black text-white mb-4 flex items-center gap-2"><Plus size={18} className="text-[#D4AF37]" />{editingId ? "\u062A\u0639\u062F\u064A\u0644 \u0627\u0644\u0645\u0646\u0637\u0642\u0629" : "\u0625\u0636\u0627\u0641\u0629 \u0645\u0646\u0637\u0642\u0629 \u062C\u062F\u064A\u062F\u0629"}</h3><form onSubmit={handleSubmit} className="space-y-4"><div className="grid md:grid-cols-3 gap-4"><div><label className="block text-xs font-bold text-gray-400 mb-1">\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u0637\u0642\u0629 *</label><input type="text" value={form.regionName} onChange={e=>setForm({...form,regionName:e.target.value})} placeholder="\u0627\u0644\u0642\u0627\u0647\u0631\u0629" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]" required /></div><div><label className="block text-xs font-bold text-gray-400 mb-1">\u0627\u0644\u0633\u0639\u0631 (\u062C.\u0645) *</label><input type="number" value={form.basePrice} onChange={e=>setForm({...form,basePrice:e.target.value})} placeholder="5000" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]" required /></div><div><label className="block text-xs font-bold text-gray-400 mb-1">\u0631\u0633\u0648\u0645 \u0627\u0644\u0633\u0641\u0631</label><input type="number" value={form.travelFee} onChange={e=>setForm({...form,travelFee:e.target.value})} placeholder="0" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl text-white outline-none focus:ring-2 focus:ring-[#D4AF37]" /></div></div><div className="flex gap-3"><button type="submit" disabled={saving} className="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl disabled:opacity-50 flex items-center justify-center gap-2">{saving ? <><Loader2 size={18} className="animate-spin" /> \u062C\u0627\u0631\u064A...</> : <><Save size={18} /> {editingId ? "\u062A\u062D\u062F\u064A\u062B" : "\u0625\u0636\u0627\u0641\u0629"}</>}</button>{editingId && <button type="button" onClick={()=>{setEditingId(null);setForm({regionName:"",basePrice:"",travelFee:"0"})}} className="px-6 py-3 bg-[#1a1a1a] border border-[#D4AF37]/20 rounded-xl font-bold text-gray-400 hover:text-white transition"><X size={18} /></button>}</div></form></div>
     </div>
   )
 }

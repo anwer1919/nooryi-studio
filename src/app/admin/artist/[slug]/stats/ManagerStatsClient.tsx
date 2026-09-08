@@ -1,54 +1,135 @@
 "use client"
 import { DollarSign, TrendingUp, CheckCircle2, Clock, Printer, Download } from "lucide-react"
 
-const S={name:"Nooryi Studio",tag:"STUDIO FOR ARTISTS & EVENTS",reg:"123456789",tax:"300000000000003",web:"https://nooryi-studio.vercel.app"}
+const PRINT_CSS = [
+  "@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');",
+  "*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}",
+  "body{font-family:'Cairo',sans-serif;background:#fff;color:#000;direction:rtl;padding:0}",
+  "@media print{@page{margin:10mm;size:A4 portrait}}",
+  ".page{max-width:210mm;margin:0 auto;background:#fff;padding:12mm 16mm;position:relative}",
+  ".hdr{margin-bottom:30px;padding-bottom:20px;border-bottom:4px solid #000;position:relative}",
+  ".hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:#D4AF37}",
+  ".hdr-flex{display:flex;justify-content:space-between;align-items:flex-start}",
+  ".hdr h1{font-size:48px;font-weight:900;margin-bottom:6px}",
+  ".gold-line{width:100px;height:4px;background:#D4AF37;margin-bottom:10px}",
+  ".tagline{font-size:12px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:12px}",
+  ".hdr-info{font-size:11px;color:#888;line-height:1.8}",
+  ".hdr-info b{color:#000}.hdr-info code{font-family:monospace}",
+  ".tbox{background:#000;padding:14px 28px;border-radius:8px;text-align:center}",
+  ".tbox h2{font-size:20px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.2em}",
+  ".tbox p{font-size:13px;color:#fff;margin-top:4px}",
+  ".rid{background:#D4AF37;padding:6px 14px;border-radius:8px;margin-top:10px;text-align:center}",
+  ".rid .rl{font-size:11px;font-weight:700}.rid .rv{font-family:monospace;font-weight:700;font-size:13px}",
+  ".content{margin-bottom:30px}",
+  ".asec{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:30px}",
+  ".acard{background:linear-gradient(135deg,#f9fafb,#fff);padding:18px;border-radius:10px;border:2px solid #000}",
+  ".acard .al{font-size:11px;font-weight:900;color:#D4AF37;text-transform:uppercase;letter-spacing:0.3em;margin-bottom:10px}",
+  ".ainfo{display:flex;align-items:center;gap:12px}",
+  ".aph{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#D4AF37,#b8941f);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#0a0a0a}",
+  ".an{font-size:17px;font-weight:700}.acat{font-size:12px;color:#666}.acm{font-size:11px;color:#888;margin-top:3px}",
+  ".dgrid{display:inline-grid;grid-template-columns:auto auto;gap:8px 24px;font-size:12px;text-align:left}",
+  ".dgrid .dl{color:#888}.dgrid .dv{font-weight:700}",
+  ".stitle{font-size:16px;font-weight:900;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #D4AF37}",
+  ".sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:30px}",
+  ".sc{padding:16px;border-radius:10px;text-align:center}",
+  ".sc.dk{background:#000}.sc.lt{background:#f9fafb;border:2px solid #000}",
+  ".sc .sl{font-size:11px;margin-bottom:4px}.sc.dk .sl{color:#999}.sc.lt .sl{color:#888}",
+  ".sc .sv{font-size:18px;font-weight:900}.sc.dk .sv{color:#D4AF37}.sc.lt .sv{color:#000}",
+  ".sc .su{font-size:10px;color:#999}",
+  ".tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:30px}",
+  ".tbl th{background:#0a0a0a;color:#D4AF37;padding:10px 8px;font-size:11px;font-weight:700}",
+  ".tbl td{padding:10px 8px;border-bottom:1px solid #e5e7eb}",
+  ".tbl tr:nth-child(even){background:#f9fafb}",
+  ".tbl .mono{font-family:monospace;font-size:11px;color:#888}",
+  ".tbl .gold{font-weight:900;color:#D4AF37;text-align:center}",
+  ".tbl .bold{font-weight:700}",
+  ".fin{display:flex;justify-content:flex-end;margin-bottom:30px}",
+  ".fbox{width:360px;border:2px solid #000;border-radius:12px;overflow:hidden}",
+  ".frow{display:flex;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #e5e7eb}",
+  ".frow.gr{background:#f9fafb}.frow.tot{background:#000;color:#fff;padding:18px;border:none}",
+  ".frow .fl{font-weight:700}.frow.gr .fl{color:#666}",
+  ".frow .fv{font-weight:700;font-size:15px}.frow .fv.red{color:#dc2626}",
+  ".frow.tot .fl{color:#D4AF37;font-size:16px}.frow.tot .fv{color:#D4AF37;font-size:24px;font-weight:900}",
+  ".ftr{border-top:4px solid #000;padding-top:20px;position:relative}",
+  ".ftr::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#D4AF37}",
+  ".ftr-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;margin-bottom:16px}",
+  ".ftr-left h4{font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px}",
+  ".ftr-left ul{list-style:none;font-size:11px;color:#666;line-height:1.8}",
+  ".ftr-left ul li{display:flex;gap:6px}",
+  ".dot{color:#D4AF37;font-weight:700}",
+  ".stamp-col{display:flex;flex-direction:column;align-items:center}",
+  ".stamp{width:120px;height:120px;border:3px solid #000;border-radius:50%;display:flex;align-items:center;justify-content:center;transform:rotate(-15deg);position:relative}",
+  ".stamp-ring{position:absolute;inset:6px;border:2px solid #D4AF37;border-radius:50%}",
+  ".stamp-txt{text-align:center;z-index:1}",
+  ".stamp-txt .s1{font-size:18px;font-weight:900;letter-spacing:0.08em}",
+  ".stamp-txt .sline{width:70px;height:2px;background:#D4AF37;margin:3px auto}",
+  ".stamp-txt .s2{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em}",
+  ".stamp-txt .s3{font-size:9px;font-weight:700;color:#D4AF37;margin-top:3px}",
+  ".stamp-label{font-size:8px;color:#888;font-weight:700;text-transform:uppercase;margin-top:6px}",
+  ".qr-col{display:flex;flex-direction:column;align-items:center}",
+  ".qr-box{background:#fff;padding:8px;border-radius:8px;border:2px solid #000;display:inline-block}",
+  ".qr-label{font-size:8px;color:#888;font-weight:700;margin-top:4px}",
+  ".sig{text-align:center;margin-top:12px}",
+  ".sig-line{width:140px;height:2px;background:#000;margin:0 auto 8px}",
+  ".sig-name{font-size:12px;font-weight:900}.sig-dept{font-size:10px;color:#888;margin-top:3px}",
+  ".copyright{text-align:center;font-size:9px;color:#aaa;margin-top:12px;padding-top:10px;border-top:1px solid #eee}"
+].join("\n")
 
-export default function ManagerStatsClient({data}:{data:any}){
-  const a=data.artist
-  const rd=new Date().toLocaleDateString("ar-EG",{year:"numeric",month:"long",day:"numeric"})
-  const rn="RPT-"+a.id.slice(-6).toUpperCase()+"-"+Date.now().toString(36).toUpperCase()
-  const vu=S.web+"/invoice/verify?id="+rn+"&type=artist-report"
+export default function ManagerStatsClient({ data }: { data: any }) {
+  const a = data.artist
+  const rd = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })
+  const rn = "RPT-" + a.id.slice(-6).toUpperCase() + "-" + Date.now().toString(36).toUpperCase()
+  const vu = "https://nooryi-studio.vercel.app/invoice/verify?id=" + rn + "&type=artist-report"
 
-  const tRows=(data.recent||[]).map((b:any,i:number)=>'<tr><td class="mono">'+String(i+1).padStart(2,'0')+'</td><td class="bold">'+b.clientName+'</td><td style="text-align:center">'+(b.date?new Date(b.date).toLocaleDateString("ar-EG"):"—")+'</td><td>'+(b.venue?.name||"—")+'</td><td class="gold">'+Number(b.grossAmount||0).toLocaleString()+' ج.م</td></tr>').join("")
+  const tRows = (data.recent || []).map((b: any, i: number) =>
+    '<tr><td class="mono">' + String(i+1).padStart(2,'0') + '</td><td class="bold">' + b.clientName + '</td><td style="text-align:center">' + (b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "\u2014") + '</td><td>' + (b.venue?.name || "\u2014") + '</td><td class="gold">' + Number(b.grossAmount||0).toLocaleString() + ' \u062C.\u0645</td></tr>'
+  ).join("")
 
-  const printHTML='<div class="page">'+
-    '<div class="hdr"><div class="hdr-flex"><div><h1>Nooryi</h1><div class="gold-line"></div><p class="tagline">'+S.tag+'</p><div class="hdr-info"><p><b>السجل التجاري:</b> <code>'+S.reg+'</code></p><p><b>الرقم الضريبي:</b> <code>'+S.tax+'</code></p></div></div><div style="text-align:left"><div class="title-box"><h2>تقرير مالي شامل</h2><p>'+a.name+'</p></div><div class="rid"><div class="rl">رقم التقرير</div><div class="rv">'+rn+'</div></div></div></div></div>'+
-    '<div class="content">'+
-    '<div class="asec"><div class="acard"><div class="al">الفنان:</div><div class="ainfo"><div class="aph">'+a.name.charAt(0)+'</div><div><div class="an">'+a.name+'</div><div class="acat">'+(a.category||"فنان")+'</div><div class="acm">عمولة المنصة: '+data.commissionRate+'%</div></div></div></div><div style="text-align:left;display:flex;align-items:center"><div class="dg"><span class="dl">تاريخ الإصدار:</span><span class="dv">'+rd+'</span><span class="dl">الحجوزات:</span><span class="dv">'+data.total+'</span><span class="dl">مؤكدة:</span><span class="dv">'+data.confirmed+'</span><span class="dl">مكتملة:</span><span class="dv">'+data.completed+'</span><span class="dl">التقييم:</span><span class="dv">'+Number(data.rating).toFixed(1)+' ⭐ ('+data.ratingCount+')</span></div></div></div>'+
-    '<div class="stitle">الملخص التنفيذي</div>'+
-    '<div class="sgrid"><div class="sc dk"><div class="sl">إجمالي الإيرادات</div><div class="sv">'+data.revenue.toLocaleString()+'</div><div class="su">ج.م</div></div><div class="sc lt"><div class="sl">حجوزات مؤكدة</div><div class="sv">'+data.confirmed+'</div></div><div class="sc lt"><div class="sl">قيد المراجعة</div><div class="sv">'+data.pending+'</div></div><div class="sc lt"><div class="sl">صافي الفنان</div><div class="sv">'+data.net.toLocaleString()+'</div><div class="su">ج.م</div></div></div>'+
-    '<div class="stitle">آخر الحجوزات المؤكدة</div>'+
-    (data.recent.length===0?'<p style="text-align:center;color:#888;padding:20px">لا توجد حجوزات</p>':'<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">العميل</th><th style="text-align:center">التاريخ</th><th style="text-align:right">المكان</th><th style="text-align:center">المبلغ</th></tr></thead><tbody>'+tRows+'</tbody></table>')+
-    '<div class="fin"><div class="fbox"><div class="frow"><span class="fl">إجمالي الإيرادات:</span><span class="fv">'+data.revenue.toLocaleString()+' ج.م</span></div><div class="frow gr"><span class="fl">عمولة المنصة ('+data.commissionRate+'%):</span><span class="fv red">-'+data.commission.toLocaleString()+' ج.م</span></div><div class="frow tot"><span class="fl">صافي الفنان:</span><span class="fv">'+data.net.toLocaleString()+' ج.م</span></div></div></div>'+
-    '</div>'+
-    '<div class="ftr"><div class="ftr-grid"><div class="ftr-left"><h4>الشروط والأحكام:</h4><ul><li><span class="dot">•</span>هذا التقرير صادر آلياً من نظام Nooryi Studio.</li><li><span class="dot">•</span>يمكن التحقق من صحته عبر مسح رمز QR أدناه.</li><li><span class="dot">•</span>البيانات قابلة للتغيير دون إشعار مسبق.</li></ul></div><div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">✓ معتمد رسمياً</div></div></div><div class="stamp-label">ختم المنصة الرسمي</div></div><div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data='+encodeURIComponent(vu)+'" width="80" height="80"/></div><div class="qr-label">امسح للتحقق من صحة التقرير</div></div></div><div class="sig"><div class="sig-line"></div><div class="sig-name">توقيع المدير المالي</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div><div class="copyright">© '+new Date().getFullYear()+' '+S.name+' — جميع الحقوق محفوظة | ترخيص '+S.reg+'</div></div>'+
-  '</div>'
+  const printHTML =
+    '<div class="page">' +
+      '<div class="hdr"><div class="hdr-flex"><div><h1>Nooryi</h1><div class="gold-line"></div><p class="tagline">STUDIO FOR ARTISTS & EVENTS</p><div class="hdr-info"><p><b>\u0627\u0644\u0633\u062C\u0644 \u0627\u0644\u062A\u062C\u0627\u0631\u064A:</b> <code>123456789</code></p><p><b>\u0627\u0644\u0631\u0642\u0645 \u0627\u0644\u0636\u0631\u064A\u0628\u064A:</b> <code>300000000000003</code></p></div></div><div style="text-align:left"><div class="tbox"><h2>\u062A\u0642\u0631\u064A\u0631 \u0645\u0627\u0644\u064A \u0634\u0627\u0645\u0644</h2><p>' + a.name + '</p></div><div class="rid"><div class="rl">\u0631\u0642\u0645 \u0627\u0644\u062A\u0642\u0631\u064A\u0631</div><div class="rv">' + rn + '</div></div></div></div></div>' +
+      '<div class="content">' +
+        '<div class="asec"><div class="acard"><div class="al">\u0627\u0644\u0641\u0646\u0627\u0646:</div><div class="ainfo"><div class="aph">' + a.name.charAt(0) + '</div><div><div class="an">' + a.name + '</div><div class="acat">' + (a.category||"\u0641\u0646\u0627\u0646") + '</div><div class="acm">\u0639\u0645\u0648\u0644\u0629 \u0627\u0644\u0645\u0646\u0635\u0629: ' + data.commissionRate + '%</div></div></div></div><div style="text-align:left;display:flex;align-items:center"><div class="dgrid"><span class="dl">\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0625\u0635\u062F\u0627\u0631:</span><span class="dv">' + rd + '</span><span class="dl">\u0627\u0644\u062D\u062C\u0648\u0632\u0627\u062A:</span><span class="dv">' + data.total + '</span><span class="dl">\u0645\u0624\u0643\u062F\u0629:</span><span class="dv">' + data.confirmed + '</span><span class="dl">\u0645\u0643\u062A\u0645\u0644\u0629:</span><span class="dv">' + data.completed + '</span><span class="dl">\u0627\u0644\u062A\u0642\u064A\u064A\u0645:</span><span class="dv">' + Number(data.rating).toFixed(1) + ' \u2B50 (' + data.ratingCount + ')</span></div></div></div>' +
+        '<div class="stitle">\u0627\u0644\u0645\u0644\u062E\u0635 \u0627\u0644\u062A\u0646\u0641\u064A\u0630\u064A</div>' +
+        '<div class="sgrid"><div class="sc dk"><div class="sl">\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A</div><div class="sv">' + data.revenue.toLocaleString() + '</div><div class="su">\u062C.\u0645</div></div><div class="sc lt"><div class="sl">\u062D\u062C\u0648\u0632\u0627\u062A \u0645\u0624\u0643\u062F\u0629</div><div class="sv">' + data.confirmed + '</div></div><div class="sc lt"><div class="sl">\u0642\u064A\u062F \u0627\u0644\u0645\u0631\u0627\u062C\u0639\u0629</div><div class="sv">' + data.pending + '</div></div><div class="sc lt"><div class="sl">\u0635\u0627\u0641\u064A \u0627\u0644\u0641\u0646\u0627\u0646</div><div class="sv">' + data.net.toLocaleString() + '</div><div class="su">\u062C.\u0645</div></div></div>' +
+        '<div class="stitle">\u0622\u062E\u0631 \u0627\u0644\u062D\u062C\u0648\u0632\u0627\u062A \u0627\u0644\u0645\u0624\u0643\u062F\u0629</div>' +
+        (data.recent.length === 0 ? '<p style="text-align:center;color:#888;padding:20px">\u0644\u0627 \u062A\u0648\u062C\u062F \u062D\u062C\u0648\u0632\u0627\u062A</p>' : '<table class="tbl"><thead><tr><th style="text-align:right">#</th><th style="text-align:right">\u0627\u0644\u0639\u0645\u064A\u0644</th><th style="text-align:center">\u0627\u0644\u062A\u0627\u0631\u064A\u062E</th><th style="text-align:right">\u0627\u0644\u0645\u0643\u0627\u0646</th><th style="text-align:center">\u0627\u0644\u0645\u0628\u0644\u063A</th></tr></thead><tbody>' + tRows + '</tbody></table>') +
+        '<div class="fin"><div class="fbox"><div class="frow"><span class="fl">\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A:</span><span class="fv">' + data.revenue.toLocaleString() + ' \u062C.\u0645</span></div><div class="frow gr"><span class="fl">\u0639\u0645\u0648\u0644\u0629 \u0627\u0644\u0645\u0646\u0635\u0629 (' + data.commissionRate + '%):</span><span class="fv red">-' + data.commission.toLocaleString() + ' \u062C.\u0645</span></div><div class="frow tot"><span class="fl">\u0635\u0627\u0641\u064A \u0627\u0644\u0641\u0646\u0627\u0646:</span><span class="fv">' + data.net.toLocaleString() + ' \u062C.\u0645</span></div></div></div>' +
+      '</div>' +
+      '<div class="ftr"><div class="ftr-grid"><div class="ftr-left"><h4>\u0627\u0644\u0634\u0631\u0648\u0637 \u0648\u0627\u0644\u0623\u062D\u0643\u0627\u0645:</h4><ul><li><span class="dot">\u2022</span>\u0647\u0630\u0627 \u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u0635\u0627\u062F\u0631 \u0622\u0644\u064A\u0627\u064B \u0645\u0646 \u0646\u0638\u0627\u0645 Nooryi Studio.</li><li><span class="dot">\u2022</span>\u064A\u0645\u0643\u0646 \u0627\u0644\u062A\u062D\u0642\u0642 \u0645\u0646 \u0635\u062D\u062A\u0647 \u0639\u0628\u0631 \u0645\u0633\u062D \u0631\u0645\u0632 QR \u0623\u062F\u0646\u0627\u0647.</li><li><span class="dot">\u2022</span>\u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u062A\u063A\u064A\u064A\u0631 \u062F\u0648\u0646 \u0625\u0634\u0639\u0627\u0631 \u0645\u0633\u0628\u0642.</li></ul></div><div class="stamp-col"><div class="stamp"><div class="stamp-ring"></div><div class="stamp-txt"><div class="s1">NOORYI</div><div class="sline"></div><div class="s2">STUDIO</div><div class="s3">\u2713 \u0645\u0639\u062A\u0645\u062F \u0631\u0633\u0645\u064A\u0627\u064B</div></div></div><div class="stamp-label">\u062E\u062A\u0645 \u0627\u0644\u0645\u0646\u0635\u0629 \u0627\u0644\u0631\u0633\u0645\u064A</div></div><div class="qr-col"><div class="qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=' + encodeURIComponent(vu) + '" width="80" height="80"/></div><div class="qr-label">\u0627\u0645\u0633\u062D \u0644\u0644\u062A\u062D\u0642\u0642 \u0645\u0646 \u0635\u062D\u0629 \u0627\u0644\u062A\u0642\u0631\u064A\u0631</div></div></div><div class="sig"><div class="sig-line"></div><div class="sig-name">\u062A\u0648\u0642\u064A\u0639 \u0627\u0644\u0645\u062F\u064A\u0631 \u0627\u0644\u0645\u0627\u0644\u064A</div><div class="sig-dept">Nooryi Studio Finance Dept.</div></div><div class="copyright">\u00A9 ' + new Date().getFullYear() + ' Nooryi Studio \u2014 \u062C\u0645\u064A\u0639 \u0627\u0644\u062D\u0642\u0648\u0642 \u0645\u062D\u0641\u0648\u0638\u0629 | \u062A\u0631\u062E\u064A\u0635 123456789</div></div>' +
+    '</div>'
 
-  const handlePrint=()=>{const win=window.open("","_blank","width=800,height=1100");if(!win){alert("اسمح بالنوافذ المنبثقة للطباعة");return}win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>تقرير مالي — '+a.name+'</title><style>'+$HEADER_CSS+'</style></head><body>'+printHTML+'</body></html>');win.document.close();setTimeout(()=>win.print(),800)}
+  const handlePrint = () => {
+    const win = window.open("", "_blank", "width=800,height=1100")
+    if (!win) { alert("\u064A\u0631\u062C\u0649 \u0627\u0644\u0633\u0645\u0627\u062D \u0628\u0627\u0644\u0646\u0648\u0627\u0641\u0630 \u0627\u0644\u0645\u0646\u0628\u062B\u0642\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629"); return }
+    win.document.write('<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>\u062A\u0642\u0631\u064A\u0631 \u0645\u0627\u0644\u064A \u2014 ' + a.name + '</title><style>' + PRINT_CSS + '</style></head><body>' + printHTML + '</body></html>')
+    win.document.close()
+    setTimeout(() => win.print(), 800)
+  }
 
-  return(
+  return (
     <div dir="rtl" className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><div className="badge-gold mb-3">التقارير المالية</div><h1 className="text-3xl font-black text-white flex items-center gap-2"><TrendingUp size={28} className="text-[#D4AF37]"/> تقرير {a.name}</h1><p className="text-gray-400 text-sm mt-1">{rd}</p></div>
-        <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition"><Download size={20}/> حفظ / طباعة</button>
+        <div><div className="badge-gold mb-3">\u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0645\u0627\u0644\u064A\u0629</div><h1 className="text-3xl font-black text-white flex items-center gap-2"><TrendingUp size={28} className="text-[#D4AF37]" /> \u062A\u0642\u0631\u064A\u0631 {a.name}</h1><p className="text-gray-400 text-sm mt-1">{rd}</p></div>
+        <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition"><Download size={20} /> \u062D\u0641\u0638 / \u0637\u0628\u0627\u0639\u0629</button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><DollarSign className="w-8 h-8 text-[#D4AF37] mx-auto mb-2"/><p className="text-xs text-gray-400">الإيرادات</p><p className="text-xl font-black text-[#D4AF37]">{data.revenue.toLocaleString()}</p><p className="text-xs text-gray-500">ج.م</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2"/><p className="text-xs text-gray-400">مؤكدة</p><p className="text-xl font-black text-white">{data.confirmed}</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2"/><p className="text-xs text-gray-400">بانتظار</p><p className="text-xl font-black text-white">{data.pending}</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><TrendingUp className="w-8 h-8 text-[#D4AF37] mx-auto mb-2"/><p className="text-xs text-gray-400">صافي الفنان</p><p className="text-xl font-black text-white">{data.net.toLocaleString()}</p><p className="text-xs text-gray-500">ج.م</p></div>
+        <div className="bg-[#0a0a0a] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><DollarSign className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" /><p className="text-xs text-gray-400">\u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A</p><p className="text-xl font-black text-[#D4AF37]">{data.revenue.toLocaleString()}</p><p className="text-xs text-gray-500">\u062C.\u0645</p></div>
+        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" /><p className="text-xs text-gray-400">\u0645\u0624\u0643\u062F\u0629</p><p className="text-xl font-black text-white">{data.confirmed}</p></div>
+        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" /><p className="text-xs text-gray-400">\u0628\u0627\u0646\u062A\u0638\u0627\u0631</p><p className="text-xl font-black text-white">{data.pending}</p></div>
+        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#D4AF37]/20"><TrendingUp className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" /><p className="text-xs text-gray-400">\u0635\u0627\u0641\u064A \u0627\u0644\u0641\u0646\u0627\u0646</p><p className="text-xl font-black text-white">{data.net.toLocaleString()}</p><p className="text-xs text-gray-500">\u062C.\u0645</p></div>
       </div>
       <div className="bg-white p-10 rounded-2xl shadow-2xl border border-gray-200">
-        <p className="text-center text-gray-500 text-sm mb-4">👆 هذه معاينة — اضغط "حفظ / طباعة" للحصول على تقرير A4 كامل بالترويسة والختم وQR Code</p>
+        <p className="text-center text-gray-500 text-sm mb-4">\uD83D\uDC46 \u0647\u0630\u0647 \u0645\u0639\u0627\u064A\u0646\u0629 \u2014 \u0627\u0636\u063A\u0637 "\u062D\u0641\u0638 / \u0637\u0628\u0627\u0639\u0629" \u0644\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062A\u0642\u0631\u064A\u0631 A4 \u0643\u0627\u0645\u0644</p>
         <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className="bg-black p-4 rounded-xl text-center"><p className="text-[10px] text-gray-400">الإيرادات</p><p className="text-lg font-black text-[#D4AF37]">{data.revenue.toLocaleString()}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">مؤكدة</p><p className="text-lg font-black">{data.confirmed}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">بانتظار</p><p className="text-lg font-black">{data.pending}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">صافي</p><p className="text-lg font-black">{data.net.toLocaleString()}</p></div>
+          <div className="bg-black p-4 rounded-xl text-center"><p className="text-[10px] text-gray-400">\u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A</p><p className="text-lg font-black text-[#D4AF37]">{data.revenue.toLocaleString()}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">\u0645\u0624\u0643\u062F\u0629</p><p className="text-lg font-black">{data.confirmed}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">\u0628\u0627\u0646\u062A\u0638\u0627\u0631</p><p className="text-lg font-black">{data.pending}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">\u0635\u0627\u0641\u064A</p><p className="text-lg font-black">{data.net.toLocaleString()}</p></div>
         </div>
         <div className="border-t-2 border-[#D4AF37] pt-4 flex justify-between items-center">
-          <p className="text-xs text-gray-400">رقم التقرير: <span className="font-mono text-gray-600">{rn}</span></p>
-          <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg transition"><Printer size={16}/> طباعة الآن</button>
+          <p className="text-xs text-gray-400">\u0631\u0642\u0645 \u0627\u0644\u062A\u0642\u0631\u064A\u0631: <span className="font-mono text-gray-600">{rn}</span></p>
+          <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg transition"><Printer size={16} /> \u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0622\u0646</button>
         </div>
       </div>
     </div>
