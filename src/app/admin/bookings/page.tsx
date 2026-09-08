@@ -1,14 +1,17 @@
-import Link from "next/link";
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { getManagerContext, bookingWhere } from "@/lib/managerFilter";
-import { Calendar, Eye, CheckCircle2, Clock, DollarSign, MapPin, Phone, Mail } from "lucide-react";
+import { getManagerContext, bookingWhere } from "@/lib/managerFilter"
+import { Calendar, Clock, CheckCircle2, DollarSign, Mail, Phone, MapPin, Eye } from "lucide-react"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 export default async function AdminBookingsPage() {
-  let bookings: any[] = [];
+  const mgr = await getManagerContext()
+
+  let bookings: any[] = []
   try {
-    bookings = await prisma.booking.findMany({ where: bookingWhere(mgr),
+    bookings = await prisma.booking.findMany({
+      where: bookingWhere(mgr),
       orderBy: { createdAt: "desc" },
       include: {
         artist: { select: { name: true, slug: true } },
@@ -16,25 +19,24 @@ export default async function AdminBookingsPage() {
         customer: { select: { fullName: true, email: true, phone: true } },
         payments: { select: { amount: true, status: true } },
       },
-    });
+    })
   } catch (e: any) {
-    console.error("Bookings error:", e);
+    console.error("Bookings error:", e)
   }
 
   const getStatusInfo = (status: string) => {
-    const s = (status || "").toUpperCase();
-    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) return { label: "مؤكد", class: "status-confirmed" };
-    if (["PENDING_APPROVAL", "PENDING", "WAITING"].includes(s)) return { label: "قيد المراجعة", class: "status-pending" };
-    if (["COMPLETED", "DONE", "FINISHED"].includes(s)) return { label: "مكتمل", class: "status-completed" };
-    if (["REJECTED", "CANCELLED", "CANCELED"].includes(s)) return { label: "مرفوض", class: "status-rejected" };
-    return { label: status || "غير محدد", class: "status-pending" };
-  };
+    const s = (status || "").toUpperCase()
+    if (["CONFIRMED", "APPROVED", "ACCEPTED"].includes(s)) return { label: "مؤكد", class: "status-confirmed" }
+    if (["PENDING_APPROVAL", "PENDING", "WAITING"].includes(s)) return { label: "قيد المراجعة", class: "status-pending" }
+    if (["COMPLETED", "DONE", "FINISHED"].includes(s)) return { label: "مكتمل", class: "status-completed" }
+    if (["REJECTED", "CANCELLED", "CANCELED"].includes(s)) return { label: "مرفوض", class: "status-rejected" }
+    return { label: status || "غير محدد", class: "status-pending" }
+  }
 
-  const getAmount = (b: any): number => b.grossAmount ?? b.totalAmount ?? b.amount ?? 0;
-
-  const getClient = (b: any) => b.customer?.fullName || b.clientName || "عميل";
-  const getClientEmail = (b: any) => b.customer?.email || b.clientEmail || "—";
-  const getClientPhone = (b: any) => b.customer?.phone || b.clientPhone || b.phoneNumber || "—";
+  const getAmount = (b: any): number => b.grossAmount ?? b.totalAmount ?? b.amount ?? 0
+  const getClient = (b: any) => b.customer?.fullName || b.clientName || "عميل"
+  const getClientEmail = (b: any) => b.customer?.email || b.clientEmail || "—"
+  const getClientPhone = (b: any) => b.customer?.phone || b.clientPhone || b.phoneNumber || "—"
 
   const stats = {
     total: bookings.length,
@@ -44,13 +46,15 @@ export default async function AdminBookingsPage() {
     revenue: bookings
       .filter(b => ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"].includes((b.status || "").toUpperCase()))
       .reduce((sum, b) => sum + getAmount(b), 0),
-  };
+  }
 
   return (
     <div dir="rtl" className="space-y-6">
       <div>
         <div className="badge-gold mb-3">إدارة الحجوزات</div>
-        <h1 className="text-4xl font-black text-gray-900 dark:text-white">الحجوزات{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}</h1>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-white">
+          الحجوزات{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}
+        </h1>
         <p className="text-gray-500 mt-1">متابعة جميع الحجوزات — {bookings.length} حجز</p>
       </div>
 
@@ -108,13 +112,13 @@ export default async function AdminBookingsPage() {
               </thead>
               <tbody>
                 {bookings.map((b: any) => {
-                  const status = getStatusInfo(b.status);
-                  const amount = getAmount(b);
+                  const status = getStatusInfo(b.status)
+                  const amount = getAmount(b)
                   return (
                     <tr key={b.id}>
                       <td>
                         <div>
-                          <p className="font-bold text-gray-900">{getClient(b)}</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{getClient(b)}</p>
                           <div className="flex items-center gap-1 mt-1 text-xs text-gray-500" dir="ltr">
                             <Mail size={11} />
                             <span>{getClientEmail(b)}</span>
@@ -126,18 +130,18 @@ export default async function AdminBookingsPage() {
                         </div>
                       </td>
                       <td>
-                        <span className="font-bold text-gray-900">{b.artist?.name || "—"}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{b.artist?.name || "—"}</span>
                       </td>
                       <td>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
                           </p>
                           {b.timeSlot && <p className="text-xs text-gray-500">{b.timeSlot}</p>}
                         </div>
                       </td>
                       <td>
-                        <div className="flex items-center gap-1 text-sm text-gray-700">
+                        <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
                           <MapPin size={13} className="text-gray-400" />
                           <span>{b.venue?.name || "—"}</span>
                         </div>
@@ -145,7 +149,7 @@ export default async function AdminBookingsPage() {
                       </td>
                       <td>
                         <div>
-                          <p className="font-black text-gray-900">{amount.toLocaleString()} ج.م</p>
+                          <p className="font-black text-gray-900 dark:text-white">{amount.toLocaleString()} ج.م</p>
                           {b.depositAmount > 0 && (
                             <p className="text-xs text-gray-500">عربون: {b.depositAmount.toLocaleString()}</p>
                           )}
@@ -160,7 +164,7 @@ export default async function AdminBookingsPage() {
                         </Link>
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
@@ -168,5 +172,5 @@ export default async function AdminBookingsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

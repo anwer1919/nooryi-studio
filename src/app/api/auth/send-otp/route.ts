@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       whatsappLink = `https://wa.me/${phoneClean}?text=${encodeURIComponent(`🔐 رمز التحقق — Nooryi Studio:\n${otp}\nصالح 5 دقائق. لا تشاركه مع أحد.`)}`
     } else if (user.email) {
       destination = user.email
-      await sendEmail({ to: user.email, subject: "🔐 رمز التحقق — Nooryi Studio", html: otpEmailTemplate(otp) })
+      const emailResult = await sendEmail({ to: user.email, subject: "🔐 رمز التحقق — Nooryi Studio", html: otpEmailTemplate(otp) })
     } else if (user.phone) {
       destination = user.phone
       const phoneClean = user.phone.replace(/[^0-9]/g, "")
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     // ❌ لا نطبع الرمز في Logs أبداً (أمان)
-    console.log(`🔐 [2FA] code issued for ${normalizedEmail} via ${sendMethod}`)
+    console.log(`🔐 [2FA] code issued for ${normalizedEmail} via ${sendMethod} | emailResult:`, JSON.stringify(emailResult))
 
     return NextResponse.json({
       success: true,
