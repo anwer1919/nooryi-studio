@@ -1,6 +1,6 @@
 import { getManagerArtist } from "@/lib/managerAuth"
 import { prisma } from "@/lib/prisma"
-import ManagerPricingView from "./ManagerPricingView"
+import PricingClient from "./PricingClient"
 
 export const dynamic = "force-dynamic"
 
@@ -9,7 +9,6 @@ export default async function ArtistPricing({ params }: { params: Promise<{ slug
   const { artist } = await getManagerArtist(slug)
 
   const regions = await prisma.pricingRegion.findMany({ where: { artistId: artist.id }, orderBy: { basePrice: "asc" } }).catch(() => [])
-  const pricings = await prisma.pricing.findMany({ where: { artistId: artist.id }, orderBy: { price: "asc" } })
 
-  return <ManagerPricingView artist={JSON.parse(JSON.stringify(artist))} regions={JSON.parse(JSON.stringify(regions || []))} pricings={JSON.parse(JSON.stringify(pricings))} />
+  return <PricingClient artistId={artist.id} artistSlug={slug} artistName={artist.name} regions={JSON.parse(JSON.stringify(regions || []))} />
 }

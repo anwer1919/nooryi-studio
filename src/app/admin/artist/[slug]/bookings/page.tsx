@@ -1,7 +1,7 @@
 import { getManagerArtist } from "@/lib/managerAuth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { Calendar, Eye, DollarSign } from "lucide-react"
+import { Calendar, Eye, DollarSign, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -12,80 +12,62 @@ export default async function ArtistBookings({ params }: { params: Promise<{ slu
   const bookings = await prisma.booking.findMany({
     where: { artistId: artist.id },
     orderBy: { date: "desc" },
-    include: { venue: { select: { name: true, city: true } } },
+    include: { venue: { select: { name: true } } },
   })
 
-  const getStatus = (s: string) => {
-    const u = (s || "").toUpperCase()
-    if (["CONFIRMED","APPROVED","ACCEPTED"].includes(u)) return { label: "مؤكد", cls: "bg-green-100 text-green-700" }
-    if (["PENDING_APPROVAL","PENDING"].includes(u)) return { label: "بانتظار", cls: "bg-yellow-100 text-yellow-700" }
-    if (["COMPLETED","DONE"].includes(u)) return { label: "مكتمل", cls: "bg-blue-100 text-blue-700" }
-    if (["REJECTED","CANCELLED"].includes(u)) return { label: "مرفوض", cls: "bg-red-100 text-red-700" }
-    return { label: s, cls: "bg-gray-100 text-gray-600" }
+  const gs = (s: string) => {
+    const u = (s||"").toUpperCase()
+    if (["CONFIRMED","APPROVED","ACCEPTED"].includes(u)) return { l:"مؤكد", c:"bg-green-500/20 text-green-400 border-green-500/30" }
+    if (["PENDING_APPROVAL","PENDING"].includes(u)) return { l:"بانتظار", c:"bg-yellow-500/20 text-yellow-400 border-yellow-500/30" }
+    if (["COMPLETED","DONE"].includes(u)) return { l:"مكتمل", c:"bg-blue-500/20 text-blue-400 border-blue-500/30" }
+    return { l:"مرفوض", c:"bg-red-500/20 text-red-400 border-red-500/30" }
   }
 
-  const pending = bookings.filter(b => ["PENDING_APPROVAL","PENDING"].includes((b.status||"").toUpperCase())).length
-  const confirmed = bookings.filter(b => ["CONFIRMED","APPROVED","ACCEPTED","COMPLETED"].includes((b.status||"").toUpperCase())).length
-  const revenue = bookings.filter(b => ["CONFIRMED","APPROVED","COMPLETED"].includes((b.status||"").toUpperCase())).reduce((s: number, b: any) => s + Number(b.grossAmount||0), 0)
+  const pending = bookings.filter(b=>["PENDING_APPROVAL","PENDING"].includes((b.status||"").toUpperCase())).length
+  const confirmed = bookings.filter(b=>["CONFIRMED","APPROVED","ACCEPTED","COMPLETED"].includes((b.status||"").toUpperCase())).length
+  const revenue = bookings.filter(b=>["CONFIRMED","APPROVED","COMPLETED"].includes((b.status||"").toUpperCase())).reduce((s,b)=>s+Number(b.grossAmount||0),0)
 
   return (
     <div dir="rtl" className="space-y-6">
       <div>
         <div className="badge-gold mb-3">حجوزات الفنان</div>
-        <h1 className="text-4xl font-black text-gray-900">حجوزات {artist.name}</h1>
-        <p className="text-gray-500 mt-1">{bookings.length} حجز</p>
+        <h1 className="text-3xl font-black text-white flex items-center gap-2"><Calendar size={28} className="text-[#D4AF37]"/> حجوزات {artist.name}</h1>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="stat-card"><div className="stat-label">الإجمالي</div><div className="stat-value">{bookings.length}</div></div>
-        <div className="stat-card"><div className="stat-label">بانتظار</div><div className="stat-value">{pending}</div></div>
-        <div className="stat-card dark"><div className="stat-label">مؤكدة</div><div className="stat-value">{confirmed}</div></div>
-        <div className="stat-card"><div className="stat-label">الإيرادات</div><div className="stat-value">{revenue.toLocaleString()}</div><p className="text-xs text-gray-500 mt-1">ج.م</p></div>
+        <div className="bg-[#111] rounded-2xl p-5 border border-[#D4AF37]/20"><p className="text-xs text-gray-400 mb-1">الإجمالي</p><p className="text-2xl font-black text-white">{bookings.length}</p></div>
+        <div className="bg-[#111] rounded-2xl p-5 border border-yellow-500/20"><p className="text-xs text-gray-400 mb-1">بانتظار</p><p className="text-2xl font-black text-yellow-400">{pending}</p></div>
+        <div className="bg-[#111] rounded-2xl p-5 border border-green-500/20"><p className="text-xs text-gray-400 mb-1">مؤكدة</p><p className="text-2xl font-black text-green-400">{confirmed}</p></div>
+        <div className="bg-[#111] rounded-2xl p-5 border border-[#D4AF37]/20"><p className="text-xs text-gray-400 mb-1">الإيرادات</p><p className="text-xl font-black text-[#D4AF37]">{revenue.toLocaleString()} <span className="text-xs">ج.م</span></p></div>
       </div>
 
       {bookings.length === 0 ? (
-        <div className="card-pro text-center py-20">
-          <Calendar className="mx-auto text-gray-300 mb-4" size={56} />
-          <p className="text-gray-500">لا توجد حجوزات بعد</p>
-        </div>
+        <div className="bg-[#111] rounded-2xl p-12 text-center border border-[#D4AF37]/20"><Calendar className="mx-auto text-gray-600 mb-4" size={48}/><p className="text-gray-400">لا توجد حجوزات</p></div>
       ) : (
-        <div className="card-pro overflow-hidden">
-          <div className="overflow-x-auto touch-pan-x">
-            <table className="table-pro min-w-[800px]">
-              <thead>
-                <tr>
-                  <th>العميل</th>
-                  <th>التاريخ</th>
-                  <th>الوقت</th>
-                  <th>المكان</th>
-                  <th>المبلغ</th>
-                  <th>الحالة</th>
-                  <th className="text-center">عرض</th>
-                </tr>
-              </thead>
-              <tbody>
-                {bookings.map((b: any) => {
-                  const status = getStatus(b.status)
-                  return (
-                    <tr key={b.id}>
-                      <td>
-                        <p className="font-bold text-gray-900">{b.clientName}</p>
-                        <p className="text-xs text-gray-500">{b.clientPhone}</p>
-                      </td>
-                      <td>{b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}</td>
-                      <td>{b.timeSlot || "—"}</td>
-                      <td>{b.venue?.name || "—"}</td>
-                      <td><span className="font-black text-gray-900">{Number(b.grossAmount||0).toLocaleString()} ج.م</span></td>
-                      <td><span className={"status-chip " + status.cls}>{status.label}</span></td>
-                      <td className="text-center">
-                        <Link href={"/admin/bookings/" + b.id} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block" title="عرض التفاصيل والتأكيد">
-                          <Eye size={16} />
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
+        <div className="bg-[#111] rounded-2xl border border-[#D4AF37]/20 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead><tr className="border-b border-[#D4AF37]/20 bg-[#0a0a0a]">
+                <th className="text-right py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">العميل</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">التاريخ</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">الوقت</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">المكان</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">المبلغ</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">الحالة</th>
+                <th className="text-center py-3 px-4 text-xs font-bold text-[#D4AF37] uppercase">عرض</th>
+              </tr></thead>
+              <tbody>{bookings.map((b:any)=>{
+                const s=gs(b.status)
+                return (<tr key={b.id} className="border-b border-[#D4AF37]/5 hover:bg-[#1a1a1a] transition">
+                  <td className="py-3 px-4"><p className="font-bold text-white">{b.clientName}</p><p className="text-xs text-gray-500">{b.clientPhone}</p></td>
+                  <td className="py-3 px-4 text-center text-gray-300 text-sm">{b.date?new Date(b.date).toLocaleDateString("ar-EG"):"—"}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 text-sm">{b.timeSlot||"—"}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 text-sm">{b.venue?.name||"—"}</td>
+                  <td className="py-3 px-4 text-center font-black text-[#D4AF37]">{Number(b.grossAmount||0).toLocaleString()} ج.م</td>
+                  <td className="py-3 px-4 text-center"><span className={"text-xs px-3 py-1 rounded-full font-bold border "+s.c}>{s.l}</span></td>
+                  <td className="py-3 px-4 text-center"><Link href={"/admin/bookings/"+b.id} className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-bold hover:bg-[#D4AF37]/20 transition"><Eye size={14}/> عرض</Link></td>
+                </tr>)
+              })}</tbody>
             </table>
           </div>
         </div>
