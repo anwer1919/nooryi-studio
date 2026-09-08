@@ -9,6 +9,8 @@
 
 
 /* ═══════════ PRINT — MANAGER REPORTS ═══════════ */
+
+/* ═══════════ PRINT — MANAGER REPORTS ═══════════ */
 @media print {
   /* إخفاء كل شيء ما عدا التقرير */
   body > *:not(#print-wrapper) {
