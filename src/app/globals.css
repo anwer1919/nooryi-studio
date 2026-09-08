@@ -1,4 +1,5 @@
-mport "tailwindcss";
+@import "tailwindcss";
+@mport "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
 
