@@ -88,19 +88,7 @@ export default async function ArtistPricing({ params }: { params: Promise<{ slug
         <PricingForm artistId={artist.id} artistSlug={slug} />
       </div>
 
-      <style jsx global>{`
-        @media print {
-          body * { visibility: hidden; }
-          .print-area, .print-area * { visibility: visible; }
-          .print-area { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
-          .print-area .text-white { color: black !important; }
-          .print-area .text-gray-400, .print-area .text-gray-500 { color: #666 !important; }
-          .print-area .bg-\\[\\#111\\], .print-area .bg-\\[\\#1a1a1a\\] { background: white !important; border: 1px solid #ddd !important; }
-          .print-area .text-\\[\\#D4AF37\\] { color: #b8941f !important; }
-          .no-print { display: none !important; }
-          @page { size: A4; margin: 10mm; }
-        }
-      `}</style>
+      
     </div>
   )
 }

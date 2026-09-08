@@ -47,15 +47,7 @@ export default async function ArtistCalendarPage({ params }: { params: Promise<{
 
       <ManagerCalendar artistName={artist.name} bookedDates={bookedDates} availability={availability} />
 
-      <style jsx global>{`
-        @media print {
-          body * { visibility: hidden; }
-          .print-area, .print-area * { visibility: visible; }
-          .print-area { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
-          .no-print { display: none !important; }
-          @page { size: A4 landscape; margin: 8mm; }
-        }
-      `}</style>
+      
     </div>
   )
 }
