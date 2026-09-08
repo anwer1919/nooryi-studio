@@ -21,10 +21,7 @@ export async function GET() {
     }
 
     // جلب الفنانين النشطين فقط
-    const artists = await prisma.artist.findMany({ where: artistWhere(mgr),
-       { 
-        status: "ACTIVE" 
-      },
+    const artists = await prisma.artist.findMany({ where: { ...artistWhere(mgr), status: "ACTIVE" },
       orderBy: { 
         createdAt: "desc" 
       },

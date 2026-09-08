@@ -22,10 +22,12 @@ export default async function AdminArtistsPage() {
           <h1 className="text-4xl font-black text-gray-900">الفنانين</h1>
           <p className="text-gray-500 mt-1">إجمالي {artists.length} فنان مسجل</p>
         </div>
-        {!mgr.isManager && <Link href="/admin/artists/new" className="btn-gold">
-          <Plus size={18} />
-          إضافة فنان جديد
-        </Link>
+        {!mgr.isManager && (
+          <Link href="/admin/artists/new" className="btn-gold">
+            <Plus size={18} />
+            إضافة فنان جديد
+          </Link>
+        )}
       </div>
 
       {artists.length === 0 ? (
@@ -33,10 +35,12 @@ export default async function AdminArtistsPage() {
           <Music className="mx-auto text-gray-300 mb-4" size={56} />
           <h3 className="text-xl font-black text-gray-900 mb-2">لا يوجد فنانين</h3>
           <p className="text-gray-500 mb-6">ابدأ بإضافة أول فنان إلى منصتك</p>
-          {!mgr.isManager && <Link href="/admin/artists/new" className="btn-gold inline-flex">
-            <Plus size={18} />
-            إضافة فنان
-          </Link>}
+          {!mgr.isManager && (
+            <Link href="/admin/artists/new" className="btn-gold inline-flex">
+              <Plus size={18} />
+              إضافة فنان
+            </Link>
+          )}
         </div>
       ) : (
         <div className="card-pro overflow-hidden">
