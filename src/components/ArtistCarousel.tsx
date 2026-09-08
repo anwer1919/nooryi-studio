@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import Link from "next/link"
@@ -60,7 +60,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
     <div className="relative w-full select-none py-4 md:py-8 overflow-hidden">
       {/* Container — overflow hidden لمنع السكرول */}
       <div
-        className="relative h-[480px] md:h-[580px] flex items-start justify-center"
+        className="relative h-[580px] md:h-[700px] flex items-start justify-center"
         style={{ perspective: "1200px" }}
         onMouseDown={e => onStart(e.clientX)}
         onMouseUp={e => onEnd(e.clientX)}
@@ -76,7 +76,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
             <div key={artist.id} className="absolute w-[260px] md:w-[340px] transition-all duration-600 ease-out" style={{ transform: s.transform, opacity: s.opacity, zIndex: s.zIndex, filter: s.filter + " " + s.blur, pointerEvents: s.pe, top: "10px" }}>
               <Link href={"/artists/" + artist.slug} className="block group" draggable={false}>
                 <div className={`relative rounded-2xl md:rounded-3xl overflow-hidden border-2 shadow-2xl transition-all duration-500 ${isActive ? "border-[#D4AF37]/50 shadow-[#D4AF37]/20" : "border-white/10"} bg-[#111]`}>
-                  <div className={`relative overflow-hidden ${isActive ? "h-56 md:h-72" : "h-44 md:h-52"}`}>
+                  <div className={`relative overflow-hidden ${isActive ? "h-80 md:h-[420px]" : "h-60 md:h-72"}`}>
                     {artist.coverImage || artist.profileImage ? (
                       <img src={artist.coverImage || artist.profileImage || ""} alt={artist.name} className="w-full h-full object-cover" draggable={false} />
                     ) : (
