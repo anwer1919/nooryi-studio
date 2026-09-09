@@ -1,4 +1,4 @@
-"use client"
+use client"
 import { useState, useEffect, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -58,9 +58,16 @@ export default function LoginFormClient() {
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError("")
     try {
-      const verifyRes = await fetch("/api/auth/verify-password", { method: "POST", body: JSON.stringify({ email: formData.email, password: formData.password }), headers: { "Content-Type": "application/json" } })
-      const verifyData = await verifyRes.json()
-      if (!verifyRes.ok || !verifyData.success) { setError(verifyData.error || "البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
+      let passwordOk = false
+      try {
+        const verifyRes = await fetch("/api/auth/verify-password", { method: "POST", body: JSON.stringify({ email: formData.email, password: formData.password }), headers: { "Content-Type": "application/json" } })
+        if (verifyRes.ok) { const vd = await verifyRes.json(); passwordOk = vd.success === true }
+        else if (verifyRes.status === 401) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
+      } catch {}
+      if (!passwordOk) {
+        const sr = await signIn("credentials", { email: formData.email, password: formData.password, redirect: false })
+        if (sr?.error) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
+      }
       const otpData = await sendOtp(formData.email)
       setOtpInfo(otpData)
       setStep("otp")
