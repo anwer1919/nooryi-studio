@@ -1,4 +1,4 @@
-"use client"
+use client"
 import { useState, useEffect, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -257,7 +257,7 @@ export default function LoginFormClient() {
             <Lock size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"/>
             <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full pr-10 pl-10 py-3 border border-[#D4AF37]/20 bg-[#1a1a1a] rounded-xl focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none transition text-white placeholder:text-gray-600" placeholder="••••••••" autoComplete="current-password"/>
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
-          </div>
+          </div>`n          <div className="mt-1.5 text-left"><Link href="/forgot-password" className="text-xs font-bold text-[#b8941f] hover:text-[#D4AF37] transition">نسيت كلمة المرور؟</Link></div>
         </div>
         <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50">
           {loading ? <Loader2 size={20} className="animate-spin"/> : "متابعة"}

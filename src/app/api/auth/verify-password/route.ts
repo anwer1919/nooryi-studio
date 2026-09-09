@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+mport { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     }
 
     if (!ok) {
-      console.error("❌ [verify-password] password mismatch for:", normalizedEmail)
+      console.error("❌ [verify-password] password mismatch for:", normalizedEmail, "| stored type:", isBcrypt ? "bcrypt" : isArgon2 ? "argon2" : "plaintext", "| len:", pw.length, "| prefix:", pw.substring(0, 7))
       return NextResponse.json({ error: "البريد أو كلمة المرور غير صحيحة", debug: "PASSWORD_MISMATCH" }, { status: 401 })
     }
 
