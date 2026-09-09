@@ -1,9 +1,9 @@
-use client"
+"use client"
 import { useState, useEffect, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, ArrowLeft, CheckCircle2, MessageCircle, Smartphone } from "lucide-react"
+import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, ArrowLeft, CheckCircle2, MessageCircle } from "lucide-react"
 
 type Step = "credentials" | "otp" | "success"
 
@@ -22,21 +22,19 @@ export default function LoginFormClient() {
   const [showResendOptions, setShowResendOptions] = useState(false)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
+  // جلسة غير موثقة قديمة (لم يكمل OTP سابقاً) → أكمل التحقق بالإيميل
   useEffect(() => {
     (async () => {
       const session = await getSession()
       const u = session?.user as any
       if (u?.email && u.otpVerified === false) {
-        setLoading(true)
         try {
-          const otpData = await sendOtp(u.email)
+          const otpData = await sendOtp(u.email, "email")
           setFormData(p => ({ ...p, email: u.email }))
           setOtpInfo(otpData)
           setStep("otp")
           startTimer()
-          if (otpData.whatsappLink) window.open(otpData.whatsappLink, "_blank")
-        } catch (err: any) { setError(err.message) }
-        finally { setLoading(false) }
+        } catch {}
       } else if (u?.email && u.otpVerified === true) {
         router.replace(callbackUrl || "/")
       }
@@ -47,7 +45,7 @@ export default function LoginFormClient() {
 
   const startTimer = () => { setResendTimer(30); const iv = setInterval(() => setResendTimer(p => { if (p <= 1) { clearInterval(iv); return 0 }; return p - 1 }), 1000) }
 
-  const sendOtp = async (email: string, method?: string) => {
+  const sendOtp = async (email: string, method: string = "email") => {
     const res = await fetch("/api/auth/send-otp", { method: "POST", body: JSON.stringify({ email, method }), headers: { "Content-Type": "application/json" } })
     if (!res.ok) { const d = await res.json(); throw new Error(d.error || "فشل إرسال الرمز") }
     return await res.json()
@@ -55,25 +53,26 @@ export default function LoginFormClient() {
 
   const handleSocialLogin = (provider: string) => signIn(provider, { callbackUrl: callbackUrl || "/" })
 
+  // ═══ خطوة 1: التحقق من الباسورد ثم إرسال الرمز للإيميل ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError("")
     try {
-      let passwordOk = false
-      try {
-        const verifyRes = await fetch("/api/auth/verify-password", { method: "POST", body: JSON.stringify({ email: formData.email, password: formData.password }), headers: { "Content-Type": "application/json" } })
-        if (verifyRes.ok) { const vd = await verifyRes.json(); passwordOk = vd.success === true }
-        else if (verifyRes.status === 401) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
-      } catch {}
-      if (!passwordOk) {
-        const sr = await signIn("credentials", { email: formData.email, password: formData.password, redirect: false })
-        if (sr?.error) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
-      }
-      const otpData = await sendOtp(formData.email)
+      const verifyRes = await fetch("/api/auth/verify-password", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        headers: { "Content-Type": "application/json" },
+      })
+      if (verifyRes.status === 401) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
+      if (!verifyRes.ok) { setError("تعذر التحقق — حاول مجدداً"); setLoading(false); return }
+      const verifyData = await verifyRes.json()
+      if (!verifyData.success) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
+
+      // الباسورد صحيح → أرسل الرمز للإيميل (الطريقة الأساسية)
+      const otpData = await sendOtp(formData.email, "email")
       setOtpInfo(otpData)
       setStep("otp")
       startTimer()
-      if (otpData.whatsappLink) window.open(otpData.whatsappLink, "_blank")
-    } catch (err: any) { setError(err.message) }
+    } catch (err: any) { setError(err.message || "حدث خطأ") }
     finally { setLoading(false) }
   }
 
@@ -81,28 +80,36 @@ export default function LoginFormClient() {
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => { if (e.key === "Backspace" && !otpDigits[index] && index > 0) otpRefs.current[index - 1]?.focus(); if (e.key === "Enter" && otpDigits.join("").length === 6) handleOtpSubmit() }
   const handleOtpPaste = (e: React.ClipboardEvent) => { e.preventDefault(); const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6); if (p) { setOtpDigits(p.split("").concat(Array(6).fill("")).slice(0, 6)); otpRefs.current[Math.min(p.length, 5)]?.focus() } }
 
-  const handleResend = async (method?: string) => {
+  const handleResend = async (method: string) => {
     if (resendTimer > 0) return; setLoading(true); setError("")
     try {
       const otpData = await sendOtp(formData.email, method)
       setOtpInfo(otpData); startTimer(); setShowResendOptions(false)
-      if (otpData.whatsappLink) window.open(otpData.whatsappLink, "_blank")
+      if (method === "whatsapp" && otpData.whatsappLink) window.open(otpData.whatsappLink, "_blank")
     } catch (err: any) { setError(err.message) }
     finally { setLoading(false) }
   }
 
+  // ═══ خطوة 2: الرمز الصحيح فقط → يتم تسجيل الدخول ═══
   const handleOtpSubmit = async () => {
     const otp = otpDigits.join("")
     if (otp.length !== 6) return
     setLoading(true); setError("")
     try {
       const result = await signIn("credentials", { email: formData.email, otp, redirect: false })
-      if (result?.error) { setError("رمز التحقق غير صحيح أو منتهي الصلاحية"); setOtpDigits(["", "", "", "", "", ""]); otpRefs.current[0]?.focus(); setLoading(false); return }
+      if (result?.error) {
+        setError("رمز التحقق غير صحيح أو منتهي الصلاحية")
+        setOtpDigits(["", "", "", "", "", ""])
+        otpRefs.current[0]?.focus()
+        setLoading(false)
+        return
+      }
       setStep("success")
       setTimeout(() => { router.push(callbackUrl || "/"); router.refresh() }, 1200)
     } catch { setError("حدث خطأ"); setLoading(false) }
   }
 
+  // ═══ شاشة النجاح ═══
   if (step === "success") return (
     <div className="w-full max-w-md py-8 text-center">
       <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6 animate-bounce"><CheckCircle2 size={40} className="text-green-400"/></div>
@@ -112,6 +119,7 @@ export default function LoginFormClient() {
     </div>
   )
 
+  // ═══ شاشة التحقق من الرمز ═══
   if (step === "otp") {
     const complete = otpDigits.join("").length === 6
     return (
@@ -120,13 +128,12 @@ export default function LoginFormClient() {
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4"><ShieldCheck size={32} className="text-[#D4AF37]"/></div>
           <h2 className="text-2xl font-black text-white mb-2">التحقق بخطوتين</h2>
-          <p className="text-gray-400 text-sm">تم إرسال الرمز إلى <span className="font-bold text-white">{otpInfo?.destination}</span></p>
-          {otpInfo?.sentViaApi && <p className="text-green-400 text-xs mt-2 flex items-center justify-center gap-1"><CheckCircle2 size={12}/> تم الإرسال عبر واتساب</p>}
-          {!otpInfo?.sentViaApi && otpInfo?.whatsappLink && <p className="text-yellow-400 text-xs mt-2">تم فتح واتساب — أرسل الرسالة لنفسك</p>}
+          <p className="text-gray-400 text-sm">تم إرسال الرمز إلى بريدك الإلكتروني</p>
+          <p className="text-white font-bold text-sm mt-1">{otpInfo?.destination}</p>
         </div>
         {error && <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 text-center">{error}</div>}
         <div className="flex justify-center gap-2 sm:gap-3 mb-6" dir="ltr" onPaste={handleOtpPaste}>
-          {otpDigits.map((d, i) => (<input key={i} ref={el => { otpRefs.current[i] = el }} type="text" inputMode="numeric" maxLength={1} value={d} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} className="w-11 h-13 sm:w-13 sm:h-14 text-center text-2xl font-black text-white bg-[#1a1a1a] border-2 border-[#D4AF37]/20 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 outline-none transition-all" style={{ width: "2.9rem", height: "3.4rem" }}/>))}
+          {otpDigits.map((d, i) => (<input key={i} ref={el => { otpRefs.current[i] = el }} type="text" inputMode="numeric" maxLength={1} value={d} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKeyDown(i, e)} className="text-center text-2xl font-black text-white bg-[#1a1a1a] border-2 border-[#D4AF37]/20 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 outline-none transition-all" style={{ width: "2.9rem", height: "3.4rem" }}/>))}
         </div>
         <button onClick={handleOtpSubmit} disabled={loading || !complete} className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
           {loading ? <Loader2 size={20} className="animate-spin"/> : "تحقق ودخول"}
@@ -136,8 +143,8 @@ export default function LoginFormClient() {
             <><p className="text-sm text-gray-400 mb-2">لم تستلم الرمز؟</p><button onClick={() => setShowResendOptions(true)} disabled={resendTimer > 0} className="text-sm font-bold text-[#b8941f] hover:text-[#D4AF37] transition disabled:text-gray-600 disabled:cursor-not-allowed">{resendTimer > 0 ? `إعادة الإرسال بعد ${resendTimer}ث` : "اختر طريقة أخرى"}</button></>
           ) : (
             <div className="space-y-2">
+              <button onClick={() => handleResend("email")} disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 border border-[#D4AF37]/30 bg-[#D4AF37]/10 rounded-xl hover:bg-[#D4AF37]/20 transition text-sm font-semibold text-[#D4AF37] disabled:opacity-50"><Mail size={16}/> البريد الإلكتروني (أساسي)</button>
               <button onClick={() => handleResend("whatsapp")} disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 border border-green-500/30 bg-green-500/10 rounded-xl hover:bg-green-500/20 transition text-sm font-semibold text-green-400 disabled:opacity-50"><MessageCircle size={16}/> واتساب</button>
-              <button onClick={() => handleResend("email")} disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 border border-[#D4AF37]/20 bg-[#1a1a1a] rounded-xl hover:bg-[#222] transition text-sm font-semibold text-gray-300 disabled:opacity-50"><Mail size={16}/> البريد الإلكتروني</button>
               <button onClick={() => setShowResendOptions(false)} className="text-xs text-gray-500 hover:text-gray-300 mt-1">إلغاء</button>
             </div>
           )}
@@ -146,6 +153,7 @@ export default function LoginFormClient() {
     )
   }
 
+  // ═══ شاشة تسجيل الدخول ═══
   return (
     <div className="w-full max-w-md py-8">
       <div className="text-center mb-8">
