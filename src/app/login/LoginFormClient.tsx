@@ -1,4 +1,4 @@
-use client"
+"use client"
 import { useState, useEffect, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -60,24 +60,14 @@ export default function LoginFormClient() {
     setDebugInfo("")
 
     try {
-      // ═══ الطريقة 1: verify-password API ═══
-      console.log("🔍 Trying verify-password API...")
-      let verifyRes: Response
-      try {
-        verifyRes = await fetch("/api/auth/verify-password", {
-          method: "POST",
-          body: JSON.stringify({ email: formData.email, password: formData.password }),
-          headers: { "Content-Type": "application/json" },
-        })
-      } catch (fetchErr: any) {
-        console.error("❌ verify-password fetch failed:", fetchErr.message)
-        setDebugInfo("تعذر الاتصال بالخادم — محاولة بديلة...")
-        verifyRes = { ok: false, status: 500, json: async () => ({ error: fetchErr.message }) } as any
-      }
+      const verifyRes = await fetch("/api/auth/verify-password", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+        headers: { "Content-Type": "application/json" },
+      })
 
       if (verifyRes.status === 401) {
         const errData = await verifyRes.json()
-        console.error("❌ verify-password 401:", errData)
         setError(errData.error || "البريد أو كلمة المرور غير صحيحة")
         if (errData.debug) setDebugInfo(`السبب: ${errData.debug}`)
         setLoading(false)
@@ -85,30 +75,23 @@ export default function LoginFormClient() {
       }
 
       if (!verifyRes.ok) {
-        const errData = await verifyRes.json().catch(() => ({ error: "خطأ غير معروف" }))
-        console.error("❌ verify-password failed:", verifyRes.status, errData)
-        setDebugInfo(`الطريقة الأولى فشلت (${verifyRes.status}) — محاولة بديلة...`)
-        // محاولة بديلة: signIn مباشرة
+        setDebugInfo(`فشل الاتصال — محاولة بديلة...`)
         throw new Error("FALLBACK_TO_SIGNIN")
       }
 
       const verifyData = await verifyRes.json()
-      console.log("✅ verify-password success:", verifyData)
       if (!verifyData.success) {
         setError("البريد أو كلمة المرور غير صحيحة")
         setLoading(false)
         return
       }
 
-      // ═══ الباسورد صحيح → أرسل OTP ═══
-      setDebugInfo("تم التحقق من كلمة المرور — جاري إرسال الرمز...")
+      setDebugInfo("تم التحقق — جاري إرسال الرمز...")
       const otpData = await sendOtp(formData.email, "email")
       setOtpInfo(otpData)
       setStep("otp")
       startTimer()
     } catch (err: any) {
-      console.log("🔍 Trying fallback signIn...")
-      // ═══ FALLBACK: signIn مباشرة ═══
       try {
         const result = await signIn("credentials", {
           email: formData.email,
@@ -118,23 +101,19 @@ export default function LoginFormClient() {
         })
 
         if (result?.error) {
-          console.error("❌ Fallback signIn also failed:", result.error)
           setError("البريد أو كلمة المرور غير صحيحة")
-          setDebugInfo("تأكد من صحة البيانات أو تواصل مع الدعم")
+          setDebugInfo("جرب 'نسيت كلمة المرور'")
           setLoading(false)
           return
         }
 
-        // نجاح signIn → الجلسة موجودة الآن → أرسل OTP
-        console.log("✅ Fallback signIn success — sending OTP")
         setDebugInfo("جاري إرسال رمز التحقق...")
         const otpData = await sendOtp(formData.email, "email")
         setOtpInfo(otpData)
         setStep("otp")
         startTimer()
       } catch (fallbackErr: any) {
-        console.error("❌ Both methods failed:", fallbackErr.message)
-        setError("تعذر تسجيل الدخول — يرجى المحاولة مرة أخرى")
+        setError("تعذر تسجيل الدخول")
         setDebugInfo(fallbackErr.message)
         setLoading(false)
       }
@@ -257,7 +236,10 @@ export default function LoginFormClient() {
             <Lock size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"/>
             <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full pr-10 pl-10 py-3 border border-[#D4AF37]/20 bg-[#1a1a1a] rounded-xl focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none transition text-white placeholder:text-gray-600" placeholder="••••••••" autoComplete="current-password"/>
             <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">{showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}</button>
-          </div>`n          <div className="mt-1.5 text-left"><Link href="/forgot-password" className="text-xs font-bold text-[#b8941f] hover:text-[#D4AF37] transition">نسيت كلمة المرور؟</Link></div>
+          </div>
+          <div className="mt-1.5 text-left">
+            <Link href="/forgot-password" className="text-xs font-bold text-[#b8941f] hover:text-[#D4AF37] transition">نسيت كلمة المرور؟</Link>
+          </div>
         </div>
         <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg hover:shadow-[#D4AF37]/30 transition-all flex justify-center items-center gap-2 disabled:opacity-50">
           {loading ? <Loader2 size={20} className="animate-spin"/> : "متابعة"}
