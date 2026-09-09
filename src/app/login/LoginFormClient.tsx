@@ -1,4 +1,4 @@
-"use client"
+se client"
 import { useState, useEffect, useRef } from "react"
 import { signIn, getSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -139,13 +139,22 @@ export default function LoginFormClient() {
     finally { setLoading(false) }
   }
 
-  const handleOtpSubmit = async () => {
+    const handleOtpSubmit = async () => {
     const otp = otpDigits.join("")
     if (otp.length !== 6) return
     setLoading(true)
     setError("")
     try {
-      const result = await signIn("credentials", { email: formData.email, otp, redirect: false })
+      // تحديد وجهة التوجيه — لوحة التحكم افتراضياً للأدمن
+      const destination = callbackUrl || "/admin"
+
+      const result = await signIn("credentials", {
+        email: formData.email,
+        otp,
+        redirect: false,
+        callbackUrl: destination,
+      })
+
       if (result?.error) {
         setError("رمز التحقق غير صحيح أو منتهي الصلاحية")
         setOtpDigits(["", "", "", "", "", ""])
@@ -153,16 +162,34 @@ export default function LoginFormClient() {
         setLoading(false)
         return
       }
+
+      if (!result?.ok) {
+        setError("تعذر إنشاء الجلسة — حاول مجدداً")
+        setLoading(false)
+        return
+      }
+
       setStep("success")
-      setTimeout(() => { router.push(callbackUrl || "/"); router.refresh() }, 1200)
-    } catch { setError("حدث خطأ"); setLoading(false) }
+
+      // إعادة تحميل الصفحة فوراً لتحديث الـ session
+      router.refresh()
+
+      // توجيه فوري للوحة التحكم
+      setTimeout(() => {
+        window.location.href = destination
+      }, 1500)
+    } catch (err: any) {
+      console.error("OTP submit error:", err)
+      setError("حدث خطأ: " + (err.message || "غير معروف"))
+      setLoading(false)
+    }
   }
 
   if (step === "success") return (
     <div className="w-full max-w-md py-8 text-center">
       <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6 animate-bounce"><CheckCircle2 size={40} className="text-green-400"/></div>
       <h2 className="text-2xl font-black text-white mb-2">تم التحقق بنجاح!</h2>
-      <p className="text-gray-400">جاري تحويلك...</p>
+      <p className="text-gray-400">جاري تحويلك إلى لوحة التحكم...</p>
       <Loader2 size={24} className="animate-spin text-[#D4AF37] mx-auto mt-6"/>
     </div>
   )
