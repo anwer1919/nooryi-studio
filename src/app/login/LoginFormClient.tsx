@@ -22,7 +22,6 @@ export default function LoginFormClient() {
   const [showResendOptions, setShowResendOptions] = useState(false)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  // جلسة غير موثقة قديمة (لم يكمل OTP سابقاً) → أكمل التحقق بالإيميل
   useEffect(() => {
     (async () => {
       const session = await getSession()
@@ -53,21 +52,14 @@ export default function LoginFormClient() {
 
   const handleSocialLogin = (provider: string) => signIn(provider, { callbackUrl: callbackUrl || "/" })
 
-  // ═══ خطوة 1: التحقق من الباسورد ثم إرسال الرمز للإيميل ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError("")
     try {
-      const verifyRes = await fetch("/api/auth/verify-password", {
-        method: "POST",
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
-        headers: { "Content-Type": "application/json" },
-      })
+      const verifyRes = await fetch("/api/auth/verify-password", { method: "POST", body: JSON.stringify({ email: formData.email, password: formData.password }), headers: { "Content-Type": "application/json" } })
       if (verifyRes.status === 401) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
-      if (!verifyRes.ok) { setError("تعذر التحقق — حاول مجدداً"); setLoading(false); return }
+      if (!verifyRes.ok) { setError("تعذر التحقق"); setLoading(false); return }
       const verifyData = await verifyRes.json()
       if (!verifyData.success) { setError("البريد أو كلمة المرور غير صحيحة"); setLoading(false); return }
-
-      // الباسورد صحيح → أرسل الرمز للإيميل (الطريقة الأساسية)
       const otpData = await sendOtp(formData.email, "email")
       setOtpInfo(otpData)
       setStep("otp")
@@ -85,12 +77,10 @@ export default function LoginFormClient() {
     try {
       const otpData = await sendOtp(formData.email, method)
       setOtpInfo(otpData); startTimer(); setShowResendOptions(false)
-      if (method === "whatsapp" && otpData.whatsappLink) window.open(otpData.whatsappLink, "_blank")
     } catch (err: any) { setError(err.message) }
     finally { setLoading(false) }
   }
 
-  // ═══ خطوة 2: الرمز الصحيح فقط → يتم تسجيل الدخول ═══
   const handleOtpSubmit = async () => {
     const otp = otpDigits.join("")
     if (otp.length !== 6) return
@@ -109,7 +99,6 @@ export default function LoginFormClient() {
     } catch { setError("حدث خطأ"); setLoading(false) }
   }
 
-  // ═══ شاشة النجاح ═══
   if (step === "success") return (
     <div className="w-full max-w-md py-8 text-center">
       <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6 animate-bounce"><CheckCircle2 size={40} className="text-green-400"/></div>
@@ -119,7 +108,6 @@ export default function LoginFormClient() {
     </div>
   )
 
-  // ═══ شاشة التحقق من الرمز ═══
   if (step === "otp") {
     const complete = otpDigits.join("").length === 6
     return (
@@ -128,8 +116,11 @@ export default function LoginFormClient() {
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4"><ShieldCheck size={32} className="text-[#D4AF37]"/></div>
           <h2 className="text-2xl font-black text-white mb-2">التحقق بخطوتين</h2>
-          <p className="text-gray-400 text-sm">تم إرسال الرمز إلى بريدك الإلكتروني</p>
+          <p className="text-gray-400 text-sm">
+            {otpInfo?.method === "whatsapp" ? "تم إرسال الرمز إلى واتساب" : "تم إرسال الرمز إلى بريدك الإلكتروني"}
+          </p>
           <p className="text-white font-bold text-sm mt-1">{otpInfo?.destination}</p>
+          {otpInfo?.sentViaApi && <p className="text-green-400 text-xs mt-2 flex items-center justify-center gap-1"><CheckCircle2 size={12}/> تم الإرسال ({otpInfo?.provider || "auto"})</p>}
         </div>
         {error && <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 text-center">{error}</div>}
         <div className="flex justify-center gap-2 sm:gap-3 mb-6" dir="ltr" onPaste={handleOtpPaste}>
@@ -153,7 +144,6 @@ export default function LoginFormClient() {
     )
   }
 
-  // ═══ شاشة تسجيل الدخول ═══
   return (
     <div className="w-full max-w-md py-8">
       <div className="text-center mb-8">
