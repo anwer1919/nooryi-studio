@@ -25,6 +25,7 @@ export default function EditArtistPage() {
   const [accentColor, setAccentColor] = useState("#EAB308")
   const [status, setStatus] = useState("PENDING")
   const [uploadingImage, setUploadingImage] = useState(false)
+  const [basePrice, setBasePrice] = useState(0)
 
   useEffect(() => {
     fetchArtist()
@@ -44,6 +45,7 @@ export default function EditArtistPage() {
         setProfileImage(result.data.profileImage || "")
         setCoverImage(result.data.coverImage || "")
         setAccentColor(result.data.accentColor || "#EAB308")
+        setBasePrice(result.data.basePrice || 0)
         setStatus(result.data.status || "PENDING")
       } else {
         setError(result.error || "فشل في تحميل بيانات الفنان")
@@ -93,7 +95,7 @@ export default function EditArtistPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, category, slug: newSlug, bio,
-          profileImage, coverImage, accentColor, status,
+          profileImage, coverImage, accentColor, status, basePrice,
         }),
       })
       const result = await res.json()
@@ -334,6 +336,23 @@ export default function EditArtistPage() {
             </div>
           </div>
 
+
+          {/* السعر الأساسي */}
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              السعر الأساسي (ج.م)
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={basePrice}
+              onChange={(e) => setBasePrice(parseFloat(e.target.value) || 0)}
+              placeholder="1000"
+              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            <p className="text-xs text-muted mt-1">السعر يظهر في الصفحة الرئيسية وبطاقات الفنانين</p>
+          </div>
+
           {/* اللون والحالة */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -366,6 +385,7 @@ export default function EditArtistPage() {
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
               >
+                <option value="ACTIVE">نشط (يظهر في الرئيسية)</option>
                 <option value="PENDING">قيد المراجعة</option>
                 <option value="APPROVED">مقبول</option>
                 <option value="REJECTED">مرفوض</option>

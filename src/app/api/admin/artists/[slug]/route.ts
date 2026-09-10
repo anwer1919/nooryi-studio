@@ -67,6 +67,7 @@ export async function PUT(
         coverImage: body.coverImage,
         accentColor: body.accentColor,
         status: body.status,
+        basePrice: body.basePrice || 0,
       },
     })
 
