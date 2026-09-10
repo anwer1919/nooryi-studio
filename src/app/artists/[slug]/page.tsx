@@ -61,7 +61,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20"></div>
 
         {/* Header */}
-        <header className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
+        <header className="absolute top-16 md:top-20 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent">
           <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">

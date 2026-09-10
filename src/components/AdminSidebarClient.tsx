@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import ThemeToggle from "@/components/ThemeToggle"
 import { useState, useEffect } from "react"
-import { LayoutDashboard, Users, Music, Calendar, FileText, Settings, LogOut, X, Banknote, Shield } from "lucide-react"
-const iconMap: Record<string, any> = { LayoutDashboard, Users, Music, Calendar, FileText, Settings, Banknote, Shield }
+import { LayoutDashboard, Users, Music, Calendar, FileText, Settings, LogOut, X, Banknote, Shield, Bell } from "lucide-react"
+const iconMap: Record<string, any> = { LayoutDashboard, Users, Music, Calendar, FileText, Settings, Banknote, Shield, Bell }
 interface MenuItem { href: string; label: string; icon: string }
 export default function AdminSidebarClient({ menuItems, userName, userRole }: { menuItems: MenuItem[]; userName: string; userRole: string }) {
   const pathname = usePathname()
