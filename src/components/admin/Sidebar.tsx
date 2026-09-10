@@ -41,7 +41,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
       {/* زر القائمة للجوال */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-[#1a1a1a] border border-[#d4af37]/30 rounded-xl text-white hover:bg-[#d4af37] hover:text-[#111] transition-all"
+        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-[#1a1a1a] border border-[#F5A623]/30 rounded-xl text-white hover:bg-[#F5A623] hover:text-[#111] transition-all"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -56,7 +56,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
         {/* Header */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center shadow-lg shadow-[#d4af37]/30">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/30">
               <span className="text-xl font-black text-[#111]">
                 {(userName || "A").charAt(0).toUpperCase()}
               </span>
@@ -64,7 +64,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
             <div className="flex-1 min-w-0">
               <p className="font-bold text-white truncate">{userName || "مستخدم"}</p>
               <p className="text-xs text-white/60 truncate">{userEmail}</p>
-              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/30">
+              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5A623]/20 text-[#F5A623] border border-[#F5A623]/30">
                 {userRole === "SUPER_ADMIN" ? "مدير عام" : userRole === "ADMIN" ? "إدارة" : "مدير فنان"}
               </span>
             </div>
@@ -82,11 +82,11 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                   isActive
-                    ? "bg-gradient-to-r from-[#d4af37]/20 to-[#b8941f]/10 border border-[#d4af37]/30 text-[#d4af37]"
+                    ? "bg-gradient-to-r from-[#F5A623]/20 to-[#E8961A]/10 border border-[#F5A623]/30 text-[#F5A623]"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
                 }`}
               >
-                <link.icon size={20} className={isActive ? "text-[#d4af37]" : ""} />
+                <link.icon size={20} className={isActive ? "text-[#F5A623]" : ""} />
                 <span className="font-semibold">{link.label}</span>
               </Link>
             )

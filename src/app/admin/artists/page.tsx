@@ -97,7 +97,7 @@ export default async function AdminArtistsPage() {
                       </td>
                       <td>
                         <div className="flex items-center gap-1">
-                          <Star size={14} className="text-[#d4af37] fill-[#d4af37]" />
+                          <Star size={14} className="text-[#F5A623] fill-[#F5A623]" />
                           <span className="font-bold text-gray-900 dark:text-white">{avg}</span>
                         </div>
                       </td>
@@ -112,10 +112,10 @@ export default async function AdminArtistsPage() {
                       </td>
                       <td>
                         <div className="flex items-center justify-center gap-1">
-                          <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                          <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#E8961A] transition">
                             <Eye size={16} />
                           </Link>
-                          <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#b8941f] transition">
+                          <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#E8961A] transition">
                             <Edit3 size={16} />
                           </Link>
                         </div>

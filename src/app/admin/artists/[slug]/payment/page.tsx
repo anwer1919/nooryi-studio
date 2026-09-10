@@ -28,7 +28,7 @@ export default async function ArtistPaymentPage({
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">الفنان غير موجود</h2>
-          <Link href="/admin/artists" className="text-[#D4AF37] hover:underline">العودة للفنانين</Link>
+          <Link href="/admin/artists" className="text-[#F5A623] hover:underline">العودة للفنانين</Link>
         </div>
       </div>
     )
@@ -43,14 +43,14 @@ export default async function ArtistPaymentPage({
         <div className="mb-8">
           <Link
             href={`/admin/artists/${slug}`}
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#D4AF37] transition mb-4"
+            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#F5A623] transition mb-4"
           >
             <ArrowLeft size={20} />
             العودة لصفحة الفنان
           </Link>
           
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
               <CreditCard size={28} className="text-[#111]" />
             </div>
             <div>
@@ -77,7 +77,7 @@ export default async function ArtistPaymentPage({
           {/* التحويل البنكي */}
           <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <Building2 size={18} className="text-[#D4AF37]" />
+              <Building2 size={18} className="text-[#F5A623]" />
               التحويل البنكي
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
@@ -87,7 +87,7 @@ export default async function ArtistPaymentPage({
                   name="bankName"
                   defaultValue={artist.bankName || ""}
                   placeholder="البنك الأهلي المصري"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
                 />
               </div>
               <div>
@@ -96,7 +96,7 @@ export default async function ArtistPaymentPage({
                   name="bankAccount"
                   defaultValue={artist.bankAccount || ""}
                   placeholder="1234567890"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                 />
               </div>
               <div className="md:col-span-2">
@@ -105,7 +105,7 @@ export default async function ArtistPaymentPage({
                   name="iban"
                   defaultValue={artist.iban || ""}
                   placeholder="EG12345678901234567890123456"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -115,7 +115,7 @@ export default async function ArtistPaymentPage({
           {/* المحافظ الإلكترونية */}
           <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <Smartphone size={18} className="text-[#D4AF37]" />
+              <Smartphone size={18} className="text-[#F5A623]" />
               المحافظ الإلكترونية
             </h2>
             <div className="grid md:grid-cols-2 gap-4">
@@ -128,7 +128,7 @@ export default async function ArtistPaymentPage({
                   name="vodafoneCash"
                   defaultValue={artist.vodafoneCash || ""}
                   placeholder="01000000000"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -141,7 +141,7 @@ export default async function ArtistPaymentPage({
                   name="instaPay"
                   defaultValue={artist.instaPay || ""}
                   placeholder="username@instapay"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -151,7 +151,7 @@ export default async function ArtistPaymentPage({
           {/* ملاحظات */}
           <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <FileText size={18} className="text-[#D4AF37]" />
+              <FileText size={18} className="text-[#F5A623]" />
               ملاحظات الدفع
             </h2>
             <textarea
@@ -159,14 +159,14 @@ export default async function ArtistPaymentPage({
               defaultValue={artist.paymentNote || ""}
               rows={3}
               placeholder="مثال: يرجى إرسال صورة إيصال التحويل عبر واتساب على الرقم..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
             />
           </div>
 
           {/* زر الحفظ */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#F5A623]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
           >
             <CheckCircle2 size={20} />
             حفظ بيانات الدفع

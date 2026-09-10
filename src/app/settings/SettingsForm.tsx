@@ -27,20 +27,20 @@ export default function SettingsForm({ user }: { user: any }) {
 
       <div className="space-y-2">
         <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><User size={16}/> الاسم الكامل</label>
-        <input name="name" defaultValue={user?.name || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] outline-none" required />
+        <input name="name" defaultValue={user?.name || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#F5A623] outline-none" required />
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Mail size={16}/> البريد الإلكتروني</label>
-        <input name="email" type="email" defaultValue={user?.email || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] outline-none" required />
+        <input name="email" type="email" defaultValue={user?.email || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#F5A623] outline-none" required />
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Phone size={16}/> رقم الجوال</label>
-        <input name="phone" type="tel" defaultValue={user?.phone || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#d4af37] outline-none" placeholder="01xxxxxxxxx" />
+        <input name="phone" type="tel" defaultValue={user?.phone || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#F5A623] outline-none" placeholder="01xxxxxxxxx" />
       </div>
 
-      <button disabled={isPending} className="w-full py-4 bg-[#111] text-[#d4af37] font-black rounded-xl hover:bg-[#232323] transition flex items-center justify-center gap-2">
+      <button disabled={isPending} className="w-full py-4 bg-[#111] text-[#F5A623] font-black rounded-xl hover:bg-[#232323] transition flex items-center justify-center gap-2">
         {isPending ? <Loader2 size={20} className="animate-spin"/> : <><Save size={20}/> حفظ التغييرات</>}
       </button>
     </form>

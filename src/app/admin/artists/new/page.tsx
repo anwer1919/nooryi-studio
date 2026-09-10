@@ -49,7 +49,7 @@ export default function NewArtistPage() {
     slug: "",
     category: "Singer",
     bio: "",
-    accentColor: "#D4AF37",
+    accentColor: "#F5A623",
     commissionRate: 15,
     commissionDiscountVal: 0,
     status: "ACTIVE",
@@ -71,7 +71,7 @@ export default function NewArtistPage() {
   const categories = ["Singer", "DJ", "Band", "Comedian", "Magician", "Other"]
 
   const colors = [
-    "#D4AF37", // ذهبي
+    "#F5A623", // ذهبي
     "#8B5CF6", // بنفسجي
     "#3B82F6", // أزرق
     "#10B981", // أخضر

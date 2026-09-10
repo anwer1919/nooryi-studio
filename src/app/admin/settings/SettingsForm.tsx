@@ -26,7 +26,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
     }
   }
 
-  const inputClass = "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+  const inputClass = "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
   const labelClass = "block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2"
 
   return (
@@ -40,7 +40,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
       {/* معلومات المنصة */}
       <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Building2 size={18} className="text-[#b8941f]" />
+          <Building2 size={18} className="text-[#E8961A]" />
           معلومات المنصة
         </h2>
         <div className="grid md:grid-cols-2 gap-4">
@@ -70,7 +70,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
       {/* منصات التواصل الاجتماعي */}
       <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Globe size={18} className="text-[#b8941f]" />
+          <Globe size={18} className="text-[#E8961A]" />
           منصات التواصل الاجتماعي
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">ستظهر هذه الأيقونات في الفوتر بالصفحة الرئيسية</p>
@@ -105,7 +105,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
       {/* معلومات الدفع */}
       <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <CreditCard size={18} className="text-[#b8941f]" />
+          <CreditCard size={18} className="text-[#E8961A]" />
           معلومات الدفع (للعملاء)
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">ستظهر هذه المعلومات في صفحة الدفع للعملاء</p>
@@ -136,7 +136,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
       <button
         type="submit"
         disabled={saving}
-        className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#D4AF37]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-2xl hover:shadow-[#F5A623]/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saving ? (
           <>

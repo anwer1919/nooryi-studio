@@ -90,9 +90,9 @@ export default function UsersManager() {
     let pw = ""; for (let i = 0; i < 10; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length)); return pw
   }
 
-  if (loading) return <div className="flex items-center justify-center py-20"><RefreshCw size={32} className="animate-spin text-[#D4AF37]" /></div>
+  if (loading) return <div className="flex items-center justify-center py-20"><RefreshCw size={32} className="animate-spin text-[#F5A623]" /></div>
 
-  const inputClass = "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+  const inputClass = "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
 
   return (
     <div className="space-y-6">
@@ -112,7 +112,7 @@ export default function UsersManager() {
           <div key={user.id} className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="p-5 flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <span className="text-lg font-black text-[#111]">{(user.name || user.email).charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
@@ -137,11 +137,11 @@ export default function UsersManager() {
                   <span className="text-xs font-bold text-gray-500 flex items-center gap-1"><Shield size={12} /> الدور:</span>
                   {["USER", "ARTIST_MANAGER", "ADMIN"].map((role) => (
                     <button key={role} onClick={() => handleRoleChange(user.id, role)} disabled={changingRoleFor === user.id || user.role === role}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${user.role === role ? "bg-[#D4AF37]/20 text-[#b8941f] cursor-default" : "bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-400 hover:bg-gray-200"}`}>
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${user.role === role ? "bg-[#F5A623]/20 text-[#E8961A] cursor-default" : "bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-400 hover:bg-gray-200"}`}>
                       {ROLE_LABELS[role]}
                     </button>
                   ))}
-                  {changingRoleFor === user.id && <RefreshCw size={12} className="animate-spin text-[#D4AF37]" />}
+                  {changingRoleFor === user.id && <RefreshCw size={12} className="animate-spin text-[#F5A623]" />}
                 </div>
               )}
 
@@ -150,7 +150,7 @@ export default function UsersManager() {
                 <div className="flex items-center gap-2 flex-wrap bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-800">
                   <span className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1"><UserPlus size={12} /> ربط بفنان:</span>
                   <select value={selectedArtist[user.id] || user.artistId || ""} onChange={(e) => setSelectedArtist(p => ({ ...p, [user.id]: e.target.value }))}
-                    className="px-3 py-2 border border-purple-200 dark:border-purple-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#D4AF37] min-w-[180px]">
+                    className="px-3 py-2 border border-purple-200 dark:border-purple-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] min-w-[180px]">
                     <option value="">-- اختر فنان --</option>
                     {artists.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
@@ -177,7 +177,7 @@ export default function UsersManager() {
                 <button type="button" onClick={() => setNewPasswords(p => ({ ...p, [user.id]: generatePassword() }))}
                   className="px-3 py-2 bg-gray-100 dark:bg-[#1a1a1a] rounded-lg text-xs font-bold hover:bg-gray-200 transition">🎲 توليد</button>
                 <button onClick={() => handleResetPassword(user.id)} disabled={resettingId === user.id || !newPasswords[user.id]}
-                  className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] rounded-lg text-xs font-black hover:shadow-lg transition disabled:opacity-50 flex items-center gap-1">
+                  className="px-4 py-2 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] rounded-lg text-xs font-black hover:shadow-lg transition disabled:opacity-50 flex items-center gap-1">
                   {resettingId === user.id ? <RefreshCw size={12} className="animate-spin" /> : <Key size={12} />} تعيين
                 </button>
               </div>

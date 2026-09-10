@@ -144,7 +144,7 @@ export default function DebugAPIsPage() {
             <button
               onClick={testAPIs}
               disabled={!selectedArtist || loading}
-              className="mt-4 bg-[#D4AF37] text-[#111] font-black px-6 py-3 rounded-xl disabled:opacity-50"
+              className="mt-4 bg-[#F5A623] text-[#111] font-black px-6 py-3 rounded-xl disabled:opacity-50"
             >
               {loading ? "جاري الاختبار..." : "اختبر APIs"}
             </button>
@@ -195,7 +195,7 @@ export default function DebugAPIsPage() {
                       <td className="py-2">{r.regionName}</td>
                       <td className="py-2 text-center">{Number(r.basePrice).toLocaleString()} ج.م</td>
                       <td className="py-2 text-center">{Number(r.travelFee || 0).toLocaleString()} ج.م</td>
-                      <td className="py-2 text-center font-black text-[#D4AF37]">
+                      <td className="py-2 text-center font-black text-[#F5A623]">
                         {(Number(r.basePrice) + Number(r.travelFee || 0)).toLocaleString()} ج.م
                       </td>
                     </tr>

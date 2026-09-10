@@ -18,7 +18,7 @@ export default function StatsClient({ data }: { data: any }) {
           {[
             { label:"إجمالي الحجوزات", value:data.total, icon:Calendar, color:"from-blue-500 to-blue-700" },
             { label:"مؤكدة", value:data.confirmed, icon:Star, color:"from-green-500 to-green-700" },
-            { label:"الإيرادات", value:data.revenue.toLocaleString()+" ج.م", icon:DollarSign, color:"from-[#D4AF37] to-[#b8941f]" },
+            { label:"الإيرادات", value:data.revenue.toLocaleString()+" ج.م", icon:DollarSign, color:"from-[#F5A623] to-[#E8961A]" },
             { label:"صافي الفنان", value:Math.round(data.net).toLocaleString()+" ج.م", icon:TrendingUp, color:"from-purple-500 to-purple-700" },
           ].map((s,i)=>(<div key={i} className="stat-card relative overflow-hidden">
             <div className={"absolute top-0 left-0 right-0 h-1 bg-gradient-to-r "+s.color}></div>
@@ -32,26 +32,26 @@ export default function StatsClient({ data }: { data: any }) {
           <div className="space-y-3">
             <div className="flex justify-between py-3 border-b border-gray-100"><span className="text-gray-600">الإيرادات</span><span className="font-black text-gray-900 text-lg">{data.revenue.toLocaleString()} ج.م</span></div>
             <div className="flex justify-between py-3 border-b border-gray-100"><span className="text-gray-600">عمولة المنصة ({data.commission}%)</span><span className="font-black text-red-600 text-lg">-{Math.round(data.revenue*data.commission/100).toLocaleString()} ج.م</span></div>
-            <div className="flex justify-between py-3 bg-[#faf8f0] rounded-xl px-4 border border-[#D4AF37]/20"><span className="font-bold text-[#b8941f]">صافي الفنان</span><span className="font-black text-[#b8941f] text-xl">{Math.round(data.net).toLocaleString()} ج.م</span></div>
+            <div className="flex justify-between py-3 bg-[#faf8f0] rounded-xl px-4 border border-[#F5A623]/20"><span className="font-bold text-[#E8961A]">صافي الفنان</span><span className="font-black text-[#E8961A] text-xl">{Math.round(data.net).toLocaleString()} ج.م</span></div>
           </div>
         </div>
 
         <div className="card-pro p-6">
           <h3 className="font-black text-gray-900 mb-4 text-lg">⭐ التقييمات</h3>
-          <div className="flex items-center gap-4"><span className="text-5xl font-black text-[#b8941f]">{Number(data.rating).toFixed(1)}</span><div><div className="flex gap-1">{[1,2,3,4,5].map(i=><Star key={i} size={20} className={i<=Math.round(data.rating)?"text-[#D4AF37] fill-[#D4AF37]":"text-gray-300"}/>)}</div><p className="text-sm text-gray-500 mt-1">{data.ratingCount} تقييم</p></div></div>
+          <div className="flex items-center gap-4"><span className="text-5xl font-black text-[#E8961A]">{Number(data.rating).toFixed(1)}</span><div><div className="flex gap-1">{[1,2,3,4,5].map(i=><Star key={i} size={20} className={i<=Math.round(data.rating)?"text-[#F5A623] fill-[#F5A623]":"text-gray-300"}/>)}</div><p className="text-sm text-gray-500 mt-1">{data.ratingCount} تقييم</p></div></div>
         </div>
 
         <div className="card-pro overflow-hidden">
           <div className="p-5 border-b border-gray-100"><h3 className="font-black text-gray-900 text-lg">📋 آخر الحجوزات المؤكدة</h3></div>
           {data.recent.length===0 ? <p className="p-8 text-center text-gray-400">لا حجوزات مؤكدة</p> : (
             <table className="table-pro w-full"><thead><tr><th>العميل</th><th>التاريخ</th><th>المبلغ</th></tr></thead><tbody>{data.recent.map((b:any)=>(
-              <tr key={b.id}><td className="font-bold">{b.clientName}</td><td className="text-center">{b.date?new Date(b.date).toLocaleDateString("ar-EG"):"—"}</td><td className="text-center font-black text-[#b8941f]">{Number(b.grossAmount||0).toLocaleString()} ج.م</td></tr>
+              <tr key={b.id}><td className="font-bold">{b.clientName}</td><td className="text-center">{b.date?new Date(b.date).toLocaleDateString("ar-EG"):"—"}</td><td className="text-center font-black text-[#E8961A]">{Number(b.grossAmount||0).toLocaleString()} ج.م</td></tr>
             ))}</tbody></table>
           )}
         </div>
 
         <div className="card-pro p-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2"><Award size={16} className="text-[#b8941f]"/><span className="text-sm font-bold text-[#b8941f]">Nooryi Studio — تقرير مالي معتمد</span></div>
+          <div className="flex items-center justify-center gap-2 mb-2"><Award size={16} className="text-[#E8961A]"/><span className="text-sm font-bold text-[#E8961A]">Nooryi Studio — تقرير مالي معتمد</span></div>
           <p className="text-xs text-gray-500">{data.date}</p>
         </div>
       </div>

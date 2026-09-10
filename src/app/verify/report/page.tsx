@@ -19,8 +19,8 @@ export default async function VerifyReportPage({ searchParams }: { searchParams:
   return (
     <div className="min-h-screen bg-[#faf8f0] py-10 md:py-16" dir="rtl">
       <div className="max-w-2xl mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-[#D4AF37]">
-          <div className="bg-gradient-to-l from-[#D4AF37] to-[#b8941f] p-6 text-center">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-[#F5A623]">
+          <div className="bg-gradient-to-l from-[#F5A623] to-[#E8961A] p-6 text-center">
             <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-3"><ShieldCheck size={28} className="text-white" /></div>
             <h1 className="text-2xl font-black text-white">صفحة التحقق من صحة التقرير</h1>
             <p className="text-white/80 text-sm mt-1">Nooryi Studio — نظام التحقق الرسمي</p>
@@ -34,8 +34,8 @@ export default async function VerifyReportPage({ searchParams }: { searchParams:
                 <div><p className="font-black text-green-700">✓ تقرير صحيح ومطابق لسجلات المنصة</p><p className="text-xs text-green-600 mt-0.5">تم التحقق لحظياً في {new Date().toLocaleString("ar-EG")}</p></div>
               </div>
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 mb-6">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center text-white text-xl font-black flex-shrink-0">{(artist.name || "ف").charAt(0)}</div>
-                <div className="flex-1 min-w-0"><p className="font-black text-lg text-gray-900 truncate flex items-center gap-2"><Music size={16} className="text-[#b8941f]" /> {artist.name}</p><p className="text-xs text-gray-500">{artist.category || "فنان"} • <span className="inline-flex items-center gap-1"><Star size={11} className="text-[#D4AF37] fill-[#D4AF37]" /> {Number(stats.rating).toFixed(1)} ({stats.ratingCount} تقييم)</span></p></div>
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center text-white text-xl font-black flex-shrink-0">{(artist.name || "ف").charAt(0)}</div>
+                <div className="flex-1 min-w-0"><p className="font-black text-lg text-gray-900 truncate flex items-center gap-2"><Music size={16} className="text-[#E8961A]" /> {artist.name}</p><p className="text-xs text-gray-500">{artist.category || "فنان"} • <span className="inline-flex items-center gap-1"><Star size={11} className="text-[#F5A623] fill-[#F5A623]" /> {Number(stats.rating).toFixed(1)} ({stats.ratingCount} تقييم)</span></p></div>
               </div>
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {[{ l: "إجمالي الحجوزات", v: String(stats.total) }, { l: "حجوزات مؤكدة", v: String(stats.confirmed) }, { l: "حجوزات مكتملة", v: String(stats.completed) }, { l: "إجمالي الإيرادات", v: stats.gross.toLocaleString() + " ج.م" }, { l: "عمولة المنصة", v: stats.commission.toLocaleString() + " ج.م" }, { l: "صافي الفنان", v: stats.net.toLocaleString() + " ج.م" }].map((x, i) => (

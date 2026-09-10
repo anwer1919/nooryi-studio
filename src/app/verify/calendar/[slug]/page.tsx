@@ -28,7 +28,7 @@ export default async function VerifyCalendarPage({
       <div dir="rtl" className="min-h-screen bg-red-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           <h1 className="text-2xl font-black text-red-700 mb-4">❌ رابط غير صالح</h1>
-          <Link href="/" className="text-[#D4AF37] hover:underline">العودة للرئيسية</Link>
+          <Link href="/" className="text-[#F5A623] hover:underline">العودة للرئيسية</Link>
         </div>
       </div>
     );
@@ -51,12 +51,12 @@ export default async function VerifyCalendarPage({
         <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] rounded-2xl p-8 text-white mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                 <span className="text-[#111] text-2xl font-black">N</span>
               </div>
               <div>
                 <h1 className="text-2xl font-black">Nooryi Studio</h1>
-                <p className="text-xs text-[#D4AF37]">تأكيد صحة التقويم</p>
+                <p className="text-xs text-[#F5A623]">تأكيد صحة التقويم</p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500 rounded-full px-4 py-2">
@@ -64,9 +64,9 @@ export default async function VerifyCalendarPage({
               <span className="text-green-300 font-bold text-sm">تم التحقق ✓</span>
             </div>
           </div>
-          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-6"></div>
+          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
           <h2 className="text-3xl font-black">{artist.name} — {monthName}</h2>
-          <p className="text-sm text-gray-300 mt-2">رقم التقرير: <span className="font-mono text-[#D4AF37]" dir="ltr">{report || "—"}</span></p>
+          <p className="text-sm text-gray-300 mt-2">رقم التقرير: <span className="font-mono text-[#F5A623]" dir="ltr">{report || "—"}</span></p>
         </div>
 
         <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-6">
@@ -85,13 +85,13 @@ export default async function VerifyCalendarPage({
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#D4AF37]">
+          <div className="bg-white rounded-2xl p-6 border-2 border-[#F5A623]">
             <p className="text-xs text-gray-500 font-bold uppercase">الحجوزات</p>
             <p className="text-4xl font-black">{filtered.length}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border">
             <p className="text-xs text-gray-500 font-bold uppercase">الإيرادات</p>
-            <p className="text-2xl font-black text-[#D4AF37]">{totalRevenue.toLocaleString()}</p>
+            <p className="text-2xl font-black text-[#F5A623]">{totalRevenue.toLocaleString()}</p>
             <p className="text-xs text-gray-500">ج.م</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border">
@@ -101,7 +101,7 @@ export default async function VerifyCalendarPage({
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border">
-          <div className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] px-6 py-4">
+          <div className="bg-gradient-to-r from-[#F5A623] to-[#E8961A] px-6 py-4">
             <h3 className="text-xl font-black text-[#111] flex items-center gap-2">
               <Calendar size={20} />
               الحجوزات المعتمدة
@@ -130,7 +130,7 @@ export default async function VerifyCalendarPage({
                     <td className="px-4 py-3 text-center text-sm">{b.timeSlot || "—"}</td>
                     <td className="px-4 py-3 font-bold">{b.clientName}</td>
                     <td className="px-4 py-3 text-sm">{(b as any).venue?.name || "—"}</td>
-                    <td className="px-4 py-3 text-center font-black text-[#D4AF37]">
+                    <td className="px-4 py-3 text-center font-black text-[#F5A623]">
                       {b.grossAmount ? `${Number(b.grossAmount).toLocaleString()} ج.م` : "—"}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -146,7 +146,7 @@ export default async function VerifyCalendarPage({
         </div>
 
         <div className="mt-6 text-center">
-          <Link href={`/artists/${artist.slug}`} className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-[#111] font-black rounded-xl">
+          <Link href={`/artists/${artist.slug}`} className="inline-flex items-center gap-2 px-6 py-3 bg-[#F5A623] text-[#111] font-black rounded-xl">
             <ArrowLeft size={18} /> العودة لصفحة الفنان
           </Link>
         </div>

@@ -62,7 +62,7 @@ export default async function AdminBookingsPage() {
         <div className="stat-card">
           <div className="flex items-center justify-between mb-3">
             <span className="stat-label">الإجمالي</span>
-            <Calendar size={20} className="text-[#b8941f]" />
+            <Calendar size={20} className="text-[#E8961A]" />
           </div>
           <div className="stat-value">{stats.total}</div>
         </div>
@@ -159,7 +159,7 @@ export default async function AdminBookingsPage() {
                         <span className={`status-chip ${status.class}`}>{status.label}</span>
                       </td>
                       <td className="text-center">
-                        <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#b8941f] transition inline-block">
+                        <Link href={`/admin/bookings/${b.id}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-[#E8961A] transition inline-block">
                           <Eye size={16} />
                         </Link>
                       </td>

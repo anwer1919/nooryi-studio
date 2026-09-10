@@ -51,12 +51,12 @@ export default async function VerifyInvoicePage({
         <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] rounded-2xl p-8 text-white shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                 <span className="text-[#111] text-2xl font-black">N</span>
               </div>
               <div>
                 <h1 className="text-2xl font-black">Nooryi Studio</h1>
-                <p className="text-xs text-[#D4AF37]">التحقق من صحة الفاتورة</p>
+                <p className="text-xs text-[#F5A623]">التحقق من صحة الفاتورة</p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500 rounded-full px-4 py-2">
@@ -64,11 +64,11 @@ export default async function VerifyInvoicePage({
               <span className="text-green-300 font-bold text-sm">فاتورة أصلية ✓</span>
             </div>
           </div>
-          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-6"></div>
+          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-400">رقم الفاتورة</p>
-              <p className="text-lg font-mono text-[#D4AF37]" dir="ltr">INV-{booking.id.slice(0, 8).toUpperCase()}</p>
+              <p className="text-lg font-mono text-[#F5A623]" dir="ltr">INV-{booking.id.slice(0, 8).toUpperCase()}</p>
             </div>
             <div className="text-left">
               <p className="text-xs text-gray-400">تاريخ التحقق</p>
@@ -94,38 +94,38 @@ export default async function VerifyInvoicePage({
 
         {/* Invoice Details */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] px-6 py-4">
+          <div className="bg-gradient-to-r from-[#F5A623] to-[#E8961A] px-6 py-4">
             <h3 className="text-xl font-black text-[#111]">تفاصيل الفاتورة</h3>
           </div>
 
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <User size={20} className="text-[#D4AF37]" />
+                <User size={20} className="text-[#F5A623]" />
                 <div>
                   <p className="text-xs text-gray-500">العميل</p>
                   <p className="font-black">{booking.clientName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <Music size={20} className="text-[#D4AF37]" />
+                <Music size={20} className="text-[#F5A623]" />
                 <div>
                   <p className="text-xs text-gray-500">الفنان</p>
                   <p className="font-black">{booking.artist?.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <Calendar size={20} className="text-[#D4AF37]" />
+                <Calendar size={20} className="text-[#F5A623]" />
                 <div>
                   <p className="text-xs text-gray-500">تاريخ الفعالية</p>
                   <p className="font-black">{new Date(booking.date).toLocaleDateString("ar-EG")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <DollarSign size={20} className="text-[#D4AF37]" />
+                <DollarSign size={20} className="text-[#F5A623]" />
                 <div>
                   <p className="text-xs text-gray-500">الإجمالي</p>
-                  <p className="font-black text-[#D4AF37]">{grossAmount.toLocaleString()} ج.م</p>
+                  <p className="font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</p>
                 </div>
               </div>
             </div>

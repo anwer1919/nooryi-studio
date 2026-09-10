@@ -32,11 +32,11 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 // ═══ قالب OTP ═══
 export function otpEmailTemplate(otp: string) {
   return `<div dir="rtl" style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;background:#faf8f0;padding:30px;border-radius:20px;text-align:center">
-    <div style="background:linear-gradient(135deg,#d4af37,#b8941f);padding:20px;border-radius:15px;margin-bottom:20px">
+    <div style="background:linear-gradient(135deg,#F5A623,#E8961A);padding:20px;border-radius:15px;margin-bottom:20px">
       <h1 style="color:#111;margin:0;font-size:24px">Nooryi Studio</h1>
       <p style="color:#333;margin:5px 0 0;font-size:13px">رمز التحقق</p>
     </div>
-    <div style="background:white;padding:30px;border-radius:15px;border:2px solid #d4af37;margin-bottom:20px">
+    <div style="background:white;padding:30px;border-radius:15px;border:2px solid #F5A623;margin-bottom:20px">
       <p style="color:#666;margin:0 0 15px">استخدم هذا الرمز لإكمال تسجيل الدخول</p>
       <span style="font-size:40px;font-weight:900;letter-spacing:10px;color:#111">${otp}</span>
     </div>
@@ -63,7 +63,7 @@ function bookingHtml(b: any, title: string, color: string, emoji: string) {
         <tr><td style="padding:8px 0;color:#888">التاريخ:</td><td style="padding:8px 0;font-weight:bold">${fmtDate(b.date)}</td></tr>
         <tr><td style="padding:8px 0;color:#888">الوقت:</td><td style="padding:8px 0;font-weight:bold">${timeLabels[b.timeSlot] || b.timeSlot || "—"}</td></tr>
         <tr><td style="padding:8px 0;color:#888">المكان:</td><td style="padding:8px 0;font-weight:bold">${b.venue?.name || "سيتم تحديده"}</td></tr>
-        <tr><td style="padding:8px 0;color:#888">الإجمالي:</td><td style="padding:8px 0;font-weight:bold;color:#b8941f">${total} ج.م</td></tr>
+        <tr><td style="padding:8px 0;color:#888">الإجمالي:</td><td style="padding:8px 0;font-weight:bold;color:#E8961A">${total} ج.م</td></tr>
         <tr><td style="padding:8px 0;color:#888">العربون:</td><td style="padding:8px 0;font-weight:bold">${deposit} ج.م</td></tr>
       </table>
     </div>
@@ -73,7 +73,7 @@ function bookingHtml(b: any, title: string, color: string, emoji: string) {
 
 // ═══ الأسماء الجديدة ═══
 export function bookingConfirmationTemplate(b: any) {
-  return bookingHtml(b, "تم تأكيد حجزك بنجاح", "#d4af37,#b8941f", "✅")
+  return bookingHtml(b, "تم تأكيد حجزك بنجاح", "#F5A623,#E8961A", "✅")
 }
 export function bookingRejectionTemplate(b: any) {
   return `<div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;background:#faf8f0;padding:30px;border-radius:20px;text-align:center">

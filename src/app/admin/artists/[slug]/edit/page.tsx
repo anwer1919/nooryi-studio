@@ -193,14 +193,14 @@ export default function EditArtistPage() {
           <div className="flex gap-3 flex-wrap">
             <Link
               href="/admin/calendar"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#D4AF37] rounded-lg font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#F5A623] rounded-lg font-bold hover:bg-[#222] transition"
             >
               <Calendar size={16} />
               إدارة التقويم
             </Link>
             <Link
               href="/admin/pricing"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#D4AF37] rounded-lg font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#F5A623] rounded-lg font-bold hover:bg-[#222] transition"
             >
               <MapPin size={16} />
               إدارة التسعير

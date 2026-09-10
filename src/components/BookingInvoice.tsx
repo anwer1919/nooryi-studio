@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 30,
     borderBottom: 2,
-    borderBottomColor: "#D4AF37",
+    borderBottomColor: "#F5A623",
     paddingBottom: 20,
   },
   logoSection: {
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   logoIcon: {
     width: 40,
     height: 40,
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#F5A623",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#D4AF37",
+    color: "#F5A623",
   },
   invoiceTitle: {
     fontSize: 22,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#D4AF37",
+    color: "#F5A623",
     marginBottom: 10,
     borderBottom: 1,
     borderBottomColor: "#ddd",
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   totalSection: {
     marginTop: 30,
     borderTop: 2,
-    borderTopColor: "#D4AF37",
+    borderTopColor: "#F5A623",
     paddingTop: 20,
   },
   totalRow: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   grandTotal: {
     fontSize: 16,
-    color: "#D4AF37",
+    color: "#F5A623",
     fontWeight: "bold",
   },
   footer: {

@@ -26,7 +26,7 @@ export default function ThemeToggle() {
 
   return (
     <button onClick={toggle} aria-label="تبديل الوضع"
-      className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-[#D4AF37]/20 bg-[#111] text-[#D4AF37] hover:border-[#D4AF37] hover:bg-[#1a1a1a] transition-all">
+      className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-[#F5A623]/20 bg-[#111] text-[#F5A623] hover:border-[#F5A623] hover:bg-[#1a1a1a] transition-all">
       {dark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   )

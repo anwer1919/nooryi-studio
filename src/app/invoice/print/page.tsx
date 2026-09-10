@@ -72,35 +72,35 @@ export default async function UniversalPrintPage({
       <PrintButtons />
 
       {/* الشريط الذهبي العلوي */}
-      <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+      <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
 
       {/* الترويسة */}
       <div className="px-12 pt-8 pb-5 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-2xl">
               <span className="text-[#111] text-3xl font-black">N</span>
             </div>
             <div>
               <h1 className="text-3xl font-black">{STUDIO.nameAr}</h1>
-              <p className="text-[#D4AF37] font-bold mt-0.5">{STUDIO.name}</p>
+              <p className="text-[#F5A623] font-bold mt-0.5">{STUDIO.name}</p>
               <p className="text-xs text-gray-400 mt-1">{STUDIO.tagline}</p>
             </div>
           </div>
           <div className="text-left">
-            <div className="inline-block px-4 py-2 bg-[#D4AF37]/20 border border-[#D4AF37] rounded-lg">
-              <p className="text-xs text-[#D4AF37] font-bold">فاتورة رسمية</p>
+            <div className="inline-block px-4 py-2 bg-[#F5A623]/20 border border-[#F5A623] rounded-lg">
+              <p className="text-xs text-[#F5A623] font-bold">فاتورة رسمية</p>
               <p className="text-xs text-gray-300 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
             </div>
             <p className="text-xs text-gray-400 mt-2">تاريخ الإصدار: {issueDate}</p>
-            <p className="text-xs text-gray-400 mt-1">الحالة: <span className="text-[#D4AF37] font-bold">{statusLabel}</span></p>
+            <p className="text-xs text-gray-400 mt-1">الحالة: <span className="text-[#F5A623] font-bold">{statusLabel}</span></p>
           </div>
         </div>
-        <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+        <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
       </div>
 
       {/* العميل والفنان */}
-      <div className="px-12 py-5 bg-[#faf8f0] border-b-4 border-[#D4AF37]">
+      <div className="px-12 py-5 bg-[#faf8f0] border-b-4 border-[#F5A623]">
         <div className="grid grid-cols-2 gap-6">
           <div>
             <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">فاتورة إلى</p>
@@ -118,7 +118,7 @@ export default async function UniversalPrintPage({
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-2xl object-cover" />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <span className="text-[#111] text-2xl font-black">{booking.artist?.name?.charAt(0) || "ف"}</span>
                 </div>
               )}
@@ -130,7 +130,7 @@ export default async function UniversalPrintPage({
       {/* تفاصيل الحجز */}
       <div className="px-12 py-5">
         <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>تفاصيل الحجز
+          <div className="w-1 h-5 bg-[#F5A623] rounded"></div>تفاصيل الحجز
         </h3>
         <table className="w-full border-collapse text-sm">
           <thead><tr className="bg-[#0a0a0a] text-white">
@@ -151,7 +151,7 @@ export default async function UniversalPrintPage({
       {/* جدول المبالغ */}
       <div className="px-12 py-5">
         <h3 className="text-base font-black text-gray-900 mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 bg-[#D4AF37] rounded"></div>التفاصيل المالية
+          <div className="w-1 h-5 bg-[#F5A623] rounded"></div>التفاصيل المالية
         </h3>
         <table className="w-full border-collapse">
           <thead><tr className="bg-[#0a0a0a] text-white">
@@ -174,7 +174,7 @@ export default async function UniversalPrintPage({
             )}
             <tr className="bg-[#1a1a1a] text-white font-black">
               <td colSpan={2} className="px-4 py-3 text-right">الإجمالي المستحق</td>
-              <td className="px-4 py-3 text-center text-[#D4AF37] text-lg">{grossAmount.toLocaleString()} ج.م</td>
+              <td className="px-4 py-3 text-center text-[#F5A623] text-lg">{grossAmount.toLocaleString()} ج.م</td>
             </tr>
             <tr className="border-b border-gray-200 bg-green-50">
               <td colSpan={2} className="px-4 py-3 font-bold text-green-800">✓ المدفوع</td>
@@ -214,37 +214,37 @@ export default async function UniversalPrintPage({
               <p dir="ltr" className="text-right">{STUDIO.phone}</p>
               <p>{STUDIO.email}</p>
               <p>{STUDIO.address}</p>
-              <p dir="ltr" className="text-right font-mono text-[#D4AF37]">{STUDIO.website.replace("https://", "")}</p>
+              <p dir="ltr" className="text-right font-mono text-[#F5A623]">{STUDIO.website.replace("https://", "")}</p>
               <p className="text-gray-500">س.ت: <span className="font-mono">{STUDIO.taxNumber}</span></p>
             </div>
           </div>
           <div className="flex flex-col items-center justify-center">
             <div className="relative">
-              <div className="w-28 h-28 rounded-full border-4 border-[#D4AF37] flex items-center justify-center" style={{ transform: "rotate(-15deg)", boxShadow: "inset 0 0 0 2px #D4AF37, 0 0 0 2px #D4AF37" }}>
+              <div className="w-28 h-28 rounded-full border-4 border-[#F5A623] flex items-center justify-center" style={{ transform: "rotate(-15deg)", boxShadow: "inset 0 0 0 2px #F5A623, 0 0 0 2px #F5A623" }}>
                 <div className="text-center">
-                  <p className="text-[7px] font-bold text-[#D4AF37] uppercase tracking-widest">{STUDIO.name}</p>
-                  <p className="text-[10px] font-black text-[#D4AF37] my-1">✦ معتمد ✦</p>
-                  <p className="text-[8px] font-black text-[#D4AF37]">APPROVED</p>
-                  <p className="text-[7px] text-[#D4AF37] mt-1 font-mono" dir="ltr">{new Date().getFullYear()}</p>
+                  <p className="text-[7px] font-bold text-[#F5A623] uppercase tracking-widest">{STUDIO.name}</p>
+                  <p className="text-[10px] font-black text-[#F5A623] my-1">✦ معتمد ✦</p>
+                  <p className="text-[8px] font-black text-[#F5A623]">APPROVED</p>
+                  <p className="text-[7px] text-[#F5A623] mt-1 font-mono" dir="ltr">{new Date().getFullYear()}</p>
                 </div>
               </div>
-              <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]" style={{ transform: "rotate(-15deg) scale(1.15)", opacity: 0.5 }}></div>
+              <div className="absolute inset-0 rounded-full border-2 border-[#F5A623]" style={{ transform: "rotate(-15deg) scale(1.15)", opacity: 0.5 }}></div>
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="bg-white p-2.5 rounded-xl border-2 border-[#D4AF37] shadow-lg">
+            <div className="bg-white p-2.5 rounded-xl border-2 border-[#F5A623] shadow-lg">
               <QRCodeDisplay value={verifyUrl} size={95} />
             </div>
             <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
             <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
           </div>
         </div>
-        <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+        <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
         <p className="mt-3 text-[10px] text-gray-500 text-center">© {new Date().getFullYear()} {STUDIO.name} — جميع الحقوق محفوظة | ترخيص <span className="font-mono">{STUDIO.licenseNumber}</span></p>
       </div>
 
-      <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+      <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
     </div>
   )
 }

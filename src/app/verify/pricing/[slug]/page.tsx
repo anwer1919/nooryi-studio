@@ -54,12 +54,12 @@ export default async function VerifyPricingPage({
         <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] rounded-2xl p-8 text-white mb-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                 <span className="text-[#111] text-2xl font-black">N</span>
               </div>
               <div>
                 <h1 className="text-2xl font-black">Nooryi Studio</h1>
-                <p className="text-xs text-[#D4AF37]">تأكيد صحة الأسعار</p>
+                <p className="text-xs text-[#F5A623]">تأكيد صحة الأسعار</p>
               </div>
             </div>
             <div className="text-right">
@@ -70,7 +70,7 @@ export default async function VerifyPricingPage({
             </div>
           </div>
 
-          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-6"></div>
+          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
 
           <div className="flex items-center justify-between">
             <div>
@@ -80,7 +80,7 @@ export default async function VerifyPricingPage({
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">رقم التقرير</p>
-              <p className="text-sm font-mono text-[#D4AF37]" dir="ltr">{report || "—"}</p>
+              <p className="text-sm font-mono text-[#F5A623]" dir="ltr">{report || "—"}</p>
             </div>
           </div>
         </div>
@@ -105,13 +105,13 @@ export default async function VerifyPricingPage({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-2xl p-6 border-2 border-[#D4AF37] shadow-lg">
+          <div className="bg-white rounded-2xl p-6 border-2 border-[#F5A623] shadow-lg">
             <p className="text-xs text-gray-500 font-bold uppercase mb-2">عدد المناطق</p>
             <p className="text-4xl font-black text-gray-900">{totalRegions}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow">
             <p className="text-xs text-gray-500 font-bold uppercase mb-2">متوسط السعر</p>
-            <p className="text-3xl font-black text-[#D4AF37]">{avgPrice.toLocaleString()}</p>
+            <p className="text-3xl font-black text-[#F5A623]">{avgPrice.toLocaleString()}</p>
             <p className="text-xs text-gray-500 mt-1">ج.م</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow">
@@ -126,7 +126,7 @@ export default async function VerifyPricingPage({
 
         {/* Regions Table */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200 mb-6">
-          <div className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] px-6 py-4">
+          <div className="bg-gradient-to-r from-[#F5A623] to-[#E8961A] px-6 py-4">
             <h3 className="text-xl font-black text-[#111] flex items-center gap-2">
               <MapPin size={20} />
               الأسعار الرسمية المعتمدة
@@ -153,7 +153,7 @@ export default async function VerifyPricingPage({
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <MapPin size={16} className="text-[#D4AF37]" />
+                        <MapPin size={16} className="text-[#F5A623]" />
                         <span className="font-black text-gray-900">{r.regionName}</span>
                       </div>
                     </td>
@@ -164,7 +164,7 @@ export default async function VerifyPricingPage({
                       {Number(r.travelFee || 0) > 0 ? `+${Number(r.travelFee).toLocaleString()} ج.م` : "—"}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-block px-4 py-1 bg-[#D4AF37] text-[#111] font-black rounded-lg">
+                      <span className="inline-block px-4 py-1 bg-[#F5A623] text-[#111] font-black rounded-lg">
                         {total.toLocaleString()} ج.م
                       </span>
                     </td>
@@ -177,7 +177,7 @@ export default async function VerifyPricingPage({
 
         {/* Official Notice */}
         <div className="bg-[#0a0a0a] rounded-2xl p-6 text-white text-center">
-          <Award size={32} className="mx-auto text-[#D4AF37] mb-2" />
+          <Award size={32} className="mx-auto text-[#F5A623] mb-2" />
           <p className="text-xs text-gray-400">
             هذا التقرير صادر رسمياً من منصة Nooryi Studio — جميع الحقوق محفوظة © {new Date().getFullYear()}
           </p>
@@ -187,7 +187,7 @@ export default async function VerifyPricingPage({
         <div className="mt-6 text-center">
           <Link
             href={`/artists/${artist.slug}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4AF37] text-[#111] font-black rounded-xl hover:shadow-lg transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#F5A623] text-[#111] font-black rounded-xl hover:shadow-lg transition"
           >
             <ArrowLeft size={18} />
             العودة لصفحة الفنان

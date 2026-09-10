@@ -1,4 +1,40 @@
-"use client"
+﻿# -*- coding: utf-8 -*-
+import os
+
+# ═══ 1) توحيد الألوان: استبدال الذهبي القديم بالبرتقالي الجديد في كل الملفات ═══
+REPL = [
+    ("#D4AF37", "#F5A623"),
+    ("#d4af37", "#F5A623"),
+    ("#b8941f", "#E8961A"),
+    ("#B8941F", "#E8961A"),
+    ("#f4e5b8", "#FFC966"),
+    ("#F4E5B8", "#FFC966"),
+    ("rgba(212,175,55", "rgba(245,166,35"),
+    ("rgba(212, 175, 55", "rgba(245, 166, 35"),
+    ("212,175,55", "245,166,35"),
+]
+
+ROOT = os.path.join(os.getcwd(), "src")
+count = 0
+for dirpath, dirs, files in os.walk(ROOT):
+    for fn in files:
+        if fn.endswith((".tsx", ".ts", ".css")):
+            p = os.path.join(dirpath, fn)
+            try:
+                s = open(p, encoding="utf-8").read()
+            except Exception:
+                continue
+            o = s
+            for a, b in REPL:
+                s = s.replace(a, b)
+            if s != o:
+                open(p, "w", encoding="utf-8").write(s)
+                count += 1
+                print("updated:", os.path.relpath(p, ROOT))
+print("TOTAL FILES UPDATED:", count)
+
+# ═══ 2) إصلاح Navbar: الاسم يظهر على الجوال + skeleton أثناء التحميل ═══
+NAVBAR = '''"use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
@@ -70,3 +106,16 @@ export default function Navbar() {
     </>
   )
 }
+'''
+
+with open(os.path.join("src", "components", "Navbar.tsx"), "w", encoding="utf-8") as f:
+    f.write(NAVBAR)
+print("Navbar.tsx rewritten")
+
+# ═══ 3) تنظيف الملفات المؤقتة ═══
+for tmp in ["fix_all.py", "write_all.py"]:
+    if os.path.exists(tmp):
+        os.remove(tmp)
+        print("removed:", tmp)
+
+print("ALL DONE")

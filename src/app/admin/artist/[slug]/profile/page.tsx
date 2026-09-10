@@ -13,8 +13,8 @@ export default async function ArtistProfile({ params }: { params: Promise<{ slug
   return (
     <div dir="rtl" className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2"><Music size={28} className="text-[#D4AF37]" /> بروفايل {fullArtist.name}</h1>
-        <Link href={`/admin/artists/${slug}/edit`} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] rounded-xl font-bold text-sm hover:shadow-lg transition">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2"><Music size={28} className="text-[#F5A623]" /> بروفايل {fullArtist.name}</h1>
+        <Link href={`/admin/artists/${slug}/edit`} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] rounded-xl font-bold text-sm hover:shadow-lg transition">
           <Edit size={14} /> تعديل
         </Link>
       </div>
@@ -26,7 +26,7 @@ export default async function ArtistProfile({ params }: { params: Promise<{ slug
             <div className="flex justify-between"><span className="text-gray-500">الاسم:</span><span className="font-bold text-gray-900 dark:text-white">{fullArtist.name}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">الفئة:</span><span className="font-bold text-gray-900 dark:text-white">{fullArtist.category || "—"}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">الحالة:</span><span className="font-bold text-green-600">{fullArtist.status}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">عمولة المنصة:</span><span className="font-bold text-[#D4AF37]">{fullArtist.commissionRate}%</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">عمولة المنصة:</span><span className="font-bold text-[#F5A623]">{fullArtist.commissionRate}%</span></div>
           </div>
         </div>
 

@@ -212,7 +212,7 @@ export default function AdminPricingPage() {
           100% { background-position: 200% 0; }
         }
         .gold-shimmer {
-          background: linear-gradient(90deg, #D4AF37 0%, #f4e5b8 50%, #D4AF37 100%);
+          background: linear-gradient(90deg, #F5A623 0%, #FFC966 50%, #F5A623 100%);
           background-size: 200% 100%;
           animation: shimmer 3s infinite;
         }
@@ -237,7 +237,7 @@ export default function AdminPricingPage() {
           <button
             onClick={handlePrint}
             disabled={!selectedArtistId || regions.length === 0}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-xl hover:shadow-lg transition disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black rounded-xl hover:shadow-lg transition disabled:opacity-50"
           >
             <Printer size={18} />
             طباعة تقرير الأسعار
@@ -264,7 +264,7 @@ export default function AdminPricingPage() {
           <select
             value={selectedArtistId}
             onChange={(e) => setSelectedArtistId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#D4AF37]"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
           >
             <option value="">— اختر فناناً —</option>
             {artists.map(a => (
@@ -280,13 +280,13 @@ export default function AdminPricingPage() {
             {/* ═══════════ Regions Table ═══════════ */}
             <div className="no-print card-pro p-6">
               <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <MapPin size={20} className="text-[#D4AF37]" />
+                <MapPin size={20} className="text-[#F5A623]" />
                 مناطق التسعير — {selectedArtist?.name}
               </h2>
 
               {loading ? (
                 <div className="text-center py-8">
-                  <Loader2 size={32} className="animate-spin text-[#D4AF37] mx-auto" />
+                  <Loader2 size={32} className="animate-spin text-[#F5A623] mx-auto" />
                 </div>
               ) : regions.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
@@ -310,7 +310,7 @@ export default function AdminPricingPage() {
                         <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">{r.regionName}</td>
                         <td className="px-4 py-3 text-center font-black">{Number(r.basePrice).toLocaleString()} ج.م</td>
                         <td className="px-4 py-3 text-center">{Number(r.travelFee || 0).toLocaleString()} ج.م</td>
-                        <td className="px-4 py-3 text-center font-black text-[#D4AF37]">
+                        <td className="px-4 py-3 text-center font-black text-[#F5A623]">
                           {(Number(r.basePrice) + Number(r.travelFee || 0)).toLocaleString()} ج.م
                         </td>
                         <td className="px-4 py-3">
@@ -333,7 +333,7 @@ export default function AdminPricingPage() {
             {/* ═══════════ Add/Edit Form ═══════════ */}
             <div className="no-print card-pro p-6">
               <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Plus size={18} className="text-[#D4AF37]" />
+                <Plus size={18} className="text-[#F5A623]" />
                 {editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}
               </h3>
 
@@ -377,7 +377,7 @@ export default function AdminPricingPage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving ? <><Loader2 size={18} className="animate-spin" /> جاري الحفظ...</> : <><Save size={18} /> {editingId ? "تحديث" : "إضافة"}</>}
                   </button>
@@ -402,36 +402,36 @@ export default function AdminPricingPage() {
         {selectedArtist && regions.length > 0 && (
           <div className={`print-area ${showPrintPreview ? '' : 'hidden print:block'}`}>
             {/* Gold Border Top */}
-            <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+            <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
 
             {/* Header */}
             <div className="px-12 pt-10 pb-6 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-2xl">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-2xl">
                     <span className="text-[#111] text-4xl font-black">N</span>
                   </div>
                   <div>
                     <h1 className="text-4xl font-black tracking-tight">{STUDIO_INFO.nameAr}</h1>
-                    <p className="text-[#D4AF37] font-bold mt-1">{STUDIO_INFO.name}</p>
+                    <p className="text-[#F5A623] font-bold mt-1">{STUDIO_INFO.name}</p>
                     <p className="text-xs text-gray-400 mt-2">{STUDIO_INFO.tagline}</p>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="inline-block px-4 py-2 bg-[#D4AF37]/20 border border-[#D4AF37] rounded-lg">
-                    <p className="text-xs text-[#D4AF37] font-bold">تقرير أسعار</p>
+                  <div className="inline-block px-4 py-2 bg-[#F5A623]/20 border border-[#F5A623] rounded-lg">
+                    <p className="text-xs text-[#F5A623] font-bold">تقرير أسعار</p>
                     <p className="text-xs text-gray-300 mt-1 font-mono" dir="ltr">{reportId}</p>
                   </div>
                 </div>
               </div>
 
               {/* Gold Line */}
-              <div className="mt-8 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+              <div className="mt-8 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
             </div>
 
             {/* Report Title */}
-            <div className="px-12 py-8 bg-[#faf8f0] border-b-4 border-[#D4AF37]">
+            <div className="px-12 py-8 bg-[#faf8f0] border-b-4 border-[#F5A623]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {selectedArtist?.profileImage ? (
@@ -441,7 +441,7 @@ export default function AdminPricingPage() {
                       className="w-16 h-16 rounded-2xl object-cover shadow-lg"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center shadow-lg">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg">
                       <span className="text-[#111] text-3xl font-black">{selectedArtist.name.charAt(0)}</span>
                     </div>
                   )}
@@ -462,7 +462,7 @@ export default function AdminPricingPage() {
             {/* Summary Cards */}
             <div className="px-12 py-8">
               <div className="grid grid-cols-3 gap-4">
-                <div className="border-2 border-[#D4AF37] rounded-2xl p-5 bg-gradient-to-br from-[#D4AF37]/5 to-transparent">
+                <div className="border-2 border-[#F5A623] rounded-2xl p-5 bg-gradient-to-br from-[#F5A623]/5 to-transparent">
                   <p className="text-xs text-gray-600 font-bold uppercase tracking-wider mb-2">عدد المناطق</p>
                   <p className="text-4xl font-black text-gray-900">{totalRegions}</p>
                   <p className="text-xs text-gray-500 mt-1">منطقة مغطاة</p>
@@ -470,7 +470,7 @@ export default function AdminPricingPage() {
 
                 <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white">
                   <p className="text-xs text-gray-600 font-bold uppercase tracking-wider mb-2">متوسط السعر</p>
-                  <p className="text-3xl font-black text-[#D4AF37]">{avgPrice.toLocaleString()}</p>
+                  <p className="text-3xl font-black text-[#F5A623]">{avgPrice.toLocaleString()}</p>
                   <p className="text-xs text-gray-500 mt-1">جنيه مصري</p>
                 </div>
 
@@ -485,7 +485,7 @@ export default function AdminPricingPage() {
             {/* Regions Table */}
             <div className="px-12 pb-8">
               <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                <div className="w-1 h-6 bg-[#D4AF37] rounded"></div>
+                <div className="w-1 h-6 bg-[#F5A623] rounded"></div>
                 تفاصيل الأسعار حسب المنطقة
               </h3>
 
@@ -512,7 +512,7 @@ export default function AdminPricingPage() {
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-2">
-                            <MapPin size={16} className="text-[#D4AF37]" />
+                            <MapPin size={16} className="text-[#F5A623]" />
                             <span className="font-black text-gray-900">{r.regionName}</span>
                           </div>
                         </td>
@@ -525,7 +525,7 @@ export default function AdminPricingPage() {
                             : "—"}
                         </td>
                         <td className="px-4 py-4 text-center">
-                          <span className="inline-block px-4 py-1 bg-[#D4AF37] text-[#111] font-black rounded-lg">
+                          <span className="inline-block px-4 py-1 bg-[#F5A623] text-[#111] font-black rounded-lg">
                             {total.toLocaleString()} ج.م
                           </span>
                         </td>
@@ -542,7 +542,7 @@ export default function AdminPricingPage() {
                     <td className="px-4 py-4 text-center">
                       {regions.reduce((s, r) => s + Number(r.travelFee || 0), 0).toLocaleString()} ج.م
                     </td>
-                    <td className="px-4 py-4 text-center text-[#D4AF37]">
+                    <td className="px-4 py-4 text-center text-[#F5A623]">
                       {regions.reduce((s, r) => s + Number(r.basePrice) + Number(r.travelFee || 0), 0).toLocaleString()} ج.م
                     </td>
                   </tr>
@@ -553,7 +553,7 @@ export default function AdminPricingPage() {
             {/* Notes & Terms */}
             <div className="px-12 py-6 bg-[#faf8f0] border-t border-b border-gray-200">
               <h4 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
-                <Shield size={16} className="text-[#D4AF37]" />
+                <Shield size={16} className="text-[#F5A623]" />
                 الشروط والملاحظات
               </h4>
               <ul className="space-y-1 text-xs text-gray-700">
@@ -574,7 +574,7 @@ export default function AdminPricingPage() {
                     <p>{STUDIO_INFO.phone}</p>
                     <p>{STUDIO_INFO.email}</p>
                     <p>{STUDIO_INFO.address}</p>
-                    <p dir="ltr" className="font-mono text-[#D4AF37]">
+                    <p dir="ltr" className="font-mono text-[#F5A623]">
                       {STUDIO_INFO.website.replace("https://", "")}
                     </p>
                   </div>
@@ -585,26 +585,26 @@ export default function AdminPricingPage() {
                   <div className="relative">
                     {/* Stamp Circle */}
                     <div
-                      className="w-32 h-32 rounded-full border-4 border-[#D4AF37] flex items-center justify-center relative"
+                      className="w-32 h-32 rounded-full border-4 border-[#F5A623] flex items-center justify-center relative"
                       style={{
                         transform: 'rotate(-15deg)',
-                        boxShadow: 'inset 0 0 0 2px #D4AF37, 0 0 0 2px #D4AF37'
+                        boxShadow: 'inset 0 0 0 2px #F5A623, 0 0 0 2px #F5A623'
                       }}
                     >
                       <div className="text-center">
-                        <p className="text-[8px] font-bold text-[#D4AF37] uppercase tracking-widest">
+                        <p className="text-[8px] font-bold text-[#F5A623] uppercase tracking-widest">
                           {STUDIO_INFO.name}
                         </p>
-                        <p className="text-xs font-black text-[#D4AF37] my-1">✦ معتمد ✦</p>
-                        <p className="text-[10px] font-black text-[#D4AF37]">APPROVED</p>
-                        <p className="text-[8px] text-[#D4AF37] mt-1 font-mono" dir="ltr">
+                        <p className="text-xs font-black text-[#F5A623] my-1">✦ معتمد ✦</p>
+                        <p className="text-[10px] font-black text-[#F5A623]">APPROVED</p>
+                        <p className="text-[8px] text-[#F5A623] mt-1 font-mono" dir="ltr">
                           {new Date().getFullYear()}
                         </p>
                       </div>
                     </div>
                     {/* Outer ring */}
                     <div
-                      className="absolute inset-0 rounded-full border-2 border-[#D4AF37]"
+                      className="absolute inset-0 rounded-full border-2 border-[#F5A623]"
                       style={{ transform: 'rotate(-15deg) scale(1.15)', opacity: 0.5 }}
                     ></div>
                   </div>
@@ -615,7 +615,7 @@ export default function AdminPricingPage() {
 
                 {/* Right - QR Code */}
                 <div className="flex flex-col items-center">
-                  <div className="bg-white p-3 rounded-xl border-2 border-[#D4AF37] shadow-lg">
+                  <div className="bg-white p-3 rounded-xl border-2 border-[#F5A623] shadow-lg">
                     <QRCode
                       value={verifyUrl}
                       size={100}
@@ -634,7 +634,7 @@ export default function AdminPricingPage() {
               </div>
 
               {/* Bottom Gold Line */}
-              <div className="mt-8 h-0.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent"></div>
+              <div className="mt-8 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
 
               {/* Copyright */}
               <div className="mt-4 text-center">
@@ -646,7 +646,7 @@ export default function AdminPricingPage() {
             </div>
 
             {/* Gold Border Bottom */}
-            <div className="h-3 bg-gradient-to-r from-[#D4AF37] via-[#f4e5b8] to-[#D4AF37]"></div>
+            <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
           </div>
         )}
       </div>

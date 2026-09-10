@@ -105,7 +105,7 @@ function PaymentProcessForm() {
             ✅ تم إرسال فاتورتك الرسمية على بريدك الإلكتروني<br/>
             🖨️ يمكنك طباعتها من رابط الفاتورة
           </p>
-          <div className="flex items-center justify-center gap-2 text-[#D4AF37]">
+          <div className="flex items-center justify-center gap-2 text-[#F5A623]">
             <Loader2 size={18} className="animate-spin" />
             <span className="text-sm font-bold">جاري التوجيه لصفحة الفاتورة...</span>
           </div>
@@ -119,7 +119,7 @@ function PaymentProcessForm() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-600 hover:text-[#b8941f]">
+          <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
             <ArrowRight size={18} />
             العودة
           </button>
@@ -134,7 +134,7 @@ function PaymentProcessForm() {
           <p className="text-sm text-gray-300 mb-1">
             {type === "deposit" ? "💰 دفع العربون" : "✅ الدفع الكامل"}
           </p>
-          <p className="text-4xl font-black text-[#D4AF37]">
+          <p className="text-4xl font-black text-[#F5A623]">
             {parseFloat(amount).toLocaleString()} <span className="text-lg">ج.م</span>
           </p>
         </div>
@@ -148,33 +148,33 @@ function PaymentProcessForm() {
               onClick={() => setMethod("card")}
               className={`p-4 rounded-xl border-2 transition ${
                 method === "card"
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                  ? "border-[#F5A623] bg-[#F5A623]/10"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <CreditCard size={24} className={`mx-auto mb-2 ${method === "card" ? "text-[#D4AF37]" : "text-gray-400"}`} />
+              <CreditCard size={24} className={`mx-auto mb-2 ${method === "card" ? "text-[#F5A623]" : "text-gray-400"}`} />
               <p className="text-sm font-bold">بطاقة ائتمان</p>
             </button>
             <button
               onClick={() => setMethod("wallet")}
               className={`p-4 rounded-xl border-2 transition ${
                 method === "wallet"
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                  ? "border-[#F5A623] bg-[#F5A623]/10"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <Smartphone size={24} className={`mx-auto mb-2 ${method === "wallet" ? "text-[#D4AF37]" : "text-gray-400"}`} />
+              <Smartphone size={24} className={`mx-auto mb-2 ${method === "wallet" ? "text-[#F5A623]" : "text-gray-400"}`} />
               <p className="text-sm font-bold">محفظة</p>
             </button>
             <button
               onClick={() => setMethod("bank")}
               className={`p-4 rounded-xl border-2 transition ${
                 method === "bank"
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                  ? "border-[#F5A623] bg-[#F5A623]/10"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <Building2 size={24} className={`mx-auto mb-2 ${method === "bank" ? "text-[#D4AF37]" : "text-gray-400"}`} />
+              <Building2 size={24} className={`mx-auto mb-2 ${method === "bank" ? "text-[#F5A623]" : "text-gray-400"}`} />
               <p className="text-sm font-bold">تحويل بنكي</p>
             </button>
           </div>
@@ -294,7 +294,7 @@ function PaymentProcessForm() {
         <button
           onClick={handlePay}
           disabled={processing}
-          className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-xl transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
+          className="w-full bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-xl transition disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
         >
           {processing ? (
             <><Loader2 size={20} className="animate-spin" /> جاري المعالجة...</>
@@ -309,7 +309,7 @@ function PaymentProcessForm() {
 
 export default function PaymentProcessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#D4AF37]" size={40} /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#F5A623]" size={40} /></div>}>
       <PaymentProcessForm />
     </Suspense>
   )

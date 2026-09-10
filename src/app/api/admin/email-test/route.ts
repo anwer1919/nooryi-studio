@@ -15,7 +15,7 @@ export async function GET() {
   const r = await sendEmail({
     to,
     subject: "📧 اختبار البريد — Nooryi Studio",
-    html: "<div dir='rtl' style='font-family:Arial,sans-serif;padding:30px;text-align:center;background:#faf8f0;border-radius:20px'><div style='background:linear-gradient(135deg,#d4af37,#b8941f);padding:16px;border-radius:12px;margin-bottom:16px'><h2 style='color:#111;margin:0'>✅ البريد يعمل</h2></div><p style='color:#666'>إذا وصلتك هذه الرسالة فإن إعدادات البريد صحيحة.</p></div>",
+    html: "<div dir='rtl' style='font-family:Arial,sans-serif;padding:30px;text-align:center;background:#faf8f0;border-radius:20px'><div style='background:linear-gradient(135deg,#F5A623,#E8961A);padding:16px;border-radius:12px;margin-bottom:16px'><h2 style='color:#111;margin:0'>✅ البريد يعمل</h2></div><p style='color:#666'>إذا وصلتك هذه الرسالة فإن إعدادات البريد صحيحة.</p></div>",
   })
   return NextResponse.json({ to, configured, ...r })
 }

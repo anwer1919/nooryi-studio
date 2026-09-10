@@ -74,7 +74,7 @@ export async function POST(request: Request) {
         bio: body.bio || null,
         profileImage: body.profileImage || null,
         coverImage: body.coverImage || null,
-        accentColor: body.accentColor || "#D4AF37",
+        accentColor: body.accentColor || "#F5A623",
         status: body.status || "PENDING",
         commissionRate: body.commissionRate || 15,
         commissionDiscountVal: body.commissionDiscountVal || 0,

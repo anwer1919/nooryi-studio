@@ -35,13 +35,13 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-[#D4AF37]/10 to-[#b8941f]/10 border border-[#D4AF37]/30 rounded-2xl p-6">
+      <div className="bg-gradient-to-br from-[#F5A623]/10 to-[#E8961A]/10 border border-[#F5A623]/30 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
-            <CreditCard size={20} className="text-[#D4AF37]" />
+            <CreditCard size={20} className="text-[#F5A623]" />
             بيانات الدفع — {artist.name}
           </h3>
-          <span className="text-2xl font-black text-[#D4AF37]">
+          <span className="text-2xl font-black text-[#F5A623]">
             {amount.toLocaleString()} ج.م
           </span>
         </div>

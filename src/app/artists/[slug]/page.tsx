@@ -65,7 +65,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
           <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                <span className="text-[#d4af37] text-lg font-black">N</span>
+                <span className="text-[#F5A623] text-lg font-black">N</span>
               </div>
               <span className="text-white font-black">Nooryi</span>
             </Link>
@@ -80,9 +80,9 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
         <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 z-10">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center gap-2 mb-3">
-              <div className="badge-gold" style={{ background: "rgba(212, 175, 55, 0.2)", borderColor: "rgba(212, 175, 55, 0.4)" }}>
-                <Sparkles size={12} className="text-[#d4af37]" />
-                <span className="text-[#d4af37]">{artist.category || "فنان"}</span>
+              <div className="badge-gold" style={{ background: "rgba(245, 166, 35, 0.2)", borderColor: "rgba(245, 166, 35, 0.4)" }}>
+                <Sparkles size={12} className="text-[#F5A623]" />
+                <span className="text-[#F5A623]">{artist.category || "فنان"}</span>
               </div>
               {artist._count.bookings > 0 && (
                 <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs font-bold text-white">
@@ -97,18 +97,18 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
 
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2 text-white">
-                <Star size={20} className="text-[#d4af37] fill-[#d4af37]" />
+                <Star size={20} className="text-[#F5A623] fill-[#F5A623]" />
                 <span className="font-black text-xl">{avgRating}</span>
                 <span className="text-white/60 text-sm">({artist._count.reviews} تقييم)</span>
               </div>
               <div className="w-px h-6 bg-white/20"></div>
               <div className="flex items-center gap-2 text-white/80">
-                <Award size={18} className="text-[#d4af37]" />
+                <Award size={18} className="text-[#F5A623]" />
                 <span className="text-sm font-semibold">فنان معتمد</span>
               </div>
               <div className="w-px h-6 bg-white/20"></div>
               <div className="flex items-center gap-2 text-white/80">
-                <Calendar size={18} className="text-[#d4af37]" />
+                <Calendar size={18} className="text-[#F5A623]" />
                 <span className="text-sm font-semibold">متاح للحجز</span>
               </div>
             </div>
@@ -123,7 +123,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
             {/* نبذة */}
             <section className="card-pro p-8">
               <h2 className="text-2xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                <Music size={24} className="text-[#b8941f]" />
+                <Music size={24} className="text-[#E8961A]" />
                 نبذة عن الفنان
               </h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -147,7 +147,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
             {/* التوافر */}
             <section className="card-pro p-8">
               <h2 className="text-2xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                <Calendar size={24} className="text-[#b8941f]" />
+                <Calendar size={24} className="text-[#E8961A]" />
                 المواعيد المتاحة
               </h2>
               {artist.availability.length > 0 ? (
@@ -156,11 +156,11 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                     <Link
                       key={slot.id}
                       href={`/booking/${artist.slug}?date=${slot.id}`} style={{ cursor: "pointer" }}
-                      className="p-4 bg-[#faf8f0] border-2 border-[#e8e4d9] rounded-2xl hover:border-[#d4af37] hover:bg-white transition group"
+                      className="p-4 bg-[#faf8f0] border-2 border-[#e8e4d9] rounded-2xl hover:border-[#F5A623] hover:bg-white transition group"
                     >
                       <p className="text-xs text-gray-500 mb-1">موعد متاح</p>
                       <p className="font-black text-gray-900 mb-2">{formatAvailability(slot)}</p>
-                      <p className="text-xs text-[#b8941f] font-bold group-hover:font-black">
+                      <p className="text-xs text-[#E8961A] font-bold group-hover:font-black">
                         احجز هذا التاريخ ←
                       </p>
                     </Link>
@@ -174,7 +174,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
             {/* التقييمات */}
             <section className="card-pro p-8">
               <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                <Star size={24} className="text-[#b8941f] fill-[#b8941f]" />
+                <Star size={24} className="text-[#E8961A] fill-[#E8961A]" />
                 تقييمات العملاء
               </h2>
               {artist.reviews.length > 0 ? (
@@ -183,7 +183,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                     <div key={r.id} className="p-5 bg-[#faf8f0] rounded-2xl">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center text-white font-black">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center text-white font-black">
                             {(r.user?.name || "ع")[0]}
                           </div>
                           <div>
@@ -196,7 +196,7 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
                             <Star
                               key={i}
                               size={14}
-                              className={i < r.rating ? "text-[#d4af37] fill-[#d4af37]" : "text-gray-300"}
+                              className={i < r.rating ? "text-[#F5A623] fill-[#F5A623]" : "text-gray-300"}
                             />
                           ))}
                         </div>
@@ -227,19 +227,19 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between py-2">
                   <span className="text-gray-600 flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[#b8941f]" />
+                    <CheckCircle2 size={16} className="text-[#E8961A]" />
                     دفع آمن 100%
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-gray-600 flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[#b8941f]" />
+                    <CheckCircle2 size={16} className="text-[#E8961A]" />
                     ضمان استرداد
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-gray-600 flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[#b8941f]" />
+                    <CheckCircle2 size={16} className="text-[#E8961A]" />
                     تأكيد فوري
                   </span>
                 </div>
@@ -267,11 +267,11 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
 
               <div className="pt-6 border-t border-[#e8e4d9] space-y-3">
                 <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">تواصل معنا</p>
-                <a href="tel:+201000000000" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#b8941f] transition">
+                <a href="tel:+201000000000" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#E8961A] transition">
                   <Phone size={14} />
                   <span dir="ltr">+20 100 000 0000</span>
                 </a>
-                <a href="mailto:info@noorystudio.com" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#b8941f] transition">
+                <a href="mailto:info@noorystudio.com" className="flex items-center gap-2 text-sm text-gray-700 hover:text-[#E8961A] transition">
                   <Mail size={14} />
                   <span dir="ltr">info@noorystudio.com</span>
                 </a>
@@ -285,12 +285,12 @@ export default async function ArtistDetailPage({ params }: { params: Promise<{ s
       <footer className="bg-gradient-to-br from-[#0a0a0a] to-[#232323] text-white py-12 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
               <span className="text-[#0a0a0a] text-lg font-black">N</span>
             </div>
             <div>
               <p className="text-lg font-black">Nooryi</p>
-              <p className="text-[9px] text-[#d4af37] font-bold tracking-[0.25em] uppercase">Studio</p>
+              <p className="text-[9px] text-[#F5A623] font-bold tracking-[0.25em] uppercase">Studio</p>
             </div>
           </div>
           <p className="text-xs text-white/50">© 2026 Nooryi Studio. جميع الحقوق محفوظة.</p>

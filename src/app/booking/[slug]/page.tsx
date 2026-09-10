@@ -164,7 +164,7 @@ function BookingForm() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 size={40} className="animate-spin text-[#b8941f]" />
+        <Loader2 size={40} className="animate-spin text-[#E8961A]" />
       </div>
     );
   }
@@ -174,7 +174,7 @@ function BookingForm() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 text-xl font-bold mb-4">الفنان غير موجود</p>
-          <Link href="/artists" className="text-[#b8941f] hover:underline">
+          <Link href="/artists" className="text-[#E8961A] hover:underline">
             العودة لقائمة الفنانين
           </Link>
         </div>
@@ -186,7 +186,7 @@ function BookingForm() {
     <div className="min-h-screen bg-gradient-to-br from-[#faf8f0] to-white dark:from-[#0a0a0a] dark:to-[#111]" dir="rtl">
       <header className="bg-white/95 dark:bg-[#111]/95 backdrop-blur-xl border-b border-[#e8e4d9] dark:border-gray-800 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
-          <Link href={`/artists/${slug}`} className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-[#b8941f]">
+          <Link href={`/artists/${slug}`} className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-[#E8961A]">
             <ArrowRight size={18} />
             <span className="font-bold">العودة</span>
           </Link>
@@ -202,12 +202,12 @@ function BookingForm() {
             <div key={s} className="flex items-center gap-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${
                 step >= s 
-                  ? "bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111]" 
+                  ? "bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111]" 
                   : "bg-gray-200 dark:bg-gray-700 text-gray-500"
               }`}>
                 {s}
               </div>
-              {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-[#D4AF37]" : "bg-gray-200 dark:bg-gray-700"}`}></div>}
+              {s < 3 && <div className={`w-12 h-0.5 ${step > s ? "bg-[#F5A623]" : "bg-gray-200 dark:bg-gray-700"}`}></div>}
             </div>
           ))}
         </div>
@@ -220,13 +220,13 @@ function BookingForm() {
               </div>
               <h2 className="text-2xl font-black text-gray-900 mb-2">تم إرسال الحجز بنجاح! 🎉</h2>
               <p className="text-gray-600 mb-4">{successMessage}</p>
-              <div className="bg-[#faf8f0] border border-[#D4AF37]/30 rounded-xl p-4 mb-4">
+              <div className="bg-[#faf8f0] border border-[#F5A623]/30 rounded-xl p-4 mb-4">
                 <p className="text-sm text-gray-700">
                   <strong>الخطوة التالية:</strong><br />
                   سيتم مراجعة حجزك من قبل إدارة المنصة، وبعدها ستتلقى إشعاراً لإتمام عملية الدفع.
                 </p>
               </div>
-              <div className="flex items-center justify-center gap-2 text-[#D4AF37]">
+              <div className="flex items-center justify-center gap-2 text-[#F5A623]">
                 <Loader2 size={18} className="animate-spin" />
                 <span className="text-sm font-bold">جاري التوجيه...</span>
               </div>
@@ -243,7 +243,7 @@ function BookingForm() {
         {step === 1 && (
           <div className="card-pro p-6 space-y-4">
             <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <User size={20} className="text-[#b8941f]" />
+              <User size={20} className="text-[#E8961A]" />
               معلومات العميل
             </h2>
 
@@ -253,7 +253,7 @@ function BookingForm() {
                 type="text"
                 value={form.clientName}
                 onChange={(e) => setForm({ ...form, clientName: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
                 placeholder="أدخل اسمك الكامل"
                 required
               />
@@ -269,7 +269,7 @@ function BookingForm() {
                   type="tel"
                   value={form.clientPhone}
                   onChange={(e) => setForm({ ...form, clientPhone: e.target.value })}
-                  className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+                  className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
                   placeholder="مثال: +201000000000 أو 01000000000"
                   dir="ltr"
                   required
@@ -288,7 +288,7 @@ function BookingForm() {
                   type="email"
                   value={form.clientEmail}
                   onChange={(e) => setForm({ ...form, clientEmail: e.target.value })}
-                  className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent"
+                  className="w-full pr-12 pl-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
                   placeholder="example@email.com"
                   dir="ltr"
                 />
@@ -298,7 +298,7 @@ function BookingForm() {
             <button
               onClick={() => setStep(2)}
               disabled={!form.clientName || !form.clientPhone}
-              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50"
             >
               التالي — اختيار التاريخ
             </button>
@@ -309,7 +309,7 @@ function BookingForm() {
         {step === 2 && (
           <div className="card-pro p-6 space-y-4">
             <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <Calendar size={20} className="text-[#b8941f]" />
+              <Calendar size={20} className="text-[#E8961A]" />
               التاريخ والمنطقة
             </h2>
 
@@ -322,7 +322,7 @@ function BookingForm() {
                 <select
                   value={form.regionId}
                   onChange={(e) => setForm({ ...form, regionId: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
                 >
                   <option value="">— اختر منطقة —</option>
                   {regions.map((r: any) => (
@@ -342,7 +342,7 @@ function BookingForm() {
                 value={form.date}
                 min={getMinDate()}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
               />
               {isDateBooked(form.date) && (
                 <p className="text-xs text-red-500 dark:text-red-400 mt-1">
@@ -356,7 +356,7 @@ function BookingForm() {
               <select
                 value={form.timeSlot}
                 onChange={(e) => setForm({ ...form, timeSlot: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
               >
                 <option value="">— اختر الفترة —</option>
                 <option value="MORNING">صباحاً (8 ص - 12 م)</option>
@@ -381,8 +381,8 @@ function BookingForm() {
                 </>
               )}
               <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                <span className="font-bold text-[#d4af37]">الإجمالي</span>
-                <span className="text-2xl font-black text-[#d4af37]">{basePrice.toLocaleString()} ج.م</span>
+                <span className="font-bold text-[#F5A623]">الإجمالي</span>
+                <span className="text-2xl font-black text-[#F5A623]">{basePrice.toLocaleString()} ج.م</span>
               </div>
             </div>
 
@@ -396,7 +396,7 @@ function BookingForm() {
               <button
                 onClick={() => setStep(3)}
                 disabled={!form.date || !form.timeSlot || isDateBooked(form.date)}
-                className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50"
               >
                 التالي — تفاصيل إضافية
               </button>
@@ -408,7 +408,7 @@ function BookingForm() {
         {step === 3 && (
           <div className="card-pro p-6 space-y-4">
             <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <Sparkles size={20} className="text-[#b8941f]" />
+              <Sparkles size={20} className="text-[#E8961A]" />
               تفاصيل إضافية
             </h2>
 
@@ -417,7 +417,7 @@ function BookingForm() {
               <select
                 value={form.eventType}
                 onChange={(e) => setForm({ ...form, eventType: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
               >
                 <option value="">— اختر نوع المناسبة —</option>
                 <option value="wedding">حفل زفاف</option>
@@ -433,7 +433,7 @@ function BookingForm() {
               <select
                 value={form.venueId}
                 onChange={(e) => setForm({ ...form, venueId: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
               >
                 <option value="">— اختر قاعة (اختياري) —</option>
                 {venues.map((v: any) => (
@@ -448,7 +448,7 @@ function BookingForm() {
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#D4AF37]"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-2xl focus:ring-2 focus:ring-[#F5A623]"
                 placeholder="أي تفاصيل إضافية تريد إخبارنا بها..."
               />
             </div>
@@ -482,7 +482,7 @@ function BookingForm() {
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
                 <span className="font-black text-gray-900 dark:text-white">المبلغ الإجمالي</span>
-                <span className="text-2xl font-black text-[#b8941f]">{basePrice.toLocaleString()} ج.م</span>
+                <span className="text-2xl font-black text-[#E8961A]">{basePrice.toLocaleString()} ج.م</span>
               </div>
             </div>
 
@@ -496,7 +496,7 @@ function BookingForm() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !form.eventType}
-                className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <><Loader2 size={18} className="animate-spin" /> جاري الحجز...</>
@@ -514,7 +514,7 @@ function BookingForm() {
 
 export default function BookingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 size={40} className="animate-spin text-[#b8941f]" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 size={40} className="animate-spin text-[#E8961A]" /></div>}>
       <BookingForm />
     </Suspense>
   );

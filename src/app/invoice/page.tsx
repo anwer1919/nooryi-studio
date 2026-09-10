@@ -21,7 +21,7 @@ export default async function UniversalInvoicePage({
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
           <AlertCircle size={48} className="mx-auto text-red-400 mb-4" />
           <p className="text-xl font-bold text-gray-700 mb-4">معرف الحجز غير موجود</p>
-          <Link href="/my-bookings" className="text-[#D4AF37] hover:underline font-bold">العودة لحجوزاتي</Link>
+          <Link href="/my-bookings" className="text-[#F5A623] hover:underline font-bold">العودة لحجوزاتي</Link>
         </div>
       </div>
     )
@@ -48,7 +48,7 @@ export default async function UniversalInvoicePage({
           <AlertCircle size={48} className="mx-auto text-red-400 mb-4" />
           <p className="text-xl font-bold text-gray-700 mb-4">الحجز غير موجود في قاعدة البيانات</p>
           <p className="text-sm text-gray-500 mb-4 font-mono" dir="ltr">ID: {id}</p>
-          <Link href="/my-bookings" className="text-[#D4AF37] hover:underline font-bold">العودة لحجوزاتي</Link>
+          <Link href="/my-bookings" className="text-[#F5A623] hover:underline font-bold">العودة لحجوزاتي</Link>
         </div>
       </div>
     )
@@ -76,7 +76,7 @@ export default async function UniversalInvoicePage({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link href="/my-bookings" className="flex items-center gap-2 text-gray-600 hover:text-[#b8941f]">
+          <Link href="/my-bookings" className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
             <ArrowRight size={18} /> العودة لحجوزاتي
           </Link>
           <Link
@@ -115,7 +115,7 @@ export default async function UniversalInvoicePage({
                 {canPay && (
                   <Link
                     href={`/booking/${artistSlug}/payment?id=${booking.id}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black rounded-xl hover:shadow-lg transition"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black rounded-xl hover:shadow-lg transition"
                   >
                     <CreditCard size={20} /> إتمام الدفع الآن
                   </Link>
@@ -158,27 +158,27 @@ export default async function UniversalInvoicePage({
           <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] p-6 text-white">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <span className="text-[#111] text-2xl font-black">N</span>
                 </div>
                 <div>
                   <h1 className="text-2xl font-black">فاتورة الحجز</h1>
-                  <p className="text-sm text-[#D4AF37]">Nooryi Studio</p>
+                  <p className="text-sm text-[#F5A623]">Nooryi Studio</p>
                 </div>
               </div>
               <div className="text-left">
                 <p className="text-xs text-gray-400">رقم الفاتورة</p>
-                <p className="font-mono text-sm text-[#D4AF37]" dir="ltr">{booking.id.slice(0, 12)}...</p>
+                <p className="font-mono text-sm text-[#F5A623]" dir="ltr">{booking.id.slice(0, 12)}...</p>
               </div>
             </div>
           </div>
 
-          <div className="p-6 bg-[#faf8f0] border-b-4 border-[#D4AF37]">
+          <div className="p-6 bg-[#faf8f0] border-b-4 border-[#F5A623]">
             <div className="flex items-center gap-4">
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-16 h-16 rounded-2xl object-cover" />
               ) : (
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <Music size={28} className="text-[#111]" />
                 </div>
               )}
@@ -192,25 +192,25 @@ export default async function UniversalInvoicePage({
 
           <div className="p-6 space-y-4">
             <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
-              <FileText size={18} className="text-[#D4AF37]" /> تفاصيل الحجز
+              <FileText size={18} className="text-[#F5A623]" /> تفاصيل الحجز
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                <Calendar size={20} className="text-[#D4AF37] mt-0.5" />
+                <Calendar size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
                   <p className="text-xs text-gray-500">التاريخ</p>
                   <p className="font-black text-gray-900">{new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                <Clock size={20} className="text-[#D4AF37] mt-0.5" />
+                <Clock size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
                   <p className="text-xs text-gray-500">الفترة</p>
                   <p className="font-black text-gray-900">{booking.timeSlot}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                <MapPin size={20} className="text-[#D4AF37] mt-0.5" />
+                <MapPin size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
                   <p className="text-xs text-gray-500">المكان</p>
                   <p className="font-black text-gray-900">{booking.venue?.name || "سيتم تحديده"}</p>
@@ -218,7 +218,7 @@ export default async function UniversalInvoicePage({
               </div>
               {booking.region && (
                 <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                  <MapPin size={20} className="text-[#D4AF37] mt-0.5" />
+                  <MapPin size={20} className="text-[#F5A623] mt-0.5" />
                   <div>
                     <p className="text-xs text-gray-500">المنطقة</p>
                     <p className="font-black text-gray-900">{booking.region}</p>
@@ -228,7 +228,7 @@ export default async function UniversalInvoicePage({
             </div>
 
             <h3 className="text-lg font-black text-gray-900 flex items-center gap-2 pt-4">
-              <User size={18} className="text-[#D4AF37]" /> بيانات العميل
+              <User size={18} className="text-[#F5A623]" /> بيانات العميل
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
@@ -262,7 +262,7 @@ export default async function UniversalInvoicePage({
               )}
               <div className="flex justify-between py-3 border-t border-white/10">
                 <span className="text-lg font-black">الإجمالي</span>
-                <span className="text-2xl font-black text-[#D4AF37]">{grossAmount.toLocaleString()} ج.م</span>
+                <span className="text-2xl font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</span>
               </div>
               {totalPaid > 0 && (
                 <div className="flex justify-between py-2 text-sm border-t border-white/10 pt-3">
@@ -281,7 +281,7 @@ export default async function UniversalInvoicePage({
 
           <div className="p-6 bg-[#faf8f0] border-t border-gray-200">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Shield size={16} className="text-[#D4AF37]" />
+              <Shield size={16} className="text-[#F5A623]" />
               <span>فاتورة رسمية — Nooryi Studio © {new Date().getFullYear()}</span>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default async function UniversalInvoicePage({
           <div className="flex gap-3">
             <Link
               href={`/booking/${artistSlug}/payment?id=${booking.id}`}
-              className="flex-1 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-4 rounded-2xl hover:shadow-xl transition text-center flex items-center justify-center gap-2"
+              className="flex-1 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-4 rounded-2xl hover:shadow-xl transition text-center flex items-center justify-center gap-2"
             >
               <CreditCard size={20} /> إتمام الدفع الآن
             </Link>

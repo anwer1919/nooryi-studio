@@ -27,18 +27,18 @@ export default async function ArtistsPage() {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center shadow-lg">
-              <span className="text-[#d4af37] text-2xl font-black">N</span>
+              <span className="text-[#F5A623] text-2xl font-black">N</span>
             </div>
             <div>
               <p className="text-xl font-black text-gray-900">Nooryi</p>
-              <p className="text-[10px] text-[#b8941f] font-bold tracking-[0.25em] uppercase">Studio</p>
+              <p className="text-[10px] text-[#E8961A] font-bold tracking-[0.25em] uppercase">Studio</p>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">الرئيسية</Link>
-            <Link href="/artists" className="text-sm font-black text-[#b8941f]">الفنانين</Link>
-            <Link href="/my-bookings" className="text-sm font-bold text-gray-600 hover:text-[#b8941f] transition">حجوزاتي</Link>
+            <Link href="/" className="text-sm font-bold text-gray-600 hover:text-[#E8961A] transition">الرئيسية</Link>
+            <Link href="/artists" className="text-sm font-black text-[#E8961A]">الفنانين</Link>
+            <Link href="/my-bookings" className="text-sm font-bold text-gray-600 hover:text-[#E8961A] transition">حجوزاتي</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -54,8 +54,8 @@ export default async function ArtistsPage() {
 
       {/* ═══ Hero ═══ */}
       <section className="relative pt-32 pb-16 bg-gradient-to-br from-[#faf8f0] via-white to-[#faf8f0] overflow-hidden border-b border-[#e8e4d9]">
-        <div className="absolute top-10 right-20 w-96 h-96 bg-[#d4af37]/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-20 w-72 h-72 bg-[#b8941f]/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-10 right-20 w-96 h-96 bg-[#F5A623]/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-20 w-72 h-72 bg-[#E8961A]/10 rounded-full blur-3xl"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
           <div className="max-w-3xl">
@@ -75,7 +75,7 @@ export default async function ArtistsPage() {
 
             <div className="flex items-center gap-6 mt-10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-md">
                   <Music size={20} className="text-[#111]" />
                 </div>
                 <div>
@@ -86,7 +86,7 @@ export default async function ArtistsPage() {
               <div className="w-px h-12 bg-[#e8e4d9]"></div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#111] to-[#232323] flex items-center justify-center shadow-md">
-                  <Award size={20} className="text-[#d4af37]" />
+                  <Award size={20} className="text-[#F5A623]" />
                 </div>
                 <div>
                   <p className="text-2xl font-black text-gray-900">4.9★</p>
@@ -130,7 +130,7 @@ export default async function ArtistsPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Music className="text-[#d4af37]/50" size={64} />
+                        <Music className="text-[#F5A623]/50" size={64} />
                       </div>
                     )}
 
@@ -138,13 +138,13 @@ export default async function ArtistsPage() {
 
                     {avgRating > 0 && (
                       <div className="absolute top-4 right-4 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg">
-                        <Star size={12} className="text-[#d4af37] fill-[#d4af37]" />
+                        <Star size={12} className="text-[#F5A623] fill-[#F5A623]" />
                         <span className="text-xs font-black text-gray-900">{avgRating.toFixed(1)}</span>
                       </div>
                     )}
 
                     {artist._count.bookings > 0 && (
-                      <div className="absolute top-4 left-4 px-3 py-1.5 bg-[#d4af37]/95 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg">
+                      <div className="absolute top-4 left-4 px-3 py-1.5 bg-[#F5A623]/95 backdrop-blur-sm rounded-full flex items-center gap-1 shadow-lg">
                         <Calendar size={11} className="text-[#111]" />
                         <span className="text-xs font-black text-[#111]">{artist._count.bookings} حجز</span>
                       </div>
@@ -152,7 +152,7 @@ export default async function ArtistsPage() {
 
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                       <h3 className="text-2xl font-black mb-1">{artist.name}</h3>
-                      <p className="text-[#d4af37] text-sm font-bold">{artist.category}</p>
+                      <p className="text-[#F5A623] text-sm font-bold">{artist.category}</p>
                     </div>
                   </div>
 
@@ -164,7 +164,7 @@ export default async function ArtistsPage() {
                     <div className="flex items-center justify-between pt-4 border-t border-[#e8e4d9]">
                       <div className="flex items-center gap-3 text-xs">
                         <div className="flex items-center gap-1">
-                          <Star size={13} className="text-[#d4af37] fill-[#d4af37]" />
+                          <Star size={13} className="text-[#F5A623] fill-[#F5A623]" />
                           <span className="font-black text-gray-900">
                             {avgRating > 0 ? avgRating.toFixed(1) : "جديد"}
                           </span>
@@ -173,7 +173,7 @@ export default async function ArtistsPage() {
                         <div className="w-1 h-1 rounded-full bg-gray-300"></div>
                         <span className="font-bold text-gray-500">{artist._count.bookings} حجز</span>
                       </div>
-                      <div className="flex items-center gap-1 text-sm font-black text-[#b8941f] group-hover:gap-2 transition-all">
+                      <div className="flex items-center gap-1 text-sm font-black text-[#E8961A] group-hover:gap-2 transition-all">
                         عرض
                         <ChevronLeft size={16} />
                       </div>
@@ -190,12 +190,12 @@ export default async function ArtistsPage() {
       <footer className="bg-gradient-to-br from-[#0a0a0a] to-[#232323] text-white py-12 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#d4af37] to-[#b8941f] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
               <span className="text-[#0a0a0a] text-lg font-black">N</span>
             </div>
             <div>
               <p className="text-lg font-black">Nooryi</p>
-              <p className="text-[9px] text-[#d4af37] font-bold tracking-[0.25em] uppercase">Studio</p>
+              <p className="text-[9px] text-[#F5A623] font-bold tracking-[0.25em] uppercase">Studio</p>
             </div>
           </div>
           <p className="text-xs text-white/50">© 2026 Nooryi Studio. جميع الحقوق محفوظة.</p>

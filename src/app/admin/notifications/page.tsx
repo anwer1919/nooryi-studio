@@ -38,7 +38,7 @@ export default async function NotificationsPage() {
       case "success": return "text-green-400 bg-green-500/10 border-green-500/20"
       case "warning": return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"
       case "error": return "text-red-400 bg-red-500/10 border-red-500/20"
-      case "booking": return "text-[#D4AF37] bg-[#D4AF37]/10 border-[#D4AF37]/20"
+      case "booking": return "text-[#F5A623] bg-[#F5A623]/10 border-[#F5A623]/20"
       default: return "text-blue-400 bg-blue-500/10 border-blue-500/20"
     }
   }
@@ -67,7 +67,7 @@ export default async function NotificationsPage() {
             "use server"
             await prisma.notification.updateMany({ where: { userId, isRead: false }, data: { isRead: true } })
           }}>
-            <button type="submit" className="px-4 py-2 bg-[#111] border border-[#D4AF37]/20 text-[#D4AF37] rounded-xl text-sm font-bold hover:bg-[#1a1a1a] transition">
+            <button type="submit" className="px-4 py-2 bg-[#111] border border-[#F5A623]/20 text-[#F5A623] rounded-xl text-sm font-bold hover:bg-[#1a1a1a] transition">
               تعليم الكل كمقروء
             </button>
           </form>
@@ -75,7 +75,7 @@ export default async function NotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-[#111] rounded-2xl p-12 text-center border border-[#D4AF37]/15">
+        <div className="bg-[#111] rounded-2xl p-12 text-center border border-[#F5A623]/15">
           <Bell className="mx-auto text-gray-600 mb-4" size={48} />
           <h3 className="text-xl font-black text-white mb-2">لا توجد إشعارات</h3>
           <p className="text-gray-400 text-sm">ستظهر الإشعارات هنا عند حدوث نشاط جديد</p>
@@ -86,18 +86,18 @@ export default async function NotificationsPage() {
             const Icon = getIcon(n.type)
             const iconColor = getIconColor(n.type)
             return (
-              <div key={n.id} className={`flex items-start gap-4 p-4 rounded-2xl border transition ${n.isRead ? "bg-[#111] border-[#D4AF37]/5 opacity-60" : "bg-[#111] border-[#D4AF37]/15"}`}>
+              <div key={n.id} className={`flex items-start gap-4 p-4 rounded-2xl border transition ${n.isRead ? "bg-[#111] border-[#F5A623]/5 opacity-60" : "bg-[#111] border-[#F5A623]/15"}`}>
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 ${iconColor}`}>
                   <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className={`font-bold text-sm ${n.isRead ? "text-gray-400" : "text-white"}`}>{n.title}</p>
-                    {!n.isRead && <span className="w-2 h-2 rounded-full bg-[#D4AF37] flex-shrink-0"></span>}
+                    {!n.isRead && <span className="w-2 h-2 rounded-full bg-[#F5A623] flex-shrink-0"></span>}
                   </div>
                   <p className="text-xs text-gray-400 mt-1 leading-relaxed">{n.message}</p>
                   <p className="text-[10px] text-gray-500 mt-2 flex items-center gap-1"><Clock size={10} /> {timeAgo(n.createdAt)}</p>
-                  {n.link && <Link href={n.link} className="text-xs text-[#D4AF37] hover:underline mt-1 inline-block">عرض التفاصيل ←</Link>}
+                  {n.link && <Link href={n.link} className="text-xs text-[#F5A623] hover:underline mt-1 inline-block">عرض التفاصيل ←</Link>}
                 </div>
               </div>
             )

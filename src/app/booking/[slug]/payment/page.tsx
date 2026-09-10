@@ -58,7 +58,7 @@ export default async function PaymentPage({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link href={`/booking/${slug}/invoice?id=${booking.id}`} className="flex items-center gap-2 text-gray-600 hover:text-[#b8941f]">
+          <Link href={`/booking/${slug}/invoice?id=${booking.id}`} className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
             <ArrowRight size={18} />
             العودة للفاتورة
           </Link>
@@ -84,7 +84,7 @@ export default async function PaymentPage({
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-xl object-cover" />
               ) : (
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <Music size={24} className="text-[#111]" />
                 </div>
               )}
@@ -94,22 +94,22 @@ export default async function PaymentPage({
               </div>
               <div className="mr-auto text-left">
                 <p className="text-xs text-gray-400">المبلغ الإجمالي</p>
-                <p className="text-xl font-black text-[#D4AF37]">{grossAmount.toLocaleString()} ج.م</p>
+                <p className="text-xl font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</p>
               </div>
             </div>
           </div>
 
           <div className="p-5 grid grid-cols-3 gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-[#D4AF37]" />
+              <Calendar size={16} className="text-[#F5A623]" />
               <span className="font-bold">{new Date(booking.date).toLocaleDateString("ar-EG")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-[#D4AF37]" />
+              <Clock size={16} className="text-[#F5A623]" />
               <span className="font-bold">{booking.timeSlot}</span>
             </div>
             <div className="flex items-center gap-2">
-              <User size={16} className="text-[#D4AF37]" />
+              <User size={16} className="text-[#F5A623]" />
               <span className="font-bold">{booking.clientName}</span>
             </div>
           </div>
@@ -118,8 +118,8 @@ export default async function PaymentPage({
         {/* Payment Options */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Option 1: Deposit */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 overflow-hidden hover:border-[#D4AF37] transition">
-            <div className="bg-gradient-to-r from-[#D4AF37] to-[#b8941f] p-4 text-center">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 overflow-hidden hover:border-[#F5A623] transition">
+            <div className="bg-gradient-to-r from-[#F5A623] to-[#E8961A] p-4 text-center">
               <DollarSign size={32} className="mx-auto text-[#111]" />
               <h3 className="text-xl font-black text-[#111] mt-2">دفع العربون</h3>
             </div>
@@ -136,7 +136,7 @@ export default async function PaymentPage({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">المتبقي:</span>
-                  <span className="font-bold text-[#b8941f]">{remainingAmount.toLocaleString()} ج.م</span>
+                  <span className="font-bold text-[#E8961A]">{remainingAmount.toLocaleString()} ج.م</span>
                 </div>
               </div>
 
@@ -148,7 +148,7 @@ export default async function PaymentPage({
 
               <Link
                 href={`/booking/${slug}/payment/process?id=${booking.id}&type=deposit&amount=${depositAmount}`}
-                className="block w-full bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition text-center"
+                className="block w-full bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black py-3 rounded-xl hover:shadow-lg transition text-center"
               >
                 ادفع العربون الآن
               </Link>
@@ -156,12 +156,12 @@ export default async function PaymentPage({
           </div>
 
           {/* Option 2: Full Payment */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-[#D4AF37] overflow-hidden relative">
-            <div className="absolute top-4 left-4 bg-[#D4AF37] text-[#111] text-xs font-black px-3 py-1 rounded-full">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-[#F5A623] overflow-hidden relative">
+            <div className="absolute top-4 left-4 bg-[#F5A623] text-[#111] text-xs font-black px-3 py-1 rounded-full">
               الأفضل قيمة
             </div>
             <div className="bg-gradient-to-r from-[#111] to-[#0a0a0a] p-4 text-center">
-              <CheckCircle2 size={32} className="mx-auto text-[#D4AF37]" />
+              <CheckCircle2 size={32} className="mx-auto text-[#F5A623]" />
               <h3 className="text-xl font-black text-white mt-2">الدفع الكامل</h3>
             </div>
             <div className="p-6 space-y-4">
@@ -189,7 +189,7 @@ export default async function PaymentPage({
 
               <Link
                 href={`/booking/${slug}/payment/process?id=${booking.id}&type=full&amount=${grossAmount}`}
-                className="block w-full bg-[#111] text-[#D4AF37] font-black py-3 rounded-xl hover:bg-[#222] transition text-center"
+                className="block w-full bg-[#111] text-[#F5A623] font-black py-3 rounded-xl hover:bg-[#222] transition text-center"
               >
                 ادفع المبلغ الكامل
               </Link>
@@ -199,9 +199,9 @@ export default async function PaymentPage({
 
                 {/* ═══ حسابات الفنان البنكية ═══ */}
         {(booking.artist?.bankName || booking.artist?.vodafoneCash || booking.artist?.instaPay) && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-[#D4AF37]/30">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-[#F5A623]/30">
             <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-              <Building2 size={18} className="text-[#D4AF37]" />
+              <Building2 size={18} className="text-[#F5A623]" />
               حسابات الدفع — {booking.artist?.name}
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
@@ -215,13 +215,13 @@ export default async function PaymentPage({
                   {booking.artist.bankAccount && (
                     <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
                       <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.bankAccount}</span>
-                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.bankAccount!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.bankAccount!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                     </div>
                   )}
                   {booking.artist.iban && (
                     <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
                       <span className="text-xs font-mono" dir="ltr">{booking.artist.iban}</span>
-                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.iban!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                      <button onClick={() => navigator.clipboard.writeText(booking.artist!.iban!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                     </div>
                   )}
                 </div>
@@ -234,7 +234,7 @@ export default async function PaymentPage({
                   </div>
                   <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
                     <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.vodafoneCash}</span>
-                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.vodafoneCash!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.vodafoneCash!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                   </div>
                 </div>
               )}
@@ -246,13 +246,13 @@ export default async function PaymentPage({
                   </div>
                   <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
                     <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.instaPay}</span>
-                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.instaPay!)} className="text-xs text-[#b8941f] font-bold hover:underline">نسخ</button>
+                    <button onClick={() => navigator.clipboard.writeText(booking.artist!.instaPay!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                   </div>
                 </div>
               )}
             </div>
             {booking.artist?.paymentNote && (
-              <div className="mt-4 bg-[#faf8f0] dark:bg-[#1a1a1a] rounded-xl p-3 text-sm text-gray-700 dark:text-gray-300 border border-[#D4AF37]/20">
+              <div className="mt-4 bg-[#faf8f0] dark:bg-[#1a1a1a] rounded-xl p-3 text-sm text-gray-700 dark:text-gray-300 border border-[#F5A623]/20">
                 💡 {booking.artist.paymentNote}
               </div>
             )}
@@ -261,7 +261,7 @@ export default async function PaymentPage({
         {/* Payment Methods Info */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
           <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-            <Shield size={18} className="text-[#D4AF37]" />
+            <Shield size={18} className="text-[#F5A623]" />
             طرق الدفع المتاحة
           </h3>
           <div className="grid md:grid-cols-3 gap-4">
@@ -291,7 +291,7 @@ export default async function PaymentPage({
 
         {/* Security Notice */}
         <div className="bg-[#faf8f0] rounded-xl p-4 text-center text-sm text-gray-600">
-          <Shield size={16} className="inline text-[#D4AF37]" />
+          <Shield size={16} className="inline text-[#F5A623]" />
           جميع المعاملات مؤمنة ومشفرة — بياناتك محمية 100%
         </div>
       </div>

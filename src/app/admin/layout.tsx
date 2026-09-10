@@ -33,13 +33,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-[#0a0a0a]">
       <AdminSidebarClient menuItems={menuItems} userName={userName} userRole={userRole} />
       <main className="lg:pr-72">
-        <div className="lg:hidden h-14 bg-[#0a0a0a] border-b border-[#D4AF37]/15 flex items-center justify-between px-3 sticky top-0 z-40">
+        <div className="lg:hidden h-14 bg-[#0a0a0a] border-b border-[#F5A623]/15 flex items-center justify-between px-3 sticky top-0 z-40">
           <MobileMenuToggle />
-          <span className="text-sm font-black text-[#D4AF37] truncate max-w-[140px]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
-          <Link href="/admin/notifications" className="relative w-8 h-8 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-lg text-[#D4AF37]"><Bell size={14}/>{unreadCount > 0 && <span className="absolute -top-1 -left-1 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}</Link>
+          <span className="text-sm font-black text-[#F5A623] truncate max-w-[140px]">{isManager ? managedArtistName : "لوحة التحكم"}</span>
+          <Link href="/admin/notifications" className="relative w-8 h-8 flex items-center justify-center bg-[#111] border border-[#F5A623]/20 rounded-lg text-[#F5A623]"><Bell size={14}/>{unreadCount > 0 && <span className="absolute -top-1 -left-1 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}</Link>
         </div>
-        <div className="hidden lg:flex h-14 bg-[#0a0a0a] border-b border-[#D4AF37]/15 items-center justify-end px-6 sticky top-0 z-40">
-          <Link href="/admin/notifications" className="relative w-9 h-9 flex items-center justify-center bg-[#111] border border-[#D4AF37]/20 rounded-lg text-[#D4AF37] hover:border-[#D4AF37] transition"><Bell size={16}/>{unreadCount > 0 && <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}</Link>
+        <div className="hidden lg:flex h-14 bg-[#0a0a0a] border-b border-[#F5A623]/15 items-center justify-end px-6 sticky top-0 z-40">
+          <Link href="/admin/notifications" className="relative w-9 h-9 flex items-center justify-center bg-[#111] border border-[#F5A623]/20 rounded-lg text-[#F5A623] hover:border-[#F5A623] transition"><Bell size={16}/>{unreadCount > 0 && <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">{unreadCount > 9 ? "9+" : unreadCount}</span>}</Link>
         </div>
         <div className="p-3 md:p-4 lg:p-6">{children}</div>
       </main>
