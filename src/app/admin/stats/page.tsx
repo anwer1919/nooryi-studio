@@ -1,226 +1,217 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-;
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { getManagerContext, artistWhere } from "@/lib/managerFilter";
-import Link from "next/link";
-import { TrendingUp, DollarSign, Calendar, Users, Printer, Eye, Award, FileText } from "lucide-react";
+import Link from "next/link"
+import { TrendingUp, Wallet, CalendarCheck2, Percent, Music, Clock, CheckCircle2, XCircle, AlertCircle, ArrowLeft, Banknote } from "lucide-react"
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
+
+const CONFIRMED = ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"]
+const MONTHS_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
 
 export default async function AdminStatsPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  const session = await auth()
+  if (!session?.user) redirect("/login?callbackUrl=/admin/stats")
+  const role = (session.user as any).role || "USER"
+  if (role !== "SUPER_ADMIN" && role !== "ADMIN") redirect("/admin")
 
-  const role = (session.user as any).role || "USER";
-  if (role !== "SUPER_ADMIN" && role !== "ADMIN") redirect("/");
+  // ═══ استعلامات محمية — لا تنهار أبداً ═══
+  const bookings: any[] = await prisma.booking.findMany({ include: { artist: { select: { id: true, name: true, slug: true } } } }).catch(() => [])
+  const payments: any[] = await prisma.payment.findMany().catch(() => [])
 
-  // جلب جميع الفنانين مع حجوزاتهم
-  const artists = await prisma.artist.findMany({ where: { ...artistWhere(mgr), status: "ACTIVE" },
-    where: { status: "ACTIVE" },
-    include: {
-      bookings: {
-        where: { status: { in: ["APPROVED", "CONFIRMED", "COMPLETED", "ACCEPTED"] } },
-        select: {
-          id: true,
-          grossAmount: true,
-          status: true,
-          date: true,
-        }
-      }
-    },
-    orderBy: { createdAt: "desc" }
-  });
+  let rateMap: Record<string, number> = {}
+  try {
+    const withRates: any = await (prisma.artist as any).findMany({ select: { id: true, commissionRate: true } })
+    ;(withRates || []).forEach((a: any) => { rateMap[a.id] = Number(a.commissionRate ?? 15) || 15 })
+  } catch {}
 
-  // حساب الإحصائيات العامة
-  const totalBookings = artists.reduce((sum, a) => sum + a.bookings.length, 0);
-  const totalRevenue = artists.reduce((sum, a) => 
-    sum + a.bookings.reduce((bs, b) => bs + Number(b.grossAmount || 0), 0), 0
-  );
-  const totalCommission = artists.reduce((sum, a) => 
-    sum + a.bookings.reduce((bs, b) => 
-      bs + (Number(b.grossAmount || 0) * ((a as any).commissionRate || 20) / 100), 0
-    ), 0
-  );
-  const totalArtistEarnings = totalRevenue - totalCommission;
+  const up = (s: any) => String(s || "").toUpperCase()
+  const confirmed = bookings.filter(b => CONFIRMED.includes(up(b.status)))
+  const pending = bookings.filter(b => ["PENDING", "PENDING_APPROVAL"].includes(up(b.status)))
+  const completed = bookings.filter(b => up(b.status) === "COMPLETED")
+  const rejected = bookings.filter(b => up(b.status) === "REJECTED")
+
+  const gross = confirmed.reduce((s, b) => s + Number(b.grossAmount || 0), 0)
+  const commission = confirmed.reduce((s, b) => s + (Number(b.grossAmount || 0) * (rateMap[b.artistId] ?? 15) / 100), 0)
+  const net = gross - commission
+  const paid = payments.filter(p => up(p.status) === "COMPLETED").reduce((s, p) => s + Number(p.amount || 0), 0)
+  const avg = confirmed.length ? Math.round(gross / confirmed.length) : 0
+
+  // ═══ الإيرادات الشهرية (آخر 6 أشهر) ═══
+  const now = new Date()
+  const months: { label: string; value: number }[] = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const key = d.getFullYear() + "-" + d.getMonth()
+    const value = confirmed.filter(b => {
+      const bd = b.date ? new Date(b.date) : (b.createdAt ? new Date(b.createdAt) : null)
+      if (!bd || isNaN(bd.getTime())) return false
+      return bd.getFullYear() + "-" + bd.getMonth() === key
+    }).reduce((s, b) => s + Number(b.grossAmount || 0), 0)
+    months.push({ label: MONTHS_AR[d.getMonth()], value })
+  }
+  const maxMonth = Math.max(...months.map(m => m.value), 1)
+
+  // ═══ أفضل الفنانين ═══
+  const byArtist: Record<string, { name: string; slug: string; total: number; count: number }> = {}
+  confirmed.forEach(b => {
+    const id = b.artistId || "none"
+    if (!byArtist[id]) byArtist[id] = { name: b.artist?.name || "غير معروف", slug: b.artist?.slug || "", total: 0, count: 0 }
+    byArtist[id].total += Number(b.grossAmount || 0)
+    byArtist[id].count += 1
+  })
+  const topArtists = Object.values(byArtist).sort((a, b) => b.total - a.total).slice(0, 5)
+  const maxArtist = Math.max(...topArtists.map(a => a.total), 1)
+
+  // ═══ آخر الدفعات ═══
+  const bookingMap = new Map(bookings.map(b => [b.id, b]))
+  const recentPayments = payments
+    .slice()
+    .sort((a, b) => new Date(b.confirmedAt || b.createdAt || 0).getTime() - new Date(a.confirmedAt || a.createdAt || 0).getTime())
+    .slice(0, 8)
+
+  const statusList = [
+    { label: "مؤكدة", count: confirmed.length, color: "bg-[#22C55E]", text: "text-[#22C55E]" },
+    { label: "قيد المراجعة", count: pending.length, color: "bg-[#F59E0B]", text: "text-[#F59E0B]" },
+    { label: "مكتملة", count: completed.length, color: "bg-[#3B82F6]", text: "text-[#3B82F6]" },
+    { label: "مرفوضة", count: rejected.length, color: "bg-[#EF4444]", text: "text-[#EF4444]" },
+  ]
+  const totalBookings = Math.max(bookings.length, 1)
+
+  const kpis = [
+    { label: "إجمالي الإيرادات", value: gross.toLocaleString() + " ج.م", sub: confirmed.length + " حجز مؤكد", icon: Wallet, color: "text-[#F5A623]", bg: "bg-[#F5A623]/10" },
+    { label: "عمولة المنصة", value: Math.round(commission).toLocaleString() + " ج.م", sub: "صافي الفنان: " + Math.round(net).toLocaleString() + " ج.م", icon: Percent, color: "text-[#22C55E]", bg: "bg-[#22C55E]/10" },
+    { label: "المحصّل فعلياً", value: paid.toLocaleString() + " ج.م", sub: payments.length + " عملية دفع", icon: Banknote, color: "text-[#3B82F6]", bg: "bg-[#3B82F6]/10" },
+    { label: "متوسط قيمة الحجز", value: avg.toLocaleString() + " ج.م", sub: "لكل حجز مؤكد", icon: TrendingUp, color: "text-[#A855F7]", bg: "bg-[#A855F7]/10" },
+  ]
 
   return (
-    <div dir="rtl" className="p-6 space-y-6 max-w-7xl mx-auto">
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          @page { margin: 1cm; size: A4; }
-        }
-      `}</style>
-
-      <div className="no-print">
-        <h1 className="text-4xl font-black text-gray-900 dark:text-white">التقارير المالية</h1>
-        <p className="text-gray-500 mt-1">اختر فناناً لطباعة تقريره المالي الكامل</p>
+    <div dir="rtl" className="space-y-6">
+      {/* ═══ Header ═══ */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F5A623]/10 border border-[#F5A623]/25 text-[#F5A623] text-xs font-bold mb-2"><TrendingUp size={14} /> التقارير المالية</div>
+          <h1 className="text-2xl md:text-3xl font-black text-white">نظرة عامة على الأداء</h1>
+          <p className="text-gray-400 text-sm mt-1">إحصائيات الإيرادات والعمولات والدفعات</p>
+        </div>
+        <Link href="/admin" className="flex items-center gap-2 px-4 py-2.5 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl text-sm font-bold text-gray-300 hover:border-[#F5A623]/30 hover:text-[#F5A623] transition">
+          <ArrowLeft size={16} /> عودة للوحة التحكم
+        </Link>
       </div>
 
-      {/* Cards عامة */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
-        <div className="bg-white dark:bg-[#111] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Calendar size={24} className="text-blue-600" />
+      {/* ═══ KPIs ═══ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {kpis.map((k, i) => (
+          <div key={i} className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-4 md:p-5 hover:border-[#F5A623]/30 hover:-translate-y-1 transition-all duration-300 stagger-item">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] md:text-xs font-bold text-gray-400">{k.label}</span>
+              <div className={`w-9 h-9 rounded-xl ${k.bg} flex items-center justify-center`}><k.icon size={16} className={k.color} /></div>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">إجمالي الحجوزات</p>
-              <p className="text-2xl font-black">{totalBookings}</p>
-            </div>
+            <p className="text-lg md:text-2xl font-black text-white">{k.value}</p>
+            <p className="text-[10px] md:text-xs text-gray-500 mt-1">{k.sub}</p>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="bg-white dark:bg-[#111] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <DollarSign size={24} className="text-green-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">إجمالي الإيرادات</p>
-              <p className="text-2xl font-black">{totalRevenue.toLocaleString()}</p>
-              <p className="text-xs text-gray-400">ج.م</p>
-            </div>
-          </div>
+      {/* ═══ Monthly Chart ═══ */}
+      <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-5 md:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-black text-white flex items-center gap-2"><TrendingUp size={18} className="text-[#F5A623]" /> الإيرادات الشهرية</h2>
+          <span className="text-xs text-gray-500">آخر 6 أشهر</span>
         </div>
-
-        <div className="bg-white dark:bg-[#111] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#D4AF37]/20 flex items-center justify-center">
-              <TrendingUp size={24} className="text-[#D4AF37]" />
+        <div className="flex items-end justify-between gap-2 md:gap-4 h-48">
+          {months.map((m, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+              <span className="text-[10px] md:text-xs font-bold text-gray-400">{m.value > 0 ? m.value.toLocaleString() : ""}</span>
+              <div className="w-full max-w-[60px] rounded-t-xl bg-gradient-to-t from-[#F5A623]/30 to-[#F5A623] transition-all duration-500 hover:from-[#F5A623]/50 hover:to-[#FFD700]" style={{ height: Math.max((m.value / maxMonth) * 100, 4) + "%" }}></div>
+              <span className="text-[10px] md:text-xs font-bold text-gray-500">{m.label}</span>
             </div>
-            <div>
-              <p className="text-xs text-gray-500">عمولة المنصة</p>
-              <p className="text-2xl font-black text-[#D4AF37]">{totalCommission.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
-              <p className="text-xs text-gray-400">ج.م</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#111] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <Users size={24} className="text-purple-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">أرباح الفنانين</p>
-              <p className="text-2xl font-black">{totalArtistEarnings.toLocaleString(undefined, {maximumFractionDigits: 0})}</p>
-              <p className="text-xs text-gray-400">ج.م</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* قائمة الفنانين مع زر طباعة لكل واحد */}
-      <div className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-            <Award size={24} className="text-[#D4AF37]" />
-            اختر فناناً لطباعة تقريره المالي
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            اضغط على "طباعة التقرير" لفتح تقرير A4 كامل قابل للطباعة
-          </p>
-        </div>
-
-        <div className="divide-y divide-gray-100 dark:divide-gray-800">
-          {artists.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">
-              <FileText size={48} className="mx-auto mb-3 opacity-30" />
-              <p>لا يوجد فنانين نشطين</p>
-            </div>
+      <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
+        {/* ═══ Top Artists ═══ */}
+        <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-5 md:p-6">
+          <h2 className="text-lg font-black text-white flex items-center gap-2 mb-5"><Music size={18} className="text-[#F5A623]" /> أفضل الفنانين بالإيرادات</h2>
+          {topArtists.length === 0 ? (
+            <div className="text-center py-10"><Music className="mx-auto text-gray-600 mb-3" size={36} /><p className="text-gray-500 text-sm">لا توجد إيرادات بعد</p></div>
           ) : (
-            artists.map((artist) => {
-              const revenue = artist.bookings.reduce((sum, b) => sum + Number(b.grossAmount || 0), 0);
-              const commissionRate = (artist as any).commissionRate || 20;
-              const commission = revenue * commissionRate / 100;
-              const artistNet = revenue - commission;
-
-              return (
-                <div key={artist.id} className="p-5 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition">
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4 flex-1">
-                      {artist.profileImage ? (
-                        <img src={artist.profileImage} alt={artist.name} className="w-14 h-14 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#b8941f] flex items-center justify-center text-[#111] font-black text-xl">
-                          {artist.name.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-black text-lg text-gray-900 dark:text-white">{artist.name}</p>
-                        <p className="text-xs text-gray-500">{(artist as any).category || "فنان"} — {artist.bookings.length} حجز</p>
-                      </div>
+            <div className="space-y-4">
+              {topArtists.map((a, i) => (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-[#F5A623]/10 text-[#F5A623] text-xs font-black flex items-center justify-center">{i + 1}</span>
+                      <span className="text-sm font-bold text-white">{a.name}</span>
+                      <span className="text-[10px] text-gray-500">({a.count} حجز)</span>
                     </div>
-
-                    <div className="flex items-center gap-6">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500">الإيرادات</p>
-                        <p className="font-black text-gray-900 dark:text-white">{revenue.toLocaleString()} ج.م</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500">نسبة العمولة</p>
-                        <p className="font-bold text-yellow-600">{commissionRate}%</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500">عمولة المنصة</p>
-                        <p className="font-black text-[#D4AF37]">{commission.toLocaleString(undefined, {maximumFractionDigits: 0})} ج.م</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500">صافي الفنان</p>
-                        <p className="font-black text-green-600">{artistNet.toLocaleString(undefined, {maximumFractionDigits: 0})} ج.م</p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/admin/stats/print?artist=${artist.id}`}
-                          className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition flex items-center gap-2"
-                        >
-                          <Eye size={16} />
-                          عرض
-                        </Link>
-                        <Link
-                          href={`/admin/stats/print?artist=${artist.id}&print=true`}
-                          target="_blank"
-                          className="px-4 py-2 bg-gradient-to-r from-[#D4AF37] to-[#b8941f] text-[#111] font-bold rounded-lg hover:shadow-lg transition flex items-center gap-2"
-                        >
-                          <Printer size={16} />
-                          طباعة التقرير
-                        </Link>
-                      </div>
-                    </div>
+                    <span className="text-sm font-black text-[#F5A623]">{a.total.toLocaleString()} ج.م</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-[#2a2a2a] overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-l from-[#F5A623] to-[#FFD700] transition-all duration-700" style={{ width: (a.total / maxArtist) * 100 + "%" }}></div>
                   </div>
                 </div>
-              );
-            })
+              ))}
+            </div>
           )}
         </div>
 
-        {artists.length > 0 && (
-          <div className="bg-gray-50 dark:bg-[#1a1a1a] p-5 border-t-2 border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-4 gap-4 text-center font-black">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">الإجمالي</p>
-                <p>{totalBookings} حجز</p>
+        {/* ═══ Status Breakdown ═══ */}
+        <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-5 md:p-6">
+          <h2 className="text-lg font-black text-white flex items-center gap-2 mb-5"><CalendarCheck2 size={18} className="text-[#F5A623]" /> توزيع حالات الحجوزات</h2>
+          <div className="space-y-4">
+            {statusList.map((s, i) => (
+              <div key={i}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-bold text-gray-300 flex items-center gap-2">
+                    {s.label === "مؤكدة" && <CheckCircle2 size={14} className={s.text} />}
+                    {s.label === "قيد المراجعة" && <Clock size={14} className={s.text} />}
+                    {s.label === "مكتملة" && <CheckCircle2 size={14} className={s.text} />}
+                    {s.label === "مرفوضة" && <XCircle size={14} className={s.text} />}
+                    {s.label}
+                  </span>
+                  <span className={`text-sm font-black ${s.text}`}>{s.count}</span>
+                </div>
+                <div className="h-2 rounded-full bg-[#2a2a2a] overflow-hidden">
+                  <div className={`h-full rounded-full ${s.color} transition-all duration-700`} style={{ width: (s.count / totalBookings) * 100 + "%" }}></div>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 mb-1">الإيرادات</p>
-                <p>{totalRevenue.toLocaleString()} ج.م</p>
-              </div>
-              <div className="text-[#D4AF37]">
-                <p className="text-xs text-gray-500 mb-1">عمولة المنصة</p>
-                <p>{totalCommission.toLocaleString(undefined, {maximumFractionDigits: 0})} ج.م</p>
-              </div>
-              <div className="text-green-600">
-                <p className="text-xs text-gray-500 mb-1">صافي الفنانين</p>
-                <p>{totalArtistEarnings.toLocaleString(undefined, {maximumFractionDigits: 0})} ج.م</p>
-              </div>
-            </div>
+            ))}
+          </div>
+          <div className="mt-5 pt-4 border-t border-[#2a2a2a] flex items-center justify-between">
+            <span className="text-sm text-gray-400">إجمالي الحجوزات</span>
+            <span className="text-lg font-black text-white">{bookings.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ Recent Payments ═══ */}
+      <div className="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-5 md:p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-black text-white flex items-center gap-2"><Banknote size={18} className="text-[#F5A623]" /> آخر الدفعات</h2>
+          <span className="text-xs text-gray-500">{payments.length} عملية</span>
+        </div>
+        {recentPayments.length === 0 ? (
+          <div className="text-center py-10"><Banknote className="mx-auto text-gray-600 mb-3" size={36} /><p className="text-gray-500 text-sm">لا توجد دفعات مسجلة بعد</p></div>
+        ) : (
+          <div className="space-y-2">
+            {recentPayments.map((p: any) => {
+              const b: any = bookingMap.get(p.bookingId)
+              return (
+                <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#1a1a1a] transition">
+                  <div className="w-9 h-9 rounded-xl bg-[#22C55E]/10 flex items-center justify-center flex-shrink-0"><Banknote size={16} className="text-[#22C55E]" /></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white truncate">{b?.clientName || b?.artist?.name || "دفعة"}</p>
+                    <p className="text-[10px] text-gray-500 truncate">{b?.artist?.name || "—"} • {p.confirmedAt || p.createdAt ? new Date(p.confirmedAt || p.createdAt).toLocaleDateString("ar-EG") : "—"}</p>
+                  </div>
+                  <span className="text-sm font-black text-[#22C55E]">+{Number(p.amount || 0).toLocaleString()} ج.م</span>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }
