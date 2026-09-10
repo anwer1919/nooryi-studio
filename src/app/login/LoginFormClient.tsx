@@ -48,7 +48,16 @@ export default function LoginFormClient() {
 
   const handleOtpSubmit = async () => {
     const otp = otpDigits.join(""); if (otp.length !== 6) return; setLoading(true); setError("")
-    try { const dest = callbackUrl || "/admin"; const r = await signIn("credentials", { email: formData.email, otp, redirect: false, callbackUrl: dest }); if (r?.error) { setError("رمز التحقق غير صحيح أو منتهي الصلاحية"); setOtpDigits(["", "", "", "", "", ""]); otpRefs.current[0]?.focus(); setLoading(false); return }; if (!r?.ok) { setError("تعذر إنشاء الجلسة"); setLoading(false); return }; setStep("success"); router.refresh(); setTimeout(() => { window.location.href = dest }, 1500) } catch (e: any) { setError(e.message); setLoading(false) }
+    try { const dest = callbackUrl || "/admin"; const r = await signIn("credentials", { email: formData.email, otp, redirect: false, callbackUrl: dest }); if (r?.error) { setError("رمز التحقق غير صحيح أو منتهي الصلاحية"); setOtpDigits(["", "", "", "", "", ""]); otpRefs.current[0]?.focus(); setLoading(false); return }; if (!r?.ok) { setError("تعذر إنشاء الجلسة"); setLoading(false); return }; setStep("success")
+      router.refresh()
+      let role = "USER"
+      try {
+        const sr = await fetch("/api/auth/session")
+        const sj = await sr.json()
+        role = sj?.user?.role || "USER"
+      } catch {}
+      const home = (role === "SUPER_ADMIN" || role === "ADMIN" || role === "ARTIST_MANAGER") ? "/admin" : "/"
+      setTimeout(() => { window.location.href = callbackUrl || home }, 1500) } catch (e: any) { setError(e.message); setLoading(false) }
   }
 
   if (step === "success") return (<div className="w-full max-w-md py-8 text-center"><div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6 animate-bounce"><CheckCircle2 size={40} className="text-green-400" /></div><h2 className="text-2xl font-black text-white mb-2">تم التحقق بنجاح!</h2><p className="text-muted">جاري تحويلك إلى لوحة التحكم...</p><Loader2 size={24} className="animate-spin text-[#F5A623] mx-auto mt-6" /></div>)

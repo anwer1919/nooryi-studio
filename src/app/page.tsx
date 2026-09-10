@@ -44,34 +44,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-bg overflow-x-hidden" dir="rtl">
 
-      {/* ═══ Header ═══ */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-bg/95 backdrop-blur-xl border-b border-[#F5A623]/10">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/20">
-                <span className="text-[#0a0a0a] text-xl md:text-2xl font-black">N</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg md:text-xl font-black text-fg">{siteSettings.siteName}</h1>
-                <p className="text-[9px] text-[#F5A623] font-bold tracking-[0.2em] uppercase">{siteSettings.siteName.split(" ")[1] || "Studio"}</p>
-              </div>
-            </Link>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/" className="text-sm font-semibold text-fg hover:text-[#F5A623] transition">الرئيسية</Link>
-              <Link href="/artists" className="text-sm font-semibold text-muted hover:text-[#F5A623] transition">الفنانين</Link>
-              <Link href="/#about" className="text-sm font-semibold text-muted hover:text-[#F5A623] transition">من نحن</Link>
-              <Link href="/#services" className="text-sm font-semibold text-muted hover:text-[#F5A623] transition">خدماتنا</Link>
-              <Link href="/#contact" className="text-sm font-semibold text-muted hover:text-[#F5A623] transition">تواصل معنا</Link>
-            </nav>
-            <div className="flex items-center gap-2 md:gap-3">
-              <ThemeToggle />
-              <Link href="/login" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-fg border border-[#F5A623]/30 rounded-xl hover:border-[#F5A623] hover:text-[#F5A623] transition">دخول</Link>
-              <Link href="/register" className="px-4 md:px-5 py-2 md:py-2.5 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#0a0a0a] text-sm font-black rounded-xl hover:shadow-lg hover:shadow-[#F5A623]/30 transition-all flex items-center gap-1.5"><Sparkles size={14} /><span className="hidden sm:inline">إنشاء حساب</span><span className="sm:hidden">حساب</span></Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      
 
       {/* ═══ Hero + Carousel ═══ */}
       <section className="relative pt-24 md:pt-28 pb-12 md:pb-20 bg-gradient-to-b from-bg via-surface to-bg overflow-hidden">
