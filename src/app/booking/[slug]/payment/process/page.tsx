@@ -95,13 +95,13 @@ function PaymentProcessForm() {
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <CheckCircle2 size={48} className="text-white" />
+            <CheckCircle2 size={48} className="text-fg" />
           </div>
           <h1 className="text-3xl font-black text-green-900 mb-2">تم الدفع بنجاح! 🎉</h1>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted mb-4">
             تم استلام مبلغ <strong className="text-green-700">{parseFloat(amount).toLocaleString()} ج.م</strong> بنجاح
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-muted mb-6">
             ✅ تم إرسال فاتورتك الرسمية على بريدك الإلكتروني<br/>
             🖨️ يمكنك طباعتها من رابط الفاتورة
           </p>
@@ -119,7 +119,7 @@ function PaymentProcessForm() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
+          <button onClick={() => window.history.back()} className="flex items-center gap-2 text-muted hover:text-[#E8961A]">
             <ArrowRight size={18} />
             العودة
           </button>
@@ -130,8 +130,8 @@ function PaymentProcessForm() {
         </div>
 
         {/* Amount Summary */}
-        <div className="bg-gradient-to-r from-[#111] to-[#0a0a0a] rounded-2xl p-6 text-white text-center">
-          <p className="text-sm text-gray-300 mb-1">
+        <div className="bg-gradient-to-r from-surface to-bg rounded-2xl p-6 text-fg text-center">
+          <p className="text-sm text-muted mb-1">
             {type === "deposit" ? "💰 دفع العربون" : "✅ الدفع الكامل"}
           </p>
           <p className="text-4xl font-black text-[#F5A623]">
@@ -152,7 +152,7 @@ function PaymentProcessForm() {
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <CreditCard size={24} className={`mx-auto mb-2 ${method === "card" ? "text-[#F5A623]" : "text-gray-400"}`} />
+              <CreditCard size={24} className={`mx-auto mb-2 ${method === "card" ? "text-[#F5A623]" : "text-muted"}`} />
               <p className="text-sm font-bold">بطاقة ائتمان</p>
             </button>
             <button
@@ -163,7 +163,7 @@ function PaymentProcessForm() {
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <Smartphone size={24} className={`mx-auto mb-2 ${method === "wallet" ? "text-[#F5A623]" : "text-gray-400"}`} />
+              <Smartphone size={24} className={`mx-auto mb-2 ${method === "wallet" ? "text-[#F5A623]" : "text-muted"}`} />
               <p className="text-sm font-bold">محفظة</p>
             </button>
             <button
@@ -174,7 +174,7 @@ function PaymentProcessForm() {
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
-              <Building2 size={24} className={`mx-auto mb-2 ${method === "bank" ? "text-[#F5A623]" : "text-gray-400"}`} />
+              <Building2 size={24} className={`mx-auto mb-2 ${method === "bank" ? "text-[#F5A623]" : "text-muted"}`} />
               <p className="text-sm font-bold">تحويل بنكي</p>
             </button>
           </div>

@@ -27,7 +27,7 @@ export default async function ArtistPaymentPage({
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">الفنان غير موجود</h2>
+          <h2 className="text-2xl font-black text-gray-900 dark:text-fg mb-2">الفنان غير موجود</h2>
           <Link href="/admin/artists" className="text-[#F5A623] hover:underline">العودة للفنانين</Link>
         </div>
       </div>
@@ -37,13 +37,13 @@ export default async function ArtistPaymentPage({
   const saveAction = saveArtistPaymentInfo.bind(null, slug)
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] p-4 lg:p-8">
+    <div dir="rtl" className="min-h-screen bg-gray-50 dark:bg-bg p-4 lg:p-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             href={`/admin/artists/${slug}`}
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-[#F5A623] transition mb-4"
+            className="inline-flex items-center gap-2 text-muted dark:text-muted hover:text-[#F5A623] transition mb-4"
           >
             <ArrowLeft size={20} />
             العودة لصفحة الفنان
@@ -54,10 +54,10 @@ export default async function ArtistPaymentPage({
               <CreditCard size={28} className="text-[#111]" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+              <h1 className="text-3xl font-black text-gray-900 dark:text-fg">
                 بيانات دفع {artist.name}
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-muted dark:text-muted mt-1">
                 هذه البيانات ستظهر للعميل عند إتمام الحجز
               </p>
             </div>
@@ -75,8 +75,8 @@ export default async function ArtistPaymentPage({
         {/* نموذج بيانات الدفع */}
         <form action={saveAction} className="space-y-6">
           {/* التحويل البنكي */}
-          <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-            <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-surface rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
               <Building2 size={18} className="text-[#F5A623]" />
               التحويل البنكي
             </h2>
@@ -87,7 +87,7 @@ export default async function ArtistPaymentPage({
                   name="bankName"
                   defaultValue={artist.bankName || ""}
                   placeholder="البنك الأهلي المصري"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
                 />
               </div>
               <div>
@@ -96,7 +96,7 @@ export default async function ArtistPaymentPage({
                   name="bankAccount"
                   defaultValue={artist.bankAccount || ""}
                   placeholder="1234567890"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                 />
               </div>
               <div className="md:col-span-2">
@@ -105,7 +105,7 @@ export default async function ArtistPaymentPage({
                   name="iban"
                   defaultValue={artist.iban || ""}
                   placeholder="EG12345678901234567890123456"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -113,8 +113,8 @@ export default async function ArtistPaymentPage({
           </div>
 
           {/* المحافظ الإلكترونية */}
-          <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-            <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-surface rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
               <Smartphone size={18} className="text-[#F5A623]" />
               المحافظ الإلكترونية
             </h2>
@@ -128,7 +128,7 @@ export default async function ArtistPaymentPage({
                   name="vodafoneCash"
                   defaultValue={artist.vodafoneCash || ""}
                   placeholder="01000000000"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -141,7 +141,7 @@ export default async function ArtistPaymentPage({
                   name="instaPay"
                   defaultValue={artist.instaPay || ""}
                   placeholder="username@instapay"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
                   dir="ltr"
                 />
               </div>
@@ -149,8 +149,8 @@ export default async function ArtistPaymentPage({
           </div>
 
           {/* ملاحظات */}
-          <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
-            <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-surface rounded-2xl p-6 border border-gray-200 dark:border-gray-800">
+            <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
               <FileText size={18} className="text-[#F5A623]" />
               ملاحظات الدفع
             </h2>
@@ -159,7 +159,7 @@ export default async function ArtistPaymentPage({
               defaultValue={artist.paymentNote || ""}
               rows={3}
               placeholder="مثال: يرجى إرسال صورة إيصال التحويل عبر واتساب على الرقم..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
             />
           </div>
 

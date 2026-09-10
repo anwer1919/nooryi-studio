@@ -72,7 +72,7 @@ export default function NotificationBell() {
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-fg text-[10px] font-bold rounded-full flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -81,8 +81,8 @@ export default function NotificationBell() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute left-0 mt-2 w-80 glass rounded-2xl z-50 shadow-2xl border border-white/10 max-h-96 overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="absolute left-0 mt-2 w-80 glass rounded-2xl z-50 shadow-2xl border border-line max-h-96 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-line">
               <h3 className="font-bold text-sm">الإشعارات</h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
@@ -94,7 +94,7 @@ export default function NotificationBell() {
                     قراءة الكل
                   </button>
                 )}
-                <button onClick={() => setIsOpen(false)} className="text-white/40 hover:text-white">
+                <button onClick={() => setIsOpen(false)} className="text-fg/40 hover:text-fg">
                   <X size={14} />
                 </button>
               </div>
@@ -102,7 +102,7 @@ export default function NotificationBell() {
 
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
-                <div className="text-center py-8 text-white/40 text-sm">
+                <div className="text-center py-8 text-fg/40 text-sm">
                   لا توجد إشعارات بعد
                 </div>
               ) : (
@@ -120,10 +120,10 @@ export default function NotificationBell() {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">{notification.title}</p>
-                        <p className="text-xs text-white/60 line-clamp-2 mt-0.5">
+                        <p className="text-xs text-muted line-clamp-2 mt-0.5">
                           {notification.message}
                         </p>
-                        <p className="text-[10px] text-white/40 mt-1">
+                        <p className="text-[10px] text-fg/40 mt-1">
                           {new Date(notification.createdAt).toLocaleString("ar-EG", {
                             day: "numeric",
                             month: "short",

@@ -22,7 +22,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white" dir="rtl">
+    <div className="min-h-screen bg-bg text-fg" dir="rtl">
       <Sidebar userRole={userRole} />
       
       {/* Main Content */}

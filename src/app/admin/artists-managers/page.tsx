@@ -27,8 +27,8 @@ export default async function ArtistsManagersPage() {
     <div>
       <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-black text-primary dark:text-white mb-2">مديرو الأعمال</h1>
-          <p className="text-gray-500 dark:text-gray-400">إدارة حسابات مديري أعمال الفنانين</p>
+          <h1 className="text-4xl font-black text-primary dark:text-fg mb-2">مديرو الأعمال</h1>
+          <p className="text-muted dark:text-muted">إدارة حسابات مديري أعمال الفنانين</p>
         </div>
         <Link
           href="/admin/artists-managers/new"
@@ -41,9 +41,9 @@ export default async function ArtistsManagersPage() {
 
       {managers.length === 0 ? (
         <div className="card-premium text-center py-20">
-          <UserCog className="mx-auto mb-4 text-gray-300 dark:text-gray-600" size={64} />
-          <h3 className="text-2xl font-bold text-primary dark:text-white mb-2">لا يوجد مديرو أعمال</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
+          <UserCog className="mx-auto mb-4 text-muted dark:text-muted" size={64} />
+          <h3 className="text-2xl font-bold text-primary dark:text-fg mb-2">لا يوجد مديرو أعمال</h3>
+          <p className="text-muted dark:text-muted mb-6">
             أضف مدير أعمال لفنان معين ليمكنه إدارة حجوزاته
           </p>
           <Link
@@ -72,9 +72,9 @@ export default async function ArtistsManagersPage() {
                 </span>
               </div>
 
-              <h3 className="font-bold text-lg text-primary dark:text-white mb-1">{manager.name}</h3>
+              <h3 className="font-bold text-lg text-primary dark:text-fg mb-1">{manager.name}</h3>
               
-              <div className="space-y-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+              <div className="space-y-2 text-sm text-muted dark:text-muted mb-4">
                 <p className="flex items-center gap-2">
                   <Mail size={14} className="text-accent" />
                   <span className="truncate">{manager.email}</span>
@@ -89,7 +89,7 @@ export default async function ArtistsManagersPage() {
 
               {manager.managedArtist && (
                 <div className="pt-4 border-t border-gray-100 dark:border-dark-border">
-                  <p className="text-xs text-gray-400 mb-2">الفنان المُدار</p>
+                  <p className="text-xs text-muted mb-2">الفنان المُدار</p>
                   <div className="flex items-center gap-2">
                     {manager.managedArtist.profileImage ? (
                       <img 
@@ -102,7 +102,7 @@ export default async function ArtistsManagersPage() {
                         <Music size={14} className="text-primary dark:text-accent" />
                       </div>
                     )}
-                    <span className="font-semibold text-sm text-primary dark:text-white">
+                    <span className="font-semibold text-sm text-primary dark:text-fg">
                       {manager.managedArtist.name}
                     </span>
                   </div>

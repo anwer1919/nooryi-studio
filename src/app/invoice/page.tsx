@@ -47,7 +47,7 @@ export default async function UniversalInvoicePage({
         <div className="text-center bg-white p-8 rounded-2xl shadow-lg">
           <AlertCircle size={48} className="mx-auto text-red-400 mb-4" />
           <p className="text-xl font-bold text-gray-700 mb-4">الحجز غير موجود في قاعدة البيانات</p>
-          <p className="text-sm text-gray-500 mb-4 font-mono" dir="ltr">ID: {id}</p>
+          <p className="text-sm text-muted mb-4 font-mono" dir="ltr">ID: {id}</p>
           <Link href="/my-bookings" className="text-[#F5A623] hover:underline font-bold">العودة لحجوزاتي</Link>
         </div>
       </div>
@@ -76,13 +76,13 @@ export default async function UniversalInvoicePage({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link href="/my-bookings" className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
+          <Link href="/my-bookings" className="flex items-center gap-2 text-muted hover:text-[#E8961A]">
             <ArrowRight size={18} /> العودة لحجوزاتي
           </Link>
           <Link
             href={`/invoice/print?id=${booking.id}`}
             target="_blank"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-fg rounded-xl hover:bg-gray-800 transition"
           >
             <Printer size={16} /> طباعة الفاتورة
           </Link>
@@ -93,7 +93,7 @@ export default async function UniversalInvoicePage({
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
-                <Clock size={28} className="text-white" />
+                <Clock size={28} className="text-fg" />
               </div>
               <div>
                 <h2 className="text-xl font-black text-yellow-900 mb-1">⏳ بانتظار الموافقة</h2>
@@ -107,7 +107,7 @@ export default async function UniversalInvoicePage({
           <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={28} className="text-white" />
+                <CheckCircle2 size={28} className="text-fg" />
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-black text-green-900 mb-1">✅ تم تأكيد الحجز</h2>
@@ -129,7 +129,7 @@ export default async function UniversalInvoicePage({
           <div className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={28} className="text-white" />
+                <CheckCircle2 size={28} className="text-fg" />
               </div>
               <div>
                 <h2 className="text-xl font-black text-emerald-900 mb-1">🎉 الحجز مكتمل</h2>
@@ -143,7 +143,7 @@ export default async function UniversalInvoicePage({
           <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
-                <AlertCircle size={28} className="text-white" />
+                <AlertCircle size={28} className="text-fg" />
               </div>
               <div>
                 <h2 className="text-xl font-black text-red-900 mb-1">❌ تم إلغاء الحجز</h2>
@@ -155,7 +155,7 @@ export default async function UniversalInvoicePage({
 
         {/* Invoice Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] p-6 text-white">
+          <div className="bg-gradient-to-r from-bg to-[#111] p-6 text-fg">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
@@ -167,7 +167,7 @@ export default async function UniversalInvoicePage({
                 </div>
               </div>
               <div className="text-left">
-                <p className="text-xs text-gray-400">رقم الفاتورة</p>
+                <p className="text-xs text-muted">رقم الفاتورة</p>
                 <p className="font-mono text-sm text-[#F5A623]" dir="ltr">{booking.id.slice(0, 12)}...</p>
               </div>
             </div>
@@ -183,9 +183,9 @@ export default async function UniversalInvoicePage({
                 </div>
               )}
               <div>
-                <p className="text-xs text-gray-500 font-bold uppercase">الفنان</p>
+                <p className="text-xs text-muted font-bold uppercase">الفنان</p>
                 <h2 className="text-2xl font-black">{booking.artist?.name}</h2>
-                <p className="text-sm text-gray-600">{booking.artist?.category || "فنان"}</p>
+                <p className="text-sm text-muted">{booking.artist?.category || "فنان"}</p>
               </div>
             </div>
           </div>
@@ -198,21 +198,21 @@ export default async function UniversalInvoicePage({
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                 <Calendar size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500">التاريخ</p>
+                  <p className="text-xs text-muted">التاريخ</p>
                   <p className="font-black text-gray-900">{new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" })}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                 <Clock size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500">الفترة</p>
+                  <p className="text-xs text-muted">الفترة</p>
                   <p className="font-black text-gray-900">{booking.timeSlot}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                 <MapPin size={20} className="text-[#F5A623] mt-0.5" />
                 <div>
-                  <p className="text-xs text-gray-500">المكان</p>
+                  <p className="text-xs text-muted">المكان</p>
                   <p className="font-black text-gray-900">{booking.venue?.name || "سيتم تحديده"}</p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default async function UniversalInvoicePage({
                 <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
                   <MapPin size={20} className="text-[#F5A623] mt-0.5" />
                   <div>
-                    <p className="text-xs text-gray-500">المنطقة</p>
+                    <p className="text-xs text-muted">المنطقة</p>
                     <p className="font-black text-gray-900">{booking.region}</p>
                   </div>
                 </div>
@@ -232,47 +232,47 @@ export default async function UniversalInvoicePage({
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                <User size={16} className="text-gray-400" />
+                <User size={16} className="text-muted" />
                 <span className="font-bold">{booking.clientName}</span>
               </div>
               <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl" dir="ltr">
-                <Phone size={16} className="text-gray-400" />
+                <Phone size={16} className="text-muted" />
                 <span>{booking.clientPhone}</span>
               </div>
               {booking.clientEmail && (
                 <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
-                  <Mail size={16} className="text-gray-400" />
+                  <Mail size={16} className="text-muted" />
                   <span className="text-sm truncate">{booking.clientEmail}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-6 bg-[#0a0a0a] text-white">
+          <div className="p-6 bg-bg text-fg">
             <div className="space-y-3">
               <div className="flex justify-between py-2">
-                <span className="text-gray-300">السعر الأساسي</span>
+                <span className="text-muted">السعر الأساسي</span>
                 <span className="font-bold">{basePrice.toLocaleString()} ج.م</span>
               </div>
               {travelFee > 0 && (
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-300">رسوم السفر</span>
+                  <span className="text-muted">رسوم السفر</span>
                   <span className="font-bold">+ {travelFee.toLocaleString()} ج.م</span>
                 </div>
               )}
-              <div className="flex justify-between py-3 border-t border-white/10">
+              <div className="flex justify-between py-3 border-t border-line">
                 <span className="text-lg font-black">الإجمالي</span>
                 <span className="text-2xl font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</span>
               </div>
               {totalPaid > 0 && (
-                <div className="flex justify-between py-2 text-sm border-t border-white/10 pt-3">
+                <div className="flex justify-between py-2 text-sm border-t border-line pt-3">
                   <span className="text-green-400">✓ المدفوع</span>
                   <span className="font-bold text-green-400">{totalPaid.toLocaleString()} ج.م</span>
                 </div>
               )}
               {remaining > 0 && totalPaid > 0 && (
                 <div className="flex justify-between py-2 text-sm">
-                  <span className="text-gray-300">المتبقي</span>
+                  <span className="text-muted">المتبقي</span>
                   <span className="font-bold">{remaining.toLocaleString()} ج.م</span>
                 </div>
               )}
@@ -280,7 +280,7 @@ export default async function UniversalInvoicePage({
           </div>
 
           <div className="p-6 bg-[#faf8f0] border-t border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-muted">
               <Shield size={16} className="text-[#F5A623]" />
               <span>فاتورة رسمية — Nooryi Studio © {new Date().getFullYear()}</span>
             </div>
@@ -298,7 +298,7 @@ export default async function UniversalInvoicePage({
             <Link
               href={`/invoice/print?id=${booking.id}`}
               target="_blank"
-              className="px-6 py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition flex items-center gap-2"
+              className="px-6 py-4 bg-gray-900 text-fg font-bold rounded-2xl hover:bg-gray-800 transition flex items-center gap-2"
             >
               <Printer size={20} /> طباعة
             </Link>

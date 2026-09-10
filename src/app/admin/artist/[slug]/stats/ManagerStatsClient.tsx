@@ -18,25 +18,25 @@ export default function ManagerStatsClient({ data }: { data: any }) {
   return (
     <div dir="rtl" className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <div><div className="badge-gold mb-3">التقارير المالية</div><h1 className="text-3xl font-black text-white flex items-center gap-2"><TrendingUp size={28} className="text-[#F5A623]" /> تقرير {a.name}</h1><p className="text-gray-400 text-sm mt-1">{rd}</p></div>
+        <div><div className="badge-gold mb-3">التقارير المالية</div><h1 className="text-3xl font-black text-fg flex items-center gap-2"><TrendingUp size={28} className="text-[#F5A623]" /> تقرير {a.name}</h1><p className="text-muted text-sm mt-1">{rd}</p></div>
         <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition"><Download size={20} /> حفظ / طباعة</button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#0a0a0a] p-5 rounded-2xl text-center border border-[#F5A623]/20"><DollarSign className="w-8 h-8 text-[#F5A623] mx-auto mb-2" /><p className="text-xs text-gray-400">الإيرادات</p><p className="text-xl font-black text-[#F5A623]">{data.revenue.toLocaleString()}</p><p className="text-xs text-gray-500">ج.م</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#F5A623]/20"><CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" /><p className="text-xs text-gray-400">مؤكدة</p><p className="text-xl font-black text-white">{data.confirmed}</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#F5A623]/20"><Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" /><p className="text-xs text-gray-400">بانتظار</p><p className="text-xl font-black text-white">{data.pending}</p></div>
-        <div className="bg-[#111] p-5 rounded-2xl text-center border border-[#F5A623]/20"><TrendingUp className="w-8 h-8 text-[#F5A623] mx-auto mb-2" /><p className="text-xs text-gray-400">صافي الفنان</p><p className="text-xl font-black text-white">{data.net.toLocaleString()}</p><p className="text-xs text-gray-500">ج.م</p></div>
+        <div className="bg-bg p-5 rounded-2xl text-center border border-[#F5A623]/20"><DollarSign className="w-8 h-8 text-[#F5A623] mx-auto mb-2" /><p className="text-xs text-muted">الإيرادات</p><p className="text-xl font-black text-[#F5A623]">{data.revenue.toLocaleString()}</p><p className="text-xs text-muted">ج.م</p></div>
+        <div className="bg-surface p-5 rounded-2xl text-center border border-[#F5A623]/20"><CheckCircle2 className="w-8 h-8 text-green-400 mx-auto mb-2" /><p className="text-xs text-muted">مؤكدة</p><p className="text-xl font-black text-fg">{data.confirmed}</p></div>
+        <div className="bg-surface p-5 rounded-2xl text-center border border-[#F5A623]/20"><Clock className="w-8 h-8 text-yellow-400 mx-auto mb-2" /><p className="text-xs text-muted">بانتظار</p><p className="text-xl font-black text-fg">{data.pending}</p></div>
+        <div className="bg-surface p-5 rounded-2xl text-center border border-[#F5A623]/20"><TrendingUp className="w-8 h-8 text-[#F5A623] mx-auto mb-2" /><p className="text-xs text-muted">صافي الفنان</p><p className="text-xl font-black text-fg">{data.net.toLocaleString()}</p><p className="text-xs text-muted">ج.م</p></div>
       </div>
       <div className="bg-white p-10 rounded-2xl shadow-2xl border border-gray-200">
-        <p className="text-center text-gray-500 text-sm mb-4">👆 هذه معاينة — اضغط "حفظ / طباعة" للحصول على تقرير A4 كامل بالترويسة والختم وQR Code</p>
+        <p className="text-center text-muted text-sm mb-4">👆 هذه معاينة — اضغط "حفظ / طباعة" للحصول على تقرير A4 كامل بالترويسة والختم وQR Code</p>
         <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className="bg-black p-4 rounded-xl text-center"><p className="text-[10px] text-gray-400">الإيرادات</p><p className="text-lg font-black text-[#F5A623]">{data.revenue.toLocaleString()}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">مؤكدة</p><p className="text-lg font-black">{data.confirmed}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">بانتظار</p><p className="text-lg font-black">{data.pending}</p></div>
-          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-gray-500">صافي</p><p className="text-lg font-black">{data.net.toLocaleString()}</p></div>
+          <div className="bg-black p-4 rounded-xl text-center"><p className="text-[10px] text-muted">الإيرادات</p><p className="text-lg font-black text-[#F5A623]">{data.revenue.toLocaleString()}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-muted">مؤكدة</p><p className="text-lg font-black">{data.confirmed}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-muted">بانتظار</p><p className="text-lg font-black">{data.pending}</p></div>
+          <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-200"><p className="text-[10px] text-muted">صافي</p><p className="text-lg font-black">{data.net.toLocaleString()}</p></div>
         </div>
         <div className="border-t-2 border-[#F5A623] pt-4 flex justify-between items-center">
-          <p className="text-xs text-gray-400">رقم التقرير: <span className="font-mono text-gray-600">{rn}</span></p>
+          <p className="text-xs text-muted">رقم التقرير: <span className="font-mono text-muted">{rn}</span></p>
           <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#0a0a0a] font-black rounded-xl hover:shadow-lg transition"><Printer size={16} /> طباعة الآن</button>
         </div>
       </div>

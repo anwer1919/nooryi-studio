@@ -34,7 +34,7 @@ export default async function HomePage() {
             </div>
             <div>
               <h1 className="text-2xl font-black text-gray-900 tracking-wide">Nooryi</h1>
-              <p className="text-xs text-gray-500 font-bold tracking-widest">STUDIO</p>
+              <p className="text-xs text-muted font-bold tracking-widest">STUDIO</p>
             </div>
           </Link>
 
@@ -81,7 +81,7 @@ export default async function HomePage() {
             لفعالياتك <span className="text-[#FACC15]">المميزة</span>
           </h2>
 
-          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted mb-10 max-w-3xl mx-auto leading-relaxed">
             منصة احترافية تجمع بين أفضل الفنانين والموسيقيين في مكان واحد.
             احجز بسهولة، ادفع بأمان، واستمتع بتجربة لا تُنسى.
           </p>
@@ -107,15 +107,15 @@ export default async function HomePage() {
           <div className="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto">
             <div className="bg-white rounded-2xl p-6 border-2 border-[#FACC15]/30 shadow-lg">
               <p className="text-3xl md:text-4xl font-black text-[#FACC15]">+150</p>
-              <p className="text-gray-600 mt-2 text-sm">فنان محترف</p>
+              <p className="text-muted mt-2 text-sm">فنان محترف</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border-2 border-[#FACC15]/30 shadow-lg">
               <p className="text-3xl md:text-4xl font-black text-[#FACC15]">+500</p>
-              <p className="text-gray-600 mt-2 text-sm">فعالية ناجحة</p>
+              <p className="text-muted mt-2 text-sm">فعالية ناجحة</p>
             </div>
             <div className="bg-white rounded-2xl p-6 border-2 border-[#FACC15]/30 shadow-lg">
               <p className="text-3xl md:text-4xl font-black text-[#FACC15]">4.9★</p>
-              <p className="text-gray-600 mt-2 text-sm">تقييم العملاء</p>
+              <p className="text-muted mt-2 text-sm">تقييم العملاء</p>
             </div>
           </div>
         </div>
@@ -138,11 +138,11 @@ export default async function HomePage() {
               <h3 className="text-2xl font-black text-gray-900 mb-4">
                 Nooryi Studio - شريكك في نجاح فعالياتك
               </h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-muted leading-relaxed mb-6">
                 نحن منصة رائدة في مجال حجز الفنانين والموسيقيين للفعاليات والمناسبات.
                 نجمع بين أفضل المواهب الفنية في مكان واحد، لنوفر لك تجربة حجز سلسة واحترافية.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-6">
+              <p className="text-muted leading-relaxed mb-6">
                 سواء كنت تبحث عن فرقة موسيقية لحفل زفاف، أو مغني لفعالية خاصة،
                 أو حتى منسق أغاني لحفلة تخرج، تجد لدينا كل ما تحتاجه بأعلى معايير الجودة والاحترافية.
               </p>
@@ -173,7 +173,7 @@ export default async function HomePage() {
                     </div>
                     <div>
                       <p className="text-xl font-black text-gray-900">Nooryi Studio</p>
-                      <p className="text-sm text-gray-500">منصة حجز الفنانين</p>
+                      <p className="text-sm text-muted">منصة حجز الفنانين</p>
                     </div>
                   </div>
 
@@ -185,7 +185,7 @@ export default async function HomePage() {
                       { label: "رضا العملاء", value: "98%" },
                     ].map((stat, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-[#FEFCE8] rounded-xl">
-                        <span className="text-gray-600 font-semibold">{stat.label}</span>
+                        <span className="text-muted font-semibold">{stat.label}</span>
                         <span className="text-[#FACC15] font-black text-xl">{stat.value}</span>
                       </div>
                     ))}
@@ -210,7 +210,7 @@ export default async function HomePage() {
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
               لماذا تختار <span className="text-[#FACC15]">Nooryi؟</span>
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-muted max-w-2xl mx-auto">
               نوفر لك تجربة حجز استثنائية بأعلى معايير الجودة
             </p>
           </div>
@@ -247,7 +247,7 @@ export default async function HomePage() {
                   <feature.icon size={32} className={feature.iconColor} />
                 </div>
                 <h3 className="text-xl font-black text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                <p className="text-muted leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -264,7 +264,7 @@ export default async function HomePage() {
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
               فنانون <span className="text-[#FACC15]">مميزون</span>
             </h2>
-            <p className="text-gray-600">اختر من بين نخبة من أفضل الفنانين</p>
+            <p className="text-muted">اختر من بين نخبة من أفضل الفنانين</p>
           </div>
 
           {featuredArtists.length > 0 ? (
@@ -289,13 +289,13 @@ export default async function HomePage() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                     <div className="absolute bottom-4 right-4 left-4">
-                      <h3 className="text-white font-black text-xl">{artist.name}</h3>
+                      <h3 className="text-fg font-black text-xl">{artist.name}</h3>
                       <p className="text-[#FACC15] text-sm font-bold">{artist.category}</p>
                     </div>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-500 text-sm">عرض الملف</span>
+                      <span className="text-muted text-sm">عرض الملف</span>
                       <ArrowLeft size={18} className="text-[#FACC15] group-hover:-translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -304,8 +304,8 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-2xl">
-              <Music className="mx-auto text-gray-300 mb-3" size={48} />
-              <p className="text-gray-500">لا يوجد فنانين معتمدين بعد</p>
+              <Music className="mx-auto text-muted mb-3" size={48} />
+              <p className="text-muted">لا يوجد فنانين معتمدين بعد</p>
             </div>
           )}
 
@@ -365,7 +365,7 @@ export default async function HomePage() {
                 <Phone size={28} className="text-gray-900" />
               </div>
               <h3 className="text-lg font-black text-gray-900 mb-2">اتصل بنا</h3>
-              <p className="text-gray-600" dir="ltr">+20 100 000 0000</p>
+              <p className="text-muted" dir="ltr">+20 100 000 0000</p>
             </div>
 
             <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#FACC15] transition">
@@ -373,7 +373,7 @@ export default async function HomePage() {
                 <Mail size={28} className="text-[#FACC15]" />
               </div>
               <h3 className="text-lg font-black text-gray-900 mb-2">راسلنا</h3>
-              <p className="text-gray-600" dir="ltr">info@noorystudio.com</p>
+              <p className="text-muted" dir="ltr">info@noorystudio.com</p>
             </div>
 
             <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center shadow-lg border-2 border-transparent hover:border-[#FACC15] transition">
@@ -381,14 +381,14 @@ export default async function HomePage() {
                 <MapPin size={28} className="text-gray-900" />
               </div>
               <h3 className="text-lg font-black text-gray-900 mb-2">موقعنا</h3>
-              <p className="text-gray-600">القاهرة، مصر</p>
+              <p className="text-muted">القاهرة، مصر</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══════════ التذييل - أسود مع ليموني ═══════════ */}
-      <footer className="bg-gradient-to-l from-gray-900 via-gray-800 to-gray-900 text-white">
+      <footer className="bg-gradient-to-l from-gray-900 via-gray-800 to-gray-900 text-fg">
         <div className="h-1 bg-gradient-to-l from-[#FACC15] via-[#FDE047] to-[#FACC15]"></div>
 
         <div className="max-w-6xl mx-auto px-4 py-12">
@@ -400,10 +400,10 @@ export default async function HomePage() {
                 </div>
                 <div>
                   <p className="text-xl font-black text-[#FACC15]">Nooryi</p>
-                  <p className="text-xs text-gray-400 tracking-widest">STUDIO</p>
+                  <p className="text-xs text-muted tracking-widest">STUDIO</p>
                 </div>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <p className="text-muted text-sm leading-relaxed">
                 منصة احترافية لحجز أفضل الفنانين والموسيقيين للفعاليات والمناسبات.
                 نوفر لك تجربة حجز سلسة وآمنة بأعلى معايير الجودة.
               </p>
@@ -412,25 +412,25 @@ export default async function HomePage() {
             <div>
               <h4 className="text-[#FACC15] font-black mb-4">روابط سريعة</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/" className="text-gray-400 hover:text-[#FACC15] transition">الرئيسية</Link></li>
-                <li><Link href="/artists" className="text-gray-400 hover:text-[#FACC15] transition">الفنانين</Link></li>
-                <li><Link href="/#about" className="text-gray-400 hover:text-[#FACC15] transition">من نحن</Link></li>
-                <li><Link href="/#services" className="text-gray-400 hover:text-[#FACC15] transition">خدماتنا</Link></li>
+                <li><Link href="/" className="text-muted hover:text-[#FACC15] transition">الرئيسية</Link></li>
+                <li><Link href="/artists" className="text-muted hover:text-[#FACC15] transition">الفنانين</Link></li>
+                <li><Link href="/#about" className="text-muted hover:text-[#FACC15] transition">من نحن</Link></li>
+                <li><Link href="/#services" className="text-muted hover:text-[#FACC15] transition">خدماتنا</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-[#FACC15] font-black mb-4">حسابك</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/login" className="text-gray-400 hover:text-[#FACC15] transition">تسجيل الدخول</Link></li>
-                <li><Link href="/register" className="text-gray-400 hover:text-[#FACC15] transition">إنشاء حساب</Link></li>
-                <li><Link href="/my-bookings" className="text-gray-400 hover:text-[#FACC15] transition">حجوزاتي</Link></li>
+                <li><Link href="/login" className="text-muted hover:text-[#FACC15] transition">تسجيل الدخول</Link></li>
+                <li><Link href="/register" className="text-muted hover:text-[#FACC15] transition">إنشاء حساب</Link></li>
+                <li><Link href="/my-bookings" className="text-muted hover:text-[#FACC15] transition">حجوزاتي</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-400 text-sm">
+          <div className="mt-8 pt-8 border-t border-line flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-muted text-sm">
               © 2026 Nooryi Studio. جميع الحقوق محفوظة.
             </p>
             <div className="flex items-center gap-2 text-[#FACC15]">

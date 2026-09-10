@@ -41,7 +41,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
       {/* زر القائمة للجوال */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-[#1a1a1a] border border-[#F5A623]/30 rounded-xl text-white hover:bg-[#F5A623] hover:text-[#111] transition-all"
+        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-card border border-[#F5A623]/30 rounded-xl text-fg hover:bg-[#F5A623] hover:text-[#111] transition-all"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -52,9 +52,9 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
       )}
 
       {/* الشريط الجانبي */}
-      <aside className={`fixed top-0 right-0 h-full w-72 bg-[#0a0a0a] border-l border-white/10 z-50 transform transition-transform duration-300 lg:translate-x-0 ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}`}>
+      <aside className={`fixed top-0 right-0 h-full w-72 bg-bg border-l border-line z-50 transform transition-transform duration-300 lg:translate-x-0 ${isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}`}>
         {/* Header */}
-        <div className="p-6 border-b border-white/10">
+        <div className="p-6 border-b border-line">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/30">
               <span className="text-xl font-black text-[#111]">
@@ -62,8 +62,8 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold text-white truncate">{userName || "مستخدم"}</p>
-              <p className="text-xs text-white/60 truncate">{userEmail}</p>
+              <p className="font-bold text-fg truncate">{userName || "مستخدم"}</p>
+              <p className="text-xs text-muted truncate">{userEmail}</p>
               <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F5A623]/20 text-[#F5A623] border border-[#F5A623]/30">
                 {userRole === "SUPER_ADMIN" ? "مدير عام" : userRole === "ADMIN" ? "إدارة" : "مدير فنان"}
               </span>
@@ -83,7 +83,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                   isActive
                     ? "bg-gradient-to-r from-[#F5A623]/20 to-[#E8961A]/10 border border-[#F5A623]/30 text-[#F5A623]"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    : "text-muted hover:bg-white/5 hover:text-fg"
                 }`}
               >
                 <link.icon size={20} className={isActive ? "text-[#F5A623]" : ""} />
@@ -94,7 +94,7 @@ export default function AdminSidebar({ userRole, userName, userEmail }: any) {
         </nav>
 
         {/* زر تسجيل الخروج */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a0a0a]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-line bg-bg">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold transition-colors"

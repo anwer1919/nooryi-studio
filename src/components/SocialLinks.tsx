@@ -71,7 +71,7 @@ export default async function SocialLinks() {
           href={social.url!}
           target="_blank"
           rel="noopener noreferrer"
-          className="group w-11 h-11 rounded-full bg-white dark:bg-[#1a1a1a] border-2 border-[#F5A623]/40 hover:border-[#F5A623] flex items-center justify-center text-[#F5A623] hover:bg-[#F5A623] hover:text-[#111] hover:shadow-lg hover:shadow-[#F5A623]/40 hover:scale-110 transition-all duration-300"
+          className="group w-11 h-11 rounded-full bg-white dark:bg-card border-2 border-[#F5A623]/40 hover:border-[#F5A623] flex items-center justify-center text-[#F5A623] hover:bg-[#F5A623] hover:text-[#111] hover:shadow-lg hover:shadow-[#F5A623]/40 hover:scale-110 transition-all duration-300"
           aria-label={social.label}
           title={social.label}
         >

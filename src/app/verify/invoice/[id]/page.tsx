@@ -28,8 +28,8 @@ export default async function VerifyInvoicePage({
             <span className="text-3xl">❌</span>
           </div>
           <h1 className="text-2xl font-black text-red-700 mb-2">فاتورة غير صالحة</h1>
-          <p className="text-gray-600 mb-6">لم يتم العثور على الفاتورة المطلوبة</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold">
+          <p className="text-muted mb-6">لم يتم العثور على الفاتورة المطلوبة</p>
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-fg rounded-xl font-bold">
             <ArrowLeft size={18} />
             العودة للرئيسية
           </Link>
@@ -48,7 +48,7 @@ export default async function VerifyInvoicePage({
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-[#faf8f0] to-white py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] rounded-2xl p-8 text-white shadow-2xl">
+        <div className="bg-gradient-to-r from-bg to-[#111] rounded-2xl p-8 text-fg shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
@@ -67,11 +67,11 @@ export default async function VerifyInvoicePage({
           <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-400">رقم الفاتورة</p>
+              <p className="text-xs text-muted">رقم الفاتورة</p>
               <p className="text-lg font-mono text-[#F5A623]" dir="ltr">INV-{booking.id.slice(0, 8).toUpperCase()}</p>
             </div>
             <div className="text-left">
-              <p className="text-xs text-gray-400">تاريخ التحقق</p>
+              <p className="text-xs text-muted">تاريخ التحقق</p>
               <p className="text-sm font-bold">{new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
             </div>
           </div>
@@ -81,7 +81,7 @@ export default async function VerifyInvoicePage({
         <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-              <Shield size={24} className="text-white" />
+              <Shield size={24} className="text-fg" />
             </div>
             <div>
               <h3 className="text-xl font-black text-green-900 mb-1">✓ هذه الفاتورة أصلية ومعتمدة</h3>
@@ -103,28 +103,28 @@ export default async function VerifyInvoicePage({
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <User size={20} className="text-[#F5A623]" />
                 <div>
-                  <p className="text-xs text-gray-500">العميل</p>
+                  <p className="text-xs text-muted">العميل</p>
                   <p className="font-black">{booking.clientName}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <Music size={20} className="text-[#F5A623]" />
                 <div>
-                  <p className="text-xs text-gray-500">الفنان</p>
+                  <p className="text-xs text-muted">الفنان</p>
                   <p className="font-black">{booking.artist?.name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <Calendar size={20} className="text-[#F5A623]" />
                 <div>
-                  <p className="text-xs text-gray-500">تاريخ الفعالية</p>
+                  <p className="text-xs text-muted">تاريخ الفعالية</p>
                   <p className="font-black">{new Date(booking.date).toLocaleDateString("ar-EG")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                 <DollarSign size={20} className="text-[#F5A623]" />
                 <div>
-                  <p className="text-xs text-gray-500">الإجمالي</p>
+                  <p className="text-xs text-muted">الإجمالي</p>
                   <p className="font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</p>
                 </div>
               </div>
@@ -132,19 +132,19 @@ export default async function VerifyInvoicePage({
 
             <div className="bg-gray-50 rounded-xl p-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">المدفوع:</span>
+                <span className="text-sm text-muted">المدفوع:</span>
                 <span className="font-black text-green-600">{totalPaid.toLocaleString()} ج.م</span>
               </div>
               <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-gray-600">المتبقي:</span>
+                <span className="text-sm text-muted">المتبقي:</span>
                 <span className="font-black text-red-600">{Math.max(0, grossAmount - totalPaid).toLocaleString()} ج.م</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-[#0a0a0a] rounded-2xl p-5 text-center">
-          <p className="text-xs text-gray-400">
+        <div className="bg-bg rounded-2xl p-5 text-center">
+          <p className="text-xs text-muted">
             هذه الفاتورة صادرة رسمياً من منصة Nooryi Studio — جميع الحقوق محفوظة © {new Date().getFullYear()}
           </p>
         </div>

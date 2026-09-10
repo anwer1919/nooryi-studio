@@ -74,10 +74,10 @@ export default function VerifyCalendarPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-surface flex items-center justify-center" dir="rtl">
         <div className="text-center">
           <Loader2 className="w-14 h-14 text-[#F5A623] animate-spin mx-auto mb-4" />
-          <p className="text-white font-bold text-lg">جاري التحقق من التقرير...</p>
+          <p className="text-fg font-bold text-lg">جاري التحقق من التقرير...</p>
         </div>
       </div>
     )
@@ -156,7 +156,7 @@ export default function VerifyCalendarPage() {
           <div className="mb-6 flex items-center justify-between gap-4 no-print">
             <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 flex items-center gap-3 flex-1">
               <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                <Check size={24} className="text-white" />
+                <Check size={24} className="text-fg" />
               </div>
               <div>
                 <p className="font-bold text-green-800">تقرير معتمد ✓</p>
@@ -167,7 +167,7 @@ export default function VerifyCalendarPage() {
             </div>
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-2 px-6 py-3 bg-[#111] text-[#F5A623] rounded-xl font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-6 py-3 bg-surface text-[#F5A623] rounded-xl font-bold hover:bg-surface transition"
             >
               <Printer size={20} />
               طباعة PDF
@@ -178,7 +178,7 @@ export default function VerifyCalendarPage() {
           <div className="print-verify bg-white rounded-2xl shadow-xl border-2 border-[#F5A623] overflow-hidden">
 
             {/* الترويسة */}
-            <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
+            <div className="bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
               <div className="h-2 bg-gradient-to-l from-[#F5A623] via-[#FFC966] to-[#F5A623]" />
               
               <div className="p-6 md:p-8 relative">
@@ -234,25 +234,25 @@ export default function VerifyCalendarPage() {
             <div className="bg-[#faf8f0] border-b-2 border-[#F5A623]/30 px-6 md:px-8 py-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفنان</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
                     {artist.name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفئة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفئة</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
                     {artist.category || "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام متاحة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">أيام متاحة</p>
                   <p className="text-lg md:text-xl font-black text-[#F5A623]">
                     {data.availableCount} يوم
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام غير متاحة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">أيام غير متاحة</p>
                   <p className="text-lg md:text-xl font-black text-gray-900">
                     {data.unavailableCount} يوم
                   </p>
@@ -272,7 +272,7 @@ export default function VerifyCalendarPage() {
                 {DAYS_SHORT_AR.map((day) => (
                   <div
                     key={day}
-                    className="calendar-header-cell bg-[#111] text-[#F5A623] text-center py-2 font-black text-sm md:text-base rounded-lg"
+                    className="calendar-header-cell bg-surface text-[#F5A623] text-center py-2 font-black text-sm md:text-base rounded-lg"
                   >
                     {day}
                   </div>
@@ -297,7 +297,7 @@ export default function VerifyCalendarPage() {
                         ${
                           item.isAvailable
                             ? "bg-gradient-to-br from-[#F5A623] to-[#E8961A] text-[#111] shadow-md"
-                            : "bg-gradient-to-br from-[#111] to-[#333] text-white"
+                            : "bg-gradient-to-br from-surface to-[#333] text-fg"
                         }
                       `}
                     >
@@ -315,7 +315,7 @@ export default function VerifyCalendarPage() {
                   <span className="text-sm font-bold text-gray-700">يوم متاح للحجز</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded bg-gradient-to-br from-[#111] to-[#333]" />
+                  <div className="w-5 h-5 rounded bg-gradient-to-br from-surface to-[#333]" />
                   <span className="text-sm font-bold text-gray-700">يوم غير متاح</span>
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function VerifyCalendarPage() {
                       />
                     </div>
                   )}
-                  <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                  <div className="text-xs md:text-sm text-muted leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
                       <Shield size={16} className="text-[#F5A623]" />
                       رمز التحقق
@@ -379,7 +379,7 @@ export default function VerifyCalendarPage() {
             </div>
 
             {/* التذييل */}
-            <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623]">
+            <div className="bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623]">
               <div className="px-6 py-4 md:px-8 md:py-5">
                 <div className="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-[#F5A623]/30">
                   <div>

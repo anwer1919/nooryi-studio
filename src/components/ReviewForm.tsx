@@ -66,7 +66,7 @@ export default function ReviewForm({ bookingId, artistName, onSuccess }: ReviewF
 
   return (
     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-      <h3 className="text-lg font-bold text-white mb-4">
+      <h3 className="text-lg font-bold text-fg mb-4">
         قيّم تجربتك مع {artistName}
       </h3>
 
@@ -106,7 +106,7 @@ export default function ReviewForm({ bookingId, artistName, onSuccess }: ReviewF
             onChange={(e) => setComment(e.target.value)}
             rows={4}
             maxLength={500}
-            className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-white focus:border-yellow-500 outline-none resize-none"
+            className="w-full p-3 bg-black border border-neutral-700 rounded-lg text-fg focus:border-yellow-500 outline-none resize-none"
             placeholder="شاركنا تجربتك مع الفنان..."
           />
           <p className="text-xs text-neutral-500 mt-1 text-left" dir="ltr">

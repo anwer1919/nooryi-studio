@@ -250,10 +250,10 @@ export default function ArtistAvailabilityPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#111]">
+      <div className="flex items-center justify-center min-h-screen bg-surface">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#F5A623] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white font-bold">جاري تحميل التقويم...</p>
+          <p className="text-fg font-bold">جاري تحميل التقويم...</p>
         </div>
       </div>
     )
@@ -344,7 +344,7 @@ export default function ArtistAvailabilityPage() {
                   <Calendar size={32} className="text-[#F5A623]" />
                   تقويم التوفر الشهري
                 </h1>
-                <p className="text-gray-500">
+                <p className="text-muted">
                   إدارة أيام العمل للفنان{" "}
                   <span className="font-bold text-[#F5A623]">{artist?.name}</span>
                 </p>
@@ -353,7 +353,7 @@ export default function ArtistAvailabilityPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-2 px-4 py-3 bg-[#111] text-[#F5A623] rounded-xl font-bold hover:bg-[#222] transition"
+                  className="flex items-center gap-2 px-4 py-3 bg-surface text-[#F5A623] rounded-xl font-bold hover:bg-surface transition"
                 >
                   <Printer size={18} />
                   طباعة التقرير
@@ -416,8 +416,8 @@ export default function ArtistAvailabilityPage() {
 
             {/* Filter */}
             <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
-              <Filter size={16} className="text-gray-500" />
-              <span className="text-sm text-gray-600 font-semibold ml-1">فلتر:</span>
+              <Filter size={16} className="text-muted" />
+              <span className="text-sm text-muted font-semibold ml-1">فلتر:</span>
               {[
                 { value: "all", label: "الكل" },
                 { value: "available", label: "المتاح فقط" },
@@ -428,8 +428,8 @@ export default function ArtistAvailabilityPage() {
                   onClick={() => setFilter(f.value as FilterType)}
                   className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${
                     filter === f.value
-                      ? "bg-[#111] text-[#F5A623]"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-surface text-[#F5A623]"
+                      : "bg-gray-100 text-muted hover:bg-gray-200"
                   }`}
                 >
                   {f.label}
@@ -441,7 +441,7 @@ export default function ArtistAvailabilityPage() {
           {/* ============ Stats (لا يطبع) ============ */}
           <div className="grid grid-cols-4 gap-3 mb-4 no-print">
             <div className="bg-white p-4 rounded-xl border border-gray-200 text-center">
-              <p className="text-xs text-gray-500 font-semibold mb-1">أيام الشهر</p>
+              <p className="text-xs text-muted font-semibold mb-1">أيام الشهر</p>
               <p className="text-2xl font-black text-gray-900">{stats.total}</p>
             </div>
             <div className="bg-gradient-to-br from-[#F5A623] to-[#E8961A] p-4 rounded-xl text-center">
@@ -449,10 +449,10 @@ export default function ArtistAvailabilityPage() {
               <p className="text-2xl font-black text-[#111]">{stats.available}</p>
             </div>
             <div className="bg-gradient-to-br from-red-500 to-red-700 p-4 rounded-xl text-center">
-              <p className="text-xs text-white font-semibold mb-1 opacity-70">محجوز</p>
+              <p className="text-xs text-fg font-semibold mb-1 opacity-70">محجوز</p>
               <p className="text-2xl font-black text-white">{stats.booked}</p>
             </div>
-            <div className="bg-gradient-to-br from-[#111] to-[#333] p-4 rounded-xl text-center">
+            <div className="bg-gradient-to-br from-surface to-[#333] p-4 rounded-xl text-center">
               <p className="text-xs text-[#F5A623] font-semibold mb-1 opacity-70">غير متاح</p>
               <p className="text-2xl font-black text-white">{stats.unavailable}</p>
             </div>
@@ -462,7 +462,7 @@ export default function ArtistAvailabilityPage() {
           <div className="print-area bg-white rounded-2xl shadow-xl border-2 border-[#F5A623] overflow-hidden">
 
             {/* ═══════════ الترويسة الاحترافية ═══════════ */}
-            <div className="print-header bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
+            <div className="print-header bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
               <div className="h-2 bg-gradient-to-l from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
               
               <div className="p-6 md:p-8 relative">
@@ -514,19 +514,19 @@ export default function ArtistAvailabilityPage() {
             <div className="bg-[#faf8f0] border-b-2 border-[#F5A623]/30 px-6 md:px-8 py-4">
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفنان</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">{artist?.name || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفئة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفئة</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">{artist?.category || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام متاحة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">أيام متاحة</p>
                   <p className="text-lg md:text-xl font-black text-[#F5A623]">{stats.available} يوم</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">أيام محجوزة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">أيام محجوزة</p>
                   <p className="text-lg md:text-xl font-black text-red-600">{stats.booked} يوم</p>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default function ArtistAvailabilityPage() {
                 {DAYS_SHORT_AR.map((day) => (
                   <div
                     key={day}
-                    className="calendar-header-cell bg-[#111] text-[#F5A623] text-center py-2 font-black text-sm md:text-base rounded-lg"
+                    className="calendar-header-cell bg-surface text-[#F5A623] text-center py-2 font-black text-sm md:text-base rounded-lg"
                   >
                     {day}
                   </div>
@@ -576,10 +576,10 @@ export default function ArtistAvailabilityPage() {
                         ${isPast || isBooked ? "cursor-not-allowed" : "cursor-pointer hover:scale-105"}
                         ${isToday ? "ring-2 ring-[#F5A623]" : ""}
                         ${isBooked
-                          ? "bg-gradient-to-br from-red-500 to-red-700 text-white shadow-md"
+                          ? "bg-gradient-to-br from-red-500 to-red-700 text-fg shadow-md"
                           : isAvailable
                             ? "bg-gradient-to-br from-[#F5A623] to-[#E8961A] text-[#111] shadow-md"
-                            : "bg-gradient-to-br from-[#111] to-[#333] text-white"
+                            : "bg-gradient-to-br from-surface to-[#333] text-fg"
                         }
                       `}
                     >
@@ -599,7 +599,7 @@ export default function ArtistAvailabilityPage() {
                   <span className="text-sm font-bold text-gray-700">يوم محجوز</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded bg-gradient-to-br from-[#111] to-[#333]"></div>
+                  <div className="w-5 h-5 rounded bg-gradient-to-br from-surface to-[#333]"></div>
                   <span className="text-sm font-bold text-gray-700">يوم غير متاح</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -624,7 +624,7 @@ export default function ArtistAvailabilityPage() {
                       level="M"
                     />
                   </div>
-                  <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                  <div className="text-xs md:text-sm text-muted leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
                       <Shield size={16} className="text-[#F5A623]" />
                       امسح للتحقق
@@ -661,7 +661,7 @@ export default function ArtistAvailabilityPage() {
             </div>
 
             {/* ═══════════ التذييل الاحترافي ═══════════ */}
-            <div className="print-footer bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623]">
+            <div className="print-footer bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623]">
               <div className="px-6 py-4 md:px-8 md:py-5">
                 <div className="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-[#F5A623]/30">
                   <div>
@@ -706,7 +706,7 @@ export default function ArtistAvailabilityPage() {
           </div>
 
           {/* تعليمات */}
-          <div className="mt-6 p-4 bg-[#111] text-[#F5A623] rounded-xl no-print">
+          <div className="mt-6 p-4 bg-surface text-[#F5A623] rounded-xl no-print">
             <p className="text-sm font-semibold flex items-center gap-2">
               <Clock size={16} />
               اضغط على أي يوم لتحديده كمتاح أو غير متاح • الأيام الحمراء محجوزة ولا يمكن تعديلها • اضغط "طباعة التقرير" للحصول على نسخة احترافية بحجم A4

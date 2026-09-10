@@ -33,32 +33,32 @@ export default function ManagerCalClient({ artistName, artistSlug, bookedDates }
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="badge-gold mb-3">التقويم</div>
-          <h1 className="text-3xl font-black text-white flex items-center gap-2"><Calendar size={28} className="text-[#F5A623]" /> تقويم {artistName}</h1>
-          <p className="text-gray-400 text-sm mt-1">{monthB.length} حجز في {MO[cur.getMonth()]} • إيرادات: {totalRev.toLocaleString()} ج.م</p>
+          <h1 className="text-3xl font-black text-fg flex items-center gap-2"><Calendar size={28} className="text-[#F5A623]" /> تقويم {artistName}</h1>
+          <p className="text-muted text-sm mt-1">{monthB.length} حجز في {MO[cur.getMonth()]} • إيرادات: {totalRev.toLocaleString()} ج.م</p>
         </div>
         <button onClick={handlePrint} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#0a0a0a] rounded-xl font-black text-sm hover:shadow-lg transition"><Printer size={16} /> طباعة</button>
       </div>
-      <div className="bg-[#111] rounded-2xl p-4 border border-[#F5A623]/20 flex items-center justify-between">
-        <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()-1, 1))} className="p-2 hover:bg-[#1a1a1a] rounded-lg"><ChevronRight size={20} className="text-[#F5A623]" /></button>
-        <h2 className="text-xl font-black text-white">{MO[cur.getMonth()]} {cur.getFullYear()}</h2>
-        <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()+1, 1))} className="p-2 hover:bg-[#1a1a1a] rounded-lg"><ChevronLeft size={20} className="text-[#F5A623]" /></button>
+      <div className="bg-surface rounded-2xl p-4 border border-[#F5A623]/20 flex items-center justify-between">
+        <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()-1, 1))} className="p-2 hover:bg-card rounded-lg"><ChevronRight size={20} className="text-[#F5A623]" /></button>
+        <h2 className="text-xl font-black text-fg">{MO[cur.getMonth()]} {cur.getFullYear()}</h2>
+        <button onClick={() => setCur(new Date(cur.getFullYear(), cur.getMonth()+1, 1))} className="p-2 hover:bg-card rounded-lg"><ChevronLeft size={20} className="text-[#F5A623]" /></button>
       </div>
       <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-red-500"></div><span className="text-xs text-gray-400">محجوز</span></div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#F5A623]"></div><span className="text-xs text-gray-400">اليوم</span></div>
-        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#1a1a1a] border border-[#F5A623]/20"></div><span className="text-xs text-gray-400">متاح</span></div>
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-red-500"></div><span className="text-xs text-muted">محجوز</span></div>
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-[#F5A623]"></div><span className="text-xs text-muted">اليوم</span></div>
+        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded bg-card border border-[#F5A623]/20"></div><span className="text-xs text-muted">متاح</span></div>
       </div>
-      <div className="bg-[#111] rounded-2xl border border-[#F5A623]/20 overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-[#F5A623]/20 overflow-hidden">
         <div className="grid grid-cols-7">
-          {DA.map(d => <div key={d} className="bg-[#0a0a0a] text-[#F5A623] text-center py-3 font-black text-sm border-b border-[#F5A623]/20">{d}</div>)}
+          {DA.map(d => <div key={d} className="bg-bg text-[#F5A623] text-center py-3 font-black text-sm border-b border-[#F5A623]/20">{d}</div>)}
           {days.map((day, i) => {
-            if (!day) return <div key={"e"+i} className="aspect-square bg-[#0a0a0a]/50"></div>
+            if (!day) return <div key={"e"+i} className="aspect-square bg-bg/50"></div>
             const k = dk(day), ib = !!bMap[k], it = k === today, isel = k === sel
-            return (<button key={k} onClick={() => setSel(isel ? null : k)} className={"aspect-square flex flex-col items-center justify-center relative border border-[#F5A623]/5 transition-all " + (ib ? "bg-red-500/20 hover:bg-red-500/30" : "bg-[#1a1a1a] hover:bg-[#222]") + (it ? " ring-2 ring-[#F5A623] ring-inset" : "") + (isel ? " ring-2 ring-white ring-inset" : "")}><span className={"text-lg font-black " + (ib ? "text-red-400" : it ? "text-[#F5A623]" : "text-gray-300")}>{day.getDate()}</span>{ib && <div className="absolute bottom-1 w-2 h-2 rounded-full bg-red-500"></div>}</button>)
+            return (<button key={k} onClick={() => setSel(isel ? null : k)} className={"aspect-square flex flex-col items-center justify-center relative border border-[#F5A623]/5 transition-all " + (ib ? "bg-red-500/20 hover:bg-red-500/30" : "bg-card hover:bg-surface") + (it ? " ring-2 ring-[#F5A623] ring-inset" : "") + (isel ? " ring-2 ring-white ring-inset" : "")}><span className={"text-lg font-black " + (ib ? "text-red-400" : it ? "text-[#F5A623]" : "text-muted")}>{day.getDate()}</span>{ib && <div className="absolute bottom-1 w-2 h-2 rounded-full bg-red-500"></div>}</button>)
           })}
         </div>
       </div>
-      {sel && (<div className="bg-[#111] rounded-2xl p-5 border border-[#F5A623]/20"><h3 className="font-black text-white mb-3 flex items-center gap-2"><Calendar size={18} className="text-[#F5A623]" /> تفاصيل {sel}</h3>{selB.length === 0 ? <p className="text-gray-500 text-sm">متاح للحجز ✅</p> : selB.map((b, i) => (<div key={i} className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-xl border border-red-500/20 mb-2"><div className="flex items-center gap-3"><User size={16} className="text-red-400" /><div><p className="font-bold text-white text-sm">{b.client}</p><p className="text-xs text-gray-400">{b.timeSlot}</p></div></div><div className="text-left"><p className="font-bold text-[#F5A623] text-sm">{b.amount.toLocaleString()} ج.م</p><span className="text-xs text-red-400">{b.status}</span></div></div>))}</div>)}
+      {sel && (<div className="bg-surface rounded-2xl p-5 border border-[#F5A623]/20"><h3 className="font-black text-fg mb-3 flex items-center gap-2"><Calendar size={18} className="text-[#F5A623]" /> تفاصيل {sel}</h3>{selB.length === 0 ? <p className="text-muted text-sm">متاح للحجز ✅</p> : selB.map((b, i) => (<div key={i} className="flex items-center justify-between p-3 bg-card rounded-xl border border-red-500/20 mb-2"><div className="flex items-center gap-3"><User size={16} className="text-red-400" /><div><p className="font-bold text-fg text-sm">{b.client}</p><p className="text-xs text-muted">{b.timeSlot}</p></div></div><div className="text-left"><p className="font-bold text-[#F5A623] text-sm">{b.amount.toLocaleString()} ج.م</p><span className="text-xs text-red-400">{b.status}</span></div></div>))}</div>)}
     </div>
   )
 }

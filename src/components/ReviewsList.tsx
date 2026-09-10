@@ -106,7 +106,7 @@ export default function ReviewsList({ artistSlug }: { artistSlug: string }) {
 
       {/* قائمة التقييمات */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-white">
+        <h3 className="text-xl font-bold text-fg">
           التقييمات ({reviews.length})
         </h3>
 
@@ -121,7 +121,7 @@ export default function ReviewsList({ artistSlug }: { artistSlug: string }) {
                   {(review.clientName || "ع").charAt(0)}
                 </div>
                 <div>
-                  <p className="font-bold text-white">
+                  <p className="font-bold text-fg">
                     {review.clientName || "عميل"}
                   </p>
                   <p className="text-xs text-neutral-500">

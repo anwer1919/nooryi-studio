@@ -36,10 +36,10 @@ export default function ContactPage() {
             <MessageCircle size={16} />
             <span>تواصل معنا</span>
           </div>
-          <h1 className="text-5xl font-black text-primary dark:text-white mb-4">
+          <h1 className="text-5xl font-black text-primary dark:text-fg mb-4">
             نحن هنا <span className="text-accent">لمساعدتك</span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300">
+          <p className="text-xl text-muted dark:text-muted">
             لديك سؤال أو استفسار؟ لا تتردد في التواصل معنا
           </p>
         </div>
@@ -53,8 +53,8 @@ export default function ContactPage() {
               <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mb-4">
                 <Mail className="text-primary dark:text-accent" size={24} />
               </div>
-              <h3 className="text-lg font-bold text-primary dark:text-white mb-2">البريد الإلكتروني</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">راسلنا في أي وقت</p>
+              <h3 className="text-lg font-bold text-primary dark:text-fg mb-2">البريد الإلكتروني</h3>
+              <p className="text-muted dark:text-muted text-sm mb-3">راسلنا في أي وقت</p>
               <a href="mailto:support@nooryi.com" className="text-accent font-semibold hover:underline">
                 support@nooryi.com
               </a>
@@ -64,8 +64,8 @@ export default function ContactPage() {
               <div className="w-12 h-12 rounded-xl bg-primary/10 dark:bg-accent/20 flex items-center justify-center mb-4">
                 <Phone className="text-primary dark:text-accent" size={24} />
               </div>
-              <h3 className="text-lg font-bold text-primary dark:text-white mb-2">الهاتف</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">متاحون من 9 ص - 9 م</p>
+              <h3 className="text-lg font-bold text-primary dark:text-fg mb-2">الهاتف</h3>
+              <p className="text-muted dark:text-muted text-sm mb-3">متاحون من 9 ص - 9 م</p>
               <a href="tel:+201000000000" className="text-accent font-semibold hover:underline" dir="ltr">
                 +20 100 000 0000
               </a>
@@ -75,8 +75,8 @@ export default function ContactPage() {
               <div className="w-12 h-12 rounded-xl bg-accent/20 dark:bg-accent-dark/20 flex items-center justify-center mb-4">
                 <MapPin className="text-primary dark:text-accent" size={24} />
               </div>
-              <h3 className="text-lg font-bold text-primary dark:text-white mb-2">العنوان</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">مقرنا الرئيسي</p>
+              <h3 className="text-lg font-bold text-primary dark:text-fg mb-2">العنوان</h3>
+              <p className="text-muted dark:text-muted text-sm mb-3">مقرنا الرئيسي</p>
               <p className="text-accent font-semibold">
                 القاهرة، مصر
               </p>
@@ -91,8 +91,8 @@ export default function ContactPage() {
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/20 dark:bg-accent-dark/20 mb-6">
                     <CheckCircle2 className="text-accent" size={40} />
                   </div>
-                  <h3 className="text-2xl font-bold text-primary dark:text-white mb-3">تم إرسال رسالتك بنجاح!</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">
+                  <h3 className="text-2xl font-bold text-primary dark:text-fg mb-3">تم إرسال رسالتك بنجاح!</h3>
+                  <p className="text-muted dark:text-muted mb-6">
                     سنرد عليك في أقرب وقت ممكن
                   </p>
                   <button
@@ -107,13 +107,13 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <>
-                  <h2 className="text-2xl font-bold text-primary dark:text-white mb-2">أرسل لنا رسالة</h2>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">املأ النموذج وسنرد عليك خلال 24 ساعة</p>
+                  <h2 className="text-2xl font-bold text-primary dark:text-fg mb-2">أرسل لنا رسالة</h2>
+                  <p className="text-muted dark:text-muted mb-6">املأ النموذج وسنرد عليك خلال 24 ساعة</p>
 
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-primary dark:text-white mb-2">الاسم *</label>
+                        <label className="block text-sm font-semibold text-primary dark:text-fg mb-2">الاسم *</label>
                         <input
                           type="text"
                           required
@@ -124,7 +124,7 @@ export default function ContactPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-primary dark:text-white mb-2">البريد الإلكتروني *</label>
+                        <label className="block text-sm font-semibold text-primary dark:text-fg mb-2">البريد الإلكتروني *</label>
                         <input
                           type="email"
                           required
@@ -138,7 +138,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-primary dark:text-white mb-2">الموضوع *</label>
+                      <label className="block text-sm font-semibold text-primary dark:text-fg mb-2">الموضوع *</label>
                       <input
                         type="text"
                         required
@@ -150,7 +150,7 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-primary dark:text-white mb-2">الرسالة *</label>
+                      <label className="block text-sm font-semibold text-primary dark:text-fg mb-2">الرسالة *</label>
                       <textarea
                         required
                         rows={6}

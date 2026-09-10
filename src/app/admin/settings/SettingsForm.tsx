@@ -26,7 +26,7 @@ export default function SettingsForm({ settings }: { settings: any }) {
     }
   }
 
-  const inputClass = "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
+  const inputClass = "w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
   const labelClass = "block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2"
 
   return (
@@ -38,8 +38,8 @@ export default function SettingsForm({ settings }: { settings: any }) {
       )}
 
       {/* معلومات المنصة */}
-      <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
-        <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-surface p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+        <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
           <Building2 size={18} className="text-[#E8961A]" />
           معلومات المنصة
         </h2>
@@ -68,12 +68,12 @@ export default function SettingsForm({ settings }: { settings: any }) {
       </div>
 
       {/* منصات التواصل الاجتماعي */}
-      <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
-        <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-surface p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+        <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
           <Globe size={18} className="text-[#E8961A]" />
           منصات التواصل الاجتماعي
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">ستظهر هذه الأيقونات في الفوتر بالصفحة الرئيسية</p>
+        <p className="text-sm text-muted dark:text-muted mb-4">ستظهر هذه الأيقونات في الفوتر بالصفحة الرئيسية</p>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className={`${labelClass} flex items-center gap-2`}><span className="text-blue-600"><FacebookIcon /></span> فيسبوك</label>
@@ -96,19 +96,19 @@ export default function SettingsForm({ settings }: { settings: any }) {
             <input name="whatsapp" defaultValue={settings?.whatsapp || ""} placeholder="+201000000000" className={inputClass} />
           </div>
           <div>
-            <label className={`${labelClass} flex items-center gap-2`}><Send size={16} className="text-gray-900 dark:text-white" /> إكس (تويتر)</label>
+            <label className={`${labelClass} flex items-center gap-2`}><Send size={16} className="text-gray-900 dark:text-fg" /> إكس (تويتر)</label>
             <input name="twitter" defaultValue={settings?.twitter || ""} placeholder="https://x.com/..." className={inputClass} />
           </div>
         </div>
       </div>
 
       {/* معلومات الدفع */}
-      <div className="bg-white dark:bg-[#111] p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
-        <h2 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-surface p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800">
+        <h2 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
           <CreditCard size={18} className="text-[#E8961A]" />
           معلومات الدفع (للعملاء)
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">ستظهر هذه المعلومات في صفحة الدفع للعملاء</p>
+        <p className="text-sm text-muted dark:text-muted mb-4">ستظهر هذه المعلومات في صفحة الدفع للعملاء</p>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className={`${labelClass} flex items-center gap-2`}><Banknote size={16} /> اسم البنك</label>

@@ -52,10 +52,10 @@ export default async function AdminBookingsPage() {
     <div dir="rtl" className="space-y-6">
       <div>
         <div className="badge-gold mb-3">إدارة الحجوزات</div>
-        <h1 className="text-4xl font-black text-gray-900 dark:text-white">
+        <h1 className="text-4xl font-black text-gray-900 dark:text-fg">
           الحجوزات{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}
         </h1>
-        <p className="text-gray-500 mt-1">متابعة جميع الحجوزات — {bookings.length} حجز</p>
+        <p className="text-muted mt-1">متابعة جميع الحجوزات — {bookings.length} حجز</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -86,14 +86,14 @@ export default async function AdminBookingsPage() {
             <DollarSign size={20} className="text-green-600" />
           </div>
           <div className="stat-value">{stats.revenue.toLocaleString()}</div>
-          <p className="text-xs text-gray-500 mt-1">ج.م</p>
+          <p className="text-xs text-muted mt-1">ج.م</p>
         </div>
       </div>
 
       {bookings.length === 0 ? (
         <div className="card-pro text-center py-20">
-          <Calendar className="mx-auto text-gray-300 mb-4" size={56} />
-          <p className="text-gray-500">لا توجد حجوزات بعد</p>
+          <Calendar className="mx-auto text-muted mb-4" size={56} />
+          <p className="text-muted">لا توجد حجوزات بعد</p>
         </div>
       ) : (
         <div className="card-pro overflow-hidden">
@@ -118,40 +118,40 @@ export default async function AdminBookingsPage() {
                     <tr key={b.id}>
                       <td>
                         <div>
-                          <p className="font-bold text-gray-900 dark:text-white">{getClient(b)}</p>
-                          <div className="flex items-center gap-1 mt-1 text-xs text-gray-500" dir="ltr">
+                          <p className="font-bold text-gray-900 dark:text-fg">{getClient(b)}</p>
+                          <div className="flex items-center gap-1 mt-1 text-xs text-muted" dir="ltr">
                             <Mail size={11} />
                             <span>{getClientEmail(b)}</span>
                           </div>
-                          <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500" dir="ltr">
+                          <div className="flex items-center gap-1 mt-0.5 text-xs text-muted" dir="ltr">
                             <Phone size={11} />
                             <span>{getClientPhone(b)}</span>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span className="font-bold text-gray-900 dark:text-white">{b.artist?.name || "—"}</span>
+                        <span className="font-bold text-gray-900 dark:text-fg">{b.artist?.name || "—"}</span>
                       </td>
                       <td>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-fg">
                             {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}
                           </p>
-                          {b.timeSlot && <p className="text-xs text-gray-500">{b.timeSlot}</p>}
+                          {b.timeSlot && <p className="text-xs text-muted">{b.timeSlot}</p>}
                         </div>
                       </td>
                       <td>
-                        <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300">
-                          <MapPin size={13} className="text-gray-400" />
+                        <div className="flex items-center gap-1 text-sm text-gray-700 dark:text-muted">
+                          <MapPin size={13} className="text-muted" />
                           <span>{b.venue?.name || "—"}</span>
                         </div>
-                        {b.venue?.city && <p className="text-xs text-gray-500 mt-0.5">{b.venue.city}</p>}
+                        {b.venue?.city && <p className="text-xs text-muted mt-0.5">{b.venue.city}</p>}
                       </td>
                       <td>
                         <div>
-                          <p className="font-black text-gray-900 dark:text-white">{amount.toLocaleString()} ج.م</p>
+                          <p className="font-black text-gray-900 dark:text-fg">{amount.toLocaleString()} ج.م</p>
                           {b.depositAmount > 0 && (
-                            <p className="text-xs text-gray-500">عربون: {b.depositAmount.toLocaleString()}</p>
+                            <p className="text-xs text-muted">عربون: {b.depositAmount.toLocaleString()}</p>
                           )}
                         </div>
                       </td>

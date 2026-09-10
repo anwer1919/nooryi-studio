@@ -48,7 +48,7 @@ export default async function VerifyCalendarPage({
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-br from-[#faf8f0] to-white py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] rounded-2xl p-8 text-white mb-6">
+        <div className="bg-gradient-to-r from-bg to-[#111] rounded-2xl p-8 text-fg mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
@@ -66,13 +66,13 @@ export default async function VerifyCalendarPage({
           </div>
           <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
           <h2 className="text-3xl font-black">{artist.name} — {monthName}</h2>
-          <p className="text-sm text-gray-300 mt-2">رقم التقرير: <span className="font-mono text-[#F5A623]" dir="ltr">{report || "—"}</span></p>
+          <p className="text-sm text-muted mt-2">رقم التقرير: <span className="font-mono text-[#F5A623]" dir="ltr">{report || "—"}</span></p>
         </div>
 
         <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-              <Shield size={24} className="text-white" />
+              <Shield size={24} className="text-fg" />
             </div>
             <div>
               <h3 className="text-xl font-black text-green-900 mb-2">✓ هذا التقرير أصلي ومعتمد</h3>
@@ -86,16 +86,16 @@ export default async function VerifyCalendarPage({
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-6 border-2 border-[#F5A623]">
-            <p className="text-xs text-gray-500 font-bold uppercase">الحجوزات</p>
+            <p className="text-xs text-muted font-bold uppercase">الحجوزات</p>
             <p className="text-4xl font-black">{filtered.length}</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border">
-            <p className="text-xs text-gray-500 font-bold uppercase">الإيرادات</p>
+            <p className="text-xs text-muted font-bold uppercase">الإيرادات</p>
             <p className="text-2xl font-black text-[#F5A623]">{totalRevenue.toLocaleString()}</p>
-            <p className="text-xs text-gray-500">ج.م</p>
+            <p className="text-xs text-muted">ج.م</p>
           </div>
           <div className="bg-white rounded-2xl p-6 border">
-            <p className="text-xs text-gray-500 font-bold uppercase">تاريخ التحقق</p>
+            <p className="text-xs text-muted font-bold uppercase">تاريخ التحقق</p>
             <p className="text-sm font-bold">{new Date().toLocaleDateString("ar-EG")}</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default async function VerifyCalendarPage({
             </h3>
           </div>
           {filtered.length === 0 ? (
-            <div className="p-12 text-center text-gray-500">لا توجد حجوزات في هذا الشهر</div>
+            <div className="p-12 text-center text-muted">لا توجد حجوزات في هذا الشهر</div>
           ) : (
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -125,7 +125,7 @@ export default async function VerifyCalendarPage({
               <tbody>
                 {filtered.map((b, i) => (
                   <tr key={b.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{String(i+1).padStart(2,'0')}</td>
+                    <td className="px-4 py-3 text-muted font-mono text-xs">{String(i+1).padStart(2,'0')}</td>
                     <td className="px-4 py-3 font-black">{new Date(b.date).toLocaleDateString("ar-EG")}</td>
                     <td className="px-4 py-3 text-center text-sm">{b.timeSlot || "—"}</td>
                     <td className="px-4 py-3 font-bold">{b.clientName}</td>

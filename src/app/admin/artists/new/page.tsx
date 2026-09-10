@@ -184,7 +184,7 @@ export default function NewArtistPage() {
             <X size={20} /> العودة للفنانين
           </Link>
           <h1 className="text-3xl font-black text-gray-900 mb-2">إضافة فنان جديد</h1>
-          <p className="text-gray-500">أضف فنان جديد إلى المنصة</p>
+          <p className="text-muted">أضف فنان جديد إلى المنصة</p>
         </div>
 
         {/* Messages */}
@@ -235,7 +235,7 @@ export default function NewArtistPage() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 font-mono"
                   placeholder="artist-slug"
                 />
-                <p className="text-xs text-gray-500 mt-1">سيكون الرابط: /artists/{formData.slug}</p>
+                <p className="text-xs text-muted mt-1">سيكون الرابط: /artists/{formData.slug}</p>
               </div>
 
               <div>
@@ -298,7 +298,7 @@ export default function NewArtistPage() {
                       <button
                         type="button"
                         onClick={() => setProfileImage(null)}
-                        className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700"
+                        className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-fg rounded-full flex items-center justify-center hover:bg-red-700"
                       >
                         <X size={16} />
                       </button>
@@ -316,9 +316,9 @@ export default function NewArtistPage() {
                         {uploading ? (
                           <Loader2 className="w-12 h-12 text-purple-700 mx-auto mb-2 animate-spin" />
                         ) : (
-                          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                          <Upload className="w-12 h-12 text-muted mx-auto mb-2" />
                         )}
-                        <p className="text-sm text-gray-600 font-semibold">اضغط لرفع صورة شخصية</p>
+                        <p className="text-sm text-muted font-semibold">اضغط لرفع صورة شخصية</p>
                       </div>
                     </label>
                   )}
@@ -335,7 +335,7 @@ export default function NewArtistPage() {
                       <button
                         type="button"
                         onClick={() => setCoverImage(null)}
-                        className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700"
+                        className="absolute top-2 left-2 w-8 h-8 bg-red-600 text-fg rounded-full flex items-center justify-center hover:bg-red-700"
                       >
                         <X size={16} />
                       </button>
@@ -353,9 +353,9 @@ export default function NewArtistPage() {
                         {uploading ? (
                           <Loader2 className="w-12 h-12 text-purple-700 mx-auto mb-2 animate-spin" />
                         ) : (
-                          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                          <Upload className="w-12 h-12 text-muted mx-auto mb-2" />
                         )}
-                        <p className="text-sm text-gray-600 font-semibold">اضغط لرفع صورة غلاف</p>
+                        <p className="text-sm text-muted font-semibold">اضغط لرفع صورة غلاف</p>
                       </div>
                     </label>
                   )}
@@ -437,7 +437,7 @@ export default function NewArtistPage() {
               </svg>
               بيانات الدفع للفنان
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-muted mb-4">
               هذه البيانات ستظهر للعميل عند إتمام عملية الدفع
             </p>
             
@@ -548,7 +548,7 @@ export default function NewArtistPage() {
             <button
               type="submit"
               disabled={submitting || uploading}
-              className="flex-1 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>

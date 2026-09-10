@@ -91,7 +91,7 @@ export default function FAQPage() {
 
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-white/10 py-4 px-4 sticky top-0 bg-black/40 backdrop-blur-xl z-40">
+        <header className="border-b border-line py-4 px-4 sticky top-0 bg-black/40 backdrop-blur-xl z-40">
           <div className="max-w-6xl mx-auto flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-9 h-9 bg-gradient-to-br from-yellow-500 to-amber-700 rounded-lg flex items-center justify-center">
@@ -100,10 +100,10 @@ export default function FAQPage() {
               <span className="text-xl font-bold text-yellow-500">Nooryi Studio</span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/about" className="text-white/70 hover:text-yellow-500 transition text-sm">
+              <Link href="/about" className="text-muted hover:text-yellow-500 transition text-sm">
                 من نحن
               </Link>
-              <Link href="/contact" className="text-white/70 hover:text-yellow-500 transition text-sm">
+              <Link href="/contact" className="text-muted hover:text-yellow-500 transition text-sm">
                 اتصل بنا
               </Link>
             </div>
@@ -113,10 +113,10 @@ export default function FAQPage() {
         {/* Hero */}
         <section className="max-w-4xl mx-auto px-4 py-16 text-center">
           <HelpCircle size={48} className="mx-auto text-yellow-500 mb-6 animate-fade-up" />
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 animate-fade-up">
+          <h1 className="text-4xl md:text-5xl font-bold text-fg mb-4 animate-fade-up">
             الأسئلة <span className="text-yellow-500">الشائعة</span>
           </h1>
-          <p className="text-xl text-white/70 animate-fade-up-delay">
+          <p className="text-xl text-muted animate-fade-up-delay">
             كل ما تحتاج معرفته عن خدماتنا في مكان واحد
           </p>
         </section>
@@ -134,7 +134,7 @@ export default function FAQPage() {
                 className={`px-5 py-2 rounded-full font-medium transition ${
                   activeCategory === cat.id
                     ? "bg-yellow-600 text-black"
-                    : "bg-white/5 text-white/70 hover:bg-white/10 border border-white/10"
+                    : "bg-white/5 text-muted hover:bg-white/10 border border-line"
                 }`}
               >
                 {cat.name}
@@ -147,20 +147,20 @@ export default function FAQPage() {
         <section className="max-w-3xl mx-auto px-4 pb-20">
           <div className="space-y-3">
             {filteredFaqs.length === 0 ? (
-              <div className="text-center py-12 text-white/60">
+              <div className="text-center py-12 text-muted">
                 لا توجد أسئلة في هذه الفئة حالياً
               </div>
             ) : (
               filteredFaqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden hover:border-yellow-500/30 transition"
+                  className="bg-white/5 backdrop-blur-xl border border-line rounded-xl overflow-hidden hover:border-yellow-500/30 transition"
                 >
                   <button
                     onClick={() => setOpenIndex(openIndex === index ? null : index)}
                     className="w-full flex items-center justify-between p-5 text-right"
                   >
-                    <span className="text-white font-bold text-lg">{faq.question}</span>
+                    <span className="text-fg font-bold text-lg">{faq.question}</span>
                     <ChevronDown
                       size={20}
                       className={`text-yellow-500 flex-shrink-0 transition-transform duration-300 ${
@@ -173,7 +173,7 @@ export default function FAQPage() {
                       openIndex === index ? "max-h-96" : "max-h-0"
                     }`}
                   >
-                    <p className="px-5 pb-5 text-white/70 leading-relaxed">
+                    <p className="px-5 pb-5 text-muted leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>
@@ -185,11 +185,11 @@ export default function FAQPage() {
 
         {/* CTA Section */}
         <section className="max-w-3xl mx-auto px-4 pb-20 text-center">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10">
-            <h2 className="text-2xl font-bold text-white mb-3">
+          <div className="bg-white/5 backdrop-blur-xl border border-line rounded-3xl p-10">
+            <h2 className="text-2xl font-bold text-fg mb-3">
               لم تجد إجابتك؟
             </h2>
-            <p className="text-white/60 mb-6">
+            <p className="text-muted mb-6">
               فريقنا جاهز للإجابة على جميع استفساراتك
             </p>
             <Link
@@ -202,8 +202,8 @@ export default function FAQPage() {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/10 py-8 px-4">
-          <div className="max-w-6xl mx-auto text-center text-white/40 text-sm">
+        <footer className="border-t border-line py-8 px-4">
+          <div className="max-w-6xl mx-auto text-center text-fg/40 text-sm">
             © 2026 Nooryi Studio — جميع الحقوق محفوظة
           </div>
         </footer>

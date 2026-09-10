@@ -105,8 +105,8 @@ export default function PrintReportContent() {
         <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md">
           <AlertCircle className="w-20 h-20 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">تعذر تحميل التقرير</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button onClick={() => router.back()} className="px-8 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition">العودة</button>
+          <p className="text-muted mb-6">{error}</p>
+          <button onClick={() => router.back()} className="px-8 py-3 bg-black text-fg rounded-xl font-bold hover:bg-gray-800 transition">العودة</button>
         </div>
       </div>
     )
@@ -123,11 +123,11 @@ export default function PrintReportContent() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans">
       <div className="no-print max-w-[210mm] mx-auto mb-6 flex gap-3 justify-end flex-wrap">
-        <button onClick={() => router.back()} className="px-6 py-3 bg-gray-600 text-white rounded-xl font-bold shadow-xl hover:bg-gray-700 transition">العودة</button>
-        <button onClick={handleShareWhatsApp} className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-bold shadow-xl hover:bg-green-700 transition">
+        <button onClick={() => router.back()} className="px-6 py-3 bg-gray-600 text-fg rounded-xl font-bold shadow-xl hover:bg-gray-700 transition">العودة</button>
+        <button onClick={handleShareWhatsApp} className="flex items-center gap-2 px-6 py-3 bg-green-600 text-fg rounded-xl font-bold shadow-xl hover:bg-green-700 transition">
           <Share2 size={20} /> واتساب
         </button>
-        <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-xl font-bold shadow-xl hover:bg-gray-800 transition">
+        <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-black text-fg rounded-xl font-bold shadow-xl hover:bg-gray-800 transition">
           <Download size={20} /> حفظ / طباعة
         </button>
       </div>
@@ -178,8 +178,8 @@ export default function PrintReportContent() {
             <div>
               <h1 className="text-6xl font-black text-black mb-2 tracking-tight">Nooryi</h1>
               <div className="w-32 h-1 bg-[#F5A623] mb-3"></div>
-              <p className="text-sm text-gray-600 font-bold uppercase tracking-[0.3em] mb-4">STUDIO FOR ARTISTS & EVENTS</p>
-              <div className="text-xs text-gray-500 space-y-1.5">
+              <p className="text-sm text-muted font-bold uppercase tracking-[0.3em] mb-4">STUDIO FOR ARTISTS & EVENTS</p>
+              <div className="text-xs text-muted space-y-1.5">
                 <p><span className="font-bold text-black">السجل التجاري:</span> <span className="font-mono">123456789</span></p>
                 <p><span className="font-bold text-black">الرقم الضريبي:</span> <span className="font-mono">300000000000003</span></p>
               </div>
@@ -202,17 +202,17 @@ export default function PrintReportContent() {
           <div className="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border-2 border-black">
             <h3 className="text-xs font-black text-[#F5A623] uppercase tracking-[0.3em] mb-3">موجه إلى:</h3>
             <p className="text-xl font-bold text-black mb-1">{managerName}</p>
-            <p className="text-sm text-gray-600">Nooryi Studio - إدارة المنصة</p>
+            <p className="text-sm text-muted">Nooryi Studio - إدارة المنصة</p>
           </div>
           <div className="md:text-left">
             <div className="inline-grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-              <span className="text-gray-500">تاريخ الإصدار:</span>
+              <span className="text-muted">تاريخ الإصدار:</span>
               <span suppressHydrationWarning className="font-bold text-black">{reportDate}</span>
-              <span className="text-gray-500">من تاريخ:</span>
+              <span className="text-muted">من تاريخ:</span>
               <span className="font-bold text-black">{from ? new Date(from).toLocaleDateString("ar-EG", { timeZone: "UTC" }) : "البداية"}</span>
-              <span className="text-gray-500">إلى تاريخ:</span>
+              <span className="text-muted">إلى تاريخ:</span>
               <span className="font-bold text-black">{to ? new Date(to).toLocaleDateString("ar-EG", { timeZone: "UTC" }) : "الآن"}</span>
-              <span className="text-gray-500">عدد الحجوزات:</span>
+              <span className="text-muted">عدد الحجوزات:</span>
               <span className="font-bold text-black">{reportData.length}</span>
             </div>
           </div>
@@ -223,25 +223,25 @@ export default function PrintReportContent() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-black p-5 rounded-xl text-center">
               <DollarSign className="w-8 h-8 text-[#F5A623] mx-auto mb-2" />
-              <p className="text-xs text-gray-400 mb-1">إجمالي الإيرادات</p>
+              <p className="text-xs text-muted mb-1">إجمالي الإيرادات</p>
               <p className="text-xl font-black text-[#F5A623]">{totalRevenue.toLocaleString()}</p>
-              <p className="text-xs text-gray-400">ج.م</p>
+              <p className="text-xs text-muted">ج.م</p>
             </div>
             <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border-2 border-black text-center">
               <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
-              <p className="text-xs text-gray-500 mb-1">مكتملة</p>
+              <p className="text-xs text-muted mb-1">مكتملة</p>
               <p className="text-xl font-black text-black">{stats?.byStatus?.completed || 0}</p>
             </div>
             <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border-2 border-black text-center">
               <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-              <p className="text-xs text-gray-500 mb-1">قيد المراجعة</p>
+              <p className="text-xs text-muted mb-1">قيد المراجعة</p>
               <p className="text-xl font-black text-black">{stats?.byStatus?.pending || 0}</p>
             </div>
             <div className="bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl border-2 border-black text-center">
               <TrendingUp className="w-8 h-8 text-[#F5A623] mx-auto mb-2" />
-              <p className="text-xs text-gray-500 mb-1">صافي الإيرادات</p>
+              <p className="text-xs text-muted mb-1">صافي الإيرادات</p>
               <p className="text-xl font-black text-black">{netRevenue.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">ج.م</p>
+              <p className="text-xs text-muted">ج.م</p>
             </div>
           </div>
         </div>
@@ -249,14 +249,14 @@ export default function PrintReportContent() {
         <div className="flex justify-end mb-16">
           <div className="w-full md:w-[400px] rounded-2xl border-2 border-black overflow-hidden shadow-xl">
             <div className="flex justify-between py-4 px-6 border-b border-gray-200">
-              <span className="text-gray-600 font-bold">المجموع الفرعي:</span>
+              <span className="text-muted font-bold">المجموع الفرعي:</span>
               <span className="font-bold text-black text-lg">{totalRevenue.toLocaleString()} ج.م</span>
             </div>
             <div className="flex justify-between py-4 px-6 border-b border-gray-200 bg-gray-50">
-              <span className="text-gray-600 font-bold">رسوم المنصة (5%):</span>
+              <span className="text-muted font-bold">رسوم المنصة (5%):</span>
               <span className="font-bold text-red-600 text-lg">{platformFee.toLocaleString()} ج.م</span>
             </div>
-            <div className="flex justify-between py-6 px-6 bg-black text-white">
+            <div className="flex justify-between py-6 px-6 bg-black text-fg">
               <span className="font-bold text-xl text-[#F5A623]">صافي الإيرادات:</span>
               <span className="font-black text-3xl text-[#F5A623]">{netRevenue.toLocaleString()} ج.م</span>
             </div>
@@ -268,7 +268,7 @@ export default function PrintReportContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             <div>
               <h4 className="font-black text-black mb-3 text-sm uppercase tracking-[0.2em]">الشروط والأحكام:</h4>
-              <ul className="text-xs text-gray-600 space-y-2">
+              <ul className="text-xs text-muted space-y-2">
                 <li className="flex gap-2"><span className="text-[#F5A623] font-bold">•</span><span>هذا التقرير صادر آلياً من نظام Nooryi Studio.</span></li>
                 <li className="flex gap-2"><span className="text-[#F5A623] font-bold">•</span><span>يمكن التحقق من صحته عبر مسح رمز QR أدناه.</span></li>
               </ul>
@@ -277,7 +277,7 @@ export default function PrintReportContent() {
               <div className="text-center">
                 <div className="w-48 h-20 border-b-2 border-black mb-3 mx-auto"></div>
                 <p className="text-sm font-black text-black">توقيع المدير المالي</p>
-                <p className="text-xs text-gray-500 mt-1">Nooryi Studio Finance Dept.</p>
+                <p className="text-xs text-muted mt-1">Nooryi Studio Finance Dept.</p>
               </div>
             </div>
           </div>
@@ -287,7 +287,7 @@ export default function PrintReportContent() {
               <div className="bg-white p-3 rounded-xl border-2 border-black inline-block shadow-lg">
                 <QRCodeSVG value={verificationUrl} size={80} level="H" bgColor="#FFFFFF" fgColor="#000000" />
               </div>
-              <p className="text-[10px] text-gray-500 mt-2 font-bold">امسح للتحقق من صحة التقرير</p>
+              <p className="text-[10px] text-muted mt-2 font-bold">امسح للتحقق من صحة التقرير</p>
             </div>
           </div>
         </div>

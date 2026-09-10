@@ -15,7 +15,7 @@ const ROLE_COLORS: Record<string, string> = {
   SUPER_ADMIN: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800",
   ADMIN: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800",
   ARTIST_MANAGER: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-800",
-  USER: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-700",
+  USER: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-muted border-gray-300 dark:border-gray-700",
 }
 
 export default function UsersManager() {
@@ -92,7 +92,7 @@ export default function UsersManager() {
 
   if (loading) return <div className="flex items-center justify-center py-20"><RefreshCw size={32} className="animate-spin text-[#F5A623]" /></div>
 
-  const inputClass = "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
+  const inputClass = "w-full px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-card dark:text-fg rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] focus:border-transparent"
 
   return (
     <div className="space-y-6">
@@ -103,21 +103,21 @@ export default function UsersManager() {
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{users.length} مستخدم | {artists.length} فنان</p>
-        <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-[#1a1a1a] rounded-xl text-sm font-bold hover:bg-gray-200 transition"><RefreshCw size={14} /> تحديث</button>
+        <p className="text-sm text-muted dark:text-muted">{users.length} مستخدم | {artists.length} فنان</p>
+        <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-card rounded-xl text-sm font-bold hover:bg-gray-200 transition"><RefreshCw size={14} /> تحديث</button>
       </div>
 
       <div className="space-y-4">
         {users.map((user) => (
-          <div key={user.id} className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div key={user.id} className="bg-white dark:bg-surface rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="p-5 flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                   <span className="text-lg font-black text-[#111]">{(user.name || user.email).charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
-                  <p className="font-black text-gray-900 dark:text-white">{user.name || "بدون اسم"}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400" dir="ltr">{user.email}</p>
+                  <p className="font-black text-gray-900 dark:text-fg">{user.name || "بدون اسم"}</p>
+                  <p className="text-sm text-muted dark:text-muted" dir="ltr">{user.email}</p>
                   {user.managedArtist && (
                     <p className="text-xs text-purple-600 dark:text-purple-400 flex items-center gap-1 mt-0.5">
                       <Music size={10} /> يدير: <strong>{user.managedArtist.name}</strong>
@@ -134,10 +134,10 @@ export default function UsersManager() {
               {/* تغيير الدور */}
               {user.role !== "SUPER_ADMIN" && (
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-xs font-bold text-gray-500 flex items-center gap-1"><Shield size={12} /> الدور:</span>
+                  <span className="text-xs font-bold text-muted flex items-center gap-1"><Shield size={12} /> الدور:</span>
                   {["USER", "ARTIST_MANAGER", "ADMIN"].map((role) => (
                     <button key={role} onClick={() => handleRoleChange(user.id, role)} disabled={changingRoleFor === user.id || user.role === role}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${user.role === role ? "bg-[#F5A623]/20 text-[#E8961A] cursor-default" : "bg-gray-100 dark:bg-[#1a1a1a] text-gray-600 dark:text-gray-400 hover:bg-gray-200"}`}>
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${user.role === role ? "bg-[#F5A623]/20 text-[#E8961A] cursor-default" : "bg-gray-100 dark:bg-card text-muted dark:text-muted hover:bg-gray-200"}`}>
                       {ROLE_LABELS[role]}
                     </button>
                   ))}
@@ -150,12 +150,12 @@ export default function UsersManager() {
                 <div className="flex items-center gap-2 flex-wrap bg-purple-50 dark:bg-purple-900/10 p-3 rounded-xl border border-purple-200 dark:border-purple-800">
                   <span className="text-xs font-bold text-purple-700 dark:text-purple-400 flex items-center gap-1"><UserPlus size={12} /> ربط بفنان:</span>
                   <select value={selectedArtist[user.id] || user.artistId || ""} onChange={(e) => setSelectedArtist(p => ({ ...p, [user.id]: e.target.value }))}
-                    className="px-3 py-2 border border-purple-200 dark:border-purple-700 dark:bg-[#1a1a1a] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] min-w-[180px]">
+                    className="px-3 py-2 border border-purple-200 dark:border-purple-700 dark:bg-card dark:text-fg rounded-lg text-sm focus:ring-2 focus:ring-[#F5A623] min-w-[180px]">
                     <option value="">-- اختر فنان --</option>
                     {artists.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                   <button onClick={() => handleAssignArtist(user.id)} disabled={assigningArtistFor === user.id || !selectedArtist[user.id]}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg text-xs font-black hover:shadow-lg transition disabled:opacity-50 flex items-center gap-1">
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-fg rounded-lg text-xs font-black hover:shadow-lg transition disabled:opacity-50 flex items-center gap-1">
                     {assigningArtistFor === user.id ? <RefreshCw size={12} className="animate-spin" /> : <Music size={12} />} ربط
                   </button>
                   {user.managedArtist && <span className="text-xs text-purple-600 dark:text-purple-400">← حالياً: {user.managedArtist.name}</span>}
@@ -164,18 +164,18 @@ export default function UsersManager() {
 
               {/* كلمة المرور */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold text-gray-500 flex items-center gap-1"><Key size={12} /> كلمة المرور:</span>
+                <span className="text-xs font-bold text-muted flex items-center gap-1"><Key size={12} /> كلمة المرور:</span>
                 <div className="relative flex-1 min-w-[200px] max-w-[300px]">
                   <input type={showPasswordFor === user.id ? "text" : "password"} value={newPasswords[user.id] || ""}
                     onChange={(e) => setNewPasswords(p => ({ ...p, [user.id]: e.target.value }))} placeholder="كلمة مرور جديدة (6+)"
                     className={inputClass + " pr-8"} />
                   <button type="button" onClick={() => setShowPasswordFor(showPasswordFor === user.id ? null : user.id)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-muted hover:text-muted">
                     {showPasswordFor === user.id ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
                 <button type="button" onClick={() => setNewPasswords(p => ({ ...p, [user.id]: generatePassword() }))}
-                  className="px-3 py-2 bg-gray-100 dark:bg-[#1a1a1a] rounded-lg text-xs font-bold hover:bg-gray-200 transition">🎲 توليد</button>
+                  className="px-3 py-2 bg-gray-100 dark:bg-card rounded-lg text-xs font-bold hover:bg-gray-200 transition">🎲 توليد</button>
                 <button onClick={() => handleResetPassword(user.id)} disabled={resettingId === user.id || !newPasswords[user.id]}
                   className="px-4 py-2 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] rounded-lg text-xs font-black hover:shadow-lg transition disabled:opacity-50 flex items-center gap-1">
                   {resettingId === user.id ? <RefreshCw size={12} className="animate-spin" /> : <Key size={12} />} تعيين

@@ -75,7 +75,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
           return (
             <div key={artist.id} className="absolute w-[260px] md:w-[340px] transition-all duration-600 ease-out" style={{ transform: s.transform, opacity: s.opacity, zIndex: s.zIndex, filter: s.filter + " " + s.blur, pointerEvents: s.pe, top: "10px" }}>
               <Link href={"/artists/" + artist.slug} className="block group" draggable={false}>
-                <div className={`relative rounded-2xl md:rounded-3xl overflow-hidden border-2 shadow-2xl transition-all duration-500 ${isActive ? "border-[#F5A623]/50 shadow-[#F5A623]/20" : "border-white/10"} bg-[#111]`}>
+                <div className={`relative rounded-2xl md:rounded-3xl overflow-hidden border-2 shadow-2xl transition-all duration-500 ${isActive ? "border-[#F5A623]/50 shadow-[#F5A623]/20" : "border-line"} bg-surface`}>
                   <div className={`relative overflow-hidden ${isActive ? "h-80 md:h-[420px]" : "h-60 md:h-72"}`}>
                     {artist.coverImage || artist.profileImage ? (
                       <img src={artist.coverImage || artist.profileImage || ""} alt={artist.name} className="w-full h-full object-cover" draggable={false} />
@@ -87,7 +87,7 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                       <Award size={9} className="text-[#0a0a0a]" /><span className="text-[8px] font-black text-[#0a0a0a] uppercase">معتمد</span>
                     </div>
                     <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/80 backdrop-blur-sm rounded-full flex items-center gap-1 border border-[#F5A623]/30">
-                      <Star size={10} className="text-[#F5A623] fill-[#F5A623]" /><span className="text-[10px] font-black text-white">{artist.rating || "5.0"}</span>
+                      <Star size={10} className="text-[#F5A623] fill-[#F5A623]" /><span className="text-[10px] font-black text-fg">{artist.rating || "5.0"}</span>
                     </div>
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -102,12 +102,12 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
                     </div>
                   </div>
                   {isActive && (
-                    <div className="p-4 space-y-2.5 bg-[#111]">
-                      <p className="text-xs text-gray-400 leading-relaxed line-clamp-2 min-h-[2rem]">{artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}</p>
+                    <div className="p-4 space-y-2.5 bg-surface">
+                      <p className="text-xs text-muted leading-relaxed line-clamp-2 min-h-[2rem]">{artist.bio || "فنان محترف يقدم أفضل العروض الموسيقية"}</p>
                       <div className="flex items-center justify-between pt-2 border-t border-[#F5A623]/10">
                         <div className="flex items-center gap-2.5">
-                          <div className="flex items-center gap-1"><Calendar size={11} className="text-[#F5A623]" /><span className="text-[10px] font-bold text-gray-400">{artist.bookingsCount || 0}</span></div>
-                          <div className="flex items-center gap-1"><Star size={11} className="text-[#F5A623]" /><span className="text-[10px] font-bold text-gray-400">{artist.reviewsCount || 0}</span></div>
+                          <div className="flex items-center gap-1"><Calendar size={11} className="text-[#F5A623]" /><span className="text-[10px] font-bold text-muted">{artist.bookingsCount || 0}</span></div>
+                          <div className="flex items-center gap-1"><Star size={11} className="text-[#F5A623]" /><span className="text-[10px] font-bold text-muted">{artist.reviewsCount || 0}</span></div>
                         </div>
                         <span className="px-2.5 py-1 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#0a0a0a] text-[10px] font-black rounded-full">احجز الآن</span>
                       </div>
@@ -121,8 +121,8 @@ export default function ArtistCarousel({ artists }: { artists: Artist[] }) {
       </div>
 
       {/* أزرار */}
-      <button onClick={prev} className="absolute top-1/2 -translate-y-1/2 right-1 md:right-4 w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111]/90 border border-[#F5A623]/30 text-[#F5A623] flex items-center justify-center hover:bg-[#F5A623] hover:text-[#0a0a0a] transition-all z-40 shadow-lg backdrop-blur-sm"><ChevronRight size={20} /></button>
-      <button onClick={next} className="absolute top-1/2 -translate-y-1/2 left-1 md:left-4 w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#111]/90 border border-[#F5A623]/30 text-[#F5A623] flex items-center justify-center hover:bg-[#F5A623] hover:text-[#0a0a0a] transition-all z-40 shadow-lg backdrop-blur-sm"><ChevronLeft size={20} /></button>
+      <button onClick={prev} className="absolute top-1/2 -translate-y-1/2 right-1 md:right-4 w-10 h-10 md:w-11 md:h-11 rounded-full bg-surface/90 border border-[#F5A623]/30 text-[#F5A623] flex items-center justify-center hover:bg-[#F5A623] hover:text-[#0a0a0a] transition-all z-40 shadow-lg backdrop-blur-sm"><ChevronRight size={20} /></button>
+      <button onClick={next} className="absolute top-1/2 -translate-y-1/2 left-1 md:left-4 w-10 h-10 md:w-11 md:h-11 rounded-full bg-surface/90 border border-[#F5A623]/30 text-[#F5A623] flex items-center justify-center hover:bg-[#F5A623] hover:text-[#0a0a0a] transition-all z-40 shadow-lg backdrop-blur-sm"><ChevronLeft size={20} /></button>
 
       {/* نقاط */}
       <div className="flex items-center justify-center gap-1.5 mt-3">

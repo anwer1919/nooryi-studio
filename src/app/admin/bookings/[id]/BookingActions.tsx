@@ -117,7 +117,7 @@ export default function BookingActions({
 
   return (
     <div className="glass rounded-3xl p-6">
-      <h3 className="text-sm text-white/40 uppercase mb-4">إجراءات</h3>
+      <h3 className="text-sm text-fg/40 uppercase mb-4">إجراءات</h3>
       
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
@@ -131,7 +131,7 @@ export default function BookingActions({
             <button
               onClick={handleApprove}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-fg font-bold py-3.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {pendingAction === "approve" ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -159,11 +159,11 @@ export default function BookingActions({
         {status === "APPROVED" && (
           <>
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl mb-2">
-              <p className="text-xs text-white/60 mb-1">المبلغ المطلوب تأكيده</p>
+              <p className="text-xs text-muted mb-1">المبلغ المطلوب تأكيده</p>
               <p className="text-2xl font-black text-yellow-400">
                 {depositAmount.toLocaleString()} ج.م
               </p>
-              <p className="text-xs text-white/40 mt-1">العربون (20% من الإجمالي)</p>
+              <p className="text-xs text-fg/40 mt-1">العربون (20% من الإجمالي)</p>
             </div>
 
             <button

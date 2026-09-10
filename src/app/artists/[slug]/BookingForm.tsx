@@ -301,13 +301,13 @@ export default function BookingForm({
           <CheckCircle2 className="text-accent" size={32} />
         </div>
         <h3 className="text-xl font-bold mb-2 text-accent">تم إرسال الحجز بنجاح!</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+        <p className="text-sm text-muted dark:text-muted mb-2">
           رقم الحجز: <span className="font-mono font-bold">#{successBookingId.slice(0, 8).toUpperCase()}</span>
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-sm text-muted dark:text-muted mb-4">
           سيتم مراجعة طلبك من قبل الإدارة
         </p>
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center justify-center gap-2 text-sm text-muted">
           <Loader2 size={16} className="animate-spin" />
           جاري تحويلك لصفحة تفاصيل الحجز...
         </div>
@@ -352,11 +352,11 @@ export default function BookingForm({
 
       {/* Client Name */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
           الاسم الكامل *
         </label>
         <div className="relative">
-          <User className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <User className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="text"
             value={formData.clientName}
@@ -370,12 +370,12 @@ export default function BookingForm({
 
       {/* Phone */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
-          رقم الهاتف * <span className="text-xs text-gray-500">(دولي)</span>
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
+          رقم الهاتف * <span className="text-xs text-muted">(دولي)</span>
         </label>
         <div className="flex gap-2">
           <div className="relative w-32 flex-shrink-0">
-            <Globe className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+            <Globe className="absolute right-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={14} />
             <select
               value={formData.countryCode}
               onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
@@ -390,7 +390,7 @@ export default function BookingForm({
             </select>
           </div>
           <div className="relative flex-1">
-            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
             <input
               type="tel"
               value={formData.phoneNumber}
@@ -405,7 +405,7 @@ export default function BookingForm({
           </div>
         </div>
         {selectedCountry && formData.phoneNumber && (
-          <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1" dir="ltr">
+          <p className="text-xs text-muted mt-1.5 flex items-center gap-1" dir="ltr">
             <Info size={12} />
             الرقم الكامل: {formData.countryCode}{formData.phoneNumber.replace(/^0+/, "")}
           </p>
@@ -414,11 +414,11 @@ export default function BookingForm({
 
       {/* Email */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
           البريد الإلكتروني
         </label>
         <div className="relative">
-          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="email"
             value={formData.clientEmail}
@@ -432,11 +432,11 @@ export default function BookingForm({
 
       {/* Venue */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
           المكان *
         </label>
         <div className="relative">
-          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <select
             value={formData.venueId}
             onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
@@ -456,18 +456,18 @@ export default function BookingForm({
       {/* Region - اختيار المنطقة */}
       {pricingLoading ? (
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+          <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
             المنطقة / المدينة *
           </label>
           <div className="h-12 bg-background-subtle dark:bg-dark-surface rounded-xl animate-pulse" />
         </div>
       ) : pricingRegions.length > 0 ? (
         <div>
-          <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+          <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
             المنطقة / المدينة *
           </label>
           <div className="relative">
-            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
             <select
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
@@ -500,11 +500,11 @@ export default function BookingForm({
 
       {/* Date */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
           تاريخ الفعالية *
         </label>
         <div className="relative">
-          <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="date"
             value={formData.date}
@@ -517,7 +517,7 @@ export default function BookingForm({
         {formData.date && (
           <div className="mt-2">
             {checkingAvailability ? (
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-muted">
                 <Loader2 size={12} className="animate-spin" />
                 جاري التحقق من التوفر...
               </div>
@@ -539,7 +539,7 @@ export default function BookingForm({
 
       {/* Time Slot */}
       <div>
-        <label className="block text-sm font-semibold text-primary dark:text-white mb-1.5">
+        <label className="block text-sm font-semibold text-primary dark:text-fg mb-1.5">
           الفترة *
         </label>
         <div className="grid grid-cols-2 gap-2">
@@ -555,8 +555,8 @@ export default function BookingForm({
               onClick={() => setFormData({ ...formData, timeSlot: slot.value })}
               className={`py-2.5 rounded-xl text-xs font-bold transition-all duration-300 ${
                 formData.timeSlot === slot.value
-                  ? "bg-primary text-white shadow-soft dark:bg-accent dark:text-primary-dark"
-                  : "bg-background-subtle dark:bg-dark-surface text-gray-600 dark:text-gray-300 hover:bg-accent/10 dark:hover:bg-accent-dark/20 border border-gray-200 dark:border-dark-border"
+                  ? "bg-primary text-fg shadow-soft dark:bg-accent dark:text-primary-dark"
+                  : "bg-background-subtle dark:bg-dark-surface text-muted dark:text-muted hover:bg-accent/10 dark:hover:bg-accent-dark/20 border border-gray-200 dark:border-dark-border"
               }`}
             >
               {slot.label}
@@ -569,7 +569,7 @@ export default function BookingForm({
       <div className="bg-gradient-to-br from-accent/10 to-primary/5 dark:from-accent-dark/20 dark:to-primary/10 rounded-2xl p-4 border border-accent/20 dark:border-accent-dark/30">
         <div className="flex items-center gap-2 mb-3">
           <DollarSign className="text-accent" size={18} />
-          <p className="text-sm font-bold text-primary dark:text-white">
+          <p className="text-sm font-bold text-primary dark:text-fg">
             ملخص السعر
             {currentPricing && (
               <span className="text-xs text-accent mr-2">- {currentPricing.regionName}</span>
@@ -578,27 +578,27 @@ export default function BookingForm({
         </div>
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-gray-600 dark:text-gray-400">السعر الأساسي</span>
-            <span className="font-bold text-primary dark:text-white">
+            <span className="text-muted dark:text-muted">السعر الأساسي</span>
+            <span className="font-bold text-primary dark:text-fg">
               {basePrice.toLocaleString()} ج.م
             </span>
           </div>
           {travelFee > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-gray-600 dark:text-gray-400">رسوم السفر</span>
-              <span className="font-bold text-primary dark:text-white">
+              <span className="text-muted dark:text-muted">رسوم السفر</span>
+              <span className="font-bold text-primary dark:text-fg">
                 +{travelFee.toLocaleString()} ج.م
               </span>
             </div>
           )}
           <div className="pt-2 mt-2 border-t border-accent/20 dark:border-accent-dark/30 flex items-center justify-between">
-            <span className="font-bold text-primary dark:text-white">الإجمالي</span>
+            <span className="font-bold text-primary dark:text-fg">الإجمالي</span>
             <span className="text-lg font-black text-accent">
               {totalPrice.toLocaleString()} ج.م
             </span>
           </div>
           <div className="flex items-center justify-between pt-1">
-            <span className="text-gray-500 dark:text-gray-400">العربون (20%)</span>
+            <span className="text-muted dark:text-muted">العربون (20%)</span>
             <span className="font-bold text-accent">
               {depositAmount.toLocaleString()} ج.م
             </span>

@@ -42,41 +42,41 @@ export default async function ArtistDashboard({ params }: { params: Promise<{ sl
           </div>
         )}
         <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white">{artist.name}</h1>
-          <p className="text-gray-500 dark:text-gray-400">{artist.category || "فنان"} • لوحة التحكم</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-fg">{artist.name}</h1>
+          <p className="text-muted dark:text-muted">{artist.category || "فنان"} • لوحة التحكم</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
-          <div key={i} className="bg-white dark:bg-[#111] rounded-2xl p-5 border border-gray-200 dark:border-gray-800">
+          <div key={i} className="bg-white dark:bg-surface rounded-2xl p-5 border border-gray-200 dark:border-gray-800">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${s.color} flex items-center justify-center mb-3`}>
-              <s.icon size={18} className="text-white" />
+              <s.icon size={18} className="text-fg" />
             </div>
-            <p className="text-2xl font-black text-gray-900 dark:text-white">{s.value}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{s.label}</p>
+            <p className="text-2xl font-black text-gray-900 dark:text-fg">{s.value}</p>
+            <p className="text-xs text-muted dark:text-muted mt-1">{s.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-surface rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-          <h2 className="text-lg font-black text-gray-900 dark:text-white">آخر الحجوزات</h2>
+          <h2 className="text-lg font-black text-gray-900 dark:text-fg">آخر الحجوزات</h2>
           <Link href={`/admin/artist/${slug}/bookings`} className="text-sm text-[#E8961A] font-bold hover:underline">عرض الكل ←</Link>
         </div>
         {recentBookings.length === 0 ? (
-          <p className="p-8 text-center text-gray-400">لا توجد حجوزات بعد</p>
+          <p className="p-8 text-center text-muted">لا توجد حجوزات بعد</p>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {recentBookings.map((b: any) => (
-              <div key={b.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition">
+              <div key={b.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-card transition">
                 <div>
-                  <p className="font-bold text-gray-900 dark:text-white">{b.clientName}</p>
-                  <p className="text-xs text-gray-500">{new Date(b.date).toLocaleDateString("ar-EG")} • {b.timeSlot}</p>
+                  <p className="font-bold text-gray-900 dark:text-fg">{b.clientName}</p>
+                  <p className="text-xs text-muted">{new Date(b.date).toLocaleDateString("ar-EG")} • {b.timeSlot}</p>
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-[#F5A623]">{Number(b.grossAmount || 0).toLocaleString()} ج.م</p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${b.status === "CONFIRMED" || b.status === "COMPLETED" ? "bg-green-100 text-green-700" : b.status === "PENDING_APPROVAL" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${b.status === "CONFIRMED" || b.status === "COMPLETED" ? "bg-green-100 text-green-700" : b.status === "PENDING_APPROVAL" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-muted"}`}>
                     {b.status === "CONFIRMED" ? "مؤكد" : b.status === "PENDING_APPROVAL" ? "بانتظار" : b.status === "COMPLETED" ? "مكتمل" : b.status}
                   </span>
                 </div>

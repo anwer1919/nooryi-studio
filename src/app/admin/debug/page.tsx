@@ -111,17 +111,17 @@ export default function DebugAPIsPage() {
 
   return (
     <div dir="rtl" className="p-6 space-y-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-black text-gray-900 dark:text-white">
+      <h1 className="text-3xl font-black text-gray-900 dark:text-fg">
         🔍 اختبار APIs الفنانين
       </h1>
 
-      <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+      <div className="bg-white dark:bg-surface rounded-xl p-6 border border-gray-200 dark:border-gray-800">
         <label className="block text-sm font-bold mb-2">
           اختر فناناً: ({artists.length} متاح)
         </label>
         
         {artistsLoading ? (
-          <p className="text-gray-500">جاري تحميل الفنانين...</p>
+          <p className="text-muted">جاري تحميل الفنانين...</p>
         ) : artistsError ? (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
             <p className="text-red-700 dark:text-red-300 font-bold">❌ {artistsError}</p>
@@ -131,7 +131,7 @@ export default function DebugAPIsPage() {
             <select
               value={selectedArtist}
               onChange={(e) => setSelectedArtist(e.target.value)}
-              className="w-full p-3 border rounded-xl dark:bg-[#1a1a1a] dark:text-white dark:border-gray-700"
+              className="w-full p-3 border rounded-xl dark:bg-card dark:text-fg dark:border-gray-700"
             >
               <option value="">— اختر —</option>
               {artists.map(a => (
@@ -154,7 +154,7 @@ export default function DebugAPIsPage() {
 
       {results.slug && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-surface rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">1️⃣ تفاصيل الفنان</h2>
             {results.artist?.error ? (
               <p className="text-red-500">❌ {results.artist.error}</p>
@@ -168,7 +168,7 @@ export default function DebugAPIsPage() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-surface rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">
               2️⃣ مناطق التسعير ({results.regions?.length || 0})
             </h2>
@@ -205,12 +205,12 @@ export default function DebugAPIsPage() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-[#111] rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-surface rounded-xl p-6 border border-gray-200 dark:border-gray-800">
             <h2 className="font-black text-lg mb-4">
               3️⃣ الحجوزات ({results.bookings?.length || 0})
             </h2>
             {results.bookings?.length === 0 ? (
-              <p className="text-gray-500">لا توجد حجوزات نشطة</p>
+              <p className="text-muted">لا توجد حجوزات نشطة</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>

@@ -87,7 +87,7 @@ function getStatusConfig(status: string) {
     default:
       return {
         title: status,
-        color: "text-gray-600 dark:text-gray-400",
+        color: "text-muted dark:text-muted",
         bg: "bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-dark-border",
         icon: AlertCircle,
       }
@@ -172,13 +172,13 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
     return (
       <div className="card-premium text-center py-20">
         <Calendar
-          className="mx-auto mb-4 text-gray-300 dark:text-gray-600"
+          className="mx-auto mb-4 text-muted dark:text-muted"
           size={64}
         />
-        <h3 className="text-2xl font-bold text-primary dark:text-white mb-2">
+        <h3 className="text-2xl font-bold text-primary dark:text-fg mb-2">
           لا توجد حجوزات بعد
         </h3>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">
+        <p className="text-muted dark:text-muted mb-6">
           لم تقم بأي حجز حتى الآن. ابدأ باختيار فنانك المفضل!
         </p>
         <Link href="/artists" className="btn-primary inline-flex items-center gap-2">
@@ -194,8 +194,8 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
       {/* التبويبات */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <Filter size={16} className="text-gray-500 dark:text-gray-400" />
-          <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+          <Filter size={16} className="text-muted dark:text-muted" />
+          <span className="text-sm font-semibold text-muted dark:text-muted">
             تصفية الحجوزات:
           </span>
         </div>
@@ -210,8 +210,8 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
                 flex items-center gap-2
                 ${
                   activeFilter === filter.key
-                    ? "bg-purple-700 text-white shadow-lg shadow-purple-700/30"
-                    : "bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
+                    ? "bg-purple-700 text-fg shadow-lg shadow-purple-700/30"
+                    : "bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-muted hover:bg-gray-200 dark:hover:bg-white/10"
                 }
               `}
             >
@@ -237,13 +237,13 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
       {filteredBookings.length === 0 ? (
         <div className="card-premium text-center py-16">
           <Filter
-            className="mx-auto mb-4 text-gray-300 dark:text-gray-600"
+            className="mx-auto mb-4 text-muted dark:text-muted"
             size={48}
           />
-          <h3 className="text-xl font-bold text-primary dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-primary dark:text-fg mb-2">
             لا توجد حجوزات في هذه الفئة
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-muted dark:text-muted mb-4">
             جرب اختيار فلتر آخر لعرض الحجوزات
           </p>
           <button
@@ -284,13 +284,13 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-lg text-primary dark:text-white mb-0.5 truncate">
+                      <h3 className="font-bold text-lg text-primary dark:text-fg mb-0.5 truncate">
                         {booking.artist?.name || "فنان"}
                       </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      <p className="text-sm text-muted dark:text-muted truncate">
                         {booking.venue?.name || "مكان غير محدد"}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1 font-mono">
+                      <p className="text-xs text-muted mt-1 font-mono">
                         #{booking.id.slice(0, 8).toUpperCase()}
                       </p>
                     </div>
@@ -298,13 +298,13 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
 
                   {/* التاريخ والوقت */}
                   <div className="flex-1 min-w-0">
-                    <p className="flex items-center gap-2 text-sm mb-1 text-primary dark:text-white">
+                    <p className="flex items-center gap-2 text-sm mb-1 text-primary dark:text-fg">
                       <Calendar size={14} className="text-accent flex-shrink-0" />
                       <span className="truncate" suppressHydrationWarning>
                         {formatShortDate(booking.date)}
                       </span>
                     </p>
-                    <p className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="flex items-center gap-2 text-sm text-muted dark:text-muted">
                       <Clock size={14} className="flex-shrink-0" />
                       <span>{timeSlotMap[booking.timeSlot] || booking.timeSlot}</span>
                     </p>
@@ -312,10 +312,10 @@ export default function BookingsList({ bookings }: { bookings: any[] }) {
 
                   {/* المبلغ */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <p className="text-xs text-muted dark:text-muted mb-1">
                       المبلغ الإجمالي
                     </p>
-                    <p className="text-xl font-black text-primary dark:text-white">
+                    <p className="text-xl font-black text-primary dark:text-fg">
                       {(booking.grossAmount || 0).toLocaleString()} ج.م
                     </p>
                     <p className="text-xs text-accent mt-1">

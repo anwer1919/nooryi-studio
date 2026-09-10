@@ -40,7 +40,7 @@ export default function SettingsForm({ user }: { user: any }) {
         <input name="phone" type="tel" defaultValue={user?.phone || ""} className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#F5A623] outline-none" placeholder="01xxxxxxxxx" />
       </div>
 
-      <button disabled={isPending} className="w-full py-4 bg-[#111] text-[#F5A623] font-black rounded-xl hover:bg-[#232323] transition flex items-center justify-center gap-2">
+      <button disabled={isPending} className="w-full py-4 bg-surface text-[#F5A623] font-black rounded-xl hover:bg-[#232323] transition flex items-center justify-center gap-2">
         {isPending ? <Loader2 size={20} className="animate-spin"/> : <><Save size={20}/> حفظ التغييرات</>}
       </button>
     </form>

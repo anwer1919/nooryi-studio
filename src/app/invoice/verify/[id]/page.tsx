@@ -90,10 +90,10 @@ export default function VerifyInvoicePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111] flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-surface flex items-center justify-center" dir="rtl">
         <div className="text-center">
           <Loader2 className="w-14 h-14 text-[#F5A623] animate-spin mx-auto mb-4" />
-          <p className="text-white font-bold text-lg">جاري التحقق من الفاتورة...</p>
+          <p className="text-fg font-bold text-lg">جاري التحقق من الفاتورة...</p>
         </div>
       </div>
     )
@@ -110,7 +110,7 @@ export default function VerifyInvoicePage() {
             تعذر التحقق من الفاتورة
           </h1>
           <p className="text-red-600 font-semibold mb-4">{error}</p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-muted mb-6">
             تأكد أن رابط QR صحيح وأن الفاتورة صادرة من النظام.
           </p>
           <Link
@@ -172,7 +172,7 @@ export default function VerifyInvoicePage() {
           <div className="mb-6 no-print">
             <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-5 flex items-center gap-4 mb-4 shadow-lg">
               <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                <CheckCircle2 size={32} className="text-white" />
+                <CheckCircle2 size={32} className="text-fg" />
               </div>
               <div className="flex-1">
                 <p className="font-black text-green-800 text-xl mb-1">
@@ -191,7 +191,7 @@ export default function VerifyInvoicePage() {
             </div>
 
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted">
                 رقم الفاتورة:{" "}
                 <span className="font-mono font-bold" dir="ltr">
                   #{invoiceNumber}
@@ -206,7 +206,7 @@ export default function VerifyInvoicePage() {
                 </Link>
                 <button
                   onClick={() => window.print()}
-                  className="flex items-center gap-2 px-6 py-2 bg-[#111] text-[#F5A623] rounded-xl font-bold hover:bg-[#222] transition"
+                  className="flex items-center gap-2 px-6 py-2 bg-surface text-[#F5A623] rounded-xl font-bold hover:bg-surface transition"
                 >
                   <Printer size={18} />
                   طباعة
@@ -217,7 +217,7 @@ export default function VerifyInvoicePage() {
 
           {/* الفاتورة */}
           <div className="print-invoice bg-white rounded-2xl shadow-xl border-2 border-[#F5A623] overflow-hidden">
-            <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
+            <div className="bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623] relative overflow-hidden">
               <div className="h-2 bg-gradient-to-l from-[#F5A623] via-[#FFC966] to-[#F5A623]" />
 
               <div className="p-6 md:p-8">
@@ -269,7 +269,7 @@ export default function VerifyInvoicePage() {
                   </div>
 
                   <div
-                    className={`${status.color} text-white rounded-lg px-4 py-2 inline-block`}
+                    className={`${status.color} text-fg rounded-lg px-4 py-2 inline-block`}
                   >
                     <p className="text-sm font-bold">{status.label}</p>
                   </div>
@@ -280,25 +280,25 @@ export default function VerifyInvoicePage() {
             <div className="bg-[#faf8f0] border-b-2 border-[#F5A623]/30 px-6 md:px-8 py-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفنان</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفنان</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
                     {booking.artist?.name || "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الفئة</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الفئة</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
                     {booking.artist?.category || "-"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">العميل</p>
+                  <p className="text-xs text-muted font-semibold mb-1">العميل</p>
                   <p className="text-sm md:text-base font-bold text-gray-900 truncate">
                     {booking.clientName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold mb-1">الهاتف</p>
+                  <p className="text-xs text-muted font-semibold mb-1">الهاتف</p>
                   <p
                     className="text-sm md:text-base font-bold text-gray-900"
                     dir="ltr"
@@ -319,10 +319,10 @@ export default function VerifyInvoicePage() {
                   <div className="flex items-start gap-3">
                     <Calendar
                       size={18}
-                      className="text-gray-400 mt-1 flex-shrink-0"
+                      className="text-muted mt-1 flex-shrink-0"
                     />
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold mb-1">
+                      <p className="text-xs text-muted font-semibold mb-1">
                         التاريخ
                       </p>
                       <p className="font-bold text-gray-900" suppressHydrationWarning>
@@ -333,10 +333,10 @@ export default function VerifyInvoicePage() {
                   <div className="flex items-start gap-3">
                     <Clock
                       size={18}
-                      className="text-gray-400 mt-1 flex-shrink-0"
+                      className="text-muted mt-1 flex-shrink-0"
                     />
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold mb-1">
+                      <p className="text-xs text-muted font-semibold mb-1">
                         الفترة
                       </p>
                       <p className="font-bold text-gray-900">
@@ -347,10 +347,10 @@ export default function VerifyInvoicePage() {
                   <div className="flex items-start gap-3">
                     <MapPin
                       size={18}
-                      className="text-gray-400 mt-1 flex-shrink-0"
+                      className="text-muted mt-1 flex-shrink-0"
                     />
                     <div>
-                      <p className="text-xs text-gray-500 font-semibold mb-1">
+                      <p className="text-xs text-muted font-semibold mb-1">
                         المكان
                       </p>
                       <p className="font-bold text-gray-900">
@@ -381,7 +381,7 @@ export default function VerifyInvoicePage() {
                       <p className="font-bold text-gray-900">
                         {booking.artist?.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted">
                         {booking.artist?.category}
                       </p>
                     </div>
@@ -395,7 +395,7 @@ export default function VerifyInvoicePage() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-gray-600 font-semibold">
+                    <span className="text-muted font-semibold">
                       المبلغ الإجمالي
                     </span>
                     <span className="text-xl font-black text-gray-900">
@@ -403,7 +403,7 @@ export default function VerifyInvoicePage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-gray-600 font-semibold">
+                    <span className="text-muted font-semibold">
                       المدفوع (العربون)
                     </span>
                     <span className="text-lg font-bold text-green-600">
@@ -446,7 +446,7 @@ export default function VerifyInvoicePage() {
                       />
                     </div>
                   )}
-                  <div className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                  <div className="text-xs md:text-sm text-muted leading-relaxed">
                     <p className="flex items-center gap-2 font-bold text-gray-900 mb-1">
                       <Shield size={16} className="text-[#F5A623]" />
                       رمز التحقق
@@ -484,7 +484,7 @@ export default function VerifyInvoicePage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-l from-[#111] via-[#1a1a1a] to-[#111] text-[#F5A623]">
+            <div className="bg-gradient-to-l from-surface via-[#1a1a1a] to-[#111] text-[#F5A623]">
               <div className="px-6 py-4 md:px-8 md:py-5">
                 <div className="grid grid-cols-3 gap-4 mb-3 pb-3 border-b border-[#F5A623]/30">
                   <div>
@@ -521,7 +521,7 @@ export default function VerifyInvoicePage() {
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-white rounded-xl border border-gray-200 text-center text-xs text-gray-600 no-print">
+          <div className="mt-6 p-4 bg-white rounded-xl border border-gray-200 text-center text-xs text-muted no-print">
             هذه الفاتورة صادرة إلكترونياً من نظام {STUDIO_INFO.name} وهي وثيقة
             معتمدة دون الحاجة لتوقيع أو ختم يدوي.
           </div>

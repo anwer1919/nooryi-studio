@@ -124,7 +124,7 @@ export default function ArtistPricingPage() {
           <ArrowLeft size={20} /> العودة
         </button>
         <h1 className="text-3xl font-black text-gray-900 mb-2">إدارة التسعير حسب المنطقة</h1>
-        <p className="text-gray-500">تحديد الأسعار المختلفة لكل منطقة للفنان {artist?.name}</p>
+        <p className="text-muted">تحديد الأسعار المختلفة لكل منطقة للفنان {artist?.name}</p>
       </div>
 
       {error && (
@@ -146,7 +146,7 @@ export default function ArtistPricingPage() {
           </h2>
           <button
             onClick={addRegion}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition"
           >
             <Plus size={20} />
             إضافة منطقة
@@ -155,11 +155,11 @@ export default function ArtistPricingPage() {
 
         {regions.length === 0 ? (
           <div className="text-center py-12">
-            <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">لا توجد مناطق محددة</p>
+            <MapPin className="w-16 h-16 text-muted mx-auto mb-4" />
+            <p className="text-muted mb-4">لا توجد مناطق محددة</p>
             <button
               onClick={addRegion}
-              className="px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition"
+              className="px-6 py-3 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition"
             >
               إضافة أول منطقة
             </button>
@@ -195,7 +195,7 @@ export default function ArtistPricingPage() {
                           min="0"
                           step="100"
                         />
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                       </div>
                     </div>
                     <div>
@@ -211,7 +211,7 @@ export default function ArtistPricingPage() {
                           min="0"
                           step="50"
                         />
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                       </div>
                     </div>
                   </div>
@@ -225,7 +225,7 @@ export default function ArtistPricingPage() {
 
                 {region.basePrice > 0 && region.travelFee > 0 && (
                   <div className="mt-3 pt-3 border-t border-gray-200">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted">
                       <span className="font-semibold">الإجمالي:</span>{" "}
                       <span className="font-bold text-purple-700">
                         {(region.basePrice + region.travelFee).toLocaleString()} ج.م
@@ -242,7 +242,7 @@ export default function ArtistPricingPage() {
           <button
             onClick={handleSave}
             disabled={saving || regions.length === 0}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save size={20} />
             {saving ? "جاري الحفظ..." : "حفظ الأسعار"}

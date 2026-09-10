@@ -22,11 +22,11 @@ export default function ThemeToggle() {
     document.documentElement.classList.toggle("dark", next)
   }
 
-  if (!mounted) return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-[#1a1a1a] animate-pulse" />
+  if (!mounted) return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card animate-pulse" />
 
   return (
     <button onClick={toggle} aria-label="تبديل الوضع"
-      className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-[#F5A623]/20 bg-[#111] text-[#F5A623] hover:border-[#F5A623] hover:bg-[#1a1a1a] transition-all">
+      className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-[#F5A623]/20 bg-surface text-[#F5A623] hover:border-[#F5A623] hover:bg-card transition-all">
       {dark ? <Sun size={16} /> : <Moon size={16} />}
     </button>
   )

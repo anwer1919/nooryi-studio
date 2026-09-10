@@ -75,7 +75,7 @@ export default function NewManagerPage() {
             <ArrowRight size={20} /> العودة لمديري الأعمال
           </Link>
           <h1 className="text-3xl font-black text-gray-900 mb-2">إضافة مدير أعمال جديد</h1>
-          <p className="text-gray-500">أضف مدير أعمال جديد لإدارة فنان</p>
+          <p className="text-muted">أضف مدير أعمال جديد لإدارة فنان</p>
         </div>
 
         {/* Messages */}
@@ -172,7 +172,7 @@ export default function NewManagerPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-4 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

@@ -44,9 +44,9 @@ export default function PricingForm({ artistId, artistSlug }: { artistId: string
   }
 
   return (
-    <div className="bg-[#111] rounded-2xl border border-[#F5A623]/20 overflow-hidden">
-      <button onClick={() => setShow(!show)} className="w-full flex items-center justify-between p-5 hover:bg-[#1a1a1a] transition">
-        <span className="flex items-center gap-2 font-black text-white">
+    <div className="bg-surface rounded-2xl border border-[#F5A623]/20 overflow-hidden">
+      <button onClick={() => setShow(!show)} className="w-full flex items-center justify-between p-5 hover:bg-card transition">
+        <span className="flex items-center gap-2 font-black text-fg">
           <Plus size={20} className="text-[#F5A623]" /> إضافة باقة جديدة
         </span>
         <span className="text-[#F5A623] text-2xl">{show ? "−" : "+"}</span>
@@ -57,20 +57,20 @@ export default function PricingForm({ artistId, artistSlug }: { artistId: string
           {message && <p className="text-sm font-bold text-center">{message}</p>}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-1">اسم الباقة *</label>
-              <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="مثال: حفلة زفاف" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#F5A623]/20 rounded-xl text-white focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
+              <label className="block text-xs font-bold text-muted mb-1">اسم الباقة *</label>
+              <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="مثال: حفلة زفاف" className="w-full px-4 py-3 bg-card border border-[#F5A623]/20 rounded-xl text-fg focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-1">السعر (ج.م) *</label>
-              <input required type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="5000" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#F5A623]/20 rounded-xl text-white focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
+              <label className="block text-xs font-bold text-muted mb-1">السعر (ج.م) *</label>
+              <input required type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="5000" className="w-full px-4 py-3 bg-card border border-[#F5A623]/20 rounded-xl text-fg focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-1">المدة (دقيقة)</label>
-              <input type="number" value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} placeholder="120" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#F5A623]/20 rounded-xl text-white focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
+              <label className="block text-xs font-bold text-muted mb-1">المدة (دقيقة)</label>
+              <input type="number" value={form.duration} onChange={e => setForm({ ...form, duration: e.target.value })} placeholder="120" className="w-full px-4 py-3 bg-card border border-[#F5A623]/20 rounded-xl text-fg focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-1">الوصف</label>
-              <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف مختصر للباقة" className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#F5A623]/20 rounded-xl text-white focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
+              <label className="block text-xs font-bold text-muted mb-1">الوصف</label>
+              <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف مختصر للباقة" className="w-full px-4 py-3 bg-card border border-[#F5A623]/20 rounded-xl text-fg focus:ring-2 focus:ring-[#F5A623] focus:border-transparent" />
             </div>
           </div>
           <button type="submit" disabled={saving} className="w-full py-3 bg-gradient-to-r from-[#F5A623] to-[#E8961A] text-[#111] font-black rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2">

@@ -3,7 +3,7 @@ import { Home, ArrowRight } from "lucide-react"
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-black text-fg flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-yellow-500/10 border border-yellow-500/20 mb-6">
           <span className="text-5xl">🔍</span>
@@ -16,7 +16,7 @@ export default function NotFound() {
         </h1>
         
         <h2 className="text-2xl font-bold mb-3">الصفحة غير موجودة</h2>
-        <p className="text-white/60 mb-8">
+        <p className="text-muted mb-8">
           عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها
         </p>
         

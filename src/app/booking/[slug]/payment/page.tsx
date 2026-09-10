@@ -58,7 +58,7 @@ export default async function PaymentPage({
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Link href={`/booking/${slug}/invoice?id=${booking.id}`} className="flex items-center gap-2 text-gray-600 hover:text-[#E8961A]">
+          <Link href={`/booking/${slug}/invoice?id=${booking.id}`} className="flex items-center gap-2 text-muted hover:text-[#E8961A]">
             <ArrowRight size={18} />
             العودة للفاتورة
           </Link>
@@ -68,7 +68,7 @@ export default async function PaymentPage({
         <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 size={28} className="text-white" />
+              <CheckCircle2 size={28} className="text-fg" />
             </div>
             <div>
               <h2 className="text-xl font-black text-green-900 mb-1">تم تأكيد حجزك — أكمل الدفع الآن</h2>
@@ -79,7 +79,7 @@ export default async function PaymentPage({
 
         {/* Booking Summary */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] p-5 text-white">
+          <div className="bg-gradient-to-r from-bg to-[#111] p-5 text-fg">
             <div className="flex items-center gap-4">
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-xl object-cover" />
@@ -90,10 +90,10 @@ export default async function PaymentPage({
               )}
               <div>
                 <h3 className="text-lg font-black">{booking.artist?.name}</h3>
-                <p className="text-sm text-gray-300">{booking.artist?.category || "فنان"}</p>
+                <p className="text-sm text-muted">{booking.artist?.category || "فنان"}</p>
               </div>
               <div className="mr-auto text-left">
-                <p className="text-xs text-gray-400">المبلغ الإجمالي</p>
+                <p className="text-xs text-muted">المبلغ الإجمالي</p>
                 <p className="text-xl font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</p>
               </div>
             </div>
@@ -125,22 +125,22 @@ export default async function PaymentPage({
             </div>
             <div className="p-6 space-y-4">
               <div className="text-center">
-                <p className="text-3xl font-black text-gray-900">{depositAmount.toLocaleString()} <span className="text-lg text-gray-500">ج.م</span></p>
-                <p className="text-sm text-gray-500 mt-1">لتأكيد الحجز الآن</p>
+                <p className="text-3xl font-black text-gray-900">{depositAmount.toLocaleString()} <span className="text-lg text-muted">ج.م</span></p>
+                <p className="text-sm text-muted mt-1">لتأكيد الحجز الآن</p>
               </div>
               
               <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">العربون:</span>
+                  <span className="text-muted">العربون:</span>
                   <span className="font-bold">{depositAmount.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">المتبقي:</span>
+                  <span className="text-muted">المتبقي:</span>
                   <span className="font-bold text-[#E8961A]">{remainingAmount.toLocaleString()} ج.م</span>
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-muted leading-relaxed">
                 ✅ احجز مكانك الآن بدفع العربون<br/>
                 💰 ادفع المتبقي قبل الفعالية<br/>
                 📄 احصل على فاتورة رسمية
@@ -160,19 +160,19 @@ export default async function PaymentPage({
             <div className="absolute top-4 left-4 bg-[#F5A623] text-[#111] text-xs font-black px-3 py-1 rounded-full">
               الأفضل قيمة
             </div>
-            <div className="bg-gradient-to-r from-[#111] to-[#0a0a0a] p-4 text-center">
+            <div className="bg-gradient-to-r from-surface to-bg p-4 text-center">
               <CheckCircle2 size={32} className="mx-auto text-[#F5A623]" />
-              <h3 className="text-xl font-black text-white mt-2">الدفع الكامل</h3>
+              <h3 className="text-xl font-black text-fg mt-2">الدفع الكامل</h3>
             </div>
             <div className="p-6 space-y-4">
               <div className="text-center">
-                <p className="text-3xl font-black text-gray-900">{grossAmount.toLocaleString()} <span className="text-lg text-gray-500">ج.م</span></p>
-                <p className="text-sm text-gray-500 mt-1">ادفع مرة واحدة</p>
+                <p className="text-3xl font-black text-gray-900">{grossAmount.toLocaleString()} <span className="text-lg text-muted">ج.م</span></p>
+                <p className="text-sm text-muted mt-1">ادفع مرة واحدة</p>
               </div>
               
               <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">المبلغ:</span>
+                  <span className="text-muted">المبلغ:</span>
                   <span className="font-bold">{grossAmount.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-green-600">
@@ -181,7 +181,7 @@ export default async function PaymentPage({
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-muted leading-relaxed">
                 ✅ حجز مؤكد بالكامل<br/>
                 🎉 لا حاجة لدفعات إضافية<br/>
                 🖨️ فاتورة جاهزة للطباعة فوراً
@@ -189,7 +189,7 @@ export default async function PaymentPage({
 
               <Link
                 href={`/booking/${slug}/payment/process?id=${booking.id}&type=full&amount=${grossAmount}`}
-                className="block w-full bg-[#111] text-[#F5A623] font-black py-3 rounded-xl hover:bg-[#222] transition text-center"
+                className="block w-full bg-surface text-[#F5A623] font-black py-3 rounded-xl hover:bg-surface transition text-center"
               >
                 ادفع المبلغ الكامل
               </Link>
@@ -213,13 +213,13 @@ export default async function PaymentPage({
                   </div>
                   <p className="text-xs text-green-700 dark:text-green-400 mb-1">{booking.artist.bankName}</p>
                   {booking.artist.bankAccount && (
-                    <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                    <div className="flex items-center justify-between bg-white dark:bg-card rounded-lg px-3 py-2 mt-2">
                       <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.bankAccount}</span>
                       <button onClick={() => navigator.clipboard.writeText(booking.artist!.bankAccount!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                     </div>
                   )}
                   {booking.artist.iban && (
-                    <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                    <div className="flex items-center justify-between bg-white dark:bg-card rounded-lg px-3 py-2 mt-2">
                       <span className="text-xs font-mono" dir="ltr">{booking.artist.iban}</span>
                       <button onClick={() => navigator.clipboard.writeText(booking.artist!.iban!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                     </div>
@@ -232,7 +232,7 @@ export default async function PaymentPage({
                     <Smartphone size={16} className="text-red-700 dark:text-red-400" />
                     <span className="font-bold text-sm text-red-800 dark:text-red-300">فودافون كاش</span>
                   </div>
-                  <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                  <div className="flex items-center justify-between bg-white dark:bg-card rounded-lg px-3 py-2 mt-2">
                     <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.vodafoneCash}</span>
                     <button onClick={() => navigator.clipboard.writeText(booking.artist!.vodafoneCash!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                   </div>
@@ -244,7 +244,7 @@ export default async function PaymentPage({
                     <CreditCard size={16} className="text-purple-700 dark:text-purple-400" />
                     <span className="font-bold text-sm text-purple-800 dark:text-purple-300">إنستا باي</span>
                   </div>
-                  <div className="flex items-center justify-between bg-white dark:bg-[#1a1a1a] rounded-lg px-3 py-2 mt-2">
+                  <div className="flex items-center justify-between bg-white dark:bg-card rounded-lg px-3 py-2 mt-2">
                     <span className="text-sm font-mono font-bold" dir="ltr">{booking.artist.instaPay}</span>
                     <button onClick={() => navigator.clipboard.writeText(booking.artist!.instaPay!)} className="text-xs text-[#E8961A] font-bold hover:underline">نسخ</button>
                   </div>
@@ -252,7 +252,7 @@ export default async function PaymentPage({
               )}
             </div>
             {booking.artist?.paymentNote && (
-              <div className="mt-4 bg-[#faf8f0] dark:bg-[#1a1a1a] rounded-xl p-3 text-sm text-gray-700 dark:text-gray-300 border border-[#F5A623]/20">
+              <div className="mt-4 bg-[#faf8f0] dark:bg-card rounded-xl p-3 text-sm text-gray-700 dark:text-muted border border-[#F5A623]/20">
                 💡 {booking.artist.paymentNote}
               </div>
             )}
@@ -269,28 +269,28 @@ export default async function PaymentPage({
               <CreditCard size={24} className="text-blue-600" />
               <div>
                 <p className="font-bold text-sm">بطاقة ائتمان</p>
-                <p className="text-xs text-gray-500">Visa / MasterCard</p>
+                <p className="text-xs text-muted">Visa / MasterCard</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
               <Smartphone size={24} className="text-purple-600" />
               <div>
                 <p className="font-bold text-sm">محفظة إلكترونية</p>
-                <p className="text-xs text-gray-500">Vodafone Cash / InstaPay</p>
+                <p className="text-xs text-muted">Vodafone Cash / InstaPay</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
               <Building2 size={24} className="text-green-600" />
               <div>
                 <p className="font-bold text-sm">تحويل بنكي</p>
-                <p className="text-xs text-gray-500">جميع البنوك المحلية</p>
+                <p className="text-xs text-muted">جميع البنوك المحلية</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Security Notice */}
-        <div className="bg-[#faf8f0] rounded-xl p-4 text-center text-sm text-gray-600">
+        <div className="bg-[#faf8f0] rounded-xl p-4 text-center text-sm text-muted">
           <Shield size={16} className="inline text-[#F5A623]" />
           جميع المعاملات مؤمنة ومشفرة — بياناتك محمية 100%
         </div>

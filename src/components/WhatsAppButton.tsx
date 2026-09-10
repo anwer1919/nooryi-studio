@@ -22,16 +22,16 @@ export default function WhatsAppButton() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                  <MessageCircle size={20} className="text-white" />
+                  <MessageCircle size={20} className="text-fg" />
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">Nooryi Studio</p>
-                  <p className="text-xs text-gray-500">متصل الآن</p>
+                  <p className="text-xs text-muted">متصل الآن</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition"
+                className="text-muted hover:text-muted transition"
               >
                 <X size={18} />
               </button>
@@ -45,12 +45,12 @@ export default function WhatsAppButton() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg text-center text-sm transition"
+              className="block w-full bg-green-500 hover:bg-green-600 text-fg font-bold py-2.5 rounded-lg text-center text-sm transition"
             >
               ابدأ المحادثة
             </a>
             
-            <p className="text-xs text-gray-400 text-center mt-2">
+            <p className="text-xs text-muted text-center mt-2">
               نرد عادةً خلال دقائق
             </p>
           </div>
@@ -63,9 +63,9 @@ export default function WhatsAppButton() {
           aria-label="تواصل عبر واتساب"
         >
           {isOpen ? (
-            <X size={24} className="text-white" />
+            <X size={24} className="text-fg" />
           ) : (
-            <MessageCircle size={28} className="text-white" />
+            <MessageCircle size={28} className="text-fg" />
           )}
           
           {/* نبضة التنبيه */}

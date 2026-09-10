@@ -155,7 +155,7 @@ export default function EditArtistPage() {
             <h1 className="text-3xl font-black text-gray-900">
               تعديل: {artist?.name}
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-muted mt-1">
               تعديل المعلومات الأساسية للفنان فقط
             </p>
           </div>
@@ -163,7 +163,7 @@ export default function EditArtistPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-3 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50"
           >
             <Save size={18} />
             {saving ? "جاري الحفظ..." : "حفظ التعديلات"}
@@ -193,14 +193,14 @@ export default function EditArtistPage() {
           <div className="flex gap-3 flex-wrap">
             <Link
               href="/admin/calendar"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#F5A623] rounded-lg font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-4 py-2 bg-surface text-[#F5A623] rounded-lg font-bold hover:bg-surface transition"
             >
               <Calendar size={16} />
               إدارة التقويم
             </Link>
             <Link
               href="/admin/pricing"
-              className="flex items-center gap-2 px-4 py-2 bg-[#111] text-[#F5A623] rounded-lg font-bold hover:bg-[#222] transition"
+              className="flex items-center gap-2 px-4 py-2 bg-surface text-[#F5A623] rounded-lg font-bold hover:bg-surface transition"
             >
               <MapPin size={16} />
               إدارة التسعير
@@ -251,7 +251,7 @@ export default function EditArtistPage() {
                 dir="ltr"
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
-              <p className="text-xs text-gray-500 mt-1">يُستخدم في رابط صفحة الفنان</p>
+              <p className="text-xs text-muted mt-1">يُستخدم في رابط صفحة الفنان</p>
             </div>
           </div>
 
@@ -281,14 +281,14 @@ export default function EditArtistPage() {
                   <img src={profileImage} alt="profile" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setProfileImage("")}
-                    className="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                    className="absolute top-1 left-1 w-6 h-6 bg-red-500 text-fg rounded-full flex items-center justify-center text-xs hover:bg-red-600"
                   >
                     ×
                   </button>
                 </div>
               )}
               <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer transition">
-                <ImageIcon size={18} className="text-gray-600" />
+                <ImageIcon size={18} className="text-muted" />
                 <span className="text-sm font-semibold text-gray-700">
                   {uploadingImage ? "جاري الرفع..." : "اختيار صورة"}
                 </span>
@@ -312,14 +312,14 @@ export default function EditArtistPage() {
                   <img src={coverImage} alt="cover" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setCoverImage("")}
-                    className="absolute top-1 left-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                    className="absolute top-1 left-1 w-6 h-6 bg-red-500 text-fg rounded-full flex items-center justify-center text-xs hover:bg-red-600"
                   >
                     ×
                   </button>
                 </div>
               )}
               <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl cursor-pointer transition">
-                <ImageIcon size={18} className="text-gray-600" />
+                <ImageIcon size={18} className="text-muted" />
                 <span className="text-sm font-semibold text-gray-700">
                   {uploadingImage ? "جاري الرفع..." : "اختيار صورة"}
                 </span>
@@ -386,7 +386,7 @@ export default function EditArtistPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-8 py-3 bg-purple-700 text-white rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50"
+            className="flex items-center gap-2 px-8 py-3 bg-purple-700 text-fg rounded-xl font-bold hover:bg-purple-800 transition disabled:opacity-50"
           >
             <Save size={18} />
             {saving ? "جاري الحفظ..." : "حفظ التعديلات"}

@@ -108,14 +108,14 @@ export default function AdminCalendarPage() {
         <div className="flex items-center justify-between no-print">
           <div>
             <div className="badge-gold mb-3">التقويم</div>
-            <h1 className="text-4xl font-black text-gray-900 dark:text-white">تقويم الحجوزات</h1>
-            <p className="text-gray-500 mt-1">عرض وطباعة جدول حجوزات كل فنان</p>
+            <h1 className="text-4xl font-black text-gray-900 dark:text-fg">تقويم الحجوزات</h1>
+            <p className="text-muted mt-1">عرض وطباعة جدول حجوزات كل فنان</p>
           </div>
           <div className="flex gap-3">
             <button
               onClick={() => setShowPreview(true)}
               disabled={!selectedArtistId || monthBookings.length === 0}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-gray-900 text-fg font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
             >
               <Eye size={18} />
               معاينة التقرير
@@ -138,12 +138,12 @@ export default function AdminCalendarPage() {
         )}
 
         {/* Artist Selection */}
-        <div className="bg-white dark:bg-[#111] rounded-2xl p-6 border border-gray-200 dark:border-gray-800 no-print">
+        <div className="bg-white dark:bg-surface rounded-2xl p-6 border border-gray-200 dark:border-gray-800 no-print">
           <label className="block text-sm font-bold mb-2">اختر الفنان ({artists.length} متاح)</label>
           <select
             value={selectedArtistId}
             onChange={(e) => setSelectedArtistId(e.target.value)}
-            className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+            className="w-full px-4 py-3 border rounded-xl dark:bg-card dark:border-gray-700 dark:text-fg"
           >
             <option value="">— اختر فناناً —</option>
             {artists.map(a => (
@@ -153,15 +153,15 @@ export default function AdminCalendarPage() {
         </div>
 
         {!selectedArtistId ? (
-          <div className="bg-white dark:bg-[#111] rounded-2xl p-12 text-center border no-print">
-            <CalIcon className="mx-auto text-gray-300 mb-4" size={56} />
-            <p className="text-gray-500">اختر فناناً لعرض تقويمه</p>
+          <div className="bg-white dark:bg-surface rounded-2xl p-12 text-center border no-print">
+            <CalIcon className="mx-auto text-muted mb-4" size={56} />
+            <p className="text-muted">اختر فناناً لعرض تقويمه</p>
           </div>
         ) : loading ? (
           <div className="text-center py-12"><Loader2 size={40} className="animate-spin text-[#F5A623] mx-auto" /></div>
         ) : (
-          <div className="bg-white dark:bg-[#111] rounded-2xl border overflow-hidden no-print">
-            <div className="bg-gradient-to-r from-[#0a0a0a] to-[#111] p-6 text-white">
+          <div className="bg-white dark:bg-surface rounded-2xl border overflow-hidden no-print">
+            <div className="bg-gradient-to-r from-bg to-[#111] p-6 text-fg">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
@@ -169,17 +169,17 @@ export default function AdminCalendarPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-black">{selectedArtist?.name}</h2>
-                    <p className="text-sm text-gray-300">{monthName}</p>
+                    <p className="text-sm text-muted">{monthName}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-400">حجوزات هذا الشهر</p>
+                  <p className="text-xs text-muted">حجوزات هذا الشهر</p>
                   <p className="text-3xl font-black text-[#F5A623]">{monthBookings.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-gray-50 dark:bg-[#1a1a1a] border-b flex items-center justify-between">
+            <div className="p-4 bg-gray-50 dark:bg-card border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button onClick={prevMonth} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"><ChevronRight size={20} /></button>
                 <h3 className="text-xl font-black min-w-[200px] text-center">{monthName}</h3>
@@ -190,8 +190,8 @@ export default function AdminCalendarPage() {
             <div className="p-6">
               {monthBookings.length === 0 ? (
                 <div className="text-center py-12">
-                  <CalIcon className="mx-auto text-gray-300 mb-3" size={48} />
-                  <p className="text-gray-500">لا توجد حجوزات في {monthName}</p>
+                  <CalIcon className="mx-auto text-muted mb-3" size={48} />
+                  <p className="text-muted">لا توجد حجوزات في {monthName}</p>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -219,11 +219,11 @@ export default function AdminCalendarPage() {
                         )}
                         <div className="mt-3 pt-3 border-t">
                           <div className="flex items-center gap-2 mb-1">
-                            <User size={14} className="text-gray-400" />
+                            <User size={14} className="text-muted" />
                             <span className="font-bold text-sm">{b.clientName || "—"}</span>
                           </div>
                           {b.clientPhone && (
-                            <div className="flex items-center gap-2 text-gray-500 text-xs">
+                            <div className="flex items-center gap-2 text-muted text-xs">
                               <Phone size={12} />
                               <span dir="ltr">{b.clientPhone}</span>
                             </div>
@@ -250,7 +250,7 @@ export default function AdminCalendarPage() {
             <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
 
             {/* Header */}
-            <div className="px-10 pt-6 pb-4 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
+            <div className="px-10 pt-6 pb-4 bg-gradient-to-b from-[#1a1a1a] to-bg text-fg">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-2xl">
@@ -259,13 +259,13 @@ export default function AdminCalendarPage() {
                   <div>
                     <h1 className="text-3xl font-black">{STUDIO_INFO.nameAr}</h1>
                     <p className="text-[#F5A623] font-bold">{STUDIO_INFO.name}</p>
-                    <p className="text-xs text-gray-400 mt-1">{STUDIO_INFO.tagline}</p>
+                    <p className="text-xs text-muted mt-1">{STUDIO_INFO.tagline}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="inline-block px-4 py-2 bg-[#F5A623]/20 border border-[#F5A623] rounded-lg">
                     <p className="text-xs text-[#F5A623] font-bold">تقرير تقويم الحجوزات</p>
-                    <p className="text-xs text-gray-300 font-mono mt-1" dir="ltr">{reportId}</p>
+                    <p className="text-xs text-muted font-mono mt-1" dir="ltr">{reportId}</p>
                   </div>
                 </div>
               </div>
@@ -283,23 +283,23 @@ export default function AdminCalendarPage() {
                   </div>
                 )}
                 <div>
-                  <p className="text-xs text-gray-500 font-bold uppercase">تقويم</p>
+                  <p className="text-xs text-muted font-bold uppercase">تقويم</p>
                   <h2 className="text-2xl font-black">{selectedArtist.name}</h2>
-                  <p className="text-sm text-gray-600">{selectedArtist.category || "فنان"} — {monthName}</p>
+                  <p className="text-sm text-muted">{selectedArtist.category || "فنان"} — {monthName}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
-                  <p className="text-xs text-gray-500">الحجوزات</p>
+                  <p className="text-xs text-muted">الحجوزات</p>
                   <p className="text-xl font-black">{monthBookings.length}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500">الإيرادات</p>
+                  <p className="text-xs text-muted">الإيرادات</p>
                   <p className="text-lg font-black text-[#F5A623]">{totalRevenue.toLocaleString()}</p>
-                  <p className="text-[10px] text-gray-400">ج.م</p>
+                  <p className="text-[10px] text-muted">ج.م</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500">تاريخ الإصدار</p>
+                  <p className="text-xs text-muted">تاريخ الإصدار</p>
                   <p className="text-xs font-bold">{reportDate}</p>
                 </div>
               </div>
@@ -313,13 +313,13 @@ export default function AdminCalendarPage() {
               </h3>
 
               {monthBookings.length === 0 ? (
-                <div className="py-12 text-center text-gray-400">
+                <div className="py-12 text-center text-muted">
                   <p>لا توجد حجوزات في هذا الشهر</p>
                 </div>
               ) : (
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-[#0a0a0a] text-white">
+                    <tr className="bg-bg text-fg">
                       <th className="px-3 py-2 text-right text-xs">#</th>
                       <th className="px-3 py-2 text-right text-xs">التاريخ</th>
                       <th className="px-3 py-2 text-center text-xs">اليوم</th>
@@ -337,7 +337,7 @@ export default function AdminCalendarPage() {
                       const status = statusConfig[b.status] || statusConfig.PENDING_APPROVAL;
                       return (
                         <tr key={b.id} className={`border-b ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                          <td className="px-3 py-2 text-xs text-gray-500 font-mono">{String(i+1).padStart(2,'0')}</td>
+                          <td className="px-3 py-2 text-xs text-muted font-mono">{String(i+1).padStart(2,'0')}</td>
                           <td className="px-3 py-2 font-black text-sm">{d.getDate()}/{d.getMonth()+1}</td>
                           <td className="px-3 py-2 text-center text-xs">{d.toLocaleDateString("ar-EG", { weekday: "short" })}</td>
                           <td className="px-3 py-2 text-center text-xs">{b.eventTime || b.timeSlot || "—"}</td>
@@ -357,7 +357,7 @@ export default function AdminCalendarPage() {
                     })}
                   </tbody>
                   <tfoot>
-                    <tr className="bg-[#1a1a1a] text-white font-black">
+                    <tr className="bg-card text-fg font-black">
                       <td colSpan={7} className="px-3 py-2 text-right">الإجمالي</td>
                       <td className="px-3 py-2 text-center text-[#F5A623]">{totalRevenue.toLocaleString()} ج.م</td>
                       <td></td>
@@ -397,7 +397,7 @@ export default function AdminCalendarPage() {
                     </div>
                     <div className="absolute inset-0 rounded-full border-2 border-[#F5A623]" style={{ transform: 'rotate(-15deg) scale(1.15)', opacity: 0.5 }}></div>
                   </div>
-                  <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
+                  <p className="text-[9px] text-muted mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
                 </div>
 
                 {/* QR Code */}
@@ -405,12 +405,12 @@ export default function AdminCalendarPage() {
                   <div className="bg-white p-2 rounded-xl border-2 border-[#F5A623] shadow-lg">
                     <QRCode value={verifyUrl} size={90} level="H" bgColor="#FFFFFF" fgColor="#0a0a0a" />
                   </div>
-                  <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
-                  <p className="text-[7px] text-gray-400 mt-1 font-mono" dir="ltr">ID: {reportId}</p>
+                  <p className="text-[9px] text-muted mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
+                  <p className="text-[7px] text-muted mt-1 font-mono" dir="ltr">ID: {reportId}</p>
                 </div>
               </div>
               <div className="mt-4 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
-              <p className="mt-3 text-[10px] text-gray-500 text-center">
+              <p className="mt-3 text-[10px] text-muted text-center">
                 © {new Date().getFullYear()} {STUDIO_INFO.name} — جميع الحقوق محفوظة | ترخيص <span className="font-mono">{STUDIO_INFO.licenseNumber}</span>
               </p>
             </div>
@@ -423,11 +423,11 @@ export default function AdminCalendarPage() {
         {/* ═══════════ PREVIEW MODAL ═══════════ */}
         {showPreview && selectedArtist && (
           <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm overflow-y-auto no-print">
-            <div className="sticky top-0 z-10 bg-gradient-to-r from-[#0a0a0a] to-[#111] border-b border-[#F5A623]/30">
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-bg to-[#111] border-b border-[#F5A623]/30">
               <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Eye size={20} className="text-[#F5A623]" />
-                  <h2 className="text-xl font-black text-white">معاينة تقرير التقويم</h2>
+                  <h2 className="text-xl font-black text-fg">معاينة تقرير التقويم</h2>
                   <span className="px-3 py-1 bg-[#F5A623]/20 text-[#F5A623] rounded-full text-xs font-bold">A4 Landscape</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -439,7 +439,7 @@ export default function AdminCalendarPage() {
                   </button>
                   <button
                     onClick={() => setShowPreview(false)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-fg rounded-lg"
                   >
                     <X size={16} /> إغلاق
                   </button>
@@ -451,7 +451,7 @@ export default function AdminCalendarPage() {
               <div className="bg-white rounded-lg shadow-2xl overflow-hidden" style={{ aspectRatio: '297/210' }}>
                 {/* Mini preview matching print */}
                 <div className="h-2 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
-                <div className="px-8 pt-6 pb-4 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
+                <div className="px-8 pt-6 pb-4 bg-gradient-to-b from-[#1a1a1a] to-bg text-fg">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
                       <span className="text-[#111] text-2xl font-black">N</span>
@@ -464,16 +464,16 @@ export default function AdminCalendarPage() {
                 </div>
                 <div className="px-8 py-4 bg-[#faf8f0] border-b-4 border-[#F5A623]">
                   <h2 className="text-xl font-black">{selectedArtist.name} — {monthName}</h2>
-                  <p className="text-sm text-gray-600">تقرير تقويم الحجوزات — رقم: <span className="font-mono" dir="ltr">{reportId}</span></p>
+                  <p className="text-sm text-muted">تقرير تقويم الحجوزات — رقم: <span className="font-mono" dir="ltr">{reportId}</span></p>
                 </div>
                 <div className="px-8 py-4">
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted mb-2">
                     عدد الحجوزات: <strong>{monthBookings.length}</strong> —
                     إجمالي الإيرادات: <strong className="text-[#F5A623]">{totalRevenue.toLocaleString()} ج.م</strong>
                   </p>
                   <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto">
                     {monthBookings.length === 0 ? (
-                      <p className="text-center text-gray-400 py-6">لا توجد حجوزات</p>
+                      <p className="text-center text-muted py-6">لا توجد حجوزات</p>
                     ) : (
                       <table className="w-full text-xs">
                         <thead>
@@ -507,7 +507,7 @@ export default function AdminCalendarPage() {
                 </div>
                 <div className="px-8 py-4 bg-gradient-to-b from-white to-[#faf8f0]">
                   <div className="grid grid-cols-3 gap-4 items-center">
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-muted">
                       <p className="font-bold">تواصل معنا:</p>
                       <p>{STUDIO_INFO.phone}</p>
                       <p>{STUDIO_INFO.email}</p>
@@ -521,7 +521,7 @@ export default function AdminCalendarPage() {
                       <div className="bg-white p-1 rounded border-2 border-[#F5A623]">
                         <QRCode value={verifyUrl} size={60} level="H" />
                       </div>
-                      <p className="text-[9px] text-gray-500 mt-1">امسح للتحقق</p>
+                      <p className="text-[9px] text-muted mt-1">امسح للتحقق</p>
                     </div>
                   </div>
                 </div>
@@ -535,7 +535,7 @@ export default function AdminCalendarPage() {
                 >
                   <Printer size={20} className="inline ml-2" /> طباعة الآن
                 </button>
-                <button onClick={() => setShowPreview(false)} className="px-8 py-4 bg-gray-800 text-white font-bold rounded-xl">
+                <button onClick={() => setShowPreview(false)} className="px-8 py-4 bg-gray-800 text-fg font-bold rounded-xl">
                   <X size={20} className="inline ml-2" /> إغلاق
                 </button>
               </div>

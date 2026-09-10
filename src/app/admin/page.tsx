@@ -24,8 +24,8 @@ export default async function AdminDashboard() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <div className="badge-gold mb-2"><Sparkles size={12}/> لوحة التحكم</div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-white">أهلاً، <span className="gold-text">{(session.user as any).name || "المدير"}</span></h1>
-          <p className="text-gray-400 mt-1 text-xs md:text-sm">الإيرادات: <span className="font-black gold-text">{revenue.toLocaleString()} ج.م</span></p>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-fg">أهلاً، <span className="gold-text">{(session.user as any).name || "المدير"}</span></h1>
+          <p className="text-muted mt-1 text-xs md:text-sm">الإيرادات: <span className="font-black gold-text">{revenue.toLocaleString()} ج.م</span></p>
         </div>
         {!isManager && <Link href="/admin/artists/new" className="btn-gold text-xs md:text-sm py-2 px-3 md:px-4"><Sparkles size={14}/> إضافة فنان</Link>}
       </div>
@@ -34,19 +34,19 @@ export default async function AdminDashboard() {
       </div>
       <div className="grid lg:grid-cols-3 gap-3 md:gap-4">
         <div className="lg:col-span-1 card-pro p-4 md:p-5">
-          <h2 className="text-base md:text-lg font-black text-white mb-3 md:mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-[#E8961A]"/> روابط سريعة</h2>
+          <h2 className="text-base md:text-lg font-black text-fg mb-3 md:mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-[#E8961A]"/> روابط سريعة</h2>
           <div className="space-y-1">
-            {quickLinks.map((q, i) => (<Link key={i} href={q.href} className="flex items-center gap-2.5 p-2 md:p-2.5 rounded-lg hover:bg-[#1a1a1a] transition group"><div className="icon-circle dark w-8 h-8"><q.icon size={14}/></div><div className="flex-1 min-w-0"><p className="font-bold text-white text-xs md:text-sm group-hover:text-[#E8961A] transition">{q.label}</p><p className="text-[9px] md:text-[10px] text-gray-500 truncate">{q.desc}</p></div><ArrowLeft size={12} className="text-gray-600 group-hover:text-[#E8961A] transition flex-shrink-0"/></Link>))}
+            {quickLinks.map((q, i) => (<Link key={i} href={q.href} className="flex items-center gap-2.5 p-2 md:p-2.5 rounded-lg hover:bg-card transition group"><div className="icon-circle dark w-8 h-8"><q.icon size={14}/></div><div className="flex-1 min-w-0"><p className="font-bold text-fg text-xs md:text-sm group-hover:text-[#E8961A] transition">{q.label}</p><p className="text-[9px] md:text-[10px] text-muted truncate">{q.desc}</p></div><ArrowLeft size={12} className="text-muted group-hover:text-[#E8961A] transition flex-shrink-0"/></Link>))}
           </div>
         </div>
         <div className="lg:col-span-2 card-pro p-4 md:p-5">
           <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h2 className="text-base md:text-lg font-black text-white flex items-center gap-2"><Clock size={16} className="text-[#E8961A]"/> آخر الحجوزات</h2>
+            <h2 className="text-base md:text-lg font-black text-fg flex items-center gap-2"><Clock size={16} className="text-[#E8961A]"/> آخر الحجوزات</h2>
             <Link href="/admin/bookings" className="text-[10px] md:text-xs font-bold text-[#E8961A] hover:text-[#F5A623] transition">عرض الكل</Link>
           </div>
-          {recentBookings.length === 0 ? (<div className="text-center py-8 md:py-10"><Calendar className="mx-auto text-gray-600 mb-2" size={32}/><p className="text-gray-500 text-xs">لا توجد حجوزات بعد</p></div>) : (
+          {recentBookings.length === 0 ? (<div className="text-center py-8 md:py-10"><Calendar className="mx-auto text-muted mb-2" size={32}/><p className="text-muted text-xs">لا توجد حجوزات بعد</p></div>) : (
             <div className="space-y-1">
-              {recentBookings.map((b: any) => { const status = gs(b.status); const client = b.user?.name || b.customer?.fullName || b.clientName || "عميل"; return (<Link key={b.id} href={"/admin/bookings/" + b.id} className="flex items-center gap-2.5 md:gap-3 p-2 md:p-2.5 rounded-lg hover:bg-[#1a1a1a] transition"><div className="icon-circle dark w-8 h-8"><Music size={14}/></div><div className="flex-1 min-w-0"><p className="font-bold text-white text-xs md:text-sm truncate">{b.artist?.name || "فنان"}</p><p className="text-[9px] md:text-[10px] text-gray-500 truncate">{client} • {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}</p></div><span className={"status-chip text-[9px] " + status.class}>{status.label}</span></Link>) })}
+              {recentBookings.map((b: any) => { const status = gs(b.status); const client = b.user?.name || b.customer?.fullName || b.clientName || "عميل"; return (<Link key={b.id} href={"/admin/bookings/" + b.id} className="flex items-center gap-2.5 md:gap-3 p-2 md:p-2.5 rounded-lg hover:bg-card transition"><div className="icon-circle dark w-8 h-8"><Music size={14}/></div><div className="flex-1 min-w-0"><p className="font-bold text-fg text-xs md:text-sm truncate">{b.artist?.name || "فنان"}</p><p className="text-[9px] md:text-[10px] text-muted truncate">{client} • {b.date ? new Date(b.date).toLocaleDateString("ar-EG") : "—"}</p></div><span className={"status-chip text-[9px] " + status.class}>{status.label}</span></Link>) })}
             </div>
           )}
         </div>

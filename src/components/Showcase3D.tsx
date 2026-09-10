@@ -25,7 +25,7 @@ export default function Showcase3D() {
   return (
     <section
       dir="rtl"
-      className="relative py-14 md:py-24 overflow-hidden bg-gradient-to-b from-white via-[#faf8f0] to-white dark:from-[#0a0a0a] dark:via-[#101010] dark:to-[#0a0a0a] mt-20"
+      className="relative py-14 md:py-24 overflow-hidden bg-gradient-to-b from-white via-[#faf8f0] to-white dark:from-bg dark:via-[#101010] dark:to-bg mt-20"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -35,10 +35,10 @@ export default function Showcase3D() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center mb-10 md:mb-14">
           <span className="badge-gold"><Sparkles size={14} /> تجربة Nooryi البصرية</span>
-          <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mt-4">
+          <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-fg mt-4">
             عالمنا <span className="gold-text">بالصورة والصوت</span>
           </h2>
-          <p className="text-gray-500 dark:text-white/60 mt-3 max-w-xl mx-auto text-sm md:text-base">
+          <p className="text-muted dark:text-muted mt-3 max-w-xl mx-auto text-sm md:text-base">
             جولة ثلاثية الأبعاد بين آلاتنا ومعداتنا — كل صورة تحكي جزءاً من حفل ناجح
           </p>
         </div>
@@ -63,18 +63,18 @@ export default function Showcase3D() {
                     <span className="inline-block text-[10px] font-bold px-3 py-1 rounded-full bg-[#F5A623]/20 text-[#F5A623] border border-[#F5A623]/40 mb-2">
                       Nooryi Showcase
                     </span>
-                    <h3 className="text-xl md:text-3xl font-black text-white">{s.title}</h3>
-                    <p className="text-white/70 text-xs md:text-sm mt-1">{s.sub}</p>
+                    <h3 className="text-xl md:text-3xl font-black text-fg">{s.title}</h3>
+                    <p className="text-muted text-xs md:text-sm mt-1">{s.sub}</p>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <button onClick={prev} aria-label="السابق" className="absolute right-0 md:-right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 dark:bg-[#1a1a1a]/90 border border-[#F5A623]/40 text-[#E8961A] hover:bg-[#F5A623] hover:text-[#111] transition-all flex items-center justify-center shadow-lg">
+          <button onClick={prev} aria-label="السابق" className="absolute right-0 md:-right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 dark:bg-card/90 border border-[#F5A623]/40 text-[#E8961A] hover:bg-[#F5A623] hover:text-[#111] transition-all flex items-center justify-center shadow-lg">
             <ChevronRight size={20} />
           </button>
-          <button onClick={next} aria-label="التالي" className="absolute left-0 md:-left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 dark:bg-[#1a1a1a]/90 border border-[#F5A623]/40 text-[#E8961A] hover:bg-[#F5A623] hover:text-[#111] transition-all flex items-center justify-center shadow-lg">
+          <button onClick={next} aria-label="التالي" className="absolute left-0 md:-left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 dark:bg-card/90 border border-[#F5A623]/40 text-[#E8961A] hover:bg-[#F5A623] hover:text-[#111] transition-all flex items-center justify-center shadow-lg">
             <ChevronLeft size={20} />
           </button>
         </div>

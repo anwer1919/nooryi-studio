@@ -223,13 +223,13 @@ export default function AdminPricingPage() {
         <div className="no-print flex items-center justify-between">
           <div>
             <div className="badge-gold mb-3">التسعير</div>
-            <h1 className="text-4xl font-black text-gray-900 dark:text-white">إدارة أسعار المناطق</h1>
-            <p className="text-gray-500 mt-1">تحديد الأسعار لكل فنان حسب المنطقة الجغرافية</p>
+            <h1 className="text-4xl font-black text-gray-900 dark:text-fg">إدارة أسعار المناطق</h1>
+            <p className="text-muted mt-1">تحديد الأسعار لكل فنان حسب المنطقة الجغرافية</p>
           </div>
           <button
             onClick={() => setShowPreview(true)}
             disabled={!selectedArtistId || regions.length === 0}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-fg font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
           >
             <Eye size={18} />
             معاينة التقرير
@@ -264,7 +264,7 @@ export default function AdminPricingPage() {
           <select
             value={selectedArtistId}
             onChange={(e) => setSelectedArtistId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-white rounded-xl focus:ring-2 focus:ring-[#F5A623]"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-card dark:text-fg rounded-xl focus:ring-2 focus:ring-[#F5A623]"
           >
             <option value="">— اختر فناناً —</option>
             {artists.map(a => (
@@ -279,7 +279,7 @@ export default function AdminPricingPage() {
           <>
             {/* ═══════════ Regions Table ═══════════ */}
             <div className="no-print card-pro p-6">
-              <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
                 <MapPin size={20} className="text-[#F5A623]" />
                 مناطق التسعير — {selectedArtist?.name}
               </h2>
@@ -289,25 +289,25 @@ export default function AdminPricingPage() {
                   <Loader2 size={32} className="animate-spin text-[#F5A623] mx-auto" />
                 </div>
               ) : regions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted">
                   <DollarSign size={40} className="mx-auto mb-2 opacity-30" />
                   <p>لا توجد مناطق مسجلة</p>
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-[#1a1a1a]">
+                  <thead className="bg-gray-50 dark:bg-card">
                     <tr>
-                      <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">المنطقة</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">السعر الأساسي</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">رسوم السفر</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">الإجمالي</th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase">إجراءات</th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-muted uppercase">المنطقة</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-muted uppercase">السعر الأساسي</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-muted uppercase">رسوم السفر</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-muted uppercase">الإجمالي</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-muted uppercase">إجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {regions.map(r => (
-                      <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-[#1a1a1a]">
-                        <td className="px-4 py-3 font-bold text-gray-900 dark:text-white">{r.regionName}</td>
+                      <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-card">
+                        <td className="px-4 py-3 font-bold text-gray-900 dark:text-fg">{r.regionName}</td>
                         <td className="px-4 py-3 text-center font-black">{Number(r.basePrice).toLocaleString()} ج.م</td>
                         <td className="px-4 py-3 text-center">{Number(r.travelFee || 0).toLocaleString()} ج.م</td>
                         <td className="px-4 py-3 text-center font-black text-[#F5A623]">
@@ -332,7 +332,7 @@ export default function AdminPricingPage() {
 
             {/* ═══════════ Add/Edit Form ═══════════ */}
             <div className="no-print card-pro p-6">
-              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-black text-gray-900 dark:text-fg mb-4 flex items-center gap-2">
                 <Plus size={18} className="text-[#F5A623]" />
                 {editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}
               </h3>
@@ -346,7 +346,7 @@ export default function AdminPricingPage() {
                       value={form.regionName}
                       onChange={(e) => setForm({ ...form, regionName: e.target.value })}
                       placeholder="مثال: القاهرة"
-                      className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                      className="w-full px-4 py-3 border rounded-xl dark:bg-card dark:border-gray-700 dark:text-fg"
                       required
                     />
                   </div>
@@ -357,7 +357,7 @@ export default function AdminPricingPage() {
                       value={form.basePrice}
                       onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
                       placeholder="5000"
-                      className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                      className="w-full px-4 py-3 border rounded-xl dark:bg-card dark:border-gray-700 dark:text-fg"
                       required
                     />
                   </div>
@@ -368,7 +368,7 @@ export default function AdminPricingPage() {
                       value={form.travelFee}
                       onChange={(e) => setForm({ ...form, travelFee: e.target.value })}
                       placeholder="0"
-                      className="w-full px-4 py-3 border rounded-xl dark:bg-[#1a1a1a] dark:border-gray-700 dark:text-white"
+                      className="w-full px-4 py-3 border rounded-xl dark:bg-card dark:border-gray-700 dark:text-fg"
                     />
                   </div>
                 </div>
@@ -405,7 +405,7 @@ export default function AdminPricingPage() {
             <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
 
             {/* Header */}
-            <div className="px-12 pt-10 pb-6 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
+            <div className="px-12 pt-10 pb-6 bg-gradient-to-b from-[#1a1a1a] to-bg text-fg">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-5">
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-2xl">
@@ -414,14 +414,14 @@ export default function AdminPricingPage() {
                   <div>
                     <h1 className="text-4xl font-black tracking-tight">{STUDIO_INFO.nameAr}</h1>
                     <p className="text-[#F5A623] font-bold mt-1">{STUDIO_INFO.name}</p>
-                    <p className="text-xs text-gray-400 mt-2">{STUDIO_INFO.tagline}</p>
+                    <p className="text-xs text-muted mt-2">{STUDIO_INFO.tagline}</p>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <div className="inline-block px-4 py-2 bg-[#F5A623]/20 border border-[#F5A623] rounded-lg">
                     <p className="text-xs text-[#F5A623] font-bold">تقرير أسعار</p>
-                    <p className="text-xs text-gray-300 mt-1 font-mono" dir="ltr">{reportId}</p>
+                    <p className="text-xs text-muted mt-1 font-mono" dir="ltr">{reportId}</p>
                   </div>
                 </div>
               </div>
@@ -446,14 +446,14 @@ export default function AdminPricingPage() {
                     </div>
                   )}
                   <div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">أسعار</p>
+                    <p className="text-xs text-muted font-bold uppercase tracking-wider">أسعار</p>
                     <h2 className="text-3xl font-black text-gray-900">{selectedArtist.name}</h2>
-                    <p className="text-sm text-gray-600 mt-1">{selectedArtist.category || "فنان"}</p>
+                    <p className="text-sm text-muted mt-1">{selectedArtist.category || "فنان"}</p>
                   </div>
                 </div>
 
                 <div className="text-left">
-                  <p className="text-xs text-gray-500">تاريخ الإصدار</p>
+                  <p className="text-xs text-muted">تاريخ الإصدار</p>
                   <p className="text-sm font-bold text-gray-900 mt-1">{reportDate}</p>
                 </div>
               </div>
@@ -463,21 +463,21 @@ export default function AdminPricingPage() {
             <div className="px-12 py-8">
               <div className="grid grid-cols-3 gap-4">
                 <div className="border-2 border-[#F5A623] rounded-2xl p-5 bg-gradient-to-br from-[#F5A623]/5 to-transparent">
-                  <p className="text-xs text-gray-600 font-bold uppercase tracking-wider mb-2">عدد المناطق</p>
+                  <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">عدد المناطق</p>
                   <p className="text-4xl font-black text-gray-900">{totalRegions}</p>
-                  <p className="text-xs text-gray-500 mt-1">منطقة مغطاة</p>
+                  <p className="text-xs text-muted mt-1">منطقة مغطاة</p>
                 </div>
 
                 <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white">
-                  <p className="text-xs text-gray-600 font-bold uppercase tracking-wider mb-2">متوسط السعر</p>
+                  <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">متوسط السعر</p>
                   <p className="text-3xl font-black text-[#F5A623]">{avgPrice.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">جنيه مصري</p>
+                  <p className="text-xs text-muted mt-1">جنيه مصري</p>
                 </div>
 
                 <div className="border-2 border-gray-200 rounded-2xl p-5 bg-white">
-                  <p className="text-xs text-gray-600 font-bold uppercase tracking-wider mb-2">العملة</p>
+                  <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">العملة</p>
                   <p className="text-3xl font-black text-gray-900">EGP</p>
-                  <p className="text-xs text-gray-500 mt-1">جنيه مصري</p>
+                  <p className="text-xs text-muted mt-1">جنيه مصري</p>
                 </div>
               </div>
             </div>
@@ -491,7 +491,7 @@ export default function AdminPricingPage() {
 
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="bg-[#0a0a0a] text-white">
+                  <tr className="bg-bg text-fg">
                     <th className="px-4 py-4 text-right text-sm font-bold">#</th>
                     <th className="px-4 py-4 text-right text-sm font-bold">المنطقة</th>
                     <th className="px-4 py-4 text-center text-sm font-bold">السعر الأساسي</th>
@@ -507,7 +507,7 @@ export default function AdminPricingPage() {
                         key={r.id}
                         className={`border-b border-gray-200 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
                       >
-                        <td className="px-4 py-4 text-sm text-gray-500 font-mono">
+                        <td className="px-4 py-4 text-sm text-muted font-mono">
                           {String(i + 1).padStart(2, '0')}
                         </td>
                         <td className="px-4 py-4">
@@ -534,7 +534,7 @@ export default function AdminPricingPage() {
                   })}
                 </tbody>
                 <tfoot>
-                  <tr className="bg-[#1a1a1a] text-white font-black">
+                  <tr className="bg-card text-fg font-black">
                     <td colSpan={2} className="px-4 py-4 text-right">المجموع</td>
                     <td className="px-4 py-4 text-center">
                       {regions.reduce((s, r) => s + Number(r.basePrice), 0).toLocaleString()} ج.م
@@ -608,7 +608,7 @@ export default function AdminPricingPage() {
                       style={{ transform: 'rotate(-15deg) scale(1.15)', opacity: 0.5 }}
                     ></div>
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-3 font-bold uppercase tracking-widest">
+                  <p className="text-[10px] text-muted mt-3 font-bold uppercase tracking-widest">
                     ختم المنصة الرسمي
                   </p>
                 </div>
@@ -624,10 +624,10 @@ export default function AdminPricingPage() {
                       fgColor="#0a0a0a"
                     />
                   </div>
-                  <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-wider text-center">
+                  <p className="text-[10px] text-muted mt-2 font-bold uppercase tracking-wider text-center">
                     امسح للتحقق
                   </p>
-                  <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">
+                  <p className="text-[8px] text-muted mt-1 font-mono" dir="ltr">
                     ID: {reportId}
                   </p>
                 </div>
@@ -638,7 +638,7 @@ export default function AdminPricingPage() {
 
               {/* Copyright */}
               <div className="mt-4 text-center">
-                <p className="text-[10px] text-gray-500">
+                <p className="text-[10px] text-muted">
                   © {new Date().getFullYear()} {STUDIO_INFO.name} — جميع الحقوق محفوظة |
                   ترخيص رقم <span className="font-mono">{STUDIO_INFO.licenseNumber}</span>
                 </p>

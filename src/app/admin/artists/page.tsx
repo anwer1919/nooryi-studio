@@ -22,10 +22,10 @@ export default async function AdminArtistsPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="badge-gold mb-3">إدارة الفنانين</div>
-          <h1 className="text-4xl font-black text-gray-900 dark:text-white">
+          <h1 className="text-4xl font-black text-gray-900 dark:text-fg">
             الفنانين{mgr.isManager && mgr.artistName ? ` — ${mgr.artistName}` : ""}
           </h1>
-          <p className="text-gray-500 mt-1">إجمالي {artists.length} فنان مسجل</p>
+          <p className="text-muted mt-1">إجمالي {artists.length} فنان مسجل</p>
         </div>
         {!mgr.isManager && (
           <Link href="/admin/artists/new" className="btn-gold">
@@ -37,9 +37,9 @@ export default async function AdminArtistsPage() {
 
       {artists.length === 0 ? (
         <div className="card-pro text-center py-20">
-          <Music className="mx-auto text-gray-300 mb-4" size={56} />
+          <Music className="mx-auto text-muted mb-4" size={56} />
           <h3 className="text-xl font-black text-gray-900 mb-2">لا يوجد فنانين</h3>
-          <p className="text-gray-500 mb-6">ابدأ بإضافة أول فنان إلى منصتك</p>
+          <p className="text-muted mb-6">ابدأ بإضافة أول فنان إلى منصتك</p>
           {!mgr.isManager && (
             <Link href="/admin/artists/new" className="btn-gold inline-flex">
               <Plus size={18} />
@@ -85,25 +85,25 @@ export default async function AdminArtistsPage() {
                             <Music size={18} />
                           </div>
                           <div>
-                            <p className="font-black text-gray-900 dark:text-white">{artist.name}</p>
-                            <p className="text-xs text-gray-500">@{artist.slug}</p>
+                            <p className="font-black text-gray-900 dark:text-fg">{artist.name}</p>
+                            <p className="text-xs text-muted">@{artist.slug}</p>
                           </div>
                         </div>
                       </td>
                       <td>
-                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-muted">
                           {artist.category || "—"}
                         </span>
                       </td>
                       <td>
                         <div className="flex items-center gap-1">
                           <Star size={14} className="text-[#F5A623] fill-[#F5A623]" />
-                          <span className="font-bold text-gray-900 dark:text-white">{avg}</span>
+                          <span className="font-bold text-gray-900 dark:text-fg">{avg}</span>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-1 text-sm">
-                          <Calendar size={14} className="text-gray-400" />
+                          <Calendar size={14} className="text-muted" />
                           <span className="font-bold">{artist._count.bookings}</span>
                         </div>
                       </td>
@@ -112,10 +112,10 @@ export default async function AdminArtistsPage() {
                       </td>
                       <td>
                         <div className="flex items-center justify-center gap-1">
-                          <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#E8961A] transition">
+                          <Link href={`/artists/${artist.slug}`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-muted hover:text-[#E8961A] transition">
                             <Eye size={16} />
                           </Link>
-                          <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-gray-500 hover:text-[#E8961A] transition">
+                          <Link href={`/admin/artists/${artist.slug}/edit`} className="p-2 hover:bg-[#faf8f0] rounded-lg text-muted hover:text-[#E8961A] transition">
                             <Edit3 size={16} />
                           </Link>
                         </div>

@@ -37,9 +37,9 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
   if (!bookings || bookings.length === 0) {
     return (
       <div className="p-12 text-center">
-        <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <Calendar className="w-16 h-16 text-muted mx-auto mb-4" />
         <h3 className="text-lg font-bold text-gray-900 mb-2">لا توجد حجوزات</h3>
-        <p className="text-gray-500">لم يتم العثور على حجوزات مطابقة للبحث.</p>
+        <p className="text-muted">لم يتم العثور على حجوزات مطابقة للبحث.</p>
       </div>
     )
   }
@@ -49,13 +49,13 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
       <table className="w-full">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">العميل</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الفنان</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">التاريخ</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">المبلغ</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الحالة</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الدفع</th>
-            <th className="text-right py-4 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider">الإجراءات</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">العميل</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">الفنان</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">التاريخ</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">المبلغ</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">الحالة</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">الدفع</th>
+            <th className="text-right py-4 px-4 text-xs font-bold text-muted uppercase tracking-wider">الإجراءات</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -72,12 +72,12 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
               <tr key={booking.id} className="hover:bg-gray-50 transition">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-white font-bold">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center text-fg font-bold">
                       {clientInitial}
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{booking.clientName}</p>
-                      <p className="text-xs text-gray-500">{booking.clientEmail}</p>
+                      <p className="text-xs text-muted">{booking.clientEmail}</p>
                     </div>
                   </div>
                 </td>
@@ -86,24 +86,24 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                     {booking.artistImage ? (
                       <img src={booking.artistImage} alt={booking.artistName} className="w-8 h-8 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center text-fg font-bold text-xs">
                         {artistInitial}
                       </div>
                     )}
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{booking.artistName}</p>
-                      <p className="text-xs text-gray-500">{booking.artistCategory}</p>
+                      <p className="text-xs text-muted">{booking.artistCategory}</p>
                     </div>
                   </div>
                 </td>
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+                    <Calendar size={14} className="text-muted flex-shrink-0" />
                     {/* ✅ عرض النص الجاهز مباشرة بدون أي معالجة جديدة */}
                     <span className="text-gray-700">{booking.eventDate}</span>
                   </div>
                   {booking.venueName && (
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                    <div className="flex items-center gap-2 text-xs text-muted mt-1">
                       <MapPin size={12} className="flex-shrink-0" />
                       <span>{booking.venueName}</span>
                     </div>
@@ -124,7 +124,7 @@ export default function BookingsTable({ bookings }: { bookings: Booking[] }) {
                   </span>
                 </td>
                 <td className="py-4 px-4">
-                  <Link href={`/admin/bookings/${booking.id}`} className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-white rounded-lg text-sm font-bold hover:bg-purple-800 transition">
+                  <Link href={`/admin/bookings/${booking.id}`} className="flex items-center gap-2 px-4 py-2 bg-purple-700 text-fg rounded-lg text-sm font-bold hover:bg-purple-800 transition">
                     <Eye size={16} />
                     عرض التفاصيل
                   </Link>

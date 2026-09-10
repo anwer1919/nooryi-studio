@@ -30,8 +30,8 @@ export default async function AdminSettingsPage() {
     <div dir="rtl" className="space-y-6 max-w-5xl mx-auto p-6">
       <div>
         <div className="badge-gold mb-3">الإعدادات</div>
-        <h1 className="text-4xl font-black text-gray-900 dark:text-white">إعدادات المنصة</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">إدارة الإعدادات العامة والتواصل والدفع</p>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-fg">إعدادات المنصة</h1>
+        <p className="text-muted dark:text-muted mt-1">إدارة الإعدادات العامة والتواصل والدفع</p>
       </div>
 
       <SettingsForm settings={settings} />

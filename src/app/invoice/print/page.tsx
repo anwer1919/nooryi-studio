@@ -23,7 +23,7 @@ export default async function UniversalPrintPage({
 }) {
   const { id } = await searchParams
   if (!id) {
-    return <div dir="rtl" className="min-h-screen flex items-center justify-center"><p className="text-xl font-bold text-gray-500">معرف الحجز غير موجود</p></div>
+    return <div dir="rtl" className="min-h-screen flex items-center justify-center"><p className="text-xl font-bold text-muted">معرف الحجز غير موجود</p></div>
   }
 
   let booking
@@ -37,7 +37,7 @@ export default async function UniversalPrintPage({
   }
 
   if (!booking) {
-    return <div dir="rtl" className="min-h-screen flex items-center justify-center"><p className="text-xl font-bold text-gray-500">الحجز غير موجود</p></div>
+    return <div dir="rtl" className="min-h-screen flex items-center justify-center"><p className="text-xl font-bold text-muted">الحجز غير موجود</p></div>
   }
 
   const totalPaid = booking.payments.filter((p: any) => ["COMPLETED", "SUCCESS"].includes(p.status)).reduce((s: number, p: any) => s + Number(p.amount || 0), 0)
@@ -75,7 +75,7 @@ export default async function UniversalPrintPage({
       <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>
 
       {/* الترويسة */}
-      <div className="px-12 pt-8 pb-5 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] text-white">
+      <div className="px-12 pt-8 pb-5 bg-gradient-to-b from-[#1a1a1a] to-bg text-fg">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-2xl">
@@ -84,16 +84,16 @@ export default async function UniversalPrintPage({
             <div>
               <h1 className="text-3xl font-black">{STUDIO.nameAr}</h1>
               <p className="text-[#F5A623] font-bold mt-0.5">{STUDIO.name}</p>
-              <p className="text-xs text-gray-400 mt-1">{STUDIO.tagline}</p>
+              <p className="text-xs text-muted mt-1">{STUDIO.tagline}</p>
             </div>
           </div>
           <div className="text-left">
             <div className="inline-block px-4 py-2 bg-[#F5A623]/20 border border-[#F5A623] rounded-lg">
               <p className="text-xs text-[#F5A623] font-bold">فاتورة رسمية</p>
-              <p className="text-xs text-gray-300 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
+              <p className="text-xs text-muted mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
             </div>
-            <p className="text-xs text-gray-400 mt-2">تاريخ الإصدار: {issueDate}</p>
-            <p className="text-xs text-gray-400 mt-1">الحالة: <span className="text-[#F5A623] font-bold">{statusLabel}</span></p>
+            <p className="text-xs text-muted mt-2">تاريخ الإصدار: {issueDate}</p>
+            <p className="text-xs text-muted mt-1">الحالة: <span className="text-[#F5A623] font-bold">{statusLabel}</span></p>
           </div>
         </div>
         <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
@@ -103,17 +103,17 @@ export default async function UniversalPrintPage({
       <div className="px-12 py-5 bg-[#faf8f0] border-b-4 border-[#F5A623]">
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">فاتورة إلى</p>
+            <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">فاتورة إلى</p>
             <p className="text-lg font-black text-gray-900">{booking.clientName}</p>
-            <p className="text-sm text-gray-600 mt-1" dir="ltr">{booking.clientPhone}</p>
-            {booking.clientEmail && <p className="text-sm text-gray-600">{booking.clientEmail}</p>}
+            <p className="text-sm text-muted mt-1" dir="ltr">{booking.clientPhone}</p>
+            {booking.clientEmail && <p className="text-sm text-muted">{booking.clientEmail}</p>}
           </div>
           <div className="text-left">
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">الفنان</p>
+            <p className="text-xs text-muted font-bold uppercase tracking-wider mb-2">الفنان</p>
             <div className="flex items-center gap-3 justify-end">
               <div className="text-right">
                 <p className="text-lg font-black text-gray-900">{booking.artist?.name}</p>
-                <p className="text-sm text-gray-600">{booking.artist?.category || "فنان"}</p>
+                <p className="text-sm text-muted">{booking.artist?.category || "فنان"}</p>
               </div>
               {booking.artist?.profileImage ? (
                 <img src={booking.artist.profileImage} alt="" className="w-14 h-14 rounded-2xl object-cover" />
@@ -133,7 +133,7 @@ export default async function UniversalPrintPage({
           <div className="w-1 h-5 bg-[#F5A623] rounded"></div>تفاصيل الحجز
         </h3>
         <table className="w-full border-collapse text-sm">
-          <thead><tr className="bg-[#0a0a0a] text-white">
+          <thead><tr className="bg-bg text-fg">
             <th className="px-3 py-2.5 text-right text-xs font-bold">التاريخ</th>
             <th className="px-3 py-2.5 text-center text-xs font-bold">الفترة</th>
             <th className="px-3 py-2.5 text-right text-xs font-bold">المكان</th>
@@ -154,25 +154,25 @@ export default async function UniversalPrintPage({
           <div className="w-1 h-5 bg-[#F5A623] rounded"></div>التفاصيل المالية
         </h3>
         <table className="w-full border-collapse">
-          <thead><tr className="bg-[#0a0a0a] text-white">
+          <thead><tr className="bg-bg text-fg">
             <th className="px-4 py-3 text-right text-xs font-bold">#</th>
             <th className="px-4 py-3 text-right text-xs font-bold">البيان</th>
             <th className="px-4 py-3 text-center text-xs font-bold">المبلغ</th>
           </tr></thead>
           <tbody>
             <tr className="border-b border-gray-200 bg-white">
-              <td className="px-4 py-3 text-gray-500 font-mono text-xs">01</td>
+              <td className="px-4 py-3 text-muted font-mono text-xs">01</td>
               <td className="px-4 py-3 font-bold">أجر الفنان الأساسي</td>
               <td className="px-4 py-3 text-center font-bold">{basePrice.toLocaleString()} ج.م</td>
             </tr>
             {travelFee > 0 && (
               <tr className="border-b border-gray-200 bg-gray-50">
-                <td className="px-4 py-3 text-gray-500 font-mono text-xs">02</td>
+                <td className="px-4 py-3 text-muted font-mono text-xs">02</td>
                 <td className="px-4 py-3 font-bold">رسوم السفر والتنقل</td>
                 <td className="px-4 py-3 text-center font-bold">+ {travelFee.toLocaleString()} ج.م</td>
               </tr>
             )}
-            <tr className="bg-[#1a1a1a] text-white font-black">
+            <tr className="bg-card text-fg font-black">
               <td colSpan={2} className="px-4 py-3 text-right">الإجمالي المستحق</td>
               <td className="px-4 py-3 text-center text-[#F5A623] text-lg">{grossAmount.toLocaleString()} ج.م</td>
             </tr>
@@ -215,7 +215,7 @@ export default async function UniversalPrintPage({
               <p>{STUDIO.email}</p>
               <p>{STUDIO.address}</p>
               <p dir="ltr" className="text-right font-mono text-[#F5A623]">{STUDIO.website.replace("https://", "")}</p>
-              <p className="text-gray-500">س.ت: <span className="font-mono">{STUDIO.taxNumber}</span></p>
+              <p className="text-muted">س.ت: <span className="font-mono">{STUDIO.taxNumber}</span></p>
             </div>
           </div>
           <div className="flex flex-col items-center justify-center">
@@ -230,18 +230,18 @@ export default async function UniversalPrintPage({
               </div>
               <div className="absolute inset-0 rounded-full border-2 border-[#F5A623]" style={{ transform: "rotate(-15deg) scale(1.15)", opacity: 0.5 }}></div>
             </div>
-            <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
+            <p className="text-[9px] text-muted mt-2 font-bold uppercase tracking-widest">ختم المنصة الرسمي</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="bg-white p-2.5 rounded-xl border-2 border-[#F5A623] shadow-lg">
               <QRCodeDisplay value={verifyUrl} size={95} />
             </div>
-            <p className="text-[9px] text-gray-500 mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
-            <p className="text-[8px] text-gray-400 mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
+            <p className="text-[9px] text-muted mt-2 font-bold uppercase tracking-wider">امسح للتحقق</p>
+            <p className="text-[8px] text-muted mt-1 font-mono" dir="ltr">{invoiceNumber}</p>
           </div>
         </div>
         <div className="mt-5 h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent"></div>
-        <p className="mt-3 text-[10px] text-gray-500 text-center">© {new Date().getFullYear()} {STUDIO.name} — جميع الحقوق محفوظة | ترخيص <span className="font-mono">{STUDIO.licenseNumber}</span></p>
+        <p className="mt-3 text-[10px] text-muted text-center">© {new Date().getFullYear()} {STUDIO.name} — جميع الحقوق محفوظة | ترخيص <span className="font-mono">{STUDIO.licenseNumber}</span></p>
       </div>
 
       <div className="h-3 bg-gradient-to-r from-[#F5A623] via-[#FFC966] to-[#F5A623]"></div>

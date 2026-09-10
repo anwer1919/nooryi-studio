@@ -23,10 +23,10 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
     return (
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-6 text-center">
         <FileText size={40} className="mx-auto text-yellow-500 mb-3" />
-        <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">
+        <h3 className="text-lg font-black text-gray-900 dark:text-fg mb-2">
           بيانات الدفع غير متوفرة
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted dark:text-muted">
           يرجى التواصل معنا لإتمام عملية الدفع
         </p>
       </div>
@@ -37,7 +37,7 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
     <div className="space-y-4">
       <div className="bg-gradient-to-br from-[#F5A623]/10 to-[#E8961A]/10 border border-[#F5A623]/30 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-black text-gray-900 dark:text-fg flex items-center gap-2">
             <CreditCard size={20} className="text-[#F5A623]" />
             بيانات الدفع — {artist.name}
           </h3>
@@ -49,28 +49,28 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
         <div className="space-y-4">
           {/* التحويل البنكي */}
           {artist.bankName && (
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-black text-gray-900 dark:text-fg mb-3 flex items-center gap-2">
                 <Building2 size={16} className="text-blue-600" />
                 تحويل بنكي
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">البنك:</span>
-                  <span className="font-bold text-gray-900 dark:text-white">{artist.bankName}</span>
+                  <span className="text-muted dark:text-muted">البنك:</span>
+                  <span className="font-bold text-gray-900 dark:text-fg">{artist.bankName}</span>
                 </div>
                 {artist.bankAccount && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">رقم الحساب:</span>
-                    <span className="font-bold text-gray-900 dark:text-white font-mono" dir="ltr">
+                    <span className="text-muted dark:text-muted">رقم الحساب:</span>
+                    <span className="font-bold text-gray-900 dark:text-fg font-mono" dir="ltr">
                       {artist.bankAccount}
                     </span>
                   </div>
                 )}
                 {artist.iban && (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 dark:text-gray-400">IBAN:</span>
-                    <span className="font-bold text-gray-900 dark:text-white font-mono text-xs" dir="ltr">
+                    <span className="text-muted dark:text-muted">IBAN:</span>
+                    <span className="font-bold text-gray-900 dark:text-fg font-mono text-xs" dir="ltr">
                       {artist.iban}
                     </span>
                   </div>
@@ -81,12 +81,12 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
 
           {/* فودافون كاش */}
           {artist.vodafoneCash && (
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-black text-gray-900 dark:text-fg mb-3 flex items-center gap-2">
                 <Phone size={16} className="text-red-500" />
                 فودافون كاش
               </h4>
-              <p className="text-xl font-black text-gray-900 dark:text-white font-mono text-center py-2" dir="ltr">
+              <p className="text-xl font-black text-gray-900 dark:text-fg font-mono text-center py-2" dir="ltr">
                 {artist.vodafoneCash}
               </p>
             </div>
@@ -94,12 +94,12 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
 
           {/* إنستا باي */}
           {artist.instaPay && (
-            <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-black text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <div className="bg-white dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-black text-gray-900 dark:text-fg mb-3 flex items-center gap-2">
                 <Smartphone size={16} className="text-purple-500" />
                 إنستا باي
               </h4>
-              <p className="text-lg font-bold text-gray-900 dark:text-white font-mono text-center py-2" dir="ltr">
+              <p className="text-lg font-bold text-gray-900 dark:text-fg font-mono text-center py-2" dir="ltr">
                 {artist.instaPay}
               </p>
             </div>
@@ -116,8 +116,8 @@ export default function ArtistPaymentDisplay({ artist, amount }: ArtistPaymentDi
         </div>
       </div>
 
-      <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <div className="bg-gray-50 dark:bg-card rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <p className="text-xs text-muted dark:text-muted text-center">
           ⚠️ بعد إتمام الدفع، سيتم مراجعة طلبك وتأكيده خلال 24 ساعة
         </p>
       </div>
