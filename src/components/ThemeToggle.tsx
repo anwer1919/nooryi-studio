@@ -22,7 +22,7 @@ export default function ThemeToggle() {
     document.documentElement.classList.toggle("dark", next)
   }
 
-  if (!mounted) return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-card animate-pulse" />
+  if (!mounted) return <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center border border-line bg-card text-[#F5A623] hover:border-[#F5A623] hover:bg-surface transition-all" />
 
   return (
     <button onClick={toggle} aria-label="تبديل الوضع"

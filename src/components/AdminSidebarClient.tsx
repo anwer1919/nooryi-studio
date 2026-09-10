@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import ThemeToggle from "@/components/ThemeToggle"
 import { useState, useEffect } from "react"
 import { LayoutDashboard, Users, Music, Calendar, FileText, Settings, LogOut, X, Banknote, Shield } from "lucide-react"
 const iconMap: Record<string, any> = { LayoutDashboard, Users, Music, Calendar, FileText, Settings, Banknote, Shield }

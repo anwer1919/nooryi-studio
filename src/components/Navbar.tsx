@@ -3,7 +3,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import { useState, useEffect } from "react"
-import { Music, Menu, X, CalendarCheck, Settings, LogOut, Home, User } from "lucide-react"
+import { Music, Menu, X, CalendarCheck, Settings, LogOut, Home, User, LayoutDashboard } from "lucide-react"
+import ThemeToggle from "@/components/ThemeToggle"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -15,7 +16,8 @@ export default function Navbar() {
   const user = (session?.user ?? null) as any
   const isAuthenticated = !!user
   const displayName = user?.name || (user?.email ? String(user.email).split("@")[0] : "") || "حسابي"
-  const links = [{ href: "/", label: "الرئيسية", icon: Home }, { href: "/artists", label: "الفنانين", icon: Music }, ...(isAuthenticated ? [{ href: "/my-bookings", label: "حجوزاتي", icon: CalendarCheck }, { href: "/settings", label: "الإعدادات", icon: Settings }] : [])]
+  const isAdminRole = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN" || user?.role === "ARTIST_MANAGER"
+  const links = [{ href: "/", label: "الرئيسية", icon: Home }, { href: "/artists", label: "الفنانين", icon: Music }, ...(isAuthenticated ? [{ href: "/my-bookings", label: "حجوزاتي", icon: CalendarCheck }, { href: "/settings", label: "الإعدادات", icon: Settings }, ...(isAdminRole ? [{ href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard }] : [])] : [])]
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-bg/95 backdrop-blur-xl border-b border-[#F5A623]/10">
@@ -23,7 +25,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16 md:h-20">
             <Link href="/" className="flex items-center gap-3"><div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/20"><Music size={20} className="text-white" /></div><div><p className="text-base md:text-xl font-black text-fg">Nooryi</p><p className="text-[9px] text-[#F5A623] font-bold tracking-[0.2em] uppercase">Studio</p></div></Link>
             <nav className="hidden md:flex items-center gap-6">{links.map(l => (<Link key={l.href} href={l.href} className={`text-sm font-semibold transition ${pathname === l.href ? "text-[#F5A623]" : "text-muted hover:text-[#F5A623]"}`}>{l.label}</Link>))}</nav>
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-3"><ThemeToggle />
               {status === "loading" ? (
                 <div className="flex items-center gap-2"><div className="w-16 h-9 bg-surface rounded-xl animate-pulse"></div><div className="hidden md:block w-16 h-9 bg-surface rounded-xl animate-pulse"></div></div>
               ) : isAuthenticated ? (
@@ -66,7 +68,7 @@ export default function Navbar() {
             <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
               {links.map(l => (<Link key={l.href} href={l.href} onClick={() => setOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition ${pathname === l.href ? "bg-[#F5A623] text-[#0a0a0a]" : "text-muted hover:bg-surface hover:text-[#F5A623]"}`}><l.icon size={17} /> {l.label}</Link>))}
             </nav>
-            <div className="p-3 border-t border-[#F5A623]/10 space-y-1">
+            <div className="p-3 border-t border-[#F5A623]/10 space-y-1"><div className="px-1 pb-2"><div className="flex items-center justify-between px-4 py-2.5 bg-surface border border-line rounded-xl"><span className="text-sm font-bold text-fg">الوضع الليلي</span><ThemeToggle /></div></div>
               {status === "loading" ? null : isAuthenticated ? (
                 <button onClick={() => signOut({ callbackUrl: "/" })} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 font-bold text-sm transition"><LogOut size={17} /> تسجيل الخروج</button>
               ) : (
