@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import { useState, useRef, useEffect } from "react"
 import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react"
 
