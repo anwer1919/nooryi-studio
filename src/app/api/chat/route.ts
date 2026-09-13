@@ -24,7 +24,8 @@ export async function POST(req: Request) {
     return result.toDataStreamResponse()
   } catch (err: any) {
     console.error("[CHAT ERROR]", err)
-    return new Response(+""+3:""\n+""+, {
+    const msg = err?.message || "خطأ"
+    return new Response(`3:"${msg}"\n`, {
       headers: { "Content-Type": "text/plain; charset=utf-8", "x-vercel-ai-data-stream": "v1" },
     })
   }

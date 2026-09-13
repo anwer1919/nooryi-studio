@@ -67,11 +67,11 @@ export default function AIChatbot() {
           <div className="flex-1 overflow-y-auto p-3 space-y-3" dir="rtl">
             {messages.length === 0 && <div className="text-center text-gray-400 text-sm mt-10">مرحباً! كيف يمكنني مساعدتك؟ 👋</div>}
             {messages.map(m => (
-              <div key={m.id} className={+""+lex gap-2 +""+}>
-                <div className={+""+w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 +""+}>
+              <div key={m.id} className={`flex gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${m.role === "user" ? "bg-purple-600" : "bg-[#F5A623]"}`}>
                   {m.role === "user" ? <User size={14} className="text-white" /> : <Bot size={14} className="text-[#0a0a0a]" />}
                 </div>
-                <div className={+""+max-w-[80%] p-2 rounded-xl text-sm whitespace-pre-wrap +""+}>{m.content}</div>
+                <div className={`max-w-[80%] p-2 rounded-xl text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-purple-500/20 text-white" : "bg-[#1a1a1a] text-gray-200"}`}>{m.content}</div>
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.content === "" && (
