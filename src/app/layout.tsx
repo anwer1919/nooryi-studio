@@ -129,7 +129,7 @@ export default function RootLayout({
           <WhatsAppButton />
         </Providers>
 
-        {/* ✅ Chat Button - Pure HTML Link (Zero Hydration Risk) */}
+                {/* ✅ Chat Button - Pure HTML Link (Server Component Safe) */}
         <a
           href="/chat-widget"
           target="_blank"
@@ -150,10 +150,7 @@ export default function RootLayout({
             boxShadow: "0 4px 20px rgba(245,166,35,0.4)",
             textDecoration: "none",
             fontSize: 24,
-            transition: "transform 0.2s ease",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.1)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
         >
           💬
         </a>
