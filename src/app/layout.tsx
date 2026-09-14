@@ -128,33 +128,6 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <WhatsAppButton />
         </Providers>
-
-                {/* ✅ Chat Button - Pure HTML Link (Server Component Safe) */}
-        <a
-          href="/chat-widget"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="فتح مساعد نوري"
-          style={{
-            position: "fixed",
-            bottom: 24,
-            left: 24,
-            zIndex: 99999,
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #F5A623, #E8961A)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(245,166,35,0.4)",
-            textDecoration: "none",
-            fontSize: 24,
-          }}
-        >
-          💬
-        </a>
-        <WhatsAppButton />
       </body>
     </html>
   );
