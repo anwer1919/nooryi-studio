@@ -28,7 +28,8 @@
         "react-qr-code": "^2.2.0",
         "swr": "^2.5.1",
         "three": "^0.185.1",
-        "twilio": "^6.1.0"
+        "twilio": "^6.1.0",
+        "zod": "^4.6.5"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.3.3",

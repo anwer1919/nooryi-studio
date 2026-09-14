@@ -1,8 +1,9 @@
-﻿import type { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import ChatbotLoader from "@/components/ChatbotLoader";
 import AIChatbot from "@/components/AIChatbot";
 
 export const metadata: Metadata = {
@@ -128,6 +129,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <WhatsAppButton />
+          <ChatbotLoader />
           <AIChatbot />
         </Providers>
       </body>
