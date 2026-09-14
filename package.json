@@ -29,6 +29,8 @@
         "swr": "^2.5.1",
         "three": "^0.185.1",
         "twilio": "^6.1.0",
+        "baileys": "^6.7.16",
+        "pino": "^9.6.0",
         "zod": "^4.6.5"
     },
     "devDependencies": {
