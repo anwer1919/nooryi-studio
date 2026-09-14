@@ -1,70 +1,88 @@
+import makeWASocket, { useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from "baileys";
+import pino from "pino";
+import path from "path";
+import fs from "fs";
+
 // ═══ توحيد صيغة الرقم الدولي ═══
 export function normalizePhone(phone: string): string {
-  let digits = phone.replace(/[^0-9]/g, "")
-  if (digits.startsWith("00")) digits = digits.slice(2)
-  if (digits.startsWith("0") && !digits.startsWith("00")) digits = "2" + digits
-  return digits
+  let digits = phone.replace(/[^0-9]/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && !digits.startsWith("00")) digits = "2" + digits;
+  return digits;
 }
 
-export async function sendWhatsApp({ to, body }: { to: string; body: string }): Promise<{ success: boolean; provider?: string; error?: string }> {
-  const number = normalizePhone(to)
-  if (!number || number.length < 9) return { success: false, error: "INVALID_PHONE" }
+// ═══ مسار حفظ جلسة الواتساب ═══
+const AUTH_DIR = path.join(process.cwd(), ".wa-auth");
 
-  // ═══ 1) Meta WhatsApp Cloud API (رسمي — مجاني 1000 رسالة/شهر) ═══
-  const metaToken = process.env.META_WHATSAPP_TOKEN
-  const metaPhoneId = process.env.META_WHATSAPP_PHONE_ID
-  if (metaToken && metaPhoneId) {
-    try {
-      const res = await fetch(`https://graph.facebook.com/v21.0/${metaPhoneId}/messages`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${metaToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ messaging_product: "whatsapp", to: number, type: "text", text: { body } }),
-      })
-      if (res.ok) {
-        const d = await res.json()
-        console.log("✅ [WA] Meta Cloud API sent:", d.messages?.[0]?.id, "→", number)
-        return { success: true, provider: "meta" }
+// ═══ إنشاء اتصال Baileys ═══
+async function getSocket() {
+  const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
+  const { version } = await fetchLatestBaileysVersion();
+
+  const sock = makeWASocket({
+    version,
+    auth: state,
+    logger: pino({ level: "silent" }),
+    printQRInTerminal: true, // سيظهر QR في Vercel Logs عند أول ربط
+  });
+
+  sock.ev.on("creds.update", saveCreds);
+
+  sock.ev.on("connection.update", (update) => {
+    const { connection, lastDisconnect } = update;
+    if (connection === "close") {
+      const reason = (lastDisconnect?.error as any)?.output?.statusCode;
+      if (reason !== DisconnectReason.loggedOut) {
+        console.log("🔄 [WA] Reconnecting...");
+        getSocket();
+      } else {
+        console.error("❌ [WA] Logged out. Need to scan QR again.");
       }
-      const errText = await res.text()
-      console.error("❌ [WA] Meta failed:", errText)
-    } catch (e: any) { console.error("❌ [WA] Meta error:", e.message) }
-  }
+    } else if (connection === "open") {
+      console.log("✅ [WA] Baileys connected successfully");
+    }
+  });
 
-  // ═══ 2) UltraMSG (بديل بسيط وسريع) ═══
-  const ultraToken = process.env.ULTRAMSG_TOKEN
-  const ultraInstance = process.env.ULTRAMSG_INSTANCE
-  if (ultraToken && ultraInstance) {
-    try {
-      const res = await fetch(`https://api.ultramsg.com/${ultraInstance}/messages/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ token: ultraToken, to: number, body, priority: "10" }),
-      })
-      if (res.ok) { console.log("✅ [WA] UltraMSG sent to", number); return { success: true, provider: "ultramsg" } }
-      console.error("❌ [WA] UltraMSG failed:", await res.text())
-    } catch (e: any) { console.error("❌ [WA] UltraMSG error:", e.message) }
-  }
+  return sock;
+}
 
-  // ═══ 3) Twilio WhatsApp ═══
-  const twilioSid = process.env.TWILIO_ACCOUNT_SID
-  const twilioToken = process.env.TWILIO_AUTH_TOKEN
-  const twilioFrom = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886"
-  if (twilioSid && twilioToken) {
-    try {
-      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Basic " + Buffer.from(`${twilioSid}:${twilioToken}`).toString("base64"),
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({ From: twilioFrom, To: `whatsapp:+${number}`, Body: body }),
-      })
-      if (res.ok) { console.log("✅ [WA] Twilio sent to", number); return { success: true, provider: "twilio" } }
-      console.error("❌ [WA] Twilio failed:", await res.text())
-    } catch (e: any) { console.error("❌ [WA] Twilio error:", e.message) }
-  }
+// ═══ انتظار الاتصال ═══
+function waitForConnection(sock: any, timeout = 10000): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (sock.user) { resolve(true); return; }
+    const timer = setTimeout(() => resolve(false), timeout);
+    sock.ev.on("connection.update", ({ connection }: any) => {
+      if (connection === "open") { clearTimeout(timer); resolve(true); }
+    });
+  });
+}
 
-  // ═══ لم يُضبط أي مزود ═══
-  console.warn("⚠️ [WA] No WhatsApp provider configured")
-  return { success: false, error: "NO_PROVIDER_CONFIGURED" }
+// ═══ دالة الإرسال الرئيسية ═══
+export async function sendWhatsApp({
+  to,
+  body,
+}: {
+  to: string;
+  body: string;
+}): Promise<{ success: boolean; provider?: string; error?: string }> {
+  const number = normalizePhone(to);
+  if (!number || number.length < 9) return { success: false, error: "INVALID_PHONE" };
+
+  try {
+    const sock = await getSocket();
+    const connected = await waitForConnection(sock);
+
+    if (!connected) {
+      console.error("❌ [WA] Baileys not connected. Scan QR code first.");
+      return { success: false, error: "NOT_CONNECTED" };
+    }
+
+    const jid = `${number}@s.whatsapp.net`;
+    await sock.sendMessage(jid, { text: body });
+    console.log("✅ [WA] Baileys sent to", number);
+    return { success: true, provider: "baileys" };
+  } catch (e: any) {
+    console.error("❌ [WA] Baileys error:", e.message);
+    return { success: false, error: e.message };
+  }
 }
