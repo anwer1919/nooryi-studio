@@ -1,10 +1,9 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Providers from "@/components/Providers";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ChatbotLoader from "@/components/ChatbotLoader";
-import AIChatbot from "@/components/AIChatbot";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://nooryi-studio.vercel.app"),
@@ -129,9 +128,8 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <WhatsAppButton />
-          <ChatbotLoader />
-          <AIChatbot />
         </Providers>
+        <ChatbotLoader />
       </body>
     </html>
   );
