@@ -5,8 +5,9 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
   if (!apiKey) {
-    return new Response("مفتاح API غير موجود", { status: 503 });
+    return new Response("مفتاح GEMINI_API_KEY غير موجود في Environment Variables", { status: 503 });
   }
 
   try {
