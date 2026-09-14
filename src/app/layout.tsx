@@ -62,6 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <WhatsAppButton />
+          <ChatbotLoader />
         </Providers>
         <ChatbotLoader />
       </body>
