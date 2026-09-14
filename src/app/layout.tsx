@@ -154,6 +154,7 @@ export default function RootLayout({
         >
           💬
         </a>
+        <WhatsAppButton />
       </body>
     </html>
   );
