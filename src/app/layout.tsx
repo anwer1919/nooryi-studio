@@ -64,7 +64,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <WhatsAppButton />
           <ChatbotLoader />
         </Providers>
-        <ChatbotLoader />
       </body>
     </html>
   );
