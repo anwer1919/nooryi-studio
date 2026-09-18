@@ -1,4 +1,4 @@
-import { getManagerArtist } from "@/lib/managerAuth";
+import { getManagerArtistDirect } from "@/lib/managerAuth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { 
@@ -9,7 +9,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function ManagerDashboard() {
-  const { artist } = await getManagerArtist();
+  const { artist } = await getManagerArtistDirect();
 
   // جلب البيانات المجمعة
   const [bookings, reviews] = await Promise.all([
