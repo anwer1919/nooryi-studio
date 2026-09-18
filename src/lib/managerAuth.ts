@@ -30,3 +30,32 @@ export async function getManagerArtist(slug: string) {
 
   redirect("/")
 }
+// ═══ جلب بيانات مدير الأعمال بدون slug ═══
+export async function getManagerArtistDirect() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const role = (session.user as any).role;
+  const userId = (session.user as any).id;
+
+  // سوبر أدمن — لا يستخدم هذه الدالة
+  if (role === "SUPER_ADMIN" || role === "ADMIN") {
+    redirect("/admin");
+  }
+
+  // مدير أعمال — جلب الفنان من العلاقة المباشرة
+  if (role === "ARTIST_MANAGER") {
+    const manager = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { managedArtist: true },
+    });
+
+    if (!manager?.managedArtist) {
+      redirect("/admin");
+    }
+
+    return { artist: manager.managedArtist, isOwner: true };
+  }
+
+  redirect("/");
+}
