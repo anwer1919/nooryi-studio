@@ -242,4 +242,86 @@ body {
 /* مساحة إضافية في الأسفل لمنع تغطية المحتوى بالشريط */
 body { padding-bottom: 80px; }
 @media (min-width: 769px) { body { padding-bottom: 0; } }
+/* ═══ Dashboard Gold & White Card System ═══ */
+
+/* البطاقة الأساسية */
+.dash-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(245, 166, 35, 0.15);
+  border-radius: var(--radius-card, 16px);
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.dash-card:hover {
+  border-color: rgba(245, 166, 35, 0.35);
+  box-shadow: 0 8px 32px rgba(245, 166, 35, 0.08);
+  transform: translateY(-2px);
+}
+
+/* النصوص داخل البطاقات */
+.dash-card .card-title {
+  color: #ffffff;
+  font-family: var(--font-display, 'Space Grotesk');
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.dash-card .card-subtitle {
+  color: #F5A623;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.dash-card .card-body {
+  color: var(--color-moon-mist, #c7d3ea);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* الشارات والحالات */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.confirmed {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-badge.pending {
+  background: rgba(245, 166, 35, 0.12);
+  color: #F5A623;
+  border: 1px solid rgba(245, 166, 35, 0.2);
+}
+
+.status-badge.cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* شبكة البطاقات المتجاوبة */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-card { padding: 16px; }
+}
 
