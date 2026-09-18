@@ -180,3 +180,66 @@ body {
   .text-heading-lg { font-size: 28px; }
   .glass-card { padding: 16px !important; }
 }
+/* ═══ Mobile App Navigation Bar ═══ */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(5, 6, 15, 0.92);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(245, 166, 35, 0.15);
+  padding: 8px 0 env(safe-area-inset-bottom, 8px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@media (min-width: 769px) {
+  .mobile-nav { display: none; }
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  color: var(--color-fog-veil);
+}
+
+.nav-item.active {
+  color: #F5A623;
+}
+
+.nav-item.active svg {
+  filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.4));
+}
+
+.nav-item span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ═══ Gold & White Override for Dashboard ═══ */
+.dashboard-text-primary { color: #ffffff !important; }
+.dashboard-text-secondary { color: #F5A623 !important; }
+.dashboard-border { border-color: rgba(245, 166, 35, 0.2) !important; }
+.dashboard-bg-card { background: rgba(245, 166, 35, 0.04) !important; }
+
+/* تعديل خطوط الشبكة لتكون بيضاء وذهبية */
+.blueprint-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 166, 35, 0.06) 1px, transparent 1px) !important;
+}
+
+/* مساحة إضافية في الأسفل لمنع تغطية المحتوى بالشريط */
+body { padding-bottom: 80px; }
+@media (min-width: 769px) { body { padding-bottom: 0; } }
+
