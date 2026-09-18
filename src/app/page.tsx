@@ -17,17 +17,36 @@ function getDemoArtists() {
 }
 
 async function getFeaturedArtists() {
-  try {
-    const artists = await prisma.artist.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "desc" }, take: 8, include: { _count: { select: { bookings: true, reviews: true } }, reviews: { select: { rating: true } } } })
-    if (artists.length > 0) {
-      return artists.map((artist: any) => {
-        const ratings = artist.reviews?.map((r: any) => r.rating) || []
-        const avgRating = ratings.length > 0 ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length : 5.0
-        return { id: artist.id, name: artist.name, slug: artist.slug, category: artist.category, bio: artist.bio, profileImage: artist.profileImage, coverImage: artist.coverImage, rating: parseFloat(avgRating.toFixed(1)), reviewsCount: artist._count.reviews, bookingsCount: artist._count.bookings }
-      })
-    }
-    return getDemoArtists()
-  } catch { return getDemoArtists() }
+  const artists = await prisma.artist.findMany({
+    where: { status: { in: ["ACTIVE", "active"] } },
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { bookings: true, reviews: true } },
+      reviews: { select: { rating: true } },
+    },
+  });
+
+  if (artists.length === 0) return getDemoArtists();
+
+  return artists.map((artist: any) => {
+    const ratings = artist.reviews?.map((r: any) => r.rating) || [];
+    const avgRating =
+      ratings.length > 0
+        ? ratings.reduce((sum: number, r: number) => sum + r, 0) / ratings.length
+        : 5.0;
+    return {
+      id: artist.id,
+      name: artist.name,
+      slug: artist.slug,
+      category: artist.category,
+      bio: artist.bio,
+      profileImage: artist.profileImage,
+      coverImage: artist.coverImage,
+      rating: parseFloat(avgRating.toFixed(1)),
+      reviewsCount: artist._count.reviews,
+      bookingsCount: artist._count.bookings,
+    };
+  });
 }
 
 async function getSiteSettings() {
@@ -44,7 +63,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-bg overflow-x-hidden" dir="rtl">
 
-      
+
 
       {/* ═══ Hero + Carousel ═══ */}
       <section className="relative pt-24 md:pt-28 pb-12 md:pb-20 bg-gradient-to-b from-bg via-surface to-bg overflow-hidden">
