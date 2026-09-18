@@ -1,146 +1,157 @@
 @import "tailwindcss";
 
-/* ═══ AuthKit + Gold/White Dashboard Override ═══ */
-@theme {
-  /* Core Palette */
-  --color-midnight-canvas: #05060f;
-  --color-steel-plate: #2f343e;
-  --color-fog-veil: #9da7ba;
-  --color-moon-mist: #c7d3ea;
-  --color-frost-glow: #d1e4fa;
-  --color-ice-highlight: #d8ecf8;
-  --color-pure-white: #ffffff;
-  --color-void-violet: #663af3;
-  --color-blueprint-blue: #b6d9fc;
-  --color-gridline-blue: #3f4959;
-  --color-glass-edge: rgba(186, 215, 247, 0.12);
-  --color-luminous-fill: rgba(199, 211, 234, 0.12);
+/* ═══ Theme System — Light & Dark ═══ */
+:root {
+  /* Light Mode (Default) */
+  --color-bg: #faf8f0;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-fg: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-gold: #E8961A;
+  --color-gold-light: #F5A623;
+  --color-gold-dim: rgba(232, 150, 26, 0.15);
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-glass: rgba(255, 255, 255, 0.8);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --grid-line: rgba(0, 0, 0, 0.04);
+  --grid-accent: rgba(232, 150, 26, 0.08);
+}
 
-  /* Gold Accent System */
-  --color-gold: #F5A623;
-  --color-gold-light: #FFC966;
-  --color-gold-dim: rgba(245, 166, 35, 0.15);
-  --color-gold-glow: rgba(245, 166, 35, 0.4);
-
-  /* Semantic Colors */
+.dark {
+  /* Dark Mode Override */
   --color-bg: #05060f;
   --color-surface: rgba(186, 214, 247, 0.03);
   --color-card: rgba(5, 6, 15, 0.97);
   --color-fg: #d1e4fa;
-
-  /* Typography */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  /* Radius */
-  --radius-card: 16px;
-  --radius-badge: 6px;
-  --radius-input: 6px;
-  --radius-button: 999px;
-  --radius-icon: 9999px;
-
-  /* Shadows */
-  --shadow-glass: inset 0 1px 1px rgba(216, 236, 248, 0.2), inset 0 24px 48px rgba(168, 216, 245, 0.06), 0 16px 32px rgba(0, 0, 0, 0.3);
-  --shadow-card: inset 0 1px 1px rgba(199, 211, 234, 0.12), inset 0 24px 48px rgba(199, 211, 234, 0.05), 0 24px 32px rgba(6, 6, 14, 0.7);
-  --shadow-sm: rgba(186, 207, 247, 0.32) 0px 0px 6px 0px;
+  --color-muted: #9da7ba;
+  --color-gold: #F5A623;
+  --color-gold-light: #FFC966;
+  --color-gold-dim: rgba(245, 166, 35, 0.15);
+  --color-border: rgba(186, 215, 247, 0.12);
+  --color-glass: rgba(5, 6, 15, 0.92);
+  --shadow-card: inset 0 1px 1px rgba(199, 211, 234, 0.12), 0 24px 32px rgba(6, 6, 14, 0.7);
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --grid-accent: rgba(245, 166, 35, 0.06);
 }
 
-/* ═══ Global Gray → White/Gold Override ═══ */
-/* إعادة تعريف كل درجات الرمادي إلى الأبيض أو الذهبي */
-.text-gray-50, .text-gray-100, .text-gray-200, .text-gray-300,
-.text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700,
-.text-gray-800, .text-gray-900 { color: var(--color-pure-white) !important; }
-
-.text-muted { color: var(--color-moon-mist) !important; }
-.text-fg { color: var(--color-frost-glow) !important; }
-
 /* ═══ Base Styles ═══ */
-html { color-scheme: dark; scroll-behavior: smooth; }
+html { scroll-behavior: smooth; }
 body {
-  background-color: var(--color-midnight-canvas);
-  color: var(--color-frost-glow);
-  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 80px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 @media (min-width: 769px) { body { padding-bottom: 0; } }
 
-/* ═══ Blueprint Grid + Spotlight ═══ */
+/* ═══ Dynamic Colors via Variables ═══ */
+.text-fg { color: var(--color-fg) !important; }
+.text-muted { color: var(--color-muted) !important; }
+.text-gold { color: var(--color-gold) !important; }
+.bg-bg { background-color: var(--color-bg) !important; }
+.bg-surface { background-color: var(--color-surface) !important; }
+.border-default { border-color: var(--color-border) !important; }
+
+/* Gray Override → Uses Theme Variables */
+.text-gray-50, .text-gray-100, .text-gray-200, .text-gray-300,
+.text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700,
+.text-gray-800, .text-gray-900 { color: var(--color-fg) !important; }
+
+/* ═══ Background Layers ═══ */
 .blueprint-grid {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 166, 35, 0.06) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-accent) 1px, transparent 1px);
   background-size: 80px 80px;
   mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 70%);
+  transition: background-image 0.3s ease;
 }
 .spotlight-halo {
   position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
-  width: 100vw; height: 60vh;
+  width: 100vw; height: 60vh; pointer-events: none; z-index: 0;
+  background: conic-gradient(at 50% 50%, transparent 45%, rgba(124, 145, 182, 0.15) 49%, rgba(124, 145, 182, 0.25) 50%, rgba(124, 145, 182, 0.15) 51%, transparent 55%);
+  transition: opacity 0.3s ease;
+}
+.dark .spotlight-halo {
   background: conic-gradient(at 50% 50%, transparent 45%, rgba(124, 145, 182, 0.3) 49%, rgba(124, 145, 182, 0.5) 50%, rgba(124, 145, 182, 0.3) 51%, transparent 55%);
-  pointer-events: none; z-index: 0;
 }
 
-/* ═══ Glass Components ═══ */
+/* ═══ Cards & Surfaces ═══ */
 .glass-card, .dash-card, .card-pro, .stat-card {
   background: var(--color-surface) !important;
-  border-radius: var(--radius-card) !important;
+  border-radius: 16px !important;
   box-shadow: var(--shadow-card) !important;
-  border: 1px solid var(--color-gold-dim) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(12px);
-  color: var(--color-pure-white) !important;
+  color: var(--color-fg) !important;
+  transition: all 0.3s ease;
 }
 .dash-card:hover, .card-pro:hover {
-  border-color: rgba(245, 166, 35, 0.35) !important;
-  box-shadow: 0 8px 32px rgba(245, 166, 35, 0.08) !important;
+  border-color: var(--color-gold) !important;
+  box-shadow: 0 8px 32px var(--color-gold-dim) !important;
 }
 
-/* ═══ Dashboard Text Hierarchy ═══ */
+/* ═══ Typography ═══ */
 .card-title, .stat-value, h1, h2, h3, h4, h5, h6, .font-black, .font-bold {
-  color: var(--color-pure-white) !important;
+  color: var(--color-fg) !important;
 }
 .card-subtitle, .badge-gold, .stat-label {
   color: var(--color-gold) !important;
 }
 .card-body, p, span, label, td, th {
-  color: var(--color-moon-mist) !important;
+  color: var(--color-muted) !important;
 }
 
-/* ═══ Tables Override ═══ */
-.table-pro th { color: var(--color-gold) !important; border-color: var(--color-gold-dim) !important; }
-.table-pro td { color: var(--color-moon-mist) !important; border-color: var(--color-gold-dim) !important; }
-.table-pro tr:hover td { background: rgba(245, 166, 35, 0.04) !important; }
+.text-display {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(32px, 5vw, 48px); line-height: 1.17; font-weight: 500;
+  color: var(--color-fg);
+}
+.dark .text-display {
+  background: linear-gradient(0deg, #d8ecf8 0%, #98c0ef 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 
-/* ═══ Inputs & Forms ═══ */
+/* ═══ Tables ═══ */
+.table-pro th { color: var(--color-gold) !important; border-color: var(--color-border) !important; }
+.table-pro td { color: var(--color-muted) !important; border-color: var(--color-border) !important; }
+.table-pro tr:hover td { background: var(--color-gold-dim) !important; }
+
+/* ═══ Inputs ═══ */
 input, select, textarea, .glass-input {
-  background: rgba(199, 211, 234, 0.06) !important;
-  border: 1px solid var(--color-gold-dim) !important;
-  border-radius: var(--radius-input) !important;
-  color: var(--color-pure-white) !important;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 6px !important;
+  color: var(--color-fg) !important;
+  transition: all 0.2s ease;
 }
 input:focus, select:focus, textarea:focus {
   outline: none !important;
   border-color: var(--color-gold) !important;
-  box-shadow: 0 0 0 2px rgba(245, 166, 35, 0.15) !important;
+  box-shadow: 0 0 0 2px var(--color-gold-dim) !important;
 }
-input::placeholder, textarea::placeholder { color: var(--color-fog-veil) !important; opacity: 0.6; }
+input::placeholder, textarea::placeholder { color: var(--color-muted) !important; opacity: 0.6; }
 
 /* ═══ Buttons ═══ */
 .btn-primary, .btn-gold {
   background: var(--color-gold) !important;
   color: #05060f !important;
-  border-radius: var(--radius-button) !important;
+  border-radius: 999px !important;
   font-weight: 600 !important;
   border: none !important;
+  transition: all 0.2s ease;
 }
 .btn-primary:hover, .btn-gold:hover { background: var(--color-gold-light) !important; }
 .btn-outline {
   background: transparent !important;
-  border: 1px solid var(--color-gold-dim) !important;
-  color: var(--color-pure-white) !important;
-  border-radius: var(--radius-button) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-fg) !important;
+  border-radius: 999px !important;
 }
 .btn-outline:hover { border-color: var(--color-gold) !important; color: var(--color-gold) !important; }
 
@@ -152,57 +163,46 @@ input::placeholder, textarea::placeholder { color: var(--color-fog-veil) !import
 }
 .status-badge.confirmed, .status-confirmed {
   background: rgba(34, 197, 94, 0.12) !important;
-  color: #22c55e !important;
+  color: #16a34a !important;
   border: 1px solid rgba(34, 197, 94, 0.2) !important;
 }
 .status-badge.pending, .status-pending {
-  background: rgba(245, 166, 35, 0.12) !important;
+  background: var(--color-gold-dim) !important;
   color: var(--color-gold) !important;
   border: 1px solid rgba(245, 166, 35, 0.2) !important;
 }
 .status-badge.cancelled, .status-rejected {
   background: rgba(239, 68, 68, 0.12) !important;
-  color: #ef4444 !important;
+  color: #dc2626 !important;
   border: 1px solid rgba(239, 68, 68, 0.2) !important;
 }
 
-/* ═══ Pricing Cards ═══ */
+/* ═══ Pricing & Calendar ═══ */
 .pricing-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-gold-dim);
-  border-radius: var(--radius-card);
-  padding: 24px;
-  backdrop-filter: blur(12px);
-  transition: all 0.3s ease;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 16px; padding: 24px; backdrop-filter: blur(12px); transition: all 0.3s ease;
 }
-.pricing-card.featured {
-  border-color: var(--color-gold) !important;
-  box-shadow: 0 0 20px rgba(245, 166, 35, 0.15);
-}
-.pricing-price { color: var(--color-pure-white); font-family: var(--font-display); font-size: 32px; font-weight: 500; }
+.pricing-card.featured { border-color: var(--color-gold) !important; box-shadow: 0 0 20px var(--color-gold-dim); }
+.pricing-price { color: var(--color-fg); font-family: 'Space Grotesk'; font-size: 32px; font-weight: 500; }
 .pricing-period { color: var(--color-gold); font-size: 14px; }
-.pricing-feature { color: var(--color-moon-mist); font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.pricing-feature { color: var(--color-muted); font-size: 14px; display: flex; align-items: center; gap: 8px; }
 .pricing-feature svg { color: var(--color-gold); flex-shrink: 0; }
 
-/* ═══ Calendar ═══ */
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .calendar-day {
   aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-  border-radius: 8px; font-size: 14px; color: var(--color-moon-mist);
+  border-radius: 8px; font-size: 14px; color: var(--color-muted);
   border: 1px solid transparent; transition: all 0.2s ease; cursor: pointer;
 }
-.calendar-day:hover { border-color: var(--color-gold-dim); background: rgba(245, 166, 35, 0.04); }
+.calendar-day:hover { border-color: var(--color-gold-dim); background: var(--color-gold-dim); }
 .calendar-day.today { border-color: var(--color-gold); color: var(--color-gold); font-weight: 600; }
-.calendar-day.booked { background: rgba(245, 166, 35, 0.12); color: var(--color-gold); border-color: var(--color-gold-dim); }
+.calendar-day.booked { background: var(--color-gold-dim); color: var(--color-gold); border-color: var(--color-gold-dim); }
 .calendar-day.selected { background: var(--color-gold); color: #05060f; font-weight: 600; }
 .calendar-header { color: var(--color-gold); font-weight: 600; font-size: 12px; text-align: center; padding: 8px 0; }
-.calendar-month { color: var(--color-pure-white); font-family: var(--font-display); font-size: 20px; font-weight: 500; }
+.calendar-month { color: var(--color-fg); font-family: 'Space Grotesk'; font-size: 20px; font-weight: 500; }
 
 /* ═══ Cards Grid ═══ */
 .cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
 }
 @media (max-width: 640px) {
   .cards-grid { grid-template-columns: 1fr; }
@@ -212,279 +212,48 @@ input::placeholder, textarea::placeholder { color: var(--color-fog-veil) !import
 /* ═══ Mobile Nav ═══ */
 .mobile-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-  background: rgba(5, 6, 15, 0.92); backdrop-filter: blur(20px);
-  border-top: 1px solid var(--color-gold-dim);
+  background: var(--color-glass); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--color-border);
   padding: 8px 0 env(safe-area-inset-bottom, 8px);
   display: flex; justify-content: space-around; align-items: center;
+  transition: background 0.3s ease;
 }
 @media (min-width: 769px) { .mobile-nav { display: none; } }
 .nav-item {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 6px 12px; border-radius: 12px; text-decoration: none;
-  transition: all 0.2s ease; color: var(--color-fog-veil);
+  transition: all 0.2s ease; color: var(--color-muted);
 }
 .nav-item.active { color: var(--color-gold); }
-.nav-item.active svg { filter: drop-shadow(0 0 6px var(--color-gold-glow)); }
+.nav-item.active svg { filter: drop-shadow(0 0 6px var(--color-gold-dim)); }
 .nav-item span { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
 
-/* ═══ Typography Scale ═══ */
-.text-display {
-  font-family: var(--font-display);
-  font-size: clamp(32px, 5vw, 48px); line-height: 1.17; font-weight: 500;
-  background: linear-gradient(0deg, #d8ecf8 0%, #98c0ef 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+/* ═══ Print Styles ═══ */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 12pt !important; }
+  .mobile-nav, .blueprint-grid, .spotlight-halo, nav, footer, button, .no-print { display: none !important; }
+  .print-header { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 3px solid #F5A623; padding-bottom: 16px; margin-bottom: 24px; }
+  .print-header .logo-text { font-family: 'Space Grotesk'; font-size: 28pt; font-weight: 700; color: #000 !important; }
+  .print-header .logo-accent { color: #F5A623 !important; }
+  table { width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; }
+  th { background: #F5A623 !important; color: #000 !important; padding: 10px 12px !important; border: 1px solid #e0e0e0 !important; }
+  td { padding: 8px 12px !important; border: 1px solid #e0e0e0 !important; color: #000 !important; }
+  .dash-card, .card-pro { background: #fff !important; border: 1px solid #F5A623 !important; box-shadow: none !important; backdrop-filter: none !important; }
+  .card-title, h1, h2, h3 { color: #000 !important; -webkit-text-fill-color: #000 !important; }
+  .card-subtitle, .badge-gold { color: #F5A623 !important; }
+  .card-body, p, span { color: #333 !important; }
+  .print-qr-section { display: flex !important; align-items: center; gap: 16px; margin-top: 24px; padding: 16px; border: 2px dashed #F5A623; border-radius: 8px; }
+  .print-qr-section img { width: 100px !important; height: 100px !important; border: 2px solid #F5A623; }
+  .print-footer-stamp { display: flex !important; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-top: 16px; border-top: 2px solid #F5A623; }
+  .stamp-box { width: 120px; height: 120px; border: 3px solid #F5A623; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; color: #F5A623 !important; font-weight: 700; }
+  @page { size: A4 portrait; margin: 15mm 12mm; }
 }
-.text-heading-lg { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); line-height: 1.16; font-weight: 500; color: var(--color-ice-highlight); }
-.text-heading { font-family: var(--font-display); font-size: 28px; line-height: 1.14; color: var(--color-frost-glow); }
-.text-body { font-size: 16px; line-height: 1.5; color: var(--color-moon-mist); }
-.text-muted { font-size: 14px; line-height: 1.43; color: var(--color-fog-veil); }
-.eyebrow { font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-moon-mist); }
+.print-header, .print-qr-section, .print-footer-stamp { display: none; }
 
-/* ═══ Scrollbar ═══ */
+/* ═══ Scrollbar & Selection ═══ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-gold-dim); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }
-
-/* ═══ Selection ═══ */
-::selection { background: rgba(245, 166, 35, 0.3); color: var(--color-pure-white); }
-/* ═══ Print Styles — White/Gold/Black for A4 ═══ */
-@media print {
-  /* فرض الألوان الأساسية للطباعة */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-    font-family: 'Inter', sans-serif !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: 12pt !important;
-    line-height: 1.5 !important;
-  }
-
-  /* إخفاء العناصر غير المرغوبة في الطباعة */
-  .mobile-nav, .blueprint-grid, .spotlight-halo,
-  nav, footer, .btn-primary, .btn-gold, .btn-outline,
-  button, a[href^="#"], .no-print {
-    display: none !important;
-  }
-
-  /* ═══ الترويسة (Header) ═══ */
-  .print-header {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid #F5A623;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
-    page-break-after: avoid;
-  }
-
-  .print-header .logo-text {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28pt;
-    font-weight: 700;
-    color: #000000 !important;
-  }
-
-  .print-header .logo-accent {
-    color: #F5A623 !important;
-  }
-
-  .print-header .doc-info {
-    text-align: left;
-    font-size: 10pt;
-    color: #333333 !important;
-  }
-
-  /* ═══ المحتوى الرئيسي ═══ */
-  main {
-    padding: 0 !important;
-    min-height: auto !important;
-  }
-
-  /* ═══ الجداول المطبوعة ═══ */
-  table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    margin: 16px 0 !important;
-    page-break-inside: avoid;
-  }
-
-  th {
-    background: #F5A623 !important;
-    color: #000000 !important;
-    font-weight: 700 !important;
-    padding: 10px 12px !important;
-    text-align: right !important;
-    border: 1px solid #e0e0e0 !important;
-    font-size: 10pt !important;
-  }
-
-  td {
-    padding: 8px 12px !important;
-    border: 1px solid #e0e0e0 !important;
-    color: #000000 !important;
-    font-size: 10pt !important;
-  }
-
-  tr:nth-child(even) td {
-    background: #fafafa !important;
-  }
-
-  /* ═══ البطاقات المطبوعة ═══ */
-  .dash-card, .card-pro, .pricing-card, .glass-card {
-    background: #ffffff !important;
-    border: 1px solid #F5A623 !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    border-radius: 8px !important;
-    padding: 16px !important;
-    margin-bottom: 12px !important;
-    page-break-inside: avoid;
-  }
-
-  .card-title, .stat-value, h1, h2, h3, h4 {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-  }
-
-  .card-subtitle, .badge-gold, .stat-label {
-    color: #F5A623 !important;
-  }
-
-  .card-body, p, span, .text-muted {
-    color: #333333 !important;
-  }
-
-  /* ═══ QR Code التحقق ═══ */
-  .print-qr-section {
-    display: flex !important;
-    align-items: center;
-    gap: 16px;
-    margin-top: 24px;
-    padding: 16px;
-    border: 2px dashed #F5A623;
-    border-radius: 8px;
-    page-break-inside: avoid;
-  }
-
-  .print-qr-section img {
-    width: 100px !important;
-    height: 100px !important;
-    border: 2px solid #F5A623;
-    border-radius: 4px;
-  }
-
-  .print-qr-section .qr-info {
-    flex: 1;
-  }
-
-  .print-qr-section .qr-title {
-    font-weight: 700;
-    color: #000000 !important;
-    font-size: 11pt;
-    margin-bottom: 4px;
-  }
-
-  .print-qr-section .qr-code-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9pt;
-    color: #555555 !important;
-    word-break: break-all;
-  }
-
-  /* ═══ ختم التحقق (Footer Stamp) ═══ */
-  .print-footer-stamp {
-    display: flex !important;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 2px solid #F5A623;
-    page-break-before: avoid;
-  }
-
-  .stamp-box {
-    width: 120px;
-    height: 120px;
-    border: 3px solid #F5A623;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    color: #F5A623 !important;
-    font-weight: 700;
-    font-size: 10pt;
-    position: relative;
-  }
-
-  .stamp-box::after {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border: 1px solid #F5A623;
-    border-radius: 50%;
-  }
-
-  .stamp-box .stamp-icon { font-size: 24pt; margin-bottom: 4px; }
-  .stamp-box .stamp-text { font-size: 8pt; letter-spacing: 0.05em; }
-
-  .print-footer-info {
-    text-align: left;
-    font-size: 9pt;
-    color: #555555 !important;
-    max-width: 300px;
-  }
-
-  /* ═══ التقويم المطبوع ═══ */
-  .calendar-day {
-    border: 1px solid #e0e0e0 !important;
-    color: #000000 !important;
-    background: #ffffff !important;
-  }
-  .calendar-day.booked {
-    background: #FFF8E7 !important;
-    color: #B8860B !important;
-    font-weight: 700;
-  }
-  .calendar-day.today {
-    border-color: #F5A623 !important;
-    color: #F5A623 !important;
-  }
-  .calendar-header { color: #000000 !important; }
-  .calendar-month { color: #000000 !important; -webkit-text-fill-color: #000000 !important; }
-
-  /* ═══ التسعير المطبوع ═══ */
-  .pricing-price { color: #000000 !important; -webkit-text-fill-color: #000000 !important; }
-  .pricing-period { color: #F5A623 !important; }
-  .pricing-feature { color: #333333 !important; }
-  .pricing-feature svg { color: #F5A623 !important; }
-
-  /* ═══ شارات الحالة ═══ */
-  .status-badge, .status-chip {
-    border: 1px solid currentColor !important;
-    background: transparent !important;
-  }
-  .status-badge.confirmed, .status-confirmed { color: #16a34a !important; }
-  .status-badge.pending, .status-pending { color: #F5A623 !important; }
-  .status-badge.cancelled, .status-rejected { color: #dc2626 !important; }
-
-  /* ═══ إعدادات الصفحة A4 ═══ */
-  @page {
-    size: A4 portrait;
-    margin: 15mm 12mm;
-  }
-}
-
-/* ═══ إخفاء عناصر الطباعة على الشاشة ═══ */
-.print-header, .print-qr-section, .print-footer-stamp {
-  display: none;
-}
+::selection { background: var(--color-gold-dim); color: var(--color-fg); }
