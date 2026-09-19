@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET || "nooryi-fallback-secret-change-me",
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "nooryi-fallback-secret-change-me",
   pages: { signIn: "/login" },
 
   callbacks: {
@@ -19,12 +19,7 @@ export const authOptions: NextAuthOptions = {
         let dbUser = await prisma.user.findUnique({ where: { email } })
         if (!dbUser) {
           dbUser = await prisma.user.create({
-            data: {
-              email,
-              name: user.name || email.split("@")[0],
-              password: "oauth-no-password",
-              role: "USER",
-            },
+            data: { email, name: user.name || email.split("@")[0], password: "oauth-no-password", role: "USER" },
           })
         }
         user.id = dbUser.id
@@ -74,7 +69,7 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email) return null
           const email = String(credentials.email).trim().toLowerCase()
 
-          // ═══ المسار 2: OTP → جلسة موثقة كاملة ═══
+          // المسار 2: OTP
           if (credentials.otp) {
             const rec = await prisma.verificationToken.findFirst({
               where: { identifier: email },
@@ -88,32 +83,18 @@ export const authOptions: NextAuthOptions = {
             return { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, artistId: user.artistId, otpVerified: true } as any
           }
 
-          // ═══ المسار 1: باسورد → جلسة غير موثقة (تنتظر OTP) ═══
+          // المسار 1: Password
           if (!credentials.password) return null
           const user = await prisma.user.findUnique({ where: { email } })
           if (!user || !user.password) return null
-
-          // التحقق من كلمة المرور بكل الطرق الممكنة
           let ok = false
-          const stored = user.password
-          const input = String(credentials.password)
-
           try {
-            if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
-              ok = await bcrypt.compare(input, stored)
-            } else if (stored.startsWith("$argon2")) {
-              // argon2 fallback: مقارنة نصية
-              ok = input === stored
+            if (user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$")) {
+              ok = await bcrypt.compare(String(credentials.password), user.password)
             } else {
-              // plaintext أو أي تنسيق آخر
-              ok = input === stored
+              ok = String(credentials.password) === user.password
             }
-          } catch (e: any) {
-            console.error("[Auth] bcrypt error:", e.message)
-            // Fallback: مقارنة نصية إذا فشل bcrypt
-            ok = input === stored
-          }
-
+          } catch { ok = String(credentials.password) === user.password }
           if (!ok) return null
           return { id: user.id, email: user.email, name: user.name, role: user.role, phone: user.phone, artistId: user.artistId, otpVerified: false } as any
         } catch (error: any) {
