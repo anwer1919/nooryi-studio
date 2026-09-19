@@ -15,29 +15,22 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  // استخدام refs للقيم المتغيرة لتجنب stale closures
-  const statusRef = useRef<Status>("idle");
-  const valuesRef = useRef<string[]>(Array(6).fill(""));
+  const isVerifyingRef = useRef(false);
 
-  // مزامنة الـ refs مع الـ state
-  useEffect(() => { statusRef.current = status; }, [status]);
-  useEffect(() => { valuesRef.current = values; }, [values]);
-
-  // التركيز على أول حقل عند التحميل أو تغيير الإيميل
+  // التركيز وإعادة التعيين عند تغيير الإيميل
   useEffect(() => {
     setValues(Array(6).fill(""));
     setStatus("idle");
     setErrorMsg("");
-    statusRef.current = "idle";
-    valuesRef.current = Array(6).fill("");
+    isVerifyingRef.current = false;
     setTimeout(() => inputRefs.current[0]?.focus(), 150);
   }, [email]);
 
-  // ═══ دالة التحقق — تُستدعى مباشرة وليس عبر useEffect ═══
+  // ═══ دالة التحقق ═══
   const verifyOTP = async (otp: string) => {
-    console.log("[OTP] Starting verification for:", otp);
+    console.log("[OTP] ✓ Starting verification:", otp);
+    isVerifyingRef.current = true;
     setStatus("verifying");
-    statusRef.current = "verifying";
     setErrorMsg("");
 
     try {
@@ -47,74 +40,69 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
         body: JSON.stringify({ email, otp }),
       });
 
-      console.log("[OTP] API response status:", res.status);
+      console.log("[OTP] API status:", res.status);
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "رمز غير صحيح");
       }
 
-      console.log("[OTP] Verification successful!");
+      console.log("[OTP] ✓ Success! Calling onVerified in 1.2s...");
       setStatus("success");
-      statusRef.current = "success";
 
       setTimeout(() => {
-        console.log("[OTP] Calling onVerified callback");
         onVerified();
       }, 1200);
     } catch (err: any) {
-      console.error("[OTP] Verification failed:", err.message);
+      console.error("[OTP] ✗ Failed:", err.message);
       setStatus("error");
-      statusRef.current = "error";
       setErrorMsg(err.message || "رمز غير صحيح أو منتهي الصلاحية");
       setValues(Array(6).fill(""));
-      valuesRef.current = Array(6).fill("");
+      isVerifyingRef.current = false;
 
       setTimeout(() => {
         setStatus("idle");
-        statusRef.current = "idle";
         setErrorMsg("");
         inputRefs.current[0]?.focus();
       }, 1500);
     }
   };
 
-  // ═══ التحقق من الاكتمال — يُستدعى يدوياً بعد كل تغيير ═══
-  const checkAndVerify = (newValues: string[]) => {
-    const otp = newValues.join("");
-    console.log("[OTP] checkAndVerify:", otp, "status:", statusRef.current);
-    if (otp.length === 6 && !otp.includes("") && statusRef.current === "idle") {
-      verifyOTP(otp);
-    }
-  };
-
+  // ═══ handleChange — يستخدم القيم الجديدة مباشرة ═══
   const handleChange = (index: number, value: string) => {
-    if (statusRef.current !== "idle") return;
+    if (isVerifyingRef.current || status !== "idle") return;
     if (value && !/^\d$/.test(value)) return;
 
-    const nv = [...valuesRef.current];
-    nv[index] = value;
-    setValues(nv);
-    valuesRef.current = nv;
+    // بناء مصفوفة جديدة من values الحالية (state) وليس من ref
+    const newValues = [...values];
+    newValues[index] = value;
 
+    console.log(`[OTP] Field ${index} changed to "${value}" → full: "${newValues.join("")}"`);
+
+    setValues(newValues);
+
+    // الانتقال للحقل التالي
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // ═══ التحقق المباشر عند اكتمال الرمز ═══
-    checkAndVerify(nv);
+    // ═══ التحقق المباشر باستخدام القيم الجديدة ═══
+    const otp = newValues.join("");
+    if (otp.length === 6 && !otp.includes("")) {
+      console.log("[OTP] ✓ All 6 digits complete! Triggering verify...");
+      verifyOTP(otp);
+    }
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (statusRef.current !== "idle") return;
+    if (isVerifyingRef.current || status !== "idle") return;
     if (e.key === "Backspace") {
-      if (valuesRef.current[index] === "" && index > 0) {
+      if (values[index] === "" && index > 0) {
         inputRefs.current[index - 1]?.focus();
       } else {
-        const nv = [...valuesRef.current];
+        const nv = [...values];
         nv[index] = "";
         setValues(nv);
-        valuesRef.current = nv;
       }
     }
     if (e.key === "ArrowLeft" && index < 5) inputRefs.current[index + 1]?.focus();
@@ -123,19 +111,23 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
 
   const handlePaste = (e: ClipboardEvent) => {
     e.preventDefault();
-    if (statusRef.current !== "idle") return;
+    if (isVerifyingRef.current || status !== "idle") return;
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (!pasted) return;
 
-    const nv = [...valuesRef.current];
+    const nv = [...values];
     for (let i = 0; i < pasted.length; i++) nv[i] = pasted[i];
     setValues(nv);
-    valuesRef.current = nv;
+
+    console.log(`[OTP] Pasted: "${pasted}" → full: "${nv.join("")}"`);
 
     inputRefs.current[Math.min(pasted.length, 5)]?.focus();
 
-    // ═══ التحقق المباشر بعد اللصق ═══
-    checkAndVerify(nv);
+    const otp = nv.join("");
+    if (otp.length === 6 && !otp.includes("")) {
+      console.log("[OTP] ✓ Paste completed all 6 digits! Triggering verify...");
+      verifyOTP(otp);
+    }
   };
 
   const getInputClass = (index: number) => {
