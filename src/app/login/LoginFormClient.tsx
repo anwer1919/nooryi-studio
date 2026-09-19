@@ -42,7 +42,9 @@ export default function LoginFormClient() {
           startTimer();
         } catch {}
       } else if (u?.email && u.otpVerified === true) {
-        router.replace(callbackUrl || "/admin");
+        const role = u.role || "USER";
+        const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
+        router.replace(callbackUrl || home);
       }
     })();
   }, []);
@@ -73,7 +75,7 @@ export default function LoginFormClient() {
   const handleSocialLogin = (provider: string) =>
     signIn(provider, { callbackUrl: callbackUrl || "/admin" });
 
-  // ═══ تسجيل الدخول — signIn مباشرة (المسار 1 في auth.ts) ═══
+  // ═══ تسجيل الدخول — signIn مباشرة ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -129,9 +131,21 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ بعد نجاح OTP → الجلسة أُنشئت بالفعل في OTPVerification ═══
-  const handleVerified = () => {
-    window.location.href = callbackUrl || "/admin";
+  // ═══ بعد نجاح OTP/Google → توجيه حسب الدور الفعلي ═══
+  const handleVerified = async () => {
+    try {
+      const res = await fetch("/api/auth/session");
+      const session = await res.json();
+      const role = session?.user?.role || "USER";
+
+      if (["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role)) {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/";
+      }
+    } catch {
+      window.location.reload();
+    }
   };
 
   // ═══ شاشة النجاح ═══
