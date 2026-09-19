@@ -13,20 +13,20 @@ export default async function PrintLayout({
   children,
   verificationCode,
 }: PrintLayoutProps) {
-  // جلب إعدادات المنصة
+  // جلب إعدادات المنصة من جدول SiteSetting
   let settings: any = null;
   try {
-    settings = await prisma.platformSettings.findFirst({
+    settings = await prisma.siteSetting.findFirst({
       orderBy: { updatedAt: "desc" },
     });
   } catch {}
 
-  const platformName = settings?.platformName || "Nooryi Studio";
-  const platformEmail = settings?.email || "";
-  const platformPhone = settings?.phone || "";
+  const platformName = settings?.siteName || settings?.platformName || settings?.name || "Nooryi Studio";
+  const platformEmail = settings?.email || settings?.contactEmail || "";
+  const platformPhone = settings?.phone || settings?.contactPhone || "";
   const platformAddress = settings?.address || "";
-  const logoUrl = settings?.logoUrl || "";
-  const taxId = settings?.taxId || "";
+  const logoUrl = settings?.logoUrl || settings?.logo || "";
+  const taxId = settings?.taxId || settings?.vatNumber || "";
   const dateStr = new Date().toLocaleDateString("ar-EG", {
     year: "numeric", month: "long", day: "numeric",
   });
