@@ -4,7 +4,10 @@ import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck, ArrowLeft, CheckCircle2, MessageCircle, AlertCircle, Music } from "lucide-react";
+import {
+  Mail, Lock, Loader2, Eye, EyeOff, ShieldCheck,
+  ArrowLeft, CheckCircle2, MessageCircle, AlertCircle, Music,
+} from "lucide-react";
 import OTPVerification from "@/components/OTPVerification";
 
 type Step = "credentials" | "otp" | "success";
@@ -23,8 +26,9 @@ export default function LoginFormClient() {
   const [showResendOptions, setShowResendOptions] = useState(false);
 
   const inputCls =
-    "w-full pr-10 pl-4 py-3.5 border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)] placeholder:text-[var(--c-muted)] rounded-xl focus:ring-2 focus:ring-[var(--c-orange)]/30 focus:border-[var(--c-orange)] outline-none transition-all";
+    "w-full pr-10 pl-4 py-3.5 border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)] placeholder:text-[var(--c-muted)] rounded-xl focus:ring-2 focus:ring-[#F5A623]/30 focus:border-[#F5A623] outline-none transition-all";
 
+  // ═══ التحقق من الجلسة عند التحميل ═══
   useEffect(() => {
     (async () => {
       const session = await getSession();
@@ -69,6 +73,7 @@ export default function LoginFormClient() {
   const handleSocialLogin = (provider: string) =>
     signIn(provider, { callbackUrl: callbackUrl || "/admin" });
 
+  // ═══ تسجيل الدخول بالبريد وكلمة المرور ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -99,8 +104,10 @@ export default function LoginFormClient() {
     } catch {
       try {
         const r = await signIn("credentials", {
-          email: formData.email, password: formData.password,
-          redirect: false, callbackUrl: "/admin",
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+          callbackUrl: "/admin",
         });
         if (r?.error) {
           setError("البريد أو كلمة المرور غير صحيحة");
@@ -136,18 +143,47 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ هذا هو الـ callback الوحيد الذي يُستدعى عند نجاح OTP ═══
+  // ═══ بعد نجاح OTP → إنشاء جلسة NextAuth ثم التوجيه ═══
   const handleVerified = async () => {
-    let role = "USER";
     try {
-      const sr = await fetch("/api/auth/session");
-      const sj = await sr.json();
-      role = sj?.user?.role || "USER";
-    } catch {}
-    const home = (role === "SUPER_ADMIN" || role === "ADMIN" || role === "ARTIST_MANAGER") ? "/admin" : "/";
-    window.location.href = callbackUrl || home;
+      // إنشاء الجلسة عبر NextAuth باستخدام البريد وكلمة المرور المحفوظة
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        otpVerified: "true",
+        redirect: false,
+        callbackUrl: callbackUrl || "/admin",
+      });
+
+      if (result?.error || !result?.ok) {
+        // إذا فشل signIn، حاول بدون كلمة مرور (لحالة الجلسة الموجودة)
+        const session = await getSession();
+        if (session?.user) {
+          const role = (session.user as any).role || "USER";
+          const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
+          window.location.href = callbackUrl || home;
+          return;
+        }
+        setError("تعذر إنشاء الجلسة");
+        return;
+      }
+
+      // تحديد الوجهة حسب الدور
+      let role = "USER";
+      try {
+        const sr = await fetch("/api/auth/session");
+        const sj = await sr.json();
+        role = sj?.user?.role || "USER";
+      } catch {}
+
+      const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
+      window.location.href = callbackUrl || home;
+    } catch {
+      setError("حدث خطأ أثناء تسجيل الدخول");
+    }
   };
 
+  // ═══ شاشة النجاح ═══
   if (step === "success") {
     return (
       <div className="w-full max-w-md py-8 text-center">
@@ -155,61 +191,83 @@ export default function LoginFormClient() {
           <CheckCircle2 size={40} className="text-green-400" />
         </div>
         <h2 className="text-2xl font-black text-[var(--c-fg)] mb-2">تم التحقق بنجاح!</h2>
-        <p className="text-[var(--c-muted)]">جاري تحويلك...</p>
-        <Loader2 size={24} className="animate-spin text-[var(--c-orange)] mx-auto mt-6" />
+        <p className="text-[var(--c-muted)]">جاري تحويلك إلى لوحة التحكم...</p>
+        <Loader2 size={24} className="animate-spin text-[#F5A623] mx-auto mt-6" />
       </div>
     );
   }
 
+  // ═══ شاشة OTP ═══
   if (step === "otp") {
     return (
       <div className="w-full max-w-md py-8">
-        <button onClick={() => { setStep("credentials"); setError(""); }}
-          className="flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[var(--c-orange)] mb-6 transition">
+        <button
+          onClick={() => { setStep("credentials"); setError(""); }}
+          className="flex items-center gap-2 text-sm text-[var(--c-muted)] hover:text-[#F5A623] mb-6 transition"
+        >
           <ArrowLeft size={16} /> العودة
         </button>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[var(--c-orange-dim)] flex items-center justify-center mx-auto mb-4">
-            <ShieldCheck size={32} className="text-[var(--c-orange)]" />
+          <div className="w-16 h-16 rounded-2xl bg-[#F5A623]/10 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck size={32} className="text-[#F5A623]" />
           </div>
           <h2 className="text-2xl font-black text-[var(--c-fg)] mb-2">التحقق بخطوتين</h2>
           <p className="text-[var(--c-muted)] text-sm">
             {otpInfo?.method === "whatsapp" ? "تم إرسال الرمز إلى واتساب" : "تم إرسال الرمز إلى بريدك الإلكتروني"}
           </p>
           <p className="text-[var(--c-fg)] font-bold text-sm mt-1">{otpInfo?.destination}</p>
+          {otpInfo?.sentViaApi && (
+            <p className="text-green-400 text-xs mt-2">تم الإرسال ({otpInfo?.provider || "auto"})</p>
+          )}
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 text-center">{error}</div>
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 text-center">
+            {error}
+          </div>
         )}
 
-        {/* ═══ OTP Component — يعتمد فقط على onVerified ═══ */}
+        {/* ═══ مكون OTP المتحرك ═══ */}
         <div className="mb-6">
           <OTPVerification email={formData.email} onVerified={handleVerified} />
         </div>
 
+        {/* ═══ إعادة الإرسال ═══ */}
         <div className="mt-6 text-center">
           {!showResendOptions ? (
             <>
               <p className="text-sm text-[var(--c-muted)] mb-2">لم تستلم الرمز؟</p>
-              <button onClick={() => setShowResendOptions(true)} disabled={resendTimer > 0}
-                className="text-sm font-bold text-[var(--c-orange)] hover:text-[var(--c-orange-light)] transition disabled:text-[var(--c-muted)]">
+              <button
+                onClick={() => setShowResendOptions(true)}
+                disabled={resendTimer > 0}
+                className="text-sm font-bold text-[#F5A623] hover:text-[#FFC966] transition disabled:text-[var(--c-muted)]"
+              >
                 {resendTimer > 0 ? `إعادة الإرسال بعد ${resendTimer}ث` : "اختر طريقة أخرى"}
               </button>
             </>
           ) : (
             <div className="space-y-2">
-              <button onClick={() => handleResend("email")} disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 border border-[var(--c-orange)]/30 bg-[var(--c-orange-dim)] rounded-xl hover:bg-[var(--c-orange)]/20 transition text-sm font-semibold text-[var(--c-orange)] disabled:opacity-50">
+              <button
+                onClick={() => handleResend("email")}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3 border border-[#F5A623]/30 bg-[#F5A623]/10 rounded-xl hover:bg-[#F5A623]/20 transition text-sm font-semibold text-[#F5A623] disabled:opacity-50"
+              >
                 <Mail size={16} /> البريد الإلكتروني
               </button>
-              <button onClick={() => handleResend("whatsapp")} disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 border border-green-500/30 bg-green-500/10 rounded-xl hover:bg-green-500/20 transition text-sm font-semibold text-green-400 disabled:opacity-50">
+              <button
+                onClick={() => handleResend("whatsapp")}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3 border border-green-500/30 bg-green-500/10 rounded-xl hover:bg-green-500/20 transition text-sm font-semibold text-green-400 disabled:opacity-50"
+              >
                 <MessageCircle size={16} /> واتساب
               </button>
-              <button onClick={() => setShowResendOptions(false)}
-                className="text-xs text-[var(--c-muted)] hover:text-[var(--c-muted)] mt-1">إلغاء</button>
+              <button
+                onClick={() => setShowResendOptions(false)}
+                className="text-xs text-[var(--c-muted)] hover:text-[var(--c-muted)] mt-1"
+              >
+                إلغاء
+              </button>
             </div>
           )}
         </div>
@@ -217,16 +275,17 @@ export default function LoginFormClient() {
     );
   }
 
-  // ═══ شاشة تسجيل الدخول — حقول LTR ═══
+  // ═══ شاشة تسجيل الدخول ═══
   return (
     <div className="w-full max-w-md py-8">
+      {/* Logo Mobile */}
       <Link href="/" className="lg:hidden flex items-center gap-3 justify-center mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--c-orange)] to-[var(--c-orange-light)] flex items-center justify-center shadow-lg shadow-[var(--c-orange)]/20">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/20">
           <Music size={20} className="text-black" />
         </div>
         <div>
           <p className="text-xl font-black text-[var(--c-fg)]">Nooryi</p>
-          <p className="text-[10px] text-[var(--c-orange)] font-bold tracking-[0.25em] uppercase">Studio</p>
+          <p className="text-[10px] text-[#F5A623] font-bold tracking-[0.25em] uppercase">Studio</p>
         </div>
       </Link>
 
@@ -237,7 +296,8 @@ export default function LoginFormClient() {
 
       {error && (
         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 flex items-start gap-2">
-          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" /><p>{error}</p>
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <p>{error}</p>
         </div>
       )}
 
@@ -265,33 +325,39 @@ export default function LoginFormClient() {
               type={showPassword ? "text" : "password"} required dir="ltr"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full pr-10 pl-10 py-3.5 border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)] placeholder:text-[var(--c-muted)] rounded-xl focus:ring-2 focus:ring-[var(--c-orange)]/30 focus:border-[var(--c-orange)] outline-none transition-all"
+              className="w-full pr-10 pl-10 py-3.5 border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)] placeholder:text-[var(--c-muted)] rounded-xl focus:ring-2 focus:ring-[#F5A623]/30 focus:border-[#F5A623] outline-none transition-all"
               placeholder="••••••••"
               autoComplete="current-password"
             />
-            <button type="button" onClick={() => setShowPassword(!showPassword)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--c-muted)] hover:text-[var(--c-orange)] transition">
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--c-muted)] hover:text-[#F5A623] transition"
+            >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
           <div className="mt-1.5 text-left">
-            <Link href="/forgot-password" className="text-xs font-bold text-[var(--c-orange)] hover:text-[var(--c-orange-light)] transition">
+            <Link href="/forgot-password" className="text-xs font-bold text-[#F5A623] hover:text-[#FFC966] transition">
               نسيت كلمة المرور؟
             </Link>
           </div>
         </div>
 
-        <button type="submit" disabled={loading}
-          className="btn-primary w-full py-4 text-base flex justify-center items-center gap-2 disabled:opacity-50 active:scale-[0.97]">
+        <button
+          type="submit" disabled={loading}
+          className="btn-primary w-full py-4 text-base flex justify-center items-center gap-2 disabled:opacity-50 active:scale-[0.97]"
+        >
           {loading ? <Loader2 size={20} className="animate-spin" /> : "متابعة"}
         </button>
       </form>
 
       <div className="mt-6 text-center text-sm text-[var(--c-muted)]">
         ليس لديك حساب؟{" "}
-        <Link href="/register" className="font-bold text-[var(--c-orange)] hover:text-[var(--c-orange-light)] transition">إنشاء حساب جديد</Link>
+        <Link href="/register" className="font-bold text-[#F5A623] hover:text-[#FFC966] transition">إنشاء حساب جديد</Link>
       </div>
 
+      {/* ═══ Social Login ═══ */}
       <div className="relative flex items-center py-5 mt-2">
         <div className="flex-grow border-t border-[var(--c-border)]"></div>
         <span className="mx-4 text-[var(--c-muted)] text-xs font-semibold">أو تابع عبر</span>
@@ -299,8 +365,10 @@ export default function LoginFormClient() {
       </div>
 
       <div className="space-y-3">
-        <button onClick={() => handleSocialLogin("google")} disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3.5 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl hover:border-[var(--c-orange)]/30 transition-all cursor-pointer group active:scale-[0.97] disabled:opacity-50">
+        <button
+          onClick={() => handleSocialLogin("google")} disabled={loading}
+          className="w-full flex items-center justify-center gap-3 py-3.5 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl hover:border-[#F5A623]/30 transition-all cursor-pointer group active:scale-[0.97] disabled:opacity-50"
+        >
           <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -309,8 +377,11 @@ export default function LoginFormClient() {
           </svg>
           <span className="text-sm font-bold text-[var(--c-muted)] group-hover:text-[var(--c-fg)]">Google</span>
         </button>
-        <button onClick={() => handleSocialLogin("apple")} disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3.5 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl hover:border-[var(--c-orange)]/30 transition-all cursor-pointer group active:scale-[0.97] disabled:opacity-50">
+
+        <button
+          onClick={() => handleSocialLogin("apple")} disabled={loading}
+          className="w-full flex items-center justify-center gap-3 py-3.5 bg-[var(--c-surface)] border border-[var(--c-border)] rounded-xl hover:border-[#F5A623]/30 transition-all cursor-pointer group active:scale-[0.97] disabled:opacity-50"
+        >
           <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0" fill="currentColor">
             <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74 1.18 0 2.45-1.01 3.7-1.01 1.48.07 2.63.72 3.45 1.8-3.12 1.66-2.54 6.15.68 7.44-.59 1.66-1.44 3.22-2.91 4zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
           </svg>
