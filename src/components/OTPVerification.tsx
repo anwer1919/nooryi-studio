@@ -15,87 +15,106 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const verifiedRef = useRef(false);
+  // استخدام refs للقيم المتغيرة لتجنب stale closures
+  const statusRef = useRef<Status>("idle");
+  const valuesRef = useRef<string[]>(Array(6).fill(""));
 
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
+  // مزامنة الـ refs مع الـ state
+  useEffect(() => { statusRef.current = status; }, [status]);
+  useEffect(() => { valuesRef.current = values; }, [values]);
 
-  // إعادة تعيين الحالة عند تغيير الإيميل
+  // التركيز على أول حقل عند التحميل أو تغيير الإيميل
   useEffect(() => {
     setValues(Array(6).fill(""));
     setStatus("idle");
     setErrorMsg("");
-    verifiedRef.current = false;
-    setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    statusRef.current = "idle";
+    valuesRef.current = Array(6).fill("");
+    setTimeout(() => inputRefs.current[0]?.focus(), 150);
   }, [email]);
 
-  // التحقق التلقائي عند اكتمال الرمز
-  useEffect(() => {
-    const otp = values.join("");
-    if (otp.length === 6 && !otp.includes("") && status === "idle" && !verifiedRef.current) {
-      verifiedRef.current = true;
-      verifyOTP(otp);
-    }
-  }, [values, status]);
-
+  // ═══ دالة التحقق — تُستدعى مباشرة وليس عبر useEffect ═══
   const verifyOTP = async (otp: string) => {
+    console.log("[OTP] Starting verification for:", otp);
     setStatus("verifying");
+    statusRef.current = "verifying";
     setErrorMsg("");
 
     try {
-      // الخطوة 1: التحقق من الرمز عبر API مخصص
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
       });
 
+      console.log("[OTP] API response status:", res.status);
+
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "رمز غير صحيح");
       }
 
-      // الخطوة 2: نجاح → عرض الأنيميشن ثم استدعاء callback
+      console.log("[OTP] Verification successful!");
       setStatus("success");
+      statusRef.current = "success";
 
-      // انتظار 1.2 ثانية لعرض تأثير النجاح قبل الانتقال
       setTimeout(() => {
+        console.log("[OTP] Calling onVerified callback");
         onVerified();
       }, 1200);
     } catch (err: any) {
+      console.error("[OTP] Verification failed:", err.message);
       setStatus("error");
+      statusRef.current = "error";
       setErrorMsg(err.message || "رمز غير صحيح أو منتهي الصلاحية");
       setValues(Array(6).fill(""));
-      verifiedRef.current = false;
+      valuesRef.current = Array(6).fill("");
 
-      // إعادة الحالة لـ idle بعد انتهاء الاهتزاز
       setTimeout(() => {
         setStatus("idle");
+        statusRef.current = "idle";
         setErrorMsg("");
         inputRefs.current[0]?.focus();
       }, 1500);
     }
   };
 
+  // ═══ التحقق من الاكتمال — يُستدعى يدوياً بعد كل تغيير ═══
+  const checkAndVerify = (newValues: string[]) => {
+    const otp = newValues.join("");
+    console.log("[OTP] checkAndVerify:", otp, "status:", statusRef.current);
+    if (otp.length === 6 && !otp.includes("") && statusRef.current === "idle") {
+      verifyOTP(otp);
+    }
+  };
+
   const handleChange = (index: number, value: string) => {
-    if (status !== "idle") return;
+    if (statusRef.current !== "idle") return;
     if (value && !/^\d$/.test(value)) return;
-    const nv = [...values];
+
+    const nv = [...valuesRef.current];
     nv[index] = value;
     setValues(nv);
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+    valuesRef.current = nv;
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // ═══ التحقق المباشر عند اكتمال الرمز ═══
+    checkAndVerify(nv);
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (status !== "idle") return;
+    if (statusRef.current !== "idle") return;
     if (e.key === "Backspace") {
-      if (values[index] === "" && index > 0) {
+      if (valuesRef.current[index] === "" && index > 0) {
         inputRefs.current[index - 1]?.focus();
       } else {
-        const nv = [...values];
+        const nv = [...valuesRef.current];
         nv[index] = "";
         setValues(nv);
+        valuesRef.current = nv;
       }
     }
     if (e.key === "ArrowLeft" && index < 5) inputRefs.current[index + 1]?.focus();
@@ -104,13 +123,19 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
 
   const handlePaste = (e: ClipboardEvent) => {
     e.preventDefault();
-    if (status !== "idle") return;
+    if (statusRef.current !== "idle") return;
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (!pasted) return;
-    const nv = [...values];
+
+    const nv = [...valuesRef.current];
     for (let i = 0; i < pasted.length; i++) nv[i] = pasted[i];
     setValues(nv);
+    valuesRef.current = nv;
+
     inputRefs.current[Math.min(pasted.length, 5)]?.focus();
+
+    // ═══ التحقق المباشر بعد اللصق ═══
+    checkAndVerify(nv);
   };
 
   const getInputClass = (index: number) => {
@@ -135,14 +160,11 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      {/* حقول OTP */}
       <div className="flex items-center justify-center gap-2 md:gap-3" dir="ltr">
         {Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="relative">
             <input
-              ref={(el) => {
-                inputRefs.current[index] = el;
-              }}
+              ref={(el) => { inputRefs.current[index] = el; }}
               type="text"
               inputMode="numeric"
               maxLength={1}
@@ -154,13 +176,11 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
               className={getInputClass(index)}
               aria-label={`OTP digit ${index + 1}`}
             />
-            {/* Spinner داخل المربع أثناء التحقق */}
             {status === "verifying" && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <Loader2 size={22} className="text-[#F5A623] animate-spin" />
               </div>
             )}
-            {/* علامة ✓ داخل المربع عند النجاح */}
             {status === "success" && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <CheckCircle2 size={26} className="text-green-500 animate-bounce" />
@@ -170,7 +190,6 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
         ))}
       </div>
 
-      {/* رسالة الخطأ */}
       <div className="h-8 flex items-center justify-center w-full">
         {status === "error" && errorMsg && (
           <div className="flex items-center gap-2 text-red-500 text-sm font-bold animate-pulse">
