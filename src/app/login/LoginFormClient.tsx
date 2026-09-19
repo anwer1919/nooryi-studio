@@ -73,55 +73,41 @@ export default function LoginFormClient() {
   const handleSocialLogin = (provider: string) =>
     signIn(provider, { callbackUrl: callbackUrl || "/admin" });
 
-  // ═══ تسجيل الدخول بالبريد وكلمة المرور ═══
+  // ═══ تسجيل الدخول — signIn مباشرة بدون verify-password ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
-      const v = await fetch("/api/auth/verify-password", {
-        method: "POST",
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
-        headers: { "Content-Type": "application/json" },
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+        callbackUrl: "/admin",
       });
-      if (v.status === 401) {
-        const d = await v.json();
-        setError(d.error || "البريد أو كلمة المرور غير صحيحة");
-        setLoading(false);
-        return;
-      }
-      if (!v.ok) throw new Error("FALLBACK");
-      const data = await v.json();
-      if (!data.success) {
+
+      if (result?.error) {
         setError("البريد أو كلمة المرور غير صحيحة");
         setLoading(false);
         return;
       }
+
+      if (!result?.ok) {
+        setError("تعذر تسجيل الدخول");
+        setLoading(false);
+        return;
+      }
+
+      // نجاح التحقق → إرسال OTP
       const ot = await sendOtp(formData.email, "email");
       setOtpInfo(ot);
       setStep("otp");
       startTimer();
-    } catch {
-      try {
-        const r = await signIn("credentials", {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-          callbackUrl: "/admin",
-        });
-        if (r?.error) {
-          setError("البريد أو كلمة المرور غير صحيحة");
-          setLoading(false);
-          return;
-        }
-        const ot = await sendOtp(formData.email, "email");
-        setOtpInfo(ot);
-        setStep("otp");
-        startTimer();
-      } catch {
-        setError("تعذر تسجيل الدخول");
-        setLoading(false);
-      }
+    } catch (err: any) {
+      console.error("[Login] Error:", err);
+      setError("تعذر تسجيل الدخول");
+      setLoading(false);
     } finally {
       setLoading(false);
     }
