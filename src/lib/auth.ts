@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs"
 // ═══════════ إعدادات next-auth v4 ═══════════
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH1_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/login" },
 
   callbacks: {
