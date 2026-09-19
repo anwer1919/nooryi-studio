@@ -143,44 +143,9 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ بعد نجاح OTP → إنشاء جلسة NextAuth ثم التوجيه ═══
-  const handleVerified = async () => {
-    try {
-      // إنشاء الجلسة عبر NextAuth باستخدام البريد وكلمة المرور المحفوظة
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        otpVerified: "true",
-        redirect: false,
-        callbackUrl: callbackUrl || "/admin",
-      });
-
-      if (result?.error || !result?.ok) {
-        // إذا فشل signIn، حاول بدون كلمة مرور (لحالة الجلسة الموجودة)
-        const session = await getSession();
-        if (session?.user) {
-          const role = (session.user as any).role || "USER";
-          const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
-          window.location.href = callbackUrl || home;
-          return;
-        }
-        setError("تعذر إنشاء الجلسة");
-        return;
-      }
-
-      // تحديد الوجهة حسب الدور
-      let role = "USER";
-      try {
-        const sr = await fetch("/api/auth/session");
-        const sj = await sr.json();
-        role = sj?.user?.role || "USER";
-      } catch {}
-
-      const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
-      window.location.href = callbackUrl || home;
-    } catch {
-      setError("حدث خطأ أثناء تسجيل الدخول");
-    }
+  // ═══ بعد نجاح OTP → الجلسة أُنشئت في API → توجيه مباشر ═══
+  const handleVerified = () => {
+    window.location.href = callbackUrl || "/admin";
   };
 
   // ═══ شاشة النجاح ═══
