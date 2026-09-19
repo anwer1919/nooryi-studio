@@ -17,7 +17,6 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const isVerifyingRef = useRef(false);
 
-  // التركيز وإعادة التعيين عند تغيير الإيميل
   useEffect(() => {
     setValues(Array(6).fill(""));
     setStatus("idle");
@@ -26,9 +25,8 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
     setTimeout(() => inputRefs.current[0]?.focus(), 150);
   }, [email]);
 
-  // ═══ دالة التحقق ═══
   const verifyOTP = async (otp: string) => {
-    console.log("[OTP] ✓ Starting verification:", otp);
+    console.log("[OTP] 🔥 VERIFY STARTED:", otp);
     isVerifyingRef.current = true;
     setStatus("verifying");
     setErrorMsg("");
@@ -40,26 +38,22 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
         body: JSON.stringify({ email, otp }),
       });
 
-      console.log("[OTP] API status:", res.status);
+      console.log("[OTP] API response:", res.status);
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "رمز غير صحيح");
       }
 
-      console.log("[OTP] ✓ Success! Calling onVerified in 1.2s...");
+      console.log("[OTP] ✅ SUCCESS — calling onVerified in 1.2s");
       setStatus("success");
-
-      setTimeout(() => {
-        onVerified();
-      }, 1200);
+      setTimeout(() => onVerified(), 1200);
     } catch (err: any) {
-      console.error("[OTP] ✗ Failed:", err.message);
+      console.error("[OTP] ❌ FAILED:", err.message);
       setStatus("error");
       setErrorMsg(err.message || "رمز غير صحيح أو منتهي الصلاحية");
       setValues(Array(6).fill(""));
       isVerifyingRef.current = false;
-
       setTimeout(() => {
         setStatus("idle");
         setErrorMsg("");
@@ -68,28 +62,34 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
     }
   };
 
-  // ═══ handleChange — يستخدم القيم الجديدة مباشرة ═══
+  // ═══ دالة مساعدة تبني المصفوفة الجديدة بشكل مؤكد ═══
+  const buildNewValues = (current: string[], index: number, value: string): string[] => {
+    const result: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      result[i] = i === index ? value : current[i];
+    }
+    return result;
+  };
+
   const handleChange = (index: number, value: string) => {
     if (isVerifyingRef.current || status !== "idle") return;
     if (value && !/^\d$/.test(value)) return;
 
-    // بناء مصفوفة جديدة من values الحالية (state) وليس من ref
-    const newValues = [...values];
-    newValues[index] = value;
+    // بناء المصفوفة يدوياً لضمان عدم الاعتماد على spread operator
+    const newValues = buildNewValues(values, index, value);
+    const otp = newValues.join("");
 
-    console.log(`[OTP] Field ${index} changed to "${value}" → full: "${newValues.join("")}"`);
+    console.log(`[OTP] Field[${index}]="${value}" → otp="${otp}" len=${otp.length}`);
 
     setValues(newValues);
 
-    // الانتقال للحقل التالي
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // ═══ التحقق المباشر باستخدام القيم الجديدة ═══
-    const otp = newValues.join("");
-    if (otp.length === 6 && !otp.includes("")) {
-      console.log("[OTP] ✓ All 6 digits complete! Triggering verify...");
+    // ═══ التحقق المباشر — شرط مبسط ═══
+    if (otp.length === 6) {
+      console.log("[OTP] 🚀 TRIGGERING VERIFY for:", otp);
       verifyOTP(otp);
     }
   };
@@ -100,8 +100,7 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
       if (values[index] === "" && index > 0) {
         inputRefs.current[index - 1]?.focus();
       } else {
-        const nv = [...values];
-        nv[index] = "";
+        const nv = buildNewValues(values, index, "");
         setValues(nv);
       }
     }
@@ -119,13 +118,11 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
     for (let i = 0; i < pasted.length; i++) nv[i] = pasted[i];
     setValues(nv);
 
-    console.log(`[OTP] Pasted: "${pasted}" → full: "${nv.join("")}"`);
-
     inputRefs.current[Math.min(pasted.length, 5)]?.focus();
 
     const otp = nv.join("");
-    if (otp.length === 6 && !otp.includes("")) {
-      console.log("[OTP] ✓ Paste completed all 6 digits! Triggering verify...");
+    if (otp.length === 6) {
+      console.log("[OTP] 🚀 PASTE TRIGGERING VERIFY for:", otp);
       verifyOTP(otp);
     }
   };
