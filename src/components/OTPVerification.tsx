@@ -2,23 +2,16 @@
 
 import { useRef, useState, useEffect, KeyboardEvent, ClipboardEvent } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 interface OTPVerificationProps {
   email: string;
-  redirectOnSuccess?: string;
-  onVerified?: () => void;
+  onVerified: () => void;
 }
 
 type Status = "idle" | "verifying" | "success" | "error";
 
-export default function OTPVerification({
-  email,
-  redirectOnSuccess = "/admin",
-  onVerified,
-}: OTPVerificationProps) {
-  const router = useRouter();
+export default function OTPVerification({ email, onVerified }: OTPVerificationProps) {
   const [values, setValues] = useState<string[]>(Array(6).fill(""));
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -41,17 +34,15 @@ export default function OTPVerification({
     setErrorMsg("");
 
     try {
-      // استخدام NextAuth signIn بدلاً من fetch المباشر
       const result = await signIn("credentials", {
         email,
         otp,
         redirect: false,
-        callbackUrl: redirectOnSuccess,
       });
 
-      if (result?.error) {
+      if (result?.error || !result?.ok) {
         setStatus("error");
-        setErrorMsg(result.error === "CredentialsSignin" ? "رمز غير صحيح أو منتهي الصلاحية" : result.error);
+        setErrorMsg(result?.error === "CredentialsSignin" ? "رمز غير صحيح أو منتهي الصلاحية" : "رمز غير صحيح");
         setValues(Array(6).fill(""));
         setTimeout(() => {
           setStatus("idle");
@@ -61,39 +52,10 @@ export default function OTPVerification({
         return;
       }
 
-      if (!result?.ok) {
-        setStatus("error");
-        setErrorMsg("تعذر إنشاء الجلسة");
-        setValues(Array(6).fill(""));
-        setTimeout(() => {
-          setStatus("idle");
-          setErrorMsg("");
-          inputRefs.current[0]?.focus();
-        }, 1500);
-        return;
-      }
-
-      // نجاح
+      // نجاح → استدعاء callback فقط (لا توجيه هنا)
       setStatus("success");
       setTimeout(() => {
-        if (onVerified) {
-          onVerified();
-        } else {
-          // تحديد الوجهة حسب الدور
-          (async () => {
-            let role = "USER";
-            try {
-              const sr = await fetch("/api/auth/session");
-              const sj = await sr.json();
-              role = sj?.user?.role || "USER";
-            } catch {}
-            const home =
-              role === "SUPER_ADMIN" || role === "ADMIN" || role === "ARTIST_MANAGER"
-                ? "/admin"
-                : "/";
-            window.location.href = redirectOnSuccess || home;
-          })();
-        }
+        onVerified();
       }, 1200);
     } catch {
       setStatus("error");
@@ -110,11 +72,9 @@ export default function OTPVerification({
   const handleChange = (index: number, value: string) => {
     if (status !== "idle") return;
     if (value && !/^\d$/.test(value)) return;
-
-    const newValues = [...values];
-    newValues[index] = value;
-    setValues(newValues);
-
+    const nv = [...values];
+    nv[index] = value;
+    setValues(nv);
     if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
@@ -144,22 +104,14 @@ export default function OTPVerification({
   };
 
   const getInputClass = (index: number) => {
-    const base =
-      "w-10 h-12 md:w-14 md:h-16 text-center text-xl md:text-2xl font-bold rounded-lg border-2 outline-none transition-all duration-200 relative";
-
-    if (status === "success")
-      return `${base} border-green-500 bg-green-500/10 text-transparent scale-105`;
-    if (status === "error")
-      return `${base} border-red-500 bg-red-500/10 text-red-500 animate-shake`;
-    if (status === "verifying")
-      return `${base} border-[var(--c-orange)] bg-[var(--c-orange-dim)] text-transparent`;
-
+    const base = "w-10 h-12 md:w-14 md:h-16 text-center text-xl md:text-2xl font-bold rounded-lg border-2 outline-none transition-all duration-200 relative";
+    if (status === "success") return `${base} border-green-500 bg-green-500/10 text-transparent scale-105`;
+    if (status === "error") return `${base} border-red-500 bg-red-500/10 text-red-500 animate-shake`;
+    if (status === "verifying") return `${base} border-[var(--c-orange)] bg-[var(--c-orange-dim)] text-transparent`;
     const isFilled = values[index] !== "";
     const isActive = document.activeElement === inputRefs.current[index];
-    if (isFilled)
-      return `${base} border-[var(--c-orange)] bg-[var(--c-orange-dim)] text-[var(--c-fg)]`;
-    if (isActive)
-      return `${base} border-[var(--c-orange)] bg-[var(--c-surface)] text-[var(--c-fg)] shadow-[0_0_0_3px_rgba(245,166,35,0.15)]`;
+    if (isFilled) return `${base} border-[var(--c-orange)] bg-[var(--c-orange-dim)] text-[var(--c-fg)]`;
+    if (isActive) return `${base} border-[var(--c-orange)] bg-[var(--c-surface)] text-[var(--c-fg)] shadow-[0_0_0_3px_rgba(245,166,35,0.15)]`;
     return `${base} border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)]`;
   };
 
@@ -181,13 +133,11 @@ export default function OTPVerification({
               className={getInputClass(index)}
               aria-label={`OTP digit ${index + 1}`}
             />
-            {/* Spinner داخل المربع أثناء التحقق */}
             {status === "verifying" && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <Loader2 size={20} className="text-[var(--c-orange)] animate-spin" />
               </div>
             )}
-            {/* علامة ✓ داخل المربع عند النجاح */}
             {status === "success" && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <CheckCircle2 size={24} className="text-green-500 animate-bounce" />
@@ -197,7 +147,6 @@ export default function OTPVerification({
         ))}
       </div>
 
-      {/* رسالة الخطأ فقط */}
       <div className="h-6 flex items-center justify-center">
         {status === "error" && errorMsg && (
           <div className="flex items-center gap-2 text-red-500 text-sm font-bold animate-pulse">
