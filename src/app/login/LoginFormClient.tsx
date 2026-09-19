@@ -73,7 +73,7 @@ export default function LoginFormClient() {
   const handleSocialLogin = (provider: string) =>
     signIn(provider, { callbackUrl: callbackUrl || "/admin" });
 
-  // ═══ تسجيل الدخول — signIn مباشرة بدون verify-password ═══
+  // ═══ تسجيل الدخول — signIn مباشرة (المسار 1 في auth.ts) ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -99,7 +99,7 @@ export default function LoginFormClient() {
         return;
       }
 
-      // نجاح التحقق → إرسال OTP
+      // نجاح التحقق من كلمة المرور → إرسال OTP
       const ot = await sendOtp(formData.email, "email");
       setOtpInfo(ot);
       setStep("otp");
@@ -129,29 +129,9 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ بعد نجاح OTP → signIn ينشئ الجلسة → توجيه حسب الدور ═══
-  const handleVerified = async () => {
-    try {
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.ok && !result?.error) {
-        const sr = await fetch("/api/auth/session");
-        const sj = await sr.json();
-        const role = sj?.user?.role || "USER";
-        const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role)
-          ? "/admin"
-          : "/";
-        window.location.href = callbackUrl || home;
-      } else {
-        window.location.href = callbackUrl || "/admin";
-      }
-    } catch {
-      window.location.href = callbackUrl || "/admin";
-    }
+  // ═══ بعد نجاح OTP → الجلسة أُنشئت بالفعل في OTPVerification ═══
+  const handleVerified = () => {
+    window.location.href = callbackUrl || "/admin";
   };
 
   // ═══ شاشة النجاح ═══
