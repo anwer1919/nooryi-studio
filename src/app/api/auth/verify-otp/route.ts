@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSession } from "@/lib/auth";
+import { encode } from "next-auth/jwt";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +44,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
     }
 
-    // ═══ إنشاء الجلسة مباشرة هنا ═══
-    await createSession(user.id);
+    // ═══ تحديث حالة التحقق في قاعدة البيانات ═══
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { otpVerified: true },
+    });
 
-    console.log("[OTP] ✅ Verified & session created for:", normalizedEmail);
+    console.log("[OTP] ✅ Verified for:", normalizedEmail);
 
     return NextResponse.json({
       success: true,
