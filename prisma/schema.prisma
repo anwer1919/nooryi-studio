@@ -25,7 +25,7 @@ model User {
   
   @@index([email])
   @@map("users")
-  otpVerified   Boolean    @default(false)
+  otpVerified Boolean @default(false)
 }
 
 model Artist {
