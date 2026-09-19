@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, KeyboardEvent, ClipboardEvent } from "react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
@@ -40,35 +41,64 @@ export default function OTPVerification({
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+      // استخدام NextAuth signIn بدلاً من fetch المباشر
+      const result = await signIn("credentials", {
+        email,
+        otp,
+        redirect: false,
+        callbackUrl: redirectOnSuccess,
       });
 
-      if (res.ok) {
-        setStatus("success");
-        setTimeout(() => {
-          if (onVerified) onVerified();
-          else {
-            router.push(redirectOnSuccess);
-            router.refresh();
-          }
-        }, 1200);
-      } else {
-        const data = await res.json().catch(() => ({}));
+      if (result?.error) {
         setStatus("error");
-        setErrorMsg(data.error || "رمز غير صحيح");
+        setErrorMsg(result.error === "CredentialsSignin" ? "رمز غير صحيح أو منتهي الصلاحية" : result.error);
         setValues(Array(6).fill(""));
         setTimeout(() => {
           setStatus("idle");
           setErrorMsg("");
           inputRefs.current[0]?.focus();
         }, 1500);
+        return;
       }
+
+      if (!result?.ok) {
+        setStatus("error");
+        setErrorMsg("تعذر إنشاء الجلسة");
+        setValues(Array(6).fill(""));
+        setTimeout(() => {
+          setStatus("idle");
+          setErrorMsg("");
+          inputRefs.current[0]?.focus();
+        }, 1500);
+        return;
+      }
+
+      // نجاح
+      setStatus("success");
+      setTimeout(() => {
+        if (onVerified) {
+          onVerified();
+        } else {
+          // تحديد الوجهة حسب الدور
+          (async () => {
+            let role = "USER";
+            try {
+              const sr = await fetch("/api/auth/session");
+              const sj = await sr.json();
+              role = sj?.user?.role || "USER";
+            } catch {}
+            const home =
+              role === "SUPER_ADMIN" || role === "ADMIN" || role === "ARTIST_MANAGER"
+                ? "/admin"
+                : "/";
+            window.location.href = redirectOnSuccess || home;
+          })();
+        }
+      }, 1200);
     } catch {
       setStatus("error");
       setErrorMsg("حدث خطأ في الاتصال");
+      setValues(Array(6).fill(""));
       setTimeout(() => {
         setStatus("idle");
         setErrorMsg("");
@@ -113,13 +143,12 @@ export default function OTPVerification({
     inputRefs.current[Math.min(pasted.length, 5)]?.focus();
   };
 
-  // ═══ ألوان وحالات كل مربع ═══
   const getInputClass = (index: number) => {
     const base =
       "w-10 h-12 md:w-14 md:h-16 text-center text-xl md:text-2xl font-bold rounded-lg border-2 outline-none transition-all duration-200 relative";
 
     if (status === "success")
-      return `${base} border-green-500 bg-green-500/10 text-green-500 scale-105`;
+      return `${base} border-green-500 bg-green-500/10 text-transparent scale-105`;
     if (status === "error")
       return `${base} border-red-500 bg-red-500/10 text-red-500 animate-shake`;
     if (status === "verifying")
@@ -168,7 +197,7 @@ export default function OTPVerification({
         ))}
       </div>
 
-      {/* رسالة الخطأ فقط (النجاح والتحقق يظهران داخل المربعات) */}
+      {/* رسالة الخطأ فقط */}
       <div className="h-6 flex items-center justify-center">
         {status === "error" && errorMsg && (
           <div className="flex items-center gap-2 text-red-500 text-sm font-bold animate-pulse">
