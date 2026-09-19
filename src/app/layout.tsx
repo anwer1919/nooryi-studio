@@ -121,7 +121,6 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <main className="relative z-10 min-h-screen w-full">{children}</main>
-          <WhatsAppButton />
           <MobileNav />
         </Providers>
       </body>

@@ -19,7 +19,12 @@ export const authOptions: NextAuthOptions = {
         let dbUser = await prisma.user.findUnique({ where: { email } })
         if (!dbUser) {
           dbUser = await prisma.user.create({
-            data: { email, name: user.name || email.split("@")[0], password: "oauth-no-password", role: "USER" },
+            data: {
+              email,
+              name: user.name || email.split("@")[0],
+              password: "oauth-no-password",
+              role: "USER",
+            },
           })
         }
         user.id = dbUser.id
