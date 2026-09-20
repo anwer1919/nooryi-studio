@@ -590,3 +590,121 @@ input::placeholder, textarea::placeholder { color: var(--c-muted) !important; op
 .print-header, .print-qr-section, .print-footer-stamp, .print-payment-section { display: none; }
 
 /* END UNIFIED PRINT STYLES ═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   MANAGER DASHBOARD ENHANCEMENTS
+   ═══════════════════════════════════════════════════════ */
+
+/* Professional card hover effects */
+.dash-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.dash-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #F5A623, #D4AF37, #F5A623);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.dash-card:hover::before { opacity: 1; }
+.dash-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 166, 35, 0.15);
+}
+
+/* Badge gold enhancement */
+.badge-gold {
+  background: linear-gradient(135deg, #F5A623, #D4AF37);
+  color: #000;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-block;
+}
+.status-badge.confirmed, .status-badge.approved {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.status-badge.pending {
+  background: rgba(245, 166, 35, 0.15);
+  color: #F5A623;
+  border: 1px solid rgba(245, 166, 35, 0.3);
+}
+.status-badge.cancelled, .status-badge.rejected {
+  background: rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+/* Button enhancements */
+.btn-primary {
+  background: linear-gradient(135deg, #F5A623, #D4AF37);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--c-border);
+  color: var(--c-fg);
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.btn-outline:hover {
+  border-color: #F5A623;
+  color: #F5A623;
+}
+
+/* Text display */
+.text-display {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--c-fg);
+}
+
+/* Card titles */
+.card-title {
+  font-weight: 800;
+  color: var(--c-fg);
+  font-size: 1rem;
+}
+.card-subtitle {
+  font-weight: 600;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Print button visibility */
+.no-print { display: block; }
+@media print {
+  .no-print, .btn-primary, .btn-outline, button { display: none !important; }
+}
+
+/* END MANAGER DASHBOARD ENHANCEMENTS ═══════════════════════════════════════════════════════ */
