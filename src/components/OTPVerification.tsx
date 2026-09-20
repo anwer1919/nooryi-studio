@@ -27,30 +27,26 @@ export default function OTPVerification({ email, onVerified }: OTPVerificationPr
   }, [email]);
 
   const verifyOTP = async (otp: string) => {
-    console.log("[OTP] 🔥 Verifying via signIn:", otp);
     isVerifyingRef.current = true;
     setStatus("verifying");
     setErrorMsg("");
 
     try {
-      // المسار 2 في auth.ts: signIn مع OTP فقط
       const result = await signIn("credentials", {
         email,
         otp,
         redirect: false,
       });
 
-      console.log("[OTP] signIn result:", result);
-
       if (result?.error || !result?.ok) {
         throw new Error(result?.error === "CredentialsSignin" ? "رمز غير صحيح أو منتهي الصلاحية" : "رمز غير صحيح");
       }
 
-      console.log("[OTP] ✅ SUCCESS");
       setStatus("success");
+      // ✅ وضع cookie للمiddleware قبل التوجيه
+      document.cookie = "otp_verified=true; path=/; max-age=86400; SameSite=Lax";
       setTimeout(() => onVerified(), 1500);
     } catch (err: any) {
-      console.error("[OTP] ❌ FAILED:", err.message);
       setStatus("error");
       setErrorMsg(err.message || "رمز غير صحيح");
       setValues(Array(6).fill(""));
