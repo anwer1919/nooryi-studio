@@ -25,48 +25,61 @@ export default async function PrintLayout({ title, docNumber, children, verifica
 
   return (
     <div className="print-layout" dir="rtl">
+      {/* ═══ الترويسة (أسود وذهبي) ═══ */}
       <div className="print-header">
         <div>
-          <div className="logo-text">{name.split(" ")[0]}<span className="logo-accent">{name.split(" ").slice(1).join(" ")}</span></div>
-          <div style={{ fontSize: "9pt", color: "#555", marginTop: 4 }}>
+          <div className="logo-text">
+            <span style={{ color: "#000" }}>{name.split(" ")[0]}</span>
+            <span style={{ color: "#D4AF37" }}>{name.split(" ").slice(1).join(" ")}</span>
+          </div>
+          <div style={{ fontSize: "9pt", color: "#333", marginTop: 6 }}>
             <div>{tagline}</div>
-            {address && <div>{address}</div>}
-            {phone && <div dir="ltr">{phone}</div>}
-            {email && <div>{email}</div>}
+            {address && <div style={{ marginTop: 2 }}>{address}</div>}
+            {phone && <div dir="ltr" style={{ marginTop: 2 }}>{phone}</div>}
+            {email && <div style={{ marginTop: 2 }}>{email}</div>}
           </div>
         </div>
         <div className="doc-info">
-          <div style={{ fontWeight: 700, fontSize: "12pt", marginBottom: 4 }}>{title}</div>
-          {docNumber && <div>رقم المستند: {docNumber}</div>}
-          <div>تاريخ الإصدار: {dateStr}</div>
+          <div style={{ fontWeight: 800, fontSize: "14pt", marginBottom: 6, color: "#000" }}>{title}</div>
+          {docNumber && <div style={{ color: "#D4AF37", fontWeight: 700 }}>رقم المستند: {docNumber}</div>}
+          <div style={{ color: "#555", marginTop: 4 }}>تاريخ الإصدار: {dateStr}</div>
         </div>
       </div>
 
+      {/* ═══ المحتوى الرئيسي ═══ */}
       <div className="print-content">{children}</div>
 
+      {/* ═══ معلومات الدفع من إعدادات المنصة ═══ */}
       {(bankName || bankAccount || iban) && (
-        <div style={{ marginTop: 24, padding: 16, border: "1px solid #F5A623", borderRadius: 8, pageBreakInside: "avoid" }}>
-          <h3 style={{ color: "#F5A623", marginBottom: 8, fontSize: "11pt" }}>معلومات الدفع والتحويل</h3>
-          {bankName && <p><strong>البنك:</strong> {bankName}</p>}
-          {bankAccount && <p><strong>رقم الحساب:</strong> <span dir="ltr">{bankAccount}</span></p>}
-          {iban && <p><strong>IBAN:</strong> <span dir="ltr">{iban}</span></p>}
-          {paymentNote && <p style={{ fontSize: "9pt", color: "#777", marginTop: 8 }}>{paymentNote}</p>}
+        <div className="print-payment-section">
+          <h3 className="print-section-title">معلومات الدفع والتحويل</h3>
+          <table className="print-info-table">
+            {bankName && <tr><td>البنك</td><td>{bankName}</td></tr>}
+            {bankAccount && <tr><td>رقم الحساب</td><td dir="ltr">{bankAccount}</td></tr>}
+            {iban && <tr><td>IBAN</td><td dir="ltr">{iban}</td></tr>}
+          </table>
+          {paymentNote && <p className="print-note">{paymentNote}</p>}
         </div>
       )}
 
+      {/* ═══ QR Code + الختم ═══ */}
       {(verificationCode || docNumber) && (
         <>
           <div className="print-qr-section">
-            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationCode || docNumber || name)}`} alt="QR" />
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationCode || docNumber || name)}`}
+              alt="QR Verification"
+            />
             <div className="qr-info">
               <div className="qr-title">✓ رمز التحقق الرقمي</div>
               <div className="qr-code-text">{verificationCode || docNumber || "N/A"}</div>
               <div style={{ fontSize: "8pt", color: "#777", marginTop: 4 }}>امسح الرمز للتحقق من صحة هذا المستند</div>
             </div>
           </div>
+
           <div className="print-footer-stamp">
             <div className="print-footer-info">
-              <div>هذا المستند صادر إلكترونياً من {name}</div>
+              <div>هذا المستند صادر إلكترونياً من <strong>{name}</strong></div>
               <div>وهو صالح بدون توقيع يدوي أو ختم مادي</div>
               {email && <div style={{ marginTop: 4 }}>للاستفسار: {email}</div>}
               {whatsapp && <div dir="ltr">واتساب: {whatsapp}</div>}

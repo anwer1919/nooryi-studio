@@ -511,3 +511,82 @@ input::placeholder, textarea::placeholder { color: var(--c-muted) !important; op
 .print-footer-stamp {
   display: none;
 }
+
+/* ═══════════════════════════════════════════════════════
+   UNIFIED PRINT STYLES — BLACK & GOLD
+   Applied to: Invoices, Reports, Pricing, Calendar
+   ═══════════════════════════════════════════════════════ */
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+  body { background: #fff !important; color: #000 !important; font-family: 'Inter', sans-serif !important; padding: 0 !important; margin: 0 !important; font-size: 11pt !important; line-height: 1.6 !important; }
+
+  .mobile-nav, nav, footer, button, .no-print, .blueprint-grid, .spotlight-halo, a[href^="#"], .btn-primary, .btn-gold, .btn-outline { display: none !important; }
+
+  main { padding: 0 !important; min-height: auto !important; }
+
+  /* ── Header ── */
+  .print-header { display: flex !important; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #D4AF37; padding-bottom: 16px; margin-bottom: 24px; page-break-after: avoid; }
+  .logo-text { font-family: 'Space Grotesk', sans-serif; font-size: 26pt; font-weight: 800; line-height: 1.1; }
+  .doc-info { text-align: left; font-size: 10pt; }
+
+  /* ── Tables ── */
+  table.print-table, .print-content table { width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; page-break-inside: avoid; }
+  table.print-table th, .print-content table th { background: #D4AF37 !important; color: #000 !important; font-weight: 700 !important; padding: 10px 12px !important; border: 1px solid #ccc !important; font-size: 10pt !important; text-align: right !important; }
+  table.print-table td, .print-content table td { padding: 8px 12px !important; border: 1px solid #ddd !important; color: #000 !important; font-size: 10pt !important; }
+  table.print-table tr:nth-child(even) td, .print-content table tr:nth-child(even) td { background: #fafafa !important; }
+
+  /* ── Cards ── */
+  .dash-card, .card-pro, .pricing-card, .glass-card, .stat-card, .print-content [class*="card"] { background: #fff !important; border: 1px solid #D4AF37 !important; box-shadow: none !important; backdrop-filter: none !important; border-radius: 6px !important; padding: 16px !important; margin-bottom: 12px !important; page-break-inside: avoid; }
+  .card-title, .print-content h1, .print-content h2, .print-content h3, .print-content h4 { color: #000 !important; -webkit-text-fill-color: #000 !important; }
+  .card-subtitle, .badge-gold, .stat-label { color: #D4AF37 !important; -webkit-text-fill-color: #D4AF37 !important; }
+  .card-body, .print-content p, .print-content span { color: #333 !important; -webkit-text-fill-color: #333 !important; }
+
+  /* ── Payment Section ── */
+  .print-payment-section { margin-top: 24px; padding: 16px; border: 2px solid #D4AF37; border-radius: 8px; page-break-inside: avoid; }
+  .print-section-title { color: #000 !important; font-size: 12pt; font-weight: 800; margin-bottom: 12px; border-bottom: 1px solid #D4AF37; padding-bottom: 6px; }
+  .print-info-table { width: 100%; border-collapse: collapse; }
+  .print-info-table td { padding: 6px 10px; border-bottom: 1px solid #eee; font-size: 10pt; color: #333; }
+  .print-info-table td:first-child { font-weight: 700; color: #000; width: 140px; }
+  .print-note { font-size: 9pt; color: #777; margin-top: 10px; font-style: italic; }
+
+  /* ── QR Section ── */
+  .print-qr-section { display: flex !important; align-items: center; gap: 16px; margin-top: 24px; padding: 16px; border: 2px dashed #D4AF37; border-radius: 8px; page-break-inside: avoid; }
+  .print-qr-section img { width: 100px !important; height: 100px !important; border: 2px solid #D4AF37; border-radius: 4px; }
+  .qr-title { font-weight: 800; color: #000 !important; font-size: 11pt; margin-bottom: 4px; }
+  .qr-code-text { font-family: 'JetBrains Mono', monospace; font-size: 9pt; color: #555 !important; word-break: break-all; }
+
+  /* ── Stamp Footer ── */
+  .print-footer-stamp { display: flex !important; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-top: 16px; border-top: 3px solid #D4AF37; page-break-before: avoid; }
+  .stamp-box { width: 110px; height: 110px; border: 3px solid #D4AF37; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; color: #D4AF37 !important; font-weight: 700; position: relative; }
+  .stamp-box::after { content: ''; position: absolute; inset: 4px; border: 1px solid #D4AF37; border-radius: 50%; }
+  .stamp-icon { font-size: 22pt; margin-bottom: 2px; }
+  .stamp-text { font-size: 8pt; letter-spacing: 0.05em; }
+  .print-footer-info { text-align: left; font-size: 9pt; color: #555 !important; max-width: 320px; }
+
+  /* ── Status Badges ── */
+  .status-badge, .status-chip { border: 1px solid currentColor !important; background: transparent !important; }
+  .status-confirmed, .status-badge.confirmed { color: #16a34a !important; }
+  .status-pending, .status-badge.pending { color: #D4AF37 !important; }
+  .status-rejected, .status-badge.cancelled { color: #dc2626 !important; }
+
+  /* ── Pricing Specific ── */
+  .pricing-price { color: #000 !important; -webkit-text-fill-color: #000 !important; font-size: 18pt !important; font-weight: 800 !important; }
+  .pricing-period { color: #D4AF37 !important; -webkit-text-fill-color: #D4AF37 !important; }
+  .pricing-feature { color: #333 !important; }
+  .pricing-feature svg { color: #D4AF37 !important; }
+
+  /* ── Calendar Specific ── */
+  .calendar-day { border: 1px solid #ddd !important; color: #000 !important; background: #fff !important; }
+  .calendar-day.booked { background: #FFF8E7 !important; color: #B8860B !important; font-weight: 700; }
+  .calendar-day.today { border-color: #D4AF37 !important; color: #D4AF37 !important; }
+
+  /* ── Page Setup ── */
+  @page { size: A4 portrait; margin: 15mm 12mm; }
+}
+
+/* Hide print-only elements on screen */
+.print-header, .print-qr-section, .print-footer-stamp, .print-payment-section { display: none; }
+
+/* END UNIFIED PRINT STYLES ═══════════════════════════════════════════════════════ */
