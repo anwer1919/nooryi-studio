@@ -1,4 +1,4 @@
-﻿import type { NextAuthOptions } from "next-auth"
+import type { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth"
 import { getServerSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -28,7 +28,6 @@ export const authOptions: NextAuthOptions = {
             },
           })
         } else {
-          // حفظ otpVerified في قاعدة البيانات
           await prisma.user.update({
             where: { id: dbUser.id },
             data: { otpVerified: true },
@@ -50,7 +49,6 @@ export const authOptions: NextAuthOptions = {
         token.artistId = user.artistId || null
         token.otpVerified = user.otpVerified === true
       }
-      // إذا لم يكن هناك user ولكن يوجد token، تحقق من DB
       if (!user && token?.id && !token.otpVerified) {
         try {
           const dbUser = await prisma.user.findUnique({
@@ -104,7 +102,6 @@ export const authOptions: NextAuthOptions = {
             const user = await prisma.user.findUnique({ where: { email } })
             if (!user) return null
             await prisma.verificationToken.deleteMany({ where: { identifier: email } }).catch(() => {})
-            // حفظ otpVerified في قاعدة البيانات
             await prisma.user.update({
               where: { id: user.id },
               data: { otpVerified: true },
