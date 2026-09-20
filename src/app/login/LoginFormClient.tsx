@@ -131,21 +131,9 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ بعد نجاح OTP/Google → توجيه حسب الدور الفعلي ═══
-  const handleVerified = async () => {
-    try {
-      const res = await fetch("/api/auth/session");
-      const session = await res.json();
-      const role = session?.user?.role || "USER";
-
-      if (["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role)) {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/";
-      }
-    } catch {
-      window.location.reload();
-    }
+  // ═══ بعد نجاح OTP/Google → توجيه مباشر بدون انتظار الجلسة ═══
+  const handleVerified = () => {
+    window.location.href = callbackUrl || "/admin";
   };
 
   // ═══ شاشة النجاح ═══
