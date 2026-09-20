@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth"
+﻿import type { NextAuthOptions } from "next-auth"
 import NextAuth from "next-auth"
 import { getServerSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
         token.artistId = user.artistId || null
         token.otpVerified = user.otpVerified === true
       }
-      // إذا لم يكن هناك user ولكن يوجد token، تحقق من DB كـ fallback
+      // إذا لم يكن هناك user ولكن يوجد token، تحقق من DB
       if (!user && token?.id && !token.otpVerified) {
         try {
           const dbUser = await prisma.user.findUnique({
@@ -93,7 +93,7 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email) return null
           const email = String(credentials.email).trim().toLowerCase()
 
-          // المسار 2: OTP → جلسة موثقة كاملة
+          // المسار 2: OTP
           if (credentials.otp) {
             const rec = await prisma.verificationToken.findFirst({
               where: { identifier: email },
@@ -110,42 +110,28 @@ export const authOptions: NextAuthOptions = {
               data: { otpVerified: true },
             }).catch(() => {})
             return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              phone: user.phone,
-              artistId: user.artistId,
+              id: user.id, email: user.email, name: user.name,
+              role: user.role, phone: user.phone, artistId: user.artistId,
               otpVerified: true,
             } as any
           }
 
-          // المسار 1: Password → جلسة غير موثقة (تنتظر OTP)
+          // المسار 1: Password
           if (!credentials.password) return null
           const user = await prisma.user.findUnique({ where: { email } })
           if (!user || !user.password) return null
           let ok = false
           try {
-            if (
-              user.password.startsWith("$2a$") ||
-              user.password.startsWith("$2b$") ||
-              user.password.startsWith("$2y$")
-            ) {
+            if (user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$")) {
               ok = await bcrypt.compare(String(credentials.password), user.password)
             } else {
               ok = String(credentials.password) === user.password
             }
-          } catch {
-            ok = String(credentials.password) === user.password
-          }
+          } catch { ok = String(credentials.password) === user.password }
           if (!ok) return null
           return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            phone: user.phone,
-            artistId: user.artistId,
+            id: user.id, email: user.email, name: user.name,
+            role: user.role, phone: user.phone, artistId: user.artistId,
             otpVerified: false,
           } as any
         } catch (error: any) {
@@ -159,6 +145,4 @@ export const authOptions: NextAuthOptions = {
 
 const nextAuthHandler = NextAuth(authOptions)
 export const handlers = { GET: nextAuthHandler, POST: nextAuthHandler }
-export async function auth() {
-  return getServerSession(authOptions)
-}
+export async function auth() { return getServerSession(authOptions) }
