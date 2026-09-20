@@ -3,10 +3,11 @@ import PrintLayout from "@/components/PrintLayout";
 export const dynamic = "force-dynamic";
 export default async function StatsPrintPage() {
   let tb=0,cf=0,pd=0,cn=0,rv=0,dp=0,rm=0,ta=0;
-  try{const bs=await prisma.booking.findMany({select:{status:true,grossAmount:true,depositAmount:true,remainingAmount:true,totalPrice:true,deposit:true,remaining:true}});
-    tb=bs.length;cf=bs.filter(b=>b.status==="CONFIRMED"||b.status==="COMPLETED").length;
-    pd=bs.filter(b=>b.status==="PENDING").length;cn=bs.filter(b=>b.status==="CANCELLED"||b.status==="REJECTED").length;
-    bs.forEach(b=>{rv+=Number(b.grossAmount||b.totalPrice||0);dp+=Number(b.depositAmount||b.deposit||0);rm+=Number(b.remainingAmount||b.remaining||0);});
+  try{const bs=await prisma.booking.findMany({select:{status:true,grossAmount:true,depositAmount:true,remainingAmount:true}});
+    tb=bs.length;cf=bs.filter(b=>["CONFIRMED","COMPLETED"].includes(b.status)).length;
+    pd=bs.filter(b=>["PENDING","PENDING_APPROVAL"].includes(b.status)).length;
+    cn=bs.filter(b=>["CANCELLED","REJECTED"].includes(b.status)).length;
+    bs.forEach(b=>{rv+=Number(b.grossAmount||0);dp+=Number(b.depositAmount||0);rm+=Number(b.remainingAmount||0);});
     ta=await prisma.artist.count();}catch{}
   return(
     <PrintLayout title="تقرير الإحصائيات" docNumber="RPT-STATS" verificationCode="STATS-REPORT">
