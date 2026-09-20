@@ -1,42 +1,22 @@
 ﻿import { prisma } from "@/lib/prisma";
-
-interface PrintLayoutProps {
-  title: string;
-  docNumber?: string;
-  children: React.ReactNode;
-  verificationCode?: string;
-}
-
+interface PrintLayoutProps { title: string; docNumber?: string; children: React.ReactNode; verificationCode?: string }
 export default async function PrintLayout({ title, docNumber, children, verificationCode }: PrintLayoutProps) {
   let s: any = null;
   try { s = await prisma.siteSetting.findFirst(); } catch {}
-
   const name = s?.siteName || "Nooryi Studio";
   const tagline = s?.tagline || "منصة حجز الفنانين الأولى";
-  const email = s?.email || "";
-  const phone = s?.phone || "";
-  const address = s?.address || "";
-  const bankName = s?.bankName || "";
-  const bankAccount = s?.bankAccount || "";
-  const iban = s?.iban || "";
-  const paymentNote = s?.paymentNote || "";
-  const whatsapp = s?.whatsapp || "";
+  const email = s?.email || ""; const phone = s?.phone || ""; const address = s?.address || "";
+  const bankName = s?.bankName || ""; const bankAccount = s?.bankAccount || "";
+  const iban = s?.iban || ""; const paymentNote = s?.paymentNote || ""; const whatsapp = s?.whatsapp || "";
   const dateStr = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
-
   return (
     <div className="print-layout" dir="rtl">
-      {/* ═══ الترويسة (أسود وذهبي) ═══ */}
       <div className="print-header">
         <div>
-          <div className="logo-text">
-            <span style={{ color: "#000" }}>{name.split(" ")[0]}</span>
-            <span style={{ color: "#D4AF37" }}>{name.split(" ").slice(1).join(" ")}</span>
-          </div>
+          <div className="logo-text"><span style={{ color: "#000" }}>{name.split(" ")[0]}</span><span style={{ color: "#D4AF37" }}>{name.split(" ").slice(1).join(" ")}</span></div>
           <div style={{ fontSize: "9pt", color: "#333", marginTop: 6 }}>
-            <div>{tagline}</div>
-            {address && <div style={{ marginTop: 2 }}>{address}</div>}
-            {phone && <div dir="ltr" style={{ marginTop: 2 }}>{phone}</div>}
-            {email && <div style={{ marginTop: 2 }}>{email}</div>}
+            <div>{tagline}</div>{address && <div style={{ marginTop: 2 }}>{address}</div>}
+            {phone && <div dir="ltr" style={{ marginTop: 2 }}>{phone}</div>}{email && <div style={{ marginTop: 2 }}>{email}</div>}
           </div>
         </div>
         <div className="doc-info">
@@ -45,11 +25,7 @@ export default async function PrintLayout({ title, docNumber, children, verifica
           <div style={{ color: "#555", marginTop: 4 }}>تاريخ الإصدار: {dateStr}</div>
         </div>
       </div>
-
-      {/* ═══ المحتوى الرئيسي ═══ */}
       <div className="print-content">{children}</div>
-
-      {/* ═══ معلومات الدفع من إعدادات المنصة ═══ */}
       {(bankName || bankAccount || iban) && (
         <div className="print-payment-section">
           <h3 className="print-section-title">معلومات الدفع والتحويل</h3>
@@ -61,37 +37,16 @@ export default async function PrintLayout({ title, docNumber, children, verifica
           {paymentNote && <p className="print-note">{paymentNote}</p>}
         </div>
       )}
-
-      {/* ═══ QR Code + الختم ═══ */}
-      {(verificationCode || docNumber) && (
-        <>
-          <div className="print-qr-section">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationCode || docNumber || name)}`}
-              alt="QR Verification"
-            />
-            <div className="qr-info">
-              <div className="qr-title">✓ رمز التحقق الرقمي</div>
-              <div className="qr-code-text">{verificationCode || docNumber || "N/A"}</div>
-              <div style={{ fontSize: "8pt", color: "#777", marginTop: 4 }}>امسح الرمز للتحقق من صحة هذا المستند</div>
-            </div>
-          </div>
-
-          <div className="print-footer-stamp">
-            <div className="print-footer-info">
-              <div>هذا المستند صادر إلكترونياً من <strong>{name}</strong></div>
-              <div>وهو صالح بدون توقيع يدوي أو ختم مادي</div>
-              {email && <div style={{ marginTop: 4 }}>للاستفسار: {email}</div>}
-              {whatsapp && <div dir="ltr">واتساب: {whatsapp}</div>}
-            </div>
-            <div className="stamp-box">
-              <span className="stamp-icon">✓</span>
-              <span className="stamp-text">موثق</span>
-              <span className="stamp-text">{name.split(" ")[0]}</span>
-            </div>
-          </div>
-        </>
-      )}
+      {(verificationCode || docNumber) && (<>
+        <div className="print-qr-section">
+          <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verificationCode || docNumber || name)}`} alt="QR" />
+          <div className="qr-info"><div className="qr-title">✓ رمز التحقق الرقمي</div><div className="qr-code-text">{verificationCode || docNumber || "N/A"}</div><div style={{ fontSize: "8pt", color: "#777", marginTop: 4 }}>امسح الرمز للتحقق</div></div>
+        </div>
+        <div className="print-footer-stamp">
+          <div className="print-footer-info"><div>صادر إلكترونياً من <strong>{name}</strong></div><div>صالح بدون توقيع يدوي</div>{email && <div style={{ marginTop: 4 }}>للاستفسار: {email}</div>}{whatsapp && <div dir="ltr">واتساب: {whatsapp}</div>}</div>
+          <div className="stamp-box"><span className="stamp-icon">✓</span><span className="stamp-text">موثق</span><span className="stamp-text">{name.split(" ")[0]}</span></div>
+        </div>
+      </>)}
     </div>
   );
 }
