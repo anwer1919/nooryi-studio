@@ -6,7 +6,7 @@ export default withAuth(
     const token = req.nextauth.token as any
     const path = req.nextUrl.pathname
     const role = token?.role as string | undefined
-    const verified = token?.otpVerified === true
+    let verified = token?.otpVerified === true
 
     // صلاحيات الأدمن
     if (path.startsWith("/admin")) {
@@ -15,7 +15,16 @@ export default withAuth(
       }
     }
 
-    // جلسة غير موثقة (لم يكمل OTP) → إجبار على إكمال التحقق
+    // إذا كان هناك token ولكن otpVerified غير مؤكد،
+    // نتحقق من cookie خاص نضعه بعد نجاح OTP/Google
+    if (token && !verified) {
+      const otpCookie = req.cookies.get("otp_verified")?.value
+      if (otpCookie === "true") {
+        verified = true
+      }
+    }
+
+    // جلسة غير موثقة → إجبار على إكمال التحقق
     if (token && !verified && path !== "/login") {
       const url = new URL("/login", req.url)
       url.searchParams.set("callbackUrl", path)
