@@ -1,30 +1,22 @@
-import { getManagerArtist } from "@/lib/managerAuth"
-import { prisma } from "@/lib/prisma"
-import ManagerStatsClient from "./ManagerStatsClient"
-
-export const dynamic = "force-dynamic"
-
-export default async function ArtistStats({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const { artist } = await getManagerArtist(slug)
-
-  const [total, confirmed, pending, completed, revenue, avgRating, recent] = await Promise.all([
-    prisma.booking.count({ where: { artistId: artist.id } }),
-    prisma.booking.count({ where: { artistId: artist.id, status: { in: ["CONFIRMED","APPROVED","ACCEPTED"] } } }),
-    prisma.booking.count({ where: { artistId: artist.id, status: "PENDING_APPROVAL" } }),
-    prisma.booking.count({ where: { artistId: artist.id, status: "COMPLETED" } }),
-    prisma.booking.aggregate({ where: { artistId: artist.id, status: { in: ["CONFIRMED","COMPLETED","APPROVED","ACCEPTED"] } }, _sum: { grossAmount: true } }),
-    prisma.review.aggregate({ where: { artistId: artist.id }, _avg: { rating: true }, _count: true }).catch(() => ({ _avg: { rating: 0 }, _count: 0 })),
-    prisma.booking.findMany({ where: { artistId: artist.id, status: { in: ["CONFIRMED","COMPLETED","APPROVED"] } }, orderBy: { date: "desc" }, take: 10, include: { venue: { select: { name: true } } } }),
-  ])
-
-  const rev = Number(revenue._sum?.grossAmount || 0)
-  const commRate = Number((artist as any).commissionRate || 15)
-  const comm = Math.round(rev * commRate / 100)
-
-  return <ManagerStatsClient data={JSON.parse(JSON.stringify({
-    artist, total, confirmed, pending, completed,
-    revenue: rev, commissionRate: commRate, commission: comm, net: rev - comm,
-    rating: avgRating._avg?.rating || 0, ratingCount: (avgRating as any)._count || 0, recent,
-  }))} />
+﻿import { prisma } from "@/lib/prisma";
+import PrintLayout from "@/components/PrintLayout";
+export const dynamic = "force-dynamic";
+export default async function StatsPrintPage() {
+  let tb = 0, cf = 0, pd = 0, cn = 0, rv = 0, dp = 0, rm = 0, ta = 0;
+  try { const bs = await prisma.booking.findMany({ select: { status: true, grossAmount: true, depositAmount: true, remainingAmount: true, totalPrice: true, deposit: true, remaining: true } });
+    tb = bs.length; cf = bs.filter(b => b.status === "CONFIRMED" || b.status === "COMPLETED").length;
+    pd = bs.filter(b => b.status === "PENDING").length; cn = bs.filter(b => b.status === "CANCELLED" || b.status === "REJECTED").length;
+    bs.forEach(b => { rv += Number(b.grossAmount || b.totalPrice || 0); dp += Number(b.depositAmount || b.deposit || 0); rm += Number(b.remainingAmount || b.remaining || 0); });
+    ta = await prisma.artist.count(); } catch {}
+  return (
+    <PrintLayout title="تقرير الإحصائيات" docNumber="RPT-STATS" verificationCode="STATS-REPORT">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#000" }}>{tb}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>إجمالي الحجوزات</div></div>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#16a34a" }}>{cf}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>مؤكدة</div></div>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#000" }}>{ta}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>فنانين</div></div>
+      </div>
+      <table className="print-table"><thead><tr><th>البند</th><th style={{ textAlign: "left" }}>القيمة</th></tr></thead>
+        <tbody><tr><td>إجمالي الإيرادات</td><td style={{ textAlign: "left", fontWeight: 800, fontSize: "12pt" }}>{rv.toLocaleString()} ج.م</td></tr><tr><td>إجمالي العربونات</td><td style={{ textAlign: "left", color: "#16a34a" }}>{dp.toLocaleString()} ج.م</td></tr><tr><td>إجمالي المتبقي</td><td style={{ textAlign: "left", color: "#dc2626" }}>{rm.toLocaleString()} ج.م</td></tr><tr><td>حجوزات معلقة</td><td style={{ textAlign: "left" }}>{pd}</td></tr><tr><td>ملغية / مرفوضة</td><td style={{ textAlign: "left" }}>{cn}</td></tr></tbody></table>
+    </PrintLayout>
+  );
 }

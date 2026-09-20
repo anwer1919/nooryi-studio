@@ -1,154 +1,31 @@
-import { prisma } from "@/lib/prisma"
-import { CheckCircle2, Shield, Calendar, User, DollarSign, Music, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-
-export const dynamic = "force-dynamic"
-
-export default async function VerifyInvoicePage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-
-  const booking = await prisma.booking.findUnique({
-    where: { id },
-    include: {
-      artist: true,
-      venue: true,
-      payments: { orderBy: { createdAt: "desc" } },
-    },
-  })
-
-  if (!booking) {
-    return (
-      <div dir="rtl" className="min-h-screen bg-red-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center border-2 border-red-200">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">❌</span>
-          </div>
-          <h1 className="text-2xl font-black text-red-700 mb-2">فاتورة غير صالحة</h1>
-          <p className="text-muted mb-6">لم يتم العثور على الفاتورة المطلوبة</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-fg rounded-xl font-bold">
-            <ArrowLeft size={18} />
-            العودة للرئيسية
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  const totalPaid = booking.payments
-    .filter((p: any) => ["COMPLETED", "SUCCESS"].includes(p.status))
-    .reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0)
-
-  const grossAmount = Number(booking.grossAmount || 0)
-
+﻿import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import PrintLayout from "@/components/PrintLayout";
+export const dynamic = "force-dynamic";
+export default async function InvoicePrintPage({ params, searchParams }: { params: Promise<{ slug?: string; id?: string }>; searchParams: Promise<{ id?: string }> }) {
+  const p = await params; const sp = await searchParams;
+  const id = p.slug || p.id || sp.id;
+  if (!id) notFound();
+  let booking: any = null;
+  try { booking = await prisma.booking.findFirst({ where: { OR: [{ id }, { slug: id }] }, include: { artist: { select: { name: true, category: true } }, venue: { select: { name: true, address: true, city: true } } } }); } catch {}
+  if (!booking) notFound();
+  const gross = Number(booking.grossAmount || booking.totalPrice || 0);
+  const deposit = Number(booking.depositAmount || booking.deposit || 0);
+  const remaining = Number(booking.remainingAmount || booking.remaining || gross - deposit);
+  const dateStr = booking.date ? new Date(booking.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—";
+  const statusMap: Record<string, string> = { PENDING: "معلق", CONFIRMED: "مؤكد", COMPLETED: "مكتمل", CANCELLED: "ملغي", REJECTED: "مرفوض" };
   return (
-    <div dir="rtl" className="min-h-screen bg-gradient-to-br from-[#faf8f0] to-white py-8 px-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-bg to-[#111] rounded-2xl p-8 text-fg shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center">
-                <span className="text-[#111] text-2xl font-black">N</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-black">Nooryi Studio</h1>
-                <p className="text-xs text-[#F5A623]">التحقق من صحة الفاتورة</p>
-              </div>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500 rounded-full px-4 py-2">
-              <CheckCircle2 size={20} className="text-green-400" />
-              <span className="text-green-300 font-bold text-sm">فاتورة أصلية ✓</span>
-            </div>
-          </div>
-          <div className="h-0.5 bg-gradient-to-r from-transparent via-[#F5A623] to-transparent my-6"></div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted">رقم الفاتورة</p>
-              <p className="text-lg font-mono text-[#F5A623]" dir="ltr">INV-{booking.id.slice(0, 8).toUpperCase()}</p>
-            </div>
-            <div className="text-left">
-              <p className="text-xs text-muted">تاريخ التحقق</p>
-              <p className="text-sm font-bold">{new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Verification Banner */}
-        <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-              <Shield size={24} className="text-fg" />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-green-900 mb-1">✓ هذه الفاتورة أصلية ومعتمدة</h3>
-              <p className="text-sm text-green-800">
-                تم التحقق من صحة هذه الفاتورة بنجاح من قاعدة بيانات منصة Nooryi Studio.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Invoice Details */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-          <div className="bg-gradient-to-r from-[#F5A623] to-[#E8961A] px-6 py-4">
-            <h3 className="text-xl font-black text-[#111]">تفاصيل الفاتورة</h3>
-          </div>
-
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <User size={20} className="text-[#F5A623]" />
-                <div>
-                  <p className="text-xs text-muted">العميل</p>
-                  <p className="font-black">{booking.clientName}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <Music size={20} className="text-[#F5A623]" />
-                <div>
-                  <p className="text-xs text-muted">الفنان</p>
-                  <p className="font-black">{booking.artist?.name}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <Calendar size={20} className="text-[#F5A623]" />
-                <div>
-                  <p className="text-xs text-muted">تاريخ الفعالية</p>
-                  <p className="font-black">{new Date(booking.date).toLocaleDateString("ar-EG")}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <DollarSign size={20} className="text-[#F5A623]" />
-                <div>
-                  <p className="text-xs text-muted">الإجمالي</p>
-                  <p className="font-black text-[#F5A623]">{grossAmount.toLocaleString()} ج.م</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted">المدفوع:</span>
-                <span className="font-black text-green-600">{totalPaid.toLocaleString()} ج.م</span>
-              </div>
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-muted">المتبقي:</span>
-                <span className="font-black text-red-600">{Math.max(0, grossAmount - totalPaid).toLocaleString()} ج.م</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-bg rounded-2xl p-5 text-center">
-          <p className="text-xs text-muted">
-            هذه الفاتورة صادرة رسمياً من منصة Nooryi Studio — جميع الحقوق محفوظة © {new Date().getFullYear()}
-          </p>
-        </div>
+    <PrintLayout title="فاتورة حجز" docNumber={`INV-${(booking.id||"").slice(0,8).toUpperCase()}`} verificationCode={booking.id}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+        <div className="dash-card"><h3 style={{ color: "#D4AF37", marginBottom: 10, fontSize: "11pt", fontWeight: 800, borderBottom: "1px solid #D4AF37", paddingBottom: 6 }}>بيانات العميل</h3>
+          <table className="print-info-table"><tr><td>الاسم</td><td>{booking.clientName || "—"}</td></tr><tr><td>الهاتف</td><td dir="ltr">{booking.clientPhone || "—"}</td></tr><tr><td>البريد</td><td>{booking.clientEmail || "—"}</td></tr></table></div>
+        <div className="dash-card"><h3 style={{ color: "#D4AF37", marginBottom: 10, fontSize: "11pt", fontWeight: 800, borderBottom: "1px solid #D4AF37", paddingBottom: 6 }}>بيانات الحجز</h3>
+          <table className="print-info-table"><tr><td>الفنان</td><td>{booking.artist?.name || "—"}</td></tr><tr><td>التصنيف</td><td>{booking.artist?.category || "—"}</td></tr><tr><td>المكان</td><td>{booking.venue?.name || booking.location || "—"}</td></tr><tr><td>العنوان</td><td>{booking.venue?.address || booking.venue?.city || "—"}</td></tr></table></div>
       </div>
-    </div>
-  )
+      <table className="print-table"><thead><tr><th style={{ width: "50%" }}>البند</th><th style={{ textAlign: "left" }}>المبلغ (ج.م)</th></tr></thead>
+        <tbody><tr><td>المبلغ الإجمالي</td><td style={{ textAlign: "left", fontWeight: 700 }}>{gross.toLocaleString()}</td></tr><tr><td>العربون المدفوع</td><td style={{ textAlign: "left", color: "#16a34a" }}>{deposit.toLocaleString()}</td></tr><tr><td>المبلغ المتبقي</td><td style={{ textAlign: "left", color: remaining > 0 ? "#dc2626" : "#16a34a", fontWeight: 800, fontSize: "12pt" }}>{remaining.toLocaleString()}</td></tr></tbody></table>
+      <div className="dash-card" style={{ marginTop: 20 }}><h3 style={{ color: "#D4AF37", marginBottom: 10, fontSize: "11pt", fontWeight: 800, borderBottom: "1px solid #D4AF37", paddingBottom: 6 }}>تفاصيل الحجز</h3>
+        <table className="print-info-table"><tr><td>تاريخ الفعالية</td><td>{dateStr}</td></tr><tr><td>وقت الحجز</td><td>{booking.timeSlot || booking.time || "—"}</td></tr><tr><td>الحالة</td><td><span className={`status-badge status-${(booking.status||"").toLowerCase()}`}>{statusMap[booking.status] || booking.status || "—"}</span></td></tr>{booking.notes && <tr><td>ملاحظات</td><td>{booking.notes}</td></tr>}</table></div>
+    </PrintLayout>
+  );
 }

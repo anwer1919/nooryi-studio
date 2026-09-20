@@ -1,32 +1,22 @@
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import ArtistReportClient from "./ArtistReportClient"
-export const dynamic = "force-dynamic"
-const CONFIRMED = ["CONFIRMED", "APPROVED", "ACCEPTED", "COMPLETED"]
-export default async function ArtistReportPage({ params }: { params: Promise<{ artistId: string }> }) {
-  const session = await auth()
-  if (!session?.user) redirect("/login")
-  const role = (session.user as any).role || "USER"
-  if (role !== "SUPER_ADMIN" && role !== "ADMIN") redirect("/admin")
-  const { artistId } = await params
-  const artist: any = await prisma.artist.findUnique({ where: { id: artistId } }).catch(() => null)
-  if (!artist) redirect("/admin/stats")
-  const bookings: any[] = await prisma.booking.findMany({ where: { artistId }, include: { venue: { select: { name: true } } } }).catch(() => [])
-  const ids = bookings.map(b => b.id)
-  const payments: any[] = ids.length ? await prisma.payment.findMany({ where: { bookingId: { in: ids } } }).catch(() => []) : []
-  const rating: any = await prisma.review.aggregate({ where: { artistId }, _avg: { rating: true }, _count: true }).catch(() => ({ _avg: { rating: 0 }, _count: 0 }))
-  const up = (s: any) => String(s || "").toUpperCase()
-  const confirmed = bookings.filter(b => CONFIRMED.includes(up(b.status)))
-  const gross = confirmed.reduce((s, b) => s + Number(b.grossAmount || 0), 0)
-  const rate = Number(artist.commissionRate ?? 15) || 15
-  const commission = Math.round(gross * rate / 100)
-  const paid = payments.filter(p => up(p.status) === "COMPLETED").reduce((s, p) => s + Number(p.amount || 0), 0)
-  const rows = confirmed.slice().sort((a, b) => new Date(b.date || b.createdAt || 0).getTime() - new Date(a.date || a.createdAt || 0).getTime()).slice(0, 12).map(b => ({ client: b.clientName || "عميل", date: b.date ? new Date(b.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—", venue: b.venue?.name || "—", amount: Number(b.grossAmount || 0), status: b.status }))
-  const data = {
-    artist: { id: artist.id, name: artist.name, slug: artist.slug, category: artist.category || "فنان", commissionRate: rate },
-    totals: { total: bookings.length, confirmed: confirmed.length, pending: bookings.filter(b => ["PENDING", "PENDING_APPROVAL"].includes(up(b.status))).length, completed: bookings.filter(b => up(b.status) === "COMPLETED").length, gross, commission, net: gross - commission, paid, rating: Number(rating._avg?.rating || 0), ratingCount: Number(rating._count || 0) },
-    rows,
-  }
-  return <ArtistReportClient data={JSON.parse(JSON.stringify(data))} />
+﻿import { prisma } from "@/lib/prisma";
+import PrintLayout from "@/components/PrintLayout";
+export const dynamic = "force-dynamic";
+export default async function StatsPrintPage() {
+  let tb = 0, cf = 0, pd = 0, cn = 0, rv = 0, dp = 0, rm = 0, ta = 0;
+  try { const bs = await prisma.booking.findMany({ select: { status: true, grossAmount: true, depositAmount: true, remainingAmount: true, totalPrice: true, deposit: true, remaining: true } });
+    tb = bs.length; cf = bs.filter(b => b.status === "CONFIRMED" || b.status === "COMPLETED").length;
+    pd = bs.filter(b => b.status === "PENDING").length; cn = bs.filter(b => b.status === "CANCELLED" || b.status === "REJECTED").length;
+    bs.forEach(b => { rv += Number(b.grossAmount || b.totalPrice || 0); dp += Number(b.depositAmount || b.deposit || 0); rm += Number(b.remainingAmount || b.remaining || 0); });
+    ta = await prisma.artist.count(); } catch {}
+  return (
+    <PrintLayout title="تقرير الإحصائيات" docNumber="RPT-STATS" verificationCode="STATS-REPORT">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#000" }}>{tb}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>إجمالي الحجوزات</div></div>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#16a34a" }}>{cf}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>مؤكدة</div></div>
+        <div className="dash-card" style={{ textAlign: "center" }}><div style={{ fontSize: "24pt", fontWeight: 800, color: "#000" }}>{ta}</div><div style={{ color: "#D4AF37", fontWeight: 700, fontSize: "10pt" }}>فنانين</div></div>
+      </div>
+      <table className="print-table"><thead><tr><th>البند</th><th style={{ textAlign: "left" }}>القيمة</th></tr></thead>
+        <tbody><tr><td>إجمالي الإيرادات</td><td style={{ textAlign: "left", fontWeight: 800, fontSize: "12pt" }}>{rv.toLocaleString()} ج.م</td></tr><tr><td>إجمالي العربونات</td><td style={{ textAlign: "left", color: "#16a34a" }}>{dp.toLocaleString()} ج.م</td></tr><tr><td>إجمالي المتبقي</td><td style={{ textAlign: "left", color: "#dc2626" }}>{rm.toLocaleString()} ج.م</td></tr><tr><td>حجوزات معلقة</td><td style={{ textAlign: "left" }}>{pd}</td></tr><tr><td>ملغية / مرفوضة</td><td style={{ textAlign: "left" }}>{cn}</td></tr></tbody></table>
+    </PrintLayout>
+  );
 }
