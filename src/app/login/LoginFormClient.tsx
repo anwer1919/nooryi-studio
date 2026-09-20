@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
@@ -15,7 +15,6 @@ type Step = "credentials" | "otp" | "success";
 export default function LoginFormClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "";
   const [step, setStep] = useState<Step>("credentials");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +26,23 @@ export default function LoginFormClient() {
 
   const inputCls =
     "w-full pr-10 pl-4 py-3.5 border border-[var(--c-border)] bg-[var(--c-surface)] text-[var(--c-fg)] placeholder:text-[var(--c-muted)] rounded-xl focus:ring-2 focus:ring-[#F5A623]/30 focus:border-[#F5A623] outline-none transition-all";
+
+  // ═══ دالة التوجيه حسب الدور (تُستخدم في كل مكان) ═══
+  const redirectToHome = async () => {
+    try {
+      const res = await fetch("/api/auth/session", { cache: "no-store" });
+      const session = await res.json();
+      const role = session?.user?.role || "USER";
+      const destination = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role)
+        ? "/admin"
+        : "/";
+      console.log("[Redirect] Role:", role, "→", destination);
+      window.location.replace(destination);
+    } catch {
+      console.log("[Redirect] Fallback → /admin");
+      window.location.replace("/admin");
+    }
+  };
 
   // ═══ التحقق من الجلسة عند التحميل ═══
   useEffect(() => {
@@ -42,9 +58,7 @@ export default function LoginFormClient() {
           startTimer();
         } catch {}
       } else if (u?.email && u.otpVerified === true) {
-        const role = u.role || "USER";
-        const home = ["SUPER_ADMIN", "ADMIN", "ARTIST_MANAGER"].includes(role) ? "/admin" : "/";
-        router.replace(callbackUrl || home);
+        await redirectToHome();
       }
     })();
   }, []);
@@ -72,10 +86,16 @@ export default function LoginFormClient() {
     return await res.json();
   };
 
-  const handleSocialLogin = (provider: string) =>
-    signIn(provider, { callbackUrl: callbackUrl || "/admin" });
+  const handleSocialLogin = async (provider: string) => {
+    const result = await signIn(provider, { redirect: false });
+    if (result?.ok && !result?.error) {
+      await redirectToHome();
+    } else {
+      setError("تعذر تسجيل الدخول عبر " + provider);
+    }
+  };
 
-  // ═══ تسجيل الدخول — signIn مباشرة ═══
+  // ═══ تسجيل الدخول بالبريد وكلمة المرور ═══
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -86,7 +106,6 @@ export default function LoginFormClient() {
         email: formData.email,
         password: formData.password,
         redirect: false,
-        callbackUrl: "/admin",
       });
 
       if (result?.error) {
@@ -101,7 +120,7 @@ export default function LoginFormClient() {
         return;
       }
 
-      // نجاح التحقق من كلمة المرور → إرسال OTP
+      // نجاح → إرسال OTP
       const ot = await sendOtp(formData.email, "email");
       setOtpInfo(ot);
       setStep("otp");
@@ -131,9 +150,9 @@ export default function LoginFormClient() {
     }
   };
 
-  // ═══ بعد نجاح OTP/Google → توجيه مباشر بدون انتظار الجلسة ═══
-  const handleVerified = () => {
-    window.location.href = callbackUrl || "/admin";
+  // ═══ بعد نجاح OTP → توجيه مباشر حسب الدور ═══
+  const handleVerified = async () => {
+    await redirectToHome();
   };
 
   // ═══ شاشة النجاح ═══
@@ -181,12 +200,10 @@ export default function LoginFormClient() {
           </div>
         )}
 
-        {/* ═══ مكون OTP المتحرك ═══ */}
         <div className="mb-6">
           <OTPVerification email={formData.email} onVerified={handleVerified} />
         </div>
 
-        {/* ═══ إعادة الإرسال ═══ */}
         <div className="mt-6 text-center">
           {!showResendOptions ? (
             <>
@@ -231,7 +248,6 @@ export default function LoginFormClient() {
   // ═══ شاشة تسجيل الدخول ═══
   return (
     <div className="w-full max-w-md py-8">
-      {/* Logo Mobile */}
       <Link href="/" className="lg:hidden flex items-center gap-3 justify-center mb-8">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F5A623] to-[#E8961A] flex items-center justify-center shadow-lg shadow-[#F5A623]/20">
           <Music size={20} className="text-black" />
@@ -310,7 +326,6 @@ export default function LoginFormClient() {
         <Link href="/register" className="font-bold text-[#F5A623] hover:text-[#FFC966] transition">إنشاء حساب جديد</Link>
       </div>
 
-      {/* ═══ Social Login ═══ */}
       <div className="relative flex items-center py-5 mt-2">
         <div className="flex-grow border-t border-[var(--c-border)]"></div>
         <span className="mx-4 text-[var(--c-muted)] text-xs font-semibold">أو تابع عبر</span>
